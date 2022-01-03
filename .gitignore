@@ -1,0 +1,6 @@
+.vs
+*.suo
+reactor.nrproj
+packages
+client/bin
+client/obj
