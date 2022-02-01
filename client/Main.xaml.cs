@@ -107,10 +107,10 @@ namespace client
                 if (!Directory.Exists(ClientDirectory))
                 {
                     Directory.CreateDirectory(ClientDirectory);
-                    using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
-                    {
-                        unzip.ExtractToDirectory(ClientDirectory);
-                    }
+                }
+                using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
+                {
+                    unzip.ExtractToDirectory(ClientDirectory);
                 }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Проверяем клиент"; }));
                 string chksum = string.Empty;

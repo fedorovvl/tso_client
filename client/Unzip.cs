@@ -231,7 +231,7 @@ namespace client
 				Directory.CreateDirectory(dirName);
 
 				// save file if it is not only a directory
-				if (!entry.IsDirectory)
+				if (!entry.IsDirectory && !File.Exists(fileName))
 				{
 					Extract(entry.Name, fileName);
 				}
