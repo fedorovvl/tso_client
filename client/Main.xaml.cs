@@ -112,6 +112,14 @@ namespace client
                 {
                     unzip.ExtractToDirectory(ClientDirectory);
                 }
+                try
+                {
+                    foreach (string tmpDir in Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TSO-*"))
+                    {
+                        Directory.Delete(tmpDir, true);
+                    }
+                }
+                catch (Exception e) { }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Проверяем клиент"; }));
                 string chksum = string.Empty;
                 bool needDownload = false;
