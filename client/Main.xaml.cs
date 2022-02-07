@@ -209,7 +209,6 @@ namespace client
                     Dispatcher.BeginInvoke(new ThreadStart(delegate
                     {
                         string[] settings = new Crypt().Decrypt(File.ReadAllText("settings.dat"), true).Split(new[] { '|' }, StringSplitOptions.None);
-                        //MessageBox.Show("set from func");
                         if(!string.IsNullOrEmpty(settings[0]) && cmd["login"] == null) login.Text = settings[0];
                         if (!string.IsNullOrEmpty(settings[1]) && cmd["password"] == null) password.Password = settings[1];
                         if (!string.IsNullOrEmpty(settings[1])) pwd.Visibility = System.Windows.Visibility.Collapsed;
@@ -218,7 +217,7 @@ namespace client
                         {
                             try
                             {
-                                logging = bool.Parse(settings[3]);
+                                logging = false;
                                 if (settings.Length > 5)
                                 {
                                     _regionUid = string.IsNullOrEmpty(settings[5]) ? 16 : int.Parse(settings[5].Trim());
