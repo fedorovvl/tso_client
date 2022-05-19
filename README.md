@@ -7,3 +7,10 @@ Arguments
     Used to skip checks for new client.swf
         Example
             client.exe --skip 
+
+--autologin
+    ???
+
+--collect
+    ???
+          
