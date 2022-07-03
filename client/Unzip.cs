@@ -231,7 +231,7 @@ namespace client
 				Directory.CreateDirectory(dirName);
 
 				// save file if it is not only a directory
-				if (!entry.IsDirectory && !File.Exists(fileName))
+				if (!entry.IsDirectory)
 				{
 					Extract(entry.Name, fileName);
 				}
@@ -252,6 +252,13 @@ namespace client
 		public void Extract(string fileName, string outputFileName)
 		{
 			var entry = GetEntry(fileName);
+
+            if(File.Exists(outputFileName))
+            {
+                var fileNameInfo = new FileInfo(outputFileName);
+                if (fileNameInfo.Length == entry.OriginalSize)
+                    return;
+            }
 
 			using (var outStream = File.Create(outputFileName))
 			{
