@@ -3,9 +3,13 @@ tso windows portable client
 ### 1. Initial start.
 Elements on the start screen: 
 'Select' listbox - the list of available game worlds.
+
 'login/password' - the input boxes for login/password typing
+
 'Start' - the button for start connection
+
 'Ready' - the info line with current status of client. To start the connection, wait for the message shown on the screen - можно играть'. If the message is different, the client will not start.
+
 ![start_win](https://user-images.githubusercontent.com/76757249/177488543-8ba0fb9e-eaaf-491c-9bdf-a5a3a5de53f2.png)
 
 After starting the client, a window will appear asking if you want to use UbiCollect for collectible item highlights. Only click **Yes** (left button) if Ubicollect is running. If you do not know what it is, press **No** (right button).  
@@ -15,13 +19,18 @@ After starting the client, a window will appear asking if you want to use UbiCol
 ### 2. After start.
 Below are some connection error screens.
 _Wrong login/password_
+
 ![logpass](https://user-images.githubusercontent.com/76757249/177497246-8e4c0589-eb2a-48d5-b7cb-bb20d61c087a.png)
+
 This error can assign when 2FA is enabled.  Client does not support 2FA, you need to switch off it.
 
 _Empty response_ 
+
 ![image](https://user-images.githubusercontent.com/76757249/177489927-4445f5d5-e57c-49ef-88a6-97a83df91794.png)
+
 or 
 _5 unsuccessful authorization attempts_
+
 ![image](https://user-images.githubusercontent.com/76757249/177493405-af398920-a1b1-4f15-95ca-56ca9d5197b0.png)
 
 The reasons for these errors can be different: weak connection, maintenance work, temporary problems with the game servers etc. Try again after a few minutes.
