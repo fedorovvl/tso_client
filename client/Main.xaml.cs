@@ -313,6 +313,8 @@ namespace client
                     tsoUrl.Set("s", "http://127.0.0.1:9000/https://ubistatic-a.akamaihd.net/0018/live");
                 if (!string.IsNullOrEmpty(lang))
                     tsoUrl.Set("lang", lang);
+                if (cmd["window"] != null)
+                    tsoUrl.Set("window", cmd["window"]);
                 string tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString().Replace("bb=https", "bb=http").Replace(":443", ""), Servers._servers[_region].domain);
                 XmlDocument Doc = new XmlDocument();
                 XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
