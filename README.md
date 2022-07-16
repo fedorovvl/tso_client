@@ -49,6 +49,8 @@ For ex.,  `client.exe --lang de` allows to play with German on EU server
 
 `client.exe --autologin --collect` - same as the previous one, but with collectible item highlights. **Warning!**  UbiCollect should be running!
 
+`client.exe --window [fullscreen|maximized]` - start game fullscreen or in maximized window
+
 Read more at https://settlersonlinewiki.eu/en/playing-on-unity-by-the-client/
 
 
