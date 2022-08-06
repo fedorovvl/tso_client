@@ -163,6 +163,12 @@
     <Resource Include="files\login.png" />
     <Resource Include="files\unchecked.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="files\back_en.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="files\login_en.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="TSO Game Client" Height="401" Icon="files/icon.ico" Width="256" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="true">
     <Window.Background>
-        <ImageBrush ImageSource="files/back.png" />
+        <ImageBrush x:Name="mainback" ImageSource="files/back.png" />
     </Window.Background>
     <Window.Resources>
         <SolidColorBrush x:Key="NormalBrushScrollBar" Color="#ccc"/>
@@ -244,9 +244,9 @@
         
     </Window.Resources>
     <Grid Focusable="false">
-        <TextBox Height="20" HorizontalAlignment="Left" Margin="38,162,0,0" GotFocus="login_GotFocus" Text="Электронный адрес" TextAlignment="Center" LostFocus="login_LostFocus" PreviewMouseDown="password_MouseDown" Name="login" VerticalAlignment="Top" Width="171" Background="#00000000" BorderBrush="#00000000" Foreground="White" Visibility="Visible" BorderThickness="0" />
+        <TextBox Height="20" HorizontalAlignment="Left" Margin="38,162,0,0" GotFocus="login_GotFocus" Text="{Binding langLogin, Mode=OneWay}" TextAlignment="Center" LostFocus="login_LostFocus" PreviewMouseDown="password_MouseDown" Name="login" VerticalAlignment="Top" Width="171" Background="#00000000" BorderBrush="#00000000" Foreground="White" Visibility="Visible" BorderThickness="0" />
         <PasswordBox Background="#00000000" BorderBrush="#00000000" KeyUp="password_KeyUp" BorderThickness="0" LostFocus="password_LostFocus" GotFocus="password_GotFocus" HorizontalContentAlignment="Center"  Foreground="White" Height="20" HorizontalAlignment="Left" Margin="38,209,0,0" Name="password" VerticalAlignment="Top" Visibility="Visible" Width="170" />
-        <TextBox Background="#00000000" BorderBrush="#00000000" BorderThickness="0" TextAlignment="Center" Text="Пароль" PreviewMouseDown="pwd_PreviewMouseDown"  Foreground="White" Height="20" HorizontalAlignment="Left" Margin="38,209,0,0" Name="pwd" VerticalAlignment="Top" Visibility="Visible" Width="170" />
+        <TextBox Background="#00000000" BorderBrush="#00000000" BorderThickness="0" TextAlignment="Center" Text="{Binding langPass, Mode=OneWay}" PreviewMouseDown="pwd_PreviewMouseDown"  Foreground="White" Height="20" HorizontalAlignment="Left" Margin="38,209,0,0" Name="pwd" VerticalAlignment="Top" Visibility="Visible" Width="170" />
         <Button Height="44" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Click="butt_Click_1"  Name="butt" HorizontalAlignment="Left" Margin="29,272,0,0" VerticalAlignment="Top" Width="196" Background="#00000000" Foreground="White" BorderThickness="0" />
         <Button Height="10" HorizontalAlignment="Left" Margin="176,330,0,0" Name="button1" VerticalAlignment="Top" Width="38" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Click="butt_Click" Background="#00000000" Foreground="White" BorderThickness="0" />
         <TextBlock Height="23" HorizontalAlignment="Left" Margin="32,326,0,0" Name="error" FontWeight="Bold" Foreground="WhiteSmoke" Text="" VerticalAlignment="Top" Width="139" />
@@ -297,8 +297,8 @@
             <ComboBoxItem Tag="it" Uid="12" Content="Italia"/>
             <ComboBoxItem Tag="es" Uid="13" Content="México"/>
             <ComboBoxItem Tag="nl" Uid="14" Content="Nederland"/>
-            <ComboBoxItem Tag="es" Uid="15" Content="Perú"/>
-            <ComboBoxItem Tag="ru" Uid="16" Content="Российская Федерация" IsSelected="True"/>
+            <ComboBoxItem Tag="es" Uid="15" Content="Perú"  IsSelected="True"/>
+            <ComboBoxItem Tag="ru" Uid="16" Content="Российская Федерация"/>
             <ComboBoxItem Tag="pl" Uid="17" Content="Polska"/>
             <ComboBoxItem Tag="ro" Uid="18" Content="România"/>
             <ComboBoxItem Tag="us" Uid="19" Content="United States"/>

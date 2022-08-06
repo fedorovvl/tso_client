@@ -42,6 +42,77 @@ namespace client
             {  "el", "el-gr" },
             {  "ro", "ro-ro" }
         };
+
+        public static Dictionary<string, Dictionary<string, string>> trans = new Dictionary<string, Dictionary<string, string>>()
+        {
+            { "ru-ru", new Dictionary<string, string>() {
+                { "login", "Электронный адрес" },
+                { "password", "Пароль" },
+                { "letsplay", "можно играть" },
+                { "checking", "Проверяем клиент" },
+                { "downloading", "Скачиваем.." },
+                { "emptypass", "Пароль пуст." },
+                { "emptylogin", "Логин пуст." },
+                { "collect", "Подсветка" },
+                { "collecttip", "Использовать подсветку коллекций?\nНажимайте \"да\" только если у вас запущен UbiCollect.exe!" },
+                { "tryauth", "Попытка авторизации #" },
+                { "nomoretry", "Хватит пытаться :)" },
+                { "ubiauth", "Авторизация ubi" },
+                { "authok", "Успешная авторизация " },
+                { "uplayauth", "Авторизация uplay" },
+                { "getplay", "Запрос страницы play" },
+                { "cookieerr", "Не смогли получить печеньки :'(" },
+                { "paramserr", "Ошибка получения параметров" },
+                { "autherr", "Ошибка авторизации. ответ - " },
+                { "loginerr", "Логин/пароль неверны." },
+                { "captchaerr", "Поймали капчу.. попробуйте позже." },
+                { "uplayerr", "UPLAY не отвечает." },
+                { "authex", "Ошибка на странице авторизации." },
+                { "emptyauth", "Хм, пустой ответ.. странно " },
+                { "getparams", "Получаем параметры." },
+                { "tsourlerr", "Ошибка получения кода." },
+                { "nick", "Ник игрока - " },
+                { "launch", "Запускаем клиент..." },
+             }
+            },
+            { "en-uk", new Dictionary<string, string>() {
+                { "login", "E-mail" },
+                { "password", "Password" },
+                { "letsplay", "lets play" },
+                { "checking", "Cheking client" },
+                { "downloading", "Downloading.." },
+                { "emptypass", "Empty password." },
+                { "emptylogin", "Empty login." },
+                { "collect", "Highlight" },
+                { "collecttip", "Want to use highlight feature?\nPress \"yes\" only after start UbiCollect.exe!" },
+                { "tryauth", "Login attempt #" },
+                { "nomoretry", "Enough.. i'm tired :)" },
+                { "ubiauth", "Authentication ubi" },
+                { "authok", "Successful authentication " },
+                { "uplayauth", "Authentication uplay" },
+                { "getplay", "Request play page" },
+                { "cookieerr", "Can't grab cookies :'(" },
+                { "paramserr", "Get params error" },
+                { "autherr", "Authentication error. response - " },
+                { "loginerr", "E-mail or password not correct." },
+                { "captchaerr", "Got Captha.. try later." },
+                { "uplayerr", "UPLAY not responding." },
+                { "authex", "Auth page exception." },
+                { "emptyauth", "Empty response.. thats wierd " },
+                { "getparams", "Get params." },
+                { "tsourlerr", "Error getting tsoUrl param." },
+                { "nick", "Nickname - " },
+                { "launch", "Launch client..." },
+              }
+            }
+        };
+
+        public static string getTrans(string value)
+        {
+            if (!trans.ContainsKey(_langs[Main._region]))
+                return trans["en-uk"][value];
+            return trans[_langs[Main._region]][value];
+        }
     }
 
     class Server

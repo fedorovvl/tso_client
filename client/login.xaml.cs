@@ -34,6 +34,14 @@ namespace client
         public login()
         {
             InitializeComponent();
+            if (Main._region != "ru")
+            {
+                loginback.ImageSource = Main.Convert(Properties.Resources.login_en);
+            }
+            else
+            {
+                loginback.ImageSource = Main.Convert(Properties.Resources.login);
+            }
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
             System.Net.ServicePointManager.ServerCertificateValidationCallback
                 = delegate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -101,10 +109,10 @@ namespace client
                 CookieCollection _cookies = new CookieCollection();
                 if (attepts > 5)
                 {
-                    AddToRich("Хватит пытаться :)");
+                    AddToRich(Servers.getTrans("nomoretry"));
                     return;
                 }
-                AddToRich("Попытка авторизации #" + attepts++);
+                AddToRich(Servers.getTrans("tryauth") + attepts++);
                 post = new PostSubmitter
                 {
                     Url = "https://public-ubiservices.ubi.com/v3/profiles/sessions",
@@ -116,10 +124,10 @@ namespace client
                 post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
                 post.HeaderItems.Add("GenomeId", "978da00d-2533-4af4-a550-3ba09289084e");
                 res = post.Post(ref _cookies);
-                AddToRich("Авторизация ubi");
+                AddToRich(Servers.getTrans("ubiauth"));
                 if (res.Contains("sessionKey"))
                 {
-                    AddToRich("Успешная авторизация ");
+                    AddToRich(Servers.getTrans("authok"));
                     UbiSession sessionData = Deserialize<UbiSession>(res);
                     post = new PostSubmitter
                     {
@@ -133,13 +141,13 @@ namespace client
                     post.PostItems.Add("expiration", unixTimestamp.ToString());
                     post.PostItems.Add("undefined", sessionData.sessionId);
                     post.PostItems.Add("activated", "true");
-                    AddToRich("Авторизация uplay");
+                    AddToRich(Servers.getTrans("uplayauth"));
                     res = post.Post(ref _cookies);
                     if (Main.debug)
                         File.AppendAllText("debug.txt", "recieved "+ res + "\n");
                     if (res.Contains("OKAY"))
                     {
-                        AddToRich("Успешная авторизация ");
+                        AddToRich(Servers.getTrans("authok"));
                         post = new PostSubmitter
                         {
                             Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].main),
@@ -152,16 +160,16 @@ namespace client
                             Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].play),
                             Type = PostSubmitter.PostTypeEnum.Get
                         };
-                        AddToRich("Запрос страницы play");
+                        AddToRich(Servers.getTrans("getplay"));
                         string token = post.Post(ref _cookies);
                         if (!token.Contains("thisProgram"))
                         {
-                            AddToRich("Не смогли получить печеньки :'(");
+                            AddToRich(Servers.getTrans("cookieerr"));
                             return;
                         }
                         if (!PrepareFlash(token))
                         {
-                            AddToRich("Ошибка получения параметров");
+                            AddToRich(Servers.getTrans("paramserr"));
                             MainAuth();
                         }
                         foreach (Cookie cook in _cookies)
@@ -190,7 +198,7 @@ namespace client
                 string msg = e.Message;
                 if (Main.debug)
                     msg += e.StackTrace;
-                AddToRich("Ошибка авторизации. ответ - " + msg);
+                AddToRich(Servers.getTrans("autherr") + msg);
                 MainAuth();
             }
             return;
@@ -200,39 +208,39 @@ namespace client
         {
             if (res.Contains("FAILED"))
             {
-                AddToRich("Логин/пароль неверны.");
+                AddToRich(Servers.getTrans("loginerr"));
                 return;
             }
             if (res.Contains(" CAPCHA "))
             {
-                AddToRich("Поймали капчу.. попробуйте позже.");
+                AddToRich(Servers.getTrans("captchaerr"));
                 return;
             }
             if (res.Contains("UPLAY"))
             {
-                AddToRich("UPLAY не отвечает.");
+                AddToRich(Servers.getTrans("uplayerr"));
                 MainAuth();
             }
             if (res.Contains("EXCEPTION"))
             {
-                AddToRich("Ошибка на странице авторизации.");
+                AddToRich(Servers.getTrans("authex"));
                 MainAuth();
             }
 
             if (res.Trim() == "")
             {
-                AddToRich("Хм, пустой ответ.. странно ");
+                AddToRich(Servers.getTrans("emptyauth"));
             }
-            else AddToRich("Ошибка авторизации. ответ - " + res);
+            else AddToRich(Servers.getTrans("autherr") + res);
         }
 
         public bool PrepareFlash(string htmlPage)
         {
-            AddToRich("Получаем параметры.");
+            AddToRich(Servers.getTrans("getparams"));
             Match match = Regex.Match(htmlPage, "thisProgram: \"(?<tso>.*)\"", RegexOptions.IgnoreCase);
             if (!match.Success)
             {
-                AddToRich("Ошибка получения кода.");
+                AddToRich(Servers.getTrans("tsourlerr"));
                 return false;
             }
             else
@@ -244,9 +252,9 @@ namespace client
             if (match.Success)
             {
                 nickName = match.Groups[1].Value.Trim();
-                AddToRich("Ник игрока - " + nickName);
+                AddToRich(Servers.getTrans("nick") + nickName);
             }
-            AddToRich("Запускаем клиент...");
+            AddToRich(Servers.getTrans("launch"));
             Thread.Sleep(1000);
             Dispatcher.BeginInvoke(new ThreadStart(delegate
             {

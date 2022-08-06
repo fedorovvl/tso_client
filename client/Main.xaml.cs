@@ -8,13 +8,16 @@ using System.Xml;
 using System.Threading;
 using System.Net;
 using System.Web;
+using System.Drawing;
+using System.Windows.Media.Imaging;
+using System.ComponentModel;
 
 namespace client
 {
     /// <summary>
     /// Логика взаимодействия для Window1.xaml
     /// </summary>
-    public partial class Main : Window
+    public partial class Main : Window, INotifyPropertyChanged
     {
         public static bool logging = true;
         public static bool debug = false;
@@ -25,9 +28,27 @@ namespace client
         public static string lang = string.Empty;
         public static bool auto = false;
         public static CookieCollection _cookies;
-        private string _region = string.Empty;
+        public static string _region = string.Empty;
         private int _regionUid;
         public static Arguments cmd;
+        private string _langLogin;
+        private string _langPass;
+        public string langLogin
+        {
+            get { return _langLogin; }
+            set { _langLogin = value; OnPropertyChanged("langLogin"); }
+        }
+        public string langPass
+        {
+            get { return _langPass; }
+            set { _langPass = value; OnPropertyChanged("langPass"); }
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public Main()
         {
@@ -35,6 +56,7 @@ namespace client
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
             System.Net.ServicePointManager.Expect100Continue = false;
             InitializeComponent();
+            this.DataContext = this;
             ReadSettings();
             cmd = new Arguments(Environment.GetCommandLineArgs());
             if (cmd["collect"] != null)
@@ -97,13 +119,13 @@ namespace client
         {
             if (skipCheck)
             {
-                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "можно играть"; butt.IsEnabled = true; }));
+                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
                 return;
             }
             try
             {
                 PostSubmitter post;
-                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Проверяем клиент"; }));
+                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
                 if (!Directory.Exists(ClientDirectory))
                 {
                     Directory.CreateDirectory(ClientDirectory);
@@ -120,7 +142,7 @@ namespace client
                     }
                 }
                 catch (Exception e) { }
-                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Проверяем клиент"; }));
+                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
                 string chksum = string.Empty;
                 bool needDownload = false;
                 if (File.Exists(System.IO.Path.Combine(ClientDirectory, "client.swf")))
@@ -140,11 +162,11 @@ namespace client
                 }
                 if (needDownload)
                 {
-                    Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Скачиваем.."; }));
+                    Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
                     byte[] client = DownloadFile("https://sirris.tsomaps.com/client.swf");
                     File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
                 }
-                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "можно играть"; butt.IsEnabled = true; }));
+                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
                 return;
             } catch (Exception e)
             {
@@ -182,7 +204,7 @@ namespace client
                             Buffer.BlockCopy(buffer, 0, Buf, 0, bytesRead);
                             resultArray.AddRange(Buf);
                             bytesProcessed += bytesRead;
-                            Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = string.Format("Скачиваем.. {0}%", (100 * bytesProcessed / bytesTotal).ToString()); }));
+                            Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = string.Format(Servers.getTrans("downloading") + " {0}%", (100 * bytesProcessed / bytesTotal).ToString()); }));
                         } while (bytesRead > 0);
                     }
                 }
@@ -256,7 +278,7 @@ namespace client
 
         private void password_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if((sender as TextBox).Text == "Электронный адрес" || (sender as TextBox).Text == "Пароль")
+            if((sender as TextBox).Text == Servers.getTrans("login") || (sender as TextBox).Text == Servers.getTrans("password"))
             {
                 (sender as TextBox).Text = "";
             }
@@ -265,16 +287,16 @@ namespace client
 
         private void login_LostFocus(object sender, RoutedEventArgs e)
         {
-            if ((sender as TextBox).Text == "") (sender as TextBox).Text = "Электронный адрес";
+            if ((sender as TextBox).Text == "") (sender as TextBox).Text = Servers.getTrans("login");
         }
 
         private void butt_Click_1(object sender, RoutedEventArgs e)
         {
             string error_msg = string.Empty;
-            if (string.IsNullOrEmpty(login.Text.Trim()) || login.Text.Trim() == "Электронный адрес") error_msg = "Логин пуст.";
-            if (string.IsNullOrEmpty(password.Password.Trim()) || password.Password.Trim() == "Пароль")
+            if (string.IsNullOrEmpty(login.Text.Trim()) || login.Text.Trim() == Servers.getTrans("login")) error_msg = Servers.getTrans("emptylogin");
+            if (string.IsNullOrEmpty(password.Password.Trim()) || password.Password.Trim() == Servers.getTrans("password"))
             {
-                if (string.IsNullOrEmpty(error_msg)) error_msg = "Пароль пуст.";
+                if (string.IsNullOrEmpty(error_msg)) error_msg = Servers.getTrans("emptypass");
             }
             if (!string.IsNullOrEmpty(error_msg))
             {
@@ -295,7 +317,7 @@ namespace client
             bool collections = false;
             if (!auto)
             {
-                MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("                  Использовать подсветку коллекций?\nНажимайте \"да\" только если у вас запущен UbiCollect.exe!", "Подсветка", System.Windows.MessageBoxButton.YesNo);
+                MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("                  " + Servers.getTrans("collecttip"), Servers.getTrans("collect"), System.Windows.MessageBoxButton.YesNo);
                 if (messageBoxResult == MessageBoxResult.Yes)
                 {
                     collections = true;
@@ -357,7 +379,7 @@ namespace client
 
         private void login_GotFocus(object sender, RoutedEventArgs e)
         {
-            if ((sender as TextBox).Text == "Электронный адрес" || (sender as TextBox).Text == "Пароль")
+            if ((sender as TextBox).Text == Servers.getTrans("login") || (sender as TextBox).Text == Servers.getTrans("password"))
             {
                 (sender as TextBox).Text = "";
             }
@@ -376,6 +398,26 @@ namespace client
         {
             _region = ((sender as ComboBox).SelectedItem as ComboBoxItem).Tag.ToString();
             _regionUid = int.Parse(((sender as ComboBox).SelectedItem as ComboBoxItem).Uid);
+            if (_regionUid != 16)
+            {
+                mainback.ImageSource = Convert(Properties.Resources.back_en);
+            } else
+            {
+                mainback.ImageSource = Convert(Properties.Resources.back);
+            }
+            langLogin = Servers.getTrans("login");
+            langPass = Servers.getTrans("password");
+        }
+        public static BitmapImage Convert(Bitmap src)
+        {
+            MemoryStream ms = new MemoryStream();
+            ((System.Drawing.Bitmap)src).Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            BitmapImage image = new BitmapImage();
+            image.BeginInit();
+            ms.Seek(0, SeekOrigin.Begin);
+            image.StreamSource = ms;
+            image.EndInit();
+            return image;
         }
     }
 }

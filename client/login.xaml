@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="TSO Game Client" Icon="files/icon.ico" Height="304" Width="382" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="true">
     <Window.Background>
-        <ImageBrush ImageSource="files/login.png" />
+        <ImageBrush x:Name="loginback" ImageSource="files/login.png" />
     </Window.Background>
     <Window.Resources>
         <LinearGradientBrush x:Key="GrayBlueGradientBrush" StartPoint="0,0" EndPoint="1,1"/>
