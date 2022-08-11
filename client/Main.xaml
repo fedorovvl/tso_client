@@ -241,7 +241,7 @@
             <Style.Triggers>
             </Style.Triggers>
         </Style>
-        
+
     </Window.Resources>
     <Grid Focusable="false">
         <TextBox Height="20" HorizontalAlignment="Left" Margin="38,162,0,0" GotFocus="login_GotFocus" Text="{Binding langLogin, Mode=OneWay}" TextAlignment="Center" LostFocus="login_LostFocus" PreviewMouseDown="password_MouseDown" Name="login" VerticalAlignment="Top" Width="171" Background="#00000000" BorderBrush="#00000000" Foreground="White" Visibility="Visible" BorderThickness="0" />
@@ -307,5 +307,6 @@
             <ComboBoxItem Tag="en" Uid="22" Content="United Kingdom"/>
             <ComboBoxItem Tag="en" Uid="23" Content="European English"/>
         </ComboBox>
+        <Label Content="{Binding appversion, Mode=OneWay}" HorizontalAlignment="Left" Margin="170,129,0,0" HorizontalContentAlignment="Right" VerticalAlignment="Top" Height="23" Width="51" FontSize="9" Foreground="#FF9E8B56" FontWeight="Bold"/>
     </Grid>
 </Window>

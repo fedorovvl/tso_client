@@ -11,6 +11,7 @@ using System.Web;
 using System.Drawing;
 using System.Windows.Media.Imaging;
 using System.ComponentModel;
+using AutoUpdaterDotNET;
 
 namespace client
 {
@@ -33,6 +34,10 @@ namespace client
         public static Arguments cmd;
         private string _langLogin;
         private string _langPass;
+        public string appversion
+        {
+            get { return "1.4.7.0"; }
+        }
         public string langLogin
         {
             get { return _langLogin; }
@@ -57,8 +62,13 @@ namespace client
             System.Net.ServicePointManager.Expect100Continue = false;
             InitializeComponent();
             this.DataContext = this;
-            ReadSettings();
+            Loaded += Main_Loaded;
+        }
+
+        private void Main_Loaded(object sender, RoutedEventArgs e)
+        {
             cmd = new Arguments(Environment.GetCommandLineArgs());
+            ReadSettings();
             if (cmd["collect"] != null)
                 collect = true;
             if (cmd["skip"] != null)
@@ -117,6 +127,10 @@ namespace client
 
         public void checkVersion()
         {
+            AutoUpdater.InstalledVersion = new Version(appversion);
+            AutoUpdater.ShowSkipButton = true;
+            AutoUpdater.OpenDownloadPage = true;
+            AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
             if (skipCheck)
             {
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -141,7 +155,7 @@ namespace client
                         Directory.Delete(tmpDir, true);
                     }
                 }
-                catch (Exception e) { }
+                catch { }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
                 string chksum = string.Empty;
                 bool needDownload = false;
@@ -228,31 +242,25 @@ namespace client
             {
                 try
                 {
-                    Dispatcher.BeginInvoke(new ThreadStart(delegate
+                    string[] settings = new Crypt().Decrypt(File.ReadAllText("settings.dat"), true).Split(new[] { '|' }, StringSplitOptions.None);
+                    if (!string.IsNullOrEmpty(settings[0]) && cmd["login"] == null) login.Text = settings[0];
+                    if (!string.IsNullOrEmpty(settings[1]) && cmd["password"] == null) password.Password = settings[1];
+                    if (!string.IsNullOrEmpty(settings[1])) pwd.Visibility = System.Windows.Visibility.Collapsed;
+                    chatEnable.IsChecked = bool.Parse(settings[2]);
+                    if (settings.Length > 3)
                     {
-                        string[] settings = new Crypt().Decrypt(File.ReadAllText("settings.dat"), true).Split(new[] { '|' }, StringSplitOptions.None);
-                        if(!string.IsNullOrEmpty(settings[0]) && cmd["login"] == null) login.Text = settings[0];
-                        if (!string.IsNullOrEmpty(settings[1]) && cmd["password"] == null) password.Password = settings[1];
-                        if (!string.IsNullOrEmpty(settings[1])) pwd.Visibility = System.Windows.Visibility.Collapsed;
-                        chatEnable.IsChecked = bool.Parse(settings[2]);
-                        if (settings.Length > 3)
+                        try
                         {
-                            try
+                            logging = false;
+                            if (settings.Length > 5)
                             {
-                                logging = false;
-                                if (settings.Length > 5)
-                                {
-                                    _regionUid = string.IsNullOrEmpty(settings[5]) ? 16 : int.Parse(settings[5].Trim());
-                                    Dispatcher.BeginInvoke(new ThreadStart(delegate
-                                    {
-                                        region_list.SelectedIndex = _regionUid;
-                                        _region = (region_list.SelectedItem as ComboBoxItem).Tag.ToString();
-                                    }));
-                                }
+                                _regionUid = string.IsNullOrEmpty(settings[5]) ? 16 : int.Parse(settings[5].Trim());
+                                region_list.SelectedIndex = _regionUid;
+                                _region = (region_list.SelectedItem as ComboBoxItem).Tag.ToString();
                             }
-                            catch { }
                         }
-                    }));
+                        catch { }
+                    }
                 }
                 catch
                 {

@@ -50,6 +50,12 @@ namespace client
                 };
             System.Net.ServicePointManager.Expect100Continue = false;
             Closing += new System.ComponentModel.CancelEventHandler(login_Closing);
+            Loaded += Login_Loaded;
+            
+        }
+
+        private void Login_Loaded(object sender, RoutedEventArgs e)
+        {
             authlogin = new Thread(MainAuth) { IsBackground = true };
             authlogin.Start();
         }
