@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="TSO Game Client" Icon="files/icon.ico" Height="304" Width="382" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="true">
     <Window.Background>
-        <ImageBrush x:Name="loginback" ImageSource="files/login.png" />
+        <ImageBrush ImageSource="files/login.png" />
     </Window.Background>
     <Window.Resources>
         <LinearGradientBrush x:Key="GrayBlueGradientBrush" StartPoint="0,0" EndPoint="1,1"/>
@@ -21,6 +21,8 @@
     </Window.Resources>
     <Grid>
         <RichTextBox Height="165" TextChanged="richTextBox1_TextChanged" HorizontalAlignment="Left" Margin="33,79,0,0" VerticalScrollBarVisibility="Hidden" Name="richTextBox1" VerticalAlignment="Top" Width="315" Background="#00000000" BorderThickness="0" BorderBrush="#00000000" IsReadOnly="True" />
+        <TextBlock x:Name="langExit" HorizontalAlignment="Left" Margin="298,263,0,0" TextAlignment="Center" TextWrapping="Wrap" Text="Close" VerticalAlignment="Top" Width="57" Foreground="#FFDF7741" TextDecorations="Underline" FontSize="16" Height="17" FontFamily="Arial"/>
         <Button Content="Button" Height="14" HorizontalAlignment="Left" Margin="298,266,0,0" Cursor="Hand" Click="Button_Click" VerticalAlignment="Top" Width="59" />
+        <Label x:Name="langAuth" Content="Authentication" HorizontalAlignment="Left" Padding="0" HorizontalContentAlignment="Center" Margin="63,24,0,0" VerticalAlignment="Top" Width="251" Foreground="#FFE28D54" FontFamily="Times New Roman" FontSize="24" FontStyle="Italic" Height="32"/>
     </Grid>
 </Window>

@@ -8,10 +8,9 @@ using System.Xml;
 using System.Threading;
 using System.Net;
 using System.Web;
-using System.Drawing;
-using System.Windows.Media.Imaging;
 using System.ComponentModel;
 using AutoUpdaterDotNET;
+using System.Reflection;
 
 namespace client
 {
@@ -23,7 +22,6 @@ namespace client
         public static bool logging = true;
         public static bool debug = false;
         public static string version = string.Empty;
-        public static bool staticFiles = false;
         public static bool collect = false;
         public static bool skipCheck = false;
         public static string lang = string.Empty;
@@ -34,9 +32,12 @@ namespace client
         public static Arguments cmd;
         private string _langLogin;
         private string _langPass;
+        private string _langRun;
+        private string _langExit;
+        private string _langRemember;
         public string appversion
         {
-            get { return "1.4.7.0"; }
+            get { return "1.4.8.0"; }
         }
         public string langLogin
         {
@@ -47,6 +48,21 @@ namespace client
         {
             get { return _langPass; }
             set { _langPass = value; OnPropertyChanged("langPass"); }
+        }
+        public string langRun
+        {
+            get { return _langRun; }
+            set { _langRun = value; OnPropertyChanged("langRun"); }
+        }
+        public string langExit
+        {
+            get { return _langExit; }
+            set { _langExit = value; OnPropertyChanged("langExit"); }
+        }
+        public string langRemember
+        {
+            get { return _langRemember; }
+            set { _langRemember = value; OnPropertyChanged("langRemember"); }
         }
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -59,15 +75,30 @@ namespace client
         {
  
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             System.Net.ServicePointManager.Expect100Continue = false;
             InitializeComponent();
             this.DataContext = this;
             Loaded += Main_Loaded;
         }
-
+        Assembly AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            if (args.Name.Contains("AutoUpdater"))
+            {
+                Assembly assembly = null;
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("client.AutoUpdater.NET.dll"))
+                {
+                    byte[] buffer = new BinaryReader(stream).ReadBytes((int)stream.Length);
+                    assembly = Assembly.Load(buffer);
+                    return assembly;
+                }
+            }
+            return null;
+        }
         private void Main_Loaded(object sender, RoutedEventArgs e)
         {
             cmd = new Arguments(Environment.GetCommandLineArgs());
+
             ReadSettings();
             if (cmd["collect"] != null)
                 collect = true;
@@ -196,10 +227,6 @@ namespace client
             List<byte> resultArray = new List<byte>();
             try
             {
-                var webProxy = WebProxy.GetDefaultProxy();
-                webProxy.UseDefaultCredentials = true;
-                WebRequest.DefaultWebProxy = webProxy;
-                WebRequest.DefaultWebProxy.Credentials = CredentialCache.DefaultNetworkCredentials;
                 WebRequest request = WebRequest.Create(remoteFilename);
                 request.Method = "GET";
                 if (request != null)
@@ -325,7 +352,7 @@ namespace client
             bool collections = false;
             if (!auto)
             {
-                MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("                  " + Servers.getTrans("collecttip"), Servers.getTrans("collect"), System.Windows.MessageBoxButton.YesNo);
+                MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show(Servers.getTrans("collecttip"), Servers.getTrans("collect"), System.Windows.MessageBoxButton.YesNo);
                 if (messageBoxResult == MessageBoxResult.Yes)
                 {
                     collections = true;
@@ -359,10 +386,6 @@ namespace client
                     App.Current.Shutdown(1);
                 }
                 catch { }
-            }
-            else
-            {
-
             }
             this.Visibility = System.Windows.Visibility.Visible;
         }
@@ -406,26 +429,11 @@ namespace client
         {
             _region = ((sender as ComboBox).SelectedItem as ComboBoxItem).Tag.ToString();
             _regionUid = int.Parse(((sender as ComboBox).SelectedItem as ComboBoxItem).Uid);
-            if (_regionUid != 16)
-            {
-                mainback.ImageSource = Convert(Properties.Resources.back_en);
-            } else
-            {
-                mainback.ImageSource = Convert(Properties.Resources.back);
-            }
             langLogin = Servers.getTrans("login");
             langPass = Servers.getTrans("password");
-        }
-        public static BitmapImage Convert(Bitmap src)
-        {
-            MemoryStream ms = new MemoryStream();
-            ((System.Drawing.Bitmap)src).Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-            BitmapImage image = new BitmapImage();
-            image.BeginInit();
-            ms.Seek(0, SeekOrigin.Begin);
-            image.StreamSource = ms;
-            image.EndInit();
-            return image;
+            langRun = Servers.getTrans("run");
+            langExit = Servers.getTrans("exit");
+            langRemember = Servers.getTrans("remember");
         }
     }
 }

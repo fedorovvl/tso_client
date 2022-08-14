@@ -12,6 +12,8 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Runtime.Serialization.Json;
 using System.Runtime.Serialization;
+using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace client
 {
@@ -34,14 +36,6 @@ namespace client
         public login()
         {
             InitializeComponent();
-            if (Main._region != "ru")
-            {
-                loginback.ImageSource = Main.Convert(Properties.Resources.login_en);
-            }
-            else
-            {
-                loginback.ImageSource = Main.Convert(Properties.Resources.login);
-            }
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
             System.Net.ServicePointManager.ServerCertificateValidationCallback
                 = delegate (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
@@ -51,11 +45,12 @@ namespace client
             System.Net.ServicePointManager.Expect100Continue = false;
             Closing += new System.ComponentModel.CancelEventHandler(login_Closing);
             Loaded += Login_Loaded;
-            
         }
 
         private void Login_Loaded(object sender, RoutedEventArgs e)
         {
+            langExit.Text = Servers.getTrans("exit");
+            langAuth.Content = Servers.getTrans("auth");
             authlogin = new Thread(MainAuth) { IsBackground = true };
             authlogin.Start();
         }
@@ -130,7 +125,7 @@ namespace client
                 post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
                 post.HeaderItems.Add("GenomeId", "978da00d-2533-4af4-a550-3ba09289084e");
                 res = post.Post(ref _cookies);
-                AddToRich(Servers.getTrans("ubiauth"));
+                AddToRich(Servers.getTrans("auth") + " ubi");
                 if (res.Contains("sessionKey"))
                 {
                     AddToRich(Servers.getTrans("authok"));
@@ -147,7 +142,7 @@ namespace client
                     post.PostItems.Add("expiration", unixTimestamp.ToString());
                     post.PostItems.Add("undefined", sessionData.sessionId);
                     post.PostItems.Add("activated", "true");
-                    AddToRich(Servers.getTrans("uplayauth"));
+                    AddToRich(Servers.getTrans("auth") + " uplay");
                     res = post.Post(ref _cookies);
                     if (Main.debug)
                         File.AppendAllText("debug.txt", "recieved "+ res + "\n");

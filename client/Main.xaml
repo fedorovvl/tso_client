@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="TSO Game Client" Height="401" Icon="files/icon.ico" Width="256" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="true">
     <Window.Background>
-        <ImageBrush x:Name="mainback" ImageSource="files/back.png" />
+        <ImageBrush ImageSource="files/back.png" />
     </Window.Background>
     <Window.Resources>
         <SolidColorBrush x:Key="NormalBrushScrollBar" Color="#ccc"/>
@@ -247,8 +247,10 @@
         <TextBox Height="20" HorizontalAlignment="Left" Margin="38,162,0,0" GotFocus="login_GotFocus" Text="{Binding langLogin, Mode=OneWay}" TextAlignment="Center" LostFocus="login_LostFocus" PreviewMouseDown="password_MouseDown" Name="login" VerticalAlignment="Top" Width="171" Background="#00000000" BorderBrush="#00000000" Foreground="White" Visibility="Visible" BorderThickness="0" />
         <PasswordBox Background="#00000000" BorderBrush="#00000000" KeyUp="password_KeyUp" BorderThickness="0" LostFocus="password_LostFocus" GotFocus="password_GotFocus" HorizontalContentAlignment="Center"  Foreground="White" Height="20" HorizontalAlignment="Left" Margin="38,209,0,0" Name="password" VerticalAlignment="Top" Visibility="Visible" Width="170" />
         <TextBox Background="#00000000" BorderBrush="#00000000" BorderThickness="0" TextAlignment="Center" Text="{Binding langPass, Mode=OneWay}" PreviewMouseDown="pwd_PreviewMouseDown"  Foreground="White" Height="20" HorizontalAlignment="Left" Margin="38,209,0,0" Name="pwd" VerticalAlignment="Top" Visibility="Visible" Width="170" />
+        <Label Content="{Binding langRun, Mode=OneWay}" HorizontalAlignment="Left" Margin="29,269,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Top" Height="47" Width="196" Foreground="#FF635221" FontSize="24" FontFamily="Times New Roman" FontWeight="Bold"/>
         <Button Height="44" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Click="butt_Click_1"  Name="butt" HorizontalAlignment="Left" Margin="29,272,0,0" VerticalAlignment="Top" Width="196" Background="#00000000" Foreground="White" BorderThickness="0" />
-        <Button Height="10" HorizontalAlignment="Left" Margin="176,330,0,0" Name="button1" VerticalAlignment="Top" Width="38" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Click="butt_Click" Background="#00000000" Foreground="White" BorderThickness="0" />
+        <TextBlock HorizontalAlignment="Left" Margin="176,330,0,0" TextWrapping="Wrap" Padding="0" Text="{Binding langExit, Mode=OneWay}" TextAlignment="Center" VerticalAlignment="Top" Height="14" Width="49" FontFamily="Global Sans Serif" FontSize="11" TextDecorations="Underline" Foreground="#FF857647"/>
+        <Button Height="14" HorizontalAlignment="Left" Margin="176,330,0,0" Name="button1" VerticalAlignment="Top" Width="42" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Click="butt_Click" Background="#00000000" Foreground="White" BorderThickness="0" />
         <TextBlock Height="23" HorizontalAlignment="Left" Margin="32,326,0,0" Name="error" FontWeight="Bold" Foreground="WhiteSmoke" Text="" VerticalAlignment="Top" Width="139" />
         <CheckBox Width="24" Height="25" Margin="25,90,180,240" Name="SaveLogin" IsChecked="True">
             <CheckBox.Template>
@@ -278,7 +280,7 @@
                 </ControlTemplate>
             </CheckBox.Template>
         </CheckBox>
-        <ComboBox Height="20" MaxDropDownHeight="200" SelectedIndex="0" HorizontalAlignment="Left" Margin="127.768,114.9,0,0" Foreground="AliceBlue" x:Name="region_list" BorderThickness="0" BorderBrush="#00000000" VerticalAlignment="Top" Width="89.732" SelectionChanged="Region_list_SelectionChanged">
+        <ComboBox Height="22" MaxDropDownHeight="200" SelectedIndex="0" HorizontalAlignment="Left" Margin="72,245,0,0" Foreground="AliceBlue" x:Name="region_list" BorderThickness="0" BorderBrush="#00000000" VerticalAlignment="Top" Width="146" SelectionChanged="Region_list_SelectionChanged">
             <ComboBox.Background>
                 <ImageBrush ImageSource="files/input.png" />
             </ComboBox.Background>
@@ -297,7 +299,7 @@
             <ComboBoxItem Tag="it" Uid="12" Content="Italia"/>
             <ComboBoxItem Tag="es" Uid="13" Content="México"/>
             <ComboBoxItem Tag="nl" Uid="14" Content="Nederland"/>
-            <ComboBoxItem Tag="es" Uid="15" Content="Perú"  IsSelected="True"/>
+            <ComboBoxItem Tag="es" Uid="15" Content="Perú"/>
             <ComboBoxItem Tag="ru" Uid="16" Content="Российская Федерация"/>
             <ComboBoxItem Tag="pl" Uid="17" Content="Polska"/>
             <ComboBoxItem Tag="ro" Uid="18" Content="România"/>
@@ -305,8 +307,10 @@
             <ComboBoxItem Tag="es" Uid="20" Content="Uruguay"/>
             <ComboBoxItem Tag="es" Uid="21" Content="Venezuela"/>
             <ComboBoxItem Tag="en" Uid="22" Content="United Kingdom"/>
-            <ComboBoxItem Tag="en" Uid="23" Content="European English"/>
+            <ComboBoxItem Tag="en" Uid="23" Content="European English" IsSelected="True"/>
         </ComboBox>
-        <Label Content="{Binding appversion, Mode=OneWay}" HorizontalAlignment="Left" Margin="170,129,0,0" HorizontalContentAlignment="Right" VerticalAlignment="Top" Height="23" Width="51" FontSize="9" Foreground="#FF9E8B56" FontWeight="Bold"/>
+        <Label Content="{Binding appversion, Mode=OneWay}" HorizontalAlignment="Left" Margin="174,114,0,0" HorizontalContentAlignment="Left" VerticalAlignment="Top" Height="23" Width="51" FontSize="9" Foreground="#FF9E8B56" FontWeight="Bold"/>
+        <Image HorizontalAlignment="Left"  Height="102" Margin="10,0,0,0" VerticalAlignment="Top" Width="236" Source="files/logo.png"/>
+        <Label Content="{Binding langRemember, Mode=OneWay}" Padding="0" HorizontalAlignment="Left" Margin="65,117,0,0" VerticalAlignment="Top" Height="15" Width="60" Foreground="#FFD1BC7E" FontSize="11"/>
     </Grid>
 </Window>
