@@ -124,6 +124,7 @@ namespace client
                 post.HeaderItems.Add("Ubi-AppId", "39164658-8187-4bf4-b46c-375f68356e3b");
                 post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
                 post.HeaderItems.Add("GenomeId", "978da00d-2533-4af4-a550-3ba09289084e");
+                post.PostItems.Add("{\"rememberMe\":true}", string.Empty);
                 res = post.Post(ref _cookies);
                 AddToRich(Servers.getTrans("auth") + " ubi");
                 if (res.Contains("sessionKey"))
@@ -135,7 +136,7 @@ namespace client
                         Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].uplay),
                         Type = PostSubmitter.PostTypeEnum.Post
                     };
-                    DateTime dt = DateTime.Parse(sessionData.expiration).ToLocalTime();
+                    DateTime dt = DateTime.Parse(sessionData.expiration).ToUniversalTime();
                     Int32 unixTimestamp = (Int32)(dt.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                     post.PostItems.Add("id", sessionData.userId);
                     post.PostItems.Add("ticket", sessionData.ticket);
