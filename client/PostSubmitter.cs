@@ -139,7 +139,7 @@ namespace client
         {
 
             if (Main.debug)
-                File.AppendAllText("debug.txt", "begin request " + url + "\n");
+                File.AppendAllText("debug.txt", "begin request " + url + "\r\n");
             var result = string.Empty;
             try
             {
@@ -170,6 +170,8 @@ namespace client
                     }
                     var encoding = new UTF8Encoding();
                     var bytes = encoding.GetBytes(postData);
+                    if (Main.debug)
+                        File.AppendAllText("debug.txt", "request data " + postData + "\r\n");
                     request.ContentLength = bytes.Length;
                     for (var i = 0; i < _hValues.Count; i++)
                     {
@@ -203,7 +205,7 @@ namespace client
                     request.Method = _mType.ToString();
                 }
                 if (Main.debug)
-                    File.AppendAllText("debug.txt", "request send ok " + url + "\n");
+                    File.AppendAllText("debug.txt", "request send ok " + url + "\r\n");
 
                 request.AllowAutoRedirect = false;
                 var isResponceRecieved = false;
@@ -292,8 +294,10 @@ namespace client
             catch(Exception ex)
             {
                 if (Main.debug)
-                    File.AppendAllText("debug.txt", url + ex.Message + ex.StackTrace + "\n");
+                    File.AppendAllText("debug.txt", url + ex.Message + ex.StackTrace + "\r\n");
             }
+            if (Main.debug)
+                File.AppendAllText("debug.txt", "responce data " + result + "\r\n");
             return result;
         }
 

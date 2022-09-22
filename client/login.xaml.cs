@@ -164,12 +164,12 @@ namespace client
                         };
                         AddToRich(Servers.getTrans("getplay"));
                         string token = post.Post(ref _cookies);
-                        if (!token.Contains("thisProgram"))
+                        if (!token.Contains("thisProgram") && !token.Contains("return \"lang"))
                         {
                             AddToRich(Servers.getTrans("cookieerr"));
                             return;
                         }
-                        if (!PrepareFlash(token))
+                        if (!PrepareFlash(token, token.Contains("thisProgram")))
                         {
                             AddToRich(Servers.getTrans("paramserr"));
                             MainAuth();
@@ -236,10 +236,10 @@ namespace client
             else AddToRich(Servers.getTrans("autherr") + res);
         }
 
-        public bool PrepareFlash(string htmlPage)
+        public bool PrepareFlash(string htmlPage, bool old_auth)
         {
             AddToRich(Servers.getTrans("getparams"));
-            Match match = Regex.Match(htmlPage, "thisProgram: \"(?<tso>.*)\"", RegexOptions.IgnoreCase);
+            Match match = Regex.Match(htmlPage, (old_auth ? "thisProgram:" : "return") + " \"(?<tso>lang.*)\"", RegexOptions.IgnoreCase);
             if (!match.Success)
             {
                 AddToRich(Servers.getTrans("tsourlerr"));

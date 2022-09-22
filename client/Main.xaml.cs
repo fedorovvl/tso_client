@@ -8,6 +8,7 @@ using System.Xml;
 using System.Threading;
 using System.Net;
 using System.Web;
+using System.Diagnostics;
 using System.ComponentModel;
 using AutoUpdaterDotNET;
 using System.Reflection;
@@ -350,7 +351,7 @@ namespace client
             }
             this.Visibility = System.Windows.Visibility.Hidden;
             bool collections = false;
-            if (!auto)
+            if (!auto && Process.GetProcessesByName("UbiCollect").Length > 0)
             {
                 MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show(Servers.getTrans("collecttip"), Servers.getTrans("collect"), System.Windows.MessageBoxButton.YesNo);
                 if (messageBoxResult == MessageBoxResult.Yes)
@@ -372,6 +373,8 @@ namespace client
                     tsoUrl.Set("lang", lang);
                 if (cmd["window"] != null)
                     tsoUrl.Set("window", cmd["window"]);
+                if (debug)
+                    tsoUrl.Set("debug", "true");
                 string tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString().Replace("bb=https", "bb=http").Replace(":443", ""), Servers._servers[_region].domain);
                 XmlDocument Doc = new XmlDocument();
                 XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
