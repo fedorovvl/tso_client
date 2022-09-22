@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <item>
-  <version>1.4.8.0</version>
-  <url>https://github.com/fedorovvl/tso_client/releases/tag/v1.4.8/</url>
+  <version>1.4.9.0</version>
+  <url>https://github.com/fedorovvl/tso_client/releases/tag/v1.4.9/</url>
   <changelog>https://github.com/fedorovvl/tso_client/releases</changelog>
   <mandatory>false</mandatory>
 </item>
