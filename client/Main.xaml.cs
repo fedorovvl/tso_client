@@ -29,6 +29,7 @@ namespace client
         public static bool auto = false;
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
+        public static int http_timeout = 10000;
         private int _regionUid;
         public static Arguments cmd;
         private string _langLogin;
@@ -38,7 +39,7 @@ namespace client
         private string _langRemember;
         public string appversion
         {
-            get { return "1.4.9.0"; }
+            get { return "1.5.0.0"; }
         }
         public string langLogin
         {
@@ -107,6 +108,8 @@ namespace client
                 skipCheck = true;
             if (cmd["debug"] != null)
                 debug = true;
+            if (cmd["http_timeout"] != null && IsNumeric(cmd["http_timeout"]))
+                http_timeout = int.Parse(cmd["http_timeout"]);
             if (cmd["lang"] != null)
             {
                 if (Servers._langs.ContainsKey(cmd["lang"]))
@@ -156,7 +159,13 @@ namespace client
             Thread.Sleep(1);
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt_Click_1(null, null); }));
         }
+        public static bool IsNumeric(object Expression)
+        {
+            double retNum;
 
+            bool isNum = Double.TryParse(Convert.ToString(Expression), System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retNum);
+            return isNum;
+        }
         public void checkVersion()
         {
             AutoUpdater.InstalledVersion = new Version(appversion);

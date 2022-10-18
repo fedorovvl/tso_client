@@ -161,7 +161,7 @@ namespace client
                         request.Headers.Add("Accept-Encoding: gzip, deflate");
                     }
                     request.ContentType = contentType;
-                    request.Timeout = 10000;
+                    request.Timeout = Main.http_timeout;
                     request.Referer = "http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf";
                     request.CookieContainer = new CookieContainer();
                     if ((null != Cookies) && (0 != Cookies.Count))
