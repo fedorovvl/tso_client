@@ -203,8 +203,40 @@ namespace client
                 { "run", "SPIELEN" },
                 { "exit", "schließen" },
                 { "remember", "Erinnern" },
-             }
-            }
+              }
+           },
+           { "pt-br", new Dictionary<string, string>() {
+                { "login", "E-mail" },
+                { "password", "Senha" },
+                { "letsplay", "Jogar" },
+                { "checking", "Verificando o cliente" },
+                { "downloading", "Baixando.." },
+                { "emptypass", "Senha vazia." },
+                { "emptylogin", "E-Mail vazio." },
+                { "collect", "Colecionaveis" },
+                { "collecttip", "Quer usar o marcador de colecionaveis?\nApertar \"yes\" somente apos ativar o UbiCollect.exe!" },
+                { "tryauth", "Tentativa de login #" },
+                { "nomoretry", "ja foi.. cansei :)" },
+                { "auth", "Autenticando" },
+                { "authok", "Autenticado com sucesso " },
+                { "getplay", "Pedindo pagina inicial" },
+                { "cookieerr", "Não consigo achar os cookies :'(" },
+                { "paramserr", "Erro ao obter os parametros" },
+                { "autherr", "Erro de autenticação. resposta - " },
+                { "loginerr", "E-mail ou senha errada." },
+                { "captchaerr", "Recebí o Captha.. tenta mais tarde." },
+                { "uplayerr", "UPLAY não responde." },
+                { "authex", "Exceção na pagina de autenticação." },
+                { "emptyauth", "Resposta vazia .. isso é estranho " },
+                { "getparams", "Obtendo parametros." },
+                { "tsourlerr", "Erro ao obter o parâmetro tsoUrl." },
+                { "nick", "Apelido - " },
+                { "launch", "Iniciar cliente..." },
+                { "run", "JOGAR" },
+                { "exit", "sair" },
+                { "remember", "Lembrar" },
+              }
+           }
         };
 
         public static string getTrans(string value)
