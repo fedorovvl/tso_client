@@ -266,20 +266,6 @@
                 </ControlTemplate>
             </CheckBox.Template>
         </CheckBox>
-        <CheckBox Width="24" Height="25" Margin="179,85,30,237" Visibility="Collapsed" Name="chatEnable" IsChecked="True">
-            <CheckBox.Template>
-                <ControlTemplate TargetType="CheckBox">
-                    <StackPanel Orientation="Horizontal">
-                        <Image x:Name="_image" Source="files/unchecked.png"/>
-                    </StackPanel>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="_image" Property="Source" Value="files/checked.png"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </CheckBox.Template>
-        </CheckBox>
         <ComboBox Height="22" MaxDropDownHeight="200" SelectedIndex="0" HorizontalAlignment="Left" Margin="72,245,0,0" Foreground="AliceBlue" x:Name="region_list" BorderThickness="0" BorderBrush="#00000000" VerticalAlignment="Top" Width="146" SelectionChanged="Region_list_SelectionChanged">
             <ComboBox.Background>
                 <ImageBrush ImageSource="files/input.png" />

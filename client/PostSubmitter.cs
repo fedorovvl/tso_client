@@ -261,6 +261,7 @@ namespace client
                         if (e.Status == WebExceptionStatus.ProtocolError)
                         {
                             HttpWebResponse httpResponse = (HttpWebResponse)e.Response;
+                            result = string.Format("ERROR. Statuscode {0}. Description {1} ", httpResponse.StatusCode, httpResponse.StatusDescription);
                             if (httpResponse.StatusCode == HttpStatusCode.Conflict)
                             {
                                 result = " CAPCHA ";

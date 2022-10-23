@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<application xmlns="http://ns.adobe.com/air/application/15.0">
+  <id>TSO</id>
+  <versionNumber>1.0</versionNumber>
+  <filename>client</filename>
+  <description>
+  </description>
+  <!-- To localize the description, use the following format for the description element.
+    <description>
+        <text xml:lang="en">English App description goes here</text>
+        <text xml:lang="fr">French App description goes here</text>
+        <text xml:lang="ja">Japanese App description goes here</text>
+    </description>
+    -->
+  <name>The Settlers Online</name>
+  <!-- To localize the name, use the following format for the name element.
+    <name>
+        <text xml:lang="en">English App name goes here</text>
+        <text xml:lang="fr">French App name goes here</text>
+        <text xml:lang="ja">Japanese App name goes here</text>
+    </name>
+    -->
+  <copyright>
+  </copyright>
+  <initialWindow>
+    <content>index.html</content>
+    <systemChrome>standard</systemChrome>
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <fullScreen>true</fullScreen>
+    <autoOrients>true</autoOrients>
+    <aspectRatio>landscape</aspectRatio>
+    <renderMode>auto</renderMode>
+    <maximizable>true</maximizable>
+    <minimizable>true</minimizable>
+    <resizable>true</resizable>
+    <height>768</height>
+    <width>1024</width>
+  </initialWindow>
+  <customUpdateUI>false</customUpdateUI>
+  <allowBrowserInvocation>true</allowBrowserInvocation>
+  <icon>
+    <image16x16>16x16.png</image16x16>
+    <image32x32>32x32.png</image32x32>
+    <image48x48>48x48.png</image48x48>
+    <image128x128>128x128.png</image128x128>
+  </icon>
+</application>
