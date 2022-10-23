@@ -1,4 +1,13 @@
 $("#specModal").on('show.bs.modal hide.bs.modal', function(){ window.nativeWindow.stage.swapChildrenAt(0, 1); });
+$("#specTimeType").change(function(){
+	$('#specModalData select[id!="expl-mass"]').each(function(i, select){
+		if(select.value != '0') {
+			$(select.parentNode.parentNode.childNodes[1]).html(getTaskDurationText(select.id.replace('expl-', ''), select.value));
+		}
+	});
+});
+var dtf = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
+dtf.setDateTimePattern("y-MM-dd HH:mm"); 
 
 function multiSelectSpec()
 {
@@ -64,7 +73,12 @@ function getTaskDurationText(spec_id, task_id)
 		task = getTaskInfo(cat_id[0], cat_id[1]);
 		uniqueID = swmmo.getDefinitionByName("Communication.VO::dUniqueID").Create(spec_id[0], spec_id[1]);
 		spec = swmmo.application.mGameInterface.mCurrentPlayerZone.getSpecialist(swmmo.application.mGameInterface.mCurrentViewedZoneID, uniqueID);
-		return loca.FormatDuration(calculateSkillsOnTaskDuration(spec, task.duration, task.taskName + task.subTaskName), 1);
+		calculatedTime = calculateSkillsOnTaskDuration(spec, task.duration, task.taskName + task.subTaskName);
+		if(!$('#specTimeType').is(':checked')) {
+			return loca.FormatDuration(calculatedTime, 1);
+		} else {
+			return dtf.format(new window.runtime.Date(Date.now() + calculatedTime));
+		}
 	} catch(e) {
 		return "Error";
 	}

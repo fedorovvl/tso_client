@@ -35,14 +35,15 @@ function menuAuctionHandler(event)
 	$('#auxPlaceBet').hide();
 	out = '<div class="container-fluid">';
 	if(currentAuc == undefined) {
-		out = '<p class="text-center">Please reload data</p>';
+		out = '<p class="text-center">Auction not active</p>';
 	} else {
 		var aucDefinition = getCurrentAuc();
 		out = '<h3 class="text-center">EXPERIMENTAL!</h3><p><strong>Use only after pay 10k gold in unity. Always reload data before making bid.</strong></p>'
 		out += '<p>Current auctionId: ' + currentAuc.auctionId + '</p>';
 		out += '<p>Player with max bet: ' + currentAuc.playerName + '</p>';
 		out += '<p>Bidding count: ' + currentAuc.biddingCount + '</p>';
-		out += '<p>End time: ' + loca.FormatDuration(currentAuc.endTime - new Date().getTime()) + '</p>';
+		endTime = currentAuc.endTime - new Date().getTime();
+		out += '<p>End time: ' + endTime > 0 ? loca.FormatDuration(endTime) : 'ended' + '</p>';
 		out += '<p><br><br></p>';
 		var aucItem = aucShopItem.GetShopItem(aucDefinition.Content.Item.shopItemId.v);
 		out += '<p>Auction item: ' + loca.GetText("SHI", aucItem.GetName_string()) + '</p>';
@@ -53,7 +54,7 @@ function menuAuctionHandler(event)
 		out += '<p>Place bet for: ' + nextBet + ' ' + loca.GetText("RES", aucDefinition.Costs.Cost.name.v) + '</p>';
 		var resources = swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(swmmo.application.mGameInterface.mCurrentPlayer);
 		out += '<p>You have: ' + resources.GetResourceAmount(aucDefinition.Costs.Cost.name.v) + ' ' + loca.GetText("RES", aucDefinition.Costs.Cost.name.v) + '</p>';
-		if(resources.GetResourceAmount(aucDefinition.Costs.Cost.name.v) > nextBet && !aucCheckPlayer()) {
+		if(resources.GetResourceAmount(aucDefinition.Costs.Cost.name.v) > nextBet && !aucCheckPlayer() && endTime > 0) {
 			$('#auxPlaceBet').show();
 		}
 		if(aucCheckPlayer())

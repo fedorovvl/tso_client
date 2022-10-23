@@ -20,7 +20,7 @@ function menuExplorersHandler(event)
 				if (skill.getId() == 40) { bean = true; }
 			}
 		  });
-		  out = out + '<div class="row"><div class="col-xs-5 col-sm-5 col-lg-5 name">' + item.getName(false) + '</div><div class="col-xs-2 col-sm-2 col-lg-2">&nbsp;</div><div class="col-xs-5 col-sm-5 col-lg-5">' + createExplorerDropdown(item.GetUniqueID(), art, bean) + '</div></div>';
+		  out = out + '<div class="row"><div class="col-xs-4 col-sm-4 col-lg-4 name">' + item.getName(false) + '</div><div class="col-xs-3 col-sm-3 col-lg-3">&nbsp;</div><div class="col-xs-5 col-sm-5 col-lg-5">' + createExplorerDropdown(item.GetUniqueID(), art, bean) + '</div></div>';
 	  }
 	});
 	out = out + '</div>';
