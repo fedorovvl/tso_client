@@ -177,6 +177,10 @@
   <ItemGroup>
     <EmbeddedResource Include="AutoUpdater.NET.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="files\ButtonIconThrowAway.png" />
+    <Resource Include="files\StarMenuTabIconMisc.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>tar -c -a -f ..\..\files/content.zip -C ..\..\files\content *</PreBuildEvent>

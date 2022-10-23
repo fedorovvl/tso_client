@@ -155,6 +155,22 @@ namespace client
             AutoUpdater.ShowSkipButton = true;
             AutoUpdater.OpenDownloadPage = true;
             AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
+            Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
+            if (!Directory.Exists(ClientDirectory))
+                Directory.CreateDirectory(ClientDirectory);
+            using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
+            {
+                if (!debug)
+                    unzip.ExtractToDirectory(ClientDirectory);
+            }
+            try
+            {
+                foreach (string tmpDir in Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TSO-*"))
+                {
+                    Directory.Delete(tmpDir, true);
+                }
+            }
+            catch { }
             if (cmd["skip"] != null && File.Exists(System.IO.Path.Combine(ClientDirectory, "client.swf")))
             {
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -167,24 +183,6 @@ namespace client
             try
             {
                 PostSubmitter post;
-                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
-                if (!Directory.Exists(ClientDirectory))
-                {
-                    Directory.CreateDirectory(ClientDirectory);
-                }
-                using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
-                {
-                    if(!debug)
-                        unzip.ExtractToDirectory(ClientDirectory);
-                }
-                try
-                {
-                    foreach (string tmpDir in Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TSO-*"))
-                    {
-                        Directory.Delete(tmpDir, true);
-                    }
-                }
-                catch { }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
                 string chksum = string.Empty;
                 bool needDownload = false;
@@ -446,6 +444,25 @@ namespace client
             langRun = Servers.getTrans("run");
             langExit = Servers.getTrans("exit");
             langRemember = Servers.getTrans("remember");
+        }
+
+        private void openTsoFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo { Arguments = ClientDirectory, FileName = "explorer.exe" });
+        }
+        private void resetTsoFolder_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult messageBox = MessageBox.Show("Delete tso_portable folder?", "Reset", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (messageBox == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    Directory.Delete(ClientDirectory, true);
+                }
+                catch { }
+                butt.IsEnabled = false;
+                new Thread(checkVersion) { IsBackground = true }.Start();
+            }
         }
     }
 }
