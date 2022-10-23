@@ -1,5 +1,5 @@
 // use addMenuItem from main script
-addMenuItem("UserExample", ExampleMenuHandler);
+addToolsMenuItem("UserExample", ExampleMenuHandler);
 
 function ExampleMenuHandler(event)
 {

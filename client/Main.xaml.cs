@@ -174,7 +174,8 @@ namespace client
                 }
                 using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
                 {
-                    unzip.ExtractToDirectory(ClientDirectory);
+                    if(!debug)
+                        unzip.ExtractToDirectory(ClientDirectory);
                 }
                 try
                 {

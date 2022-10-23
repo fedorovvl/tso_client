@@ -38,7 +38,8 @@ function menuAuctionHandler(event)
 		out = '<p class="text-center">Please reload data</p>';
 	} else {
 		var aucDefinition = getCurrentAuc();
-		out = '<p>Current auctionId: ' + currentAuc.auctionId + '</p>';
+		out = '<h3 class="text-center">EXPERIMENTAL!</h3><p><strong>Use only after pay 10k gold in unity. Always reload data before making bid.</strong></p>'
+		out += '<p>Current auctionId: ' + currentAuc.auctionId + '</p>';
 		out += '<p>Player with max bet: ' + currentAuc.playerName + '</p>';
 		out += '<p>Bidding count: ' + currentAuc.biddingCount + '</p>';
 		out += '<p>End time: ' + loca.FormatDuration(currentAuc.endTime - new Date().getTime()) + '</p>';
@@ -82,7 +83,7 @@ function getCurrentAuc()
 
 function aucFailResponseHandler(event, data)
 {
-	alert("error reload data");
+	alert("error " + data);
 }
 
 function aucResultResponseHandler(event, data)
