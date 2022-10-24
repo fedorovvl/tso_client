@@ -77,6 +77,23 @@ function addMenuItem(name, fn, key, ctrl)
   addKeybBind(fn, key, ctrl);
 }
 
+function createModalWindow(id, title)
+{
+	const modalId = "#" + id;
+	if ($(modalId).length == 0) {
+		// create new one by copying buffmodal
+		$("#buffModal").clone().attr('id', id).appendTo(".container");
+		// change title
+		$(modalId + " .modal-title").text(title);
+		// change data id
+		$(modalId + " .modal-body").attr('id', id + 'Data');
+		// remove buttons except close
+		$(modalId + " .modal-footer button:not(.btn-danger)").remove();
+		// add flipflop
+		$(modalId).on('show.bs.modal hide.bs.modal', function () { window.nativeWindow.stage.swapChildrenAt(0, 1); });
+	}
+}
+
 function addToolsMenuItem(name, fn, key, ctrl)
 {
 	existing = window.nativeWindow.menu.getItemByName("Tools");

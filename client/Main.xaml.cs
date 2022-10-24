@@ -171,7 +171,8 @@ namespace client
                 }
             }
             catch { }
-            if (cmd["skip"] != null && File.Exists(System.IO.Path.Combine(ClientDirectory, "client.swf")))
+            checkUserscripts();
+            if (cmd["skip"] != null && File.Exists(Path.Combine(ClientDirectory, "client.swf")))
             {
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
                 if (cmd["autologin"] != null)
@@ -218,6 +219,35 @@ namespace client
                 MessageBox.Show(e.Message + e.StackTrace);
             }
             return;
+        }
+
+        private void checkUserscripts()
+        {
+            if (Directory.Exists("userscripts"))
+            {
+                string destUserFile, destUserFileSum, srcUserFileSum;
+                foreach (string user_file in Directory.GetFiles("userscripts", "*.js"))
+                {
+                    destUserFile = Path.Combine(ClientDirectory, user_file);
+                    if (!File.Exists(destUserFile))
+                    {
+                        File.Copy(user_file, destUserFile, true);
+                        continue;
+                    }
+                    using (var stream = File.OpenRead(destUserFile))
+                    {
+                        destUserFileSum = BitConverter.ToString(SHA1.Create().ComputeHash(stream)).ToLower().Replace("-", "");
+                    }
+                    using (var stream = File.OpenRead(user_file))
+                    {
+                        srcUserFileSum = BitConverter.ToString(SHA1.Create().ComputeHash(stream)).ToLower().Replace("-", "");
+                    }
+                    if (destUserFile != srcUserFileSum)
+                    {
+                        File.Copy(user_file, destUserFile, true);
+                    }
+                }
+            }
         }
         public byte[] DownloadFile(string remoteFilename)
         {

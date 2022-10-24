@@ -5,20 +5,8 @@ function ExampleMenuHandler(event)
 {
 	// close all modals
 	$( "div[role='dialog']:not(#exampleModal):visible").modal("hide");
-	// check if modal window already exist
-	if($("#exampleModal").length == 0)
-	{
-		// create new one by copying buffmodal
-		$("#buffModal").clone().attr('id', 'exampleModal').appendTo(".container");
-		// change title
-		$("#exampleModal .modal-title").text("Example modal window");
-		// change data id
-		$("#exampleModal .modal-body").attr('id', 'exampleModalData');
-		// remove buttons except close
-		$("#exampleModal .modal-footer button:not(.btn-danger)").remove();
-		// add flipflop
-		$("#exampleModal").on('show.bs.modal hide.bs.modal', function(){ window.nativeWindow.stage.swapChildrenAt(0, 1); });
-	}
+	// create modal
+	createModalWindow('exampleModal', 'Example modal window');
 	// fill modal data 
 	$('#exampleModalData').html(ExampleMakeModal());
 	// bind buttons
