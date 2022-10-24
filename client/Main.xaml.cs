@@ -30,7 +30,7 @@ namespace client
         public static bool auto = false;
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
-        public static int http_timeout = 10000;
+        public static int http_timeout = 20000;
         private int _regionUid;
         public static Arguments cmd;
         private string _langLogin;

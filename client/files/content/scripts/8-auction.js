@@ -43,7 +43,7 @@ function menuAuctionHandler(event)
 		out += '<p>Player with max bet: ' + currentAuc.playerName + '</p>';
 		out += '<p>Bidding count: ' + currentAuc.biddingCount + '</p>';
 		endTime = currentAuc.endTime - new Date().getTime();
-		out += '<p>End time: ' + endTime > 0 ? loca.FormatDuration(endTime) : 'ended' + '</p>';
+		out += '<p>End time: ' + (endTime > 0 ? loca.FormatDuration(endTime) : 'ended') + '</p>';
 		out += '<p><br><br></p>';
 		var aucItem = aucShopItem.GetShopItem(aucDefinition.Content.Item.shopItemId.v);
 		out += '<p>Auction item: ' + loca.GetText("SHI", aucItem.GetName_string()) + '</p>';
