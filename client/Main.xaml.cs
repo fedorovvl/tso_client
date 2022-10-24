@@ -405,7 +405,16 @@ namespace client
                 _cookies = log.Cookies;
                 var tsoUrl = HttpUtility.ParseQueryString(log.Ver);
                 if (collections)
-                    tsoUrl.Set("s", "http://127.0.0.1:9000/https://ubistatic-a.akamaihd.net/0018/live");
+                {
+                    if (Process.GetProcessesByName("UbiCollect").Length == 0)
+                    {
+                        MessageBoxResult messageBox = MessageBox.Show("--collect provided but no active ubicollect.exe found. Enable anyway?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        if (messageBox == MessageBoxResult.Yes)
+                        {
+                            tsoUrl.Set("s", "http://127.0.0.1:9000/https://ubistatic-a.akamaihd.net/0018/live");
+                        }
+                    }
+                }
                 if (!string.IsNullOrEmpty(lang))
                     tsoUrl.Set("lang", lang);
                 if (cmd["window"] != null)
