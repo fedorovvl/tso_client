@@ -414,6 +414,10 @@ namespace client
                             tsoUrl.Set("s", "http://127.0.0.1:9000/https://ubistatic-a.akamaihd.net/0018/live");
                         }
                     }
+                    else
+                    {
+                        tsoUrl.Set("s", "http://127.0.0.1:9000/https://ubistatic-a.akamaihd.net/0018/live");
+                    }
                 }
                 if (!string.IsNullOrEmpty(lang))
                     tsoUrl.Set("lang", lang);
