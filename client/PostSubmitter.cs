@@ -194,7 +194,7 @@ namespace client
                     var uri = new Uri(url + "?" + postData);
                     request = (HttpWebRequest)WebRequest.Create(uri);
                     request.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12";
-                    request.Referer = "http://game-cdn.thesettlersonline.net/prestaging/PS5724/SWMMO/debug/SWMMO.swf";
+                    request.Referer = Servers.getRandReferer();
                     request.CookieContainer = new CookieContainer();
 
                     if ((null != Cookies) && (0 != Cookies.Count))

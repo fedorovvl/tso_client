@@ -9,18 +9,21 @@
       "name":"Guild",
       "shortDesc":"Simple guild info",
       "longDesc":"Show simple guild info with quest and player status",
-      "author":"MkFera"
+      "author":"MkFera",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3817826"
    },
    "user_generals.js":{
       "name":"Generals",
       "shortDesc":"Generals manager",
       "longDesc":"Show info about your generals like army, status and more. Can send to star menu or adventure. Support templates.",
-      "author":"MkFera"
+      "author":"MkFera",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3924047"
    },
    "user_collectables.js":{
       "name":"Collectables",
       "shortDesc":"Collectibles finder",
       "longDesc":"Find and select collectibles on main island or adventure",
-      "author":"MkFera"
+      "author":"MkFera",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
    }
 }

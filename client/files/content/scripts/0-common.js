@@ -46,13 +46,25 @@ function createToolsMenu()
 	toolsMenu = new air.NativeMenu();
 	reloadItem = new air.NativeMenuItem(loca.GetText("LAB", "Update"));
 	reloadItem.addEventListener(air.Event.SELECT, reloadScripts);
+	updateItem = new air.NativeMenuItem(loca.GetText("LAB", "ToggleOptionsPanel"));
+	updateItem.addEventListener(air.Event.SELECT, scriptsManager);
 	toolsMenu.addItem(reloadItem);
+	toolsMenu.addItem(updateItem);
 	toolsMenu.addItem(new air.NativeMenuItem("", true));
 	toolsItem = new air.NativeMenuItem(loca.GetText("RES", "Tool"));
 	toolsItem.name = "Tools";
 	toolsItem.submenu = toolsMenu;
 	window.nativeWindow.menu.addItem(toolsItem);
 	} catch(e) {alert(e);}
+}
+
+function createTableRow(data, isHeader)
+{
+	var out = '<div class="row">';
+	data.forEach(function(item) {
+		out += '<div class="col-xs-'+item[0]+' col-sm-'+item[0]+' col-lg-'+item[0]+'" '+(isHeader ? 'style="background-color:gray;height:23px"' : '')+'>'+item[1]+'</div>'
+	});
+	return '</div>' + out;
 }
 
 function reloadScripts(event)

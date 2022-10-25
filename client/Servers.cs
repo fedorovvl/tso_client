@@ -239,6 +239,11 @@ namespace client
            }
         };
 
+        public static string getRandReferer()
+        {
+            Random rand = new Random();
+            return _servers.ElementAt(rand.Next(0, _servers.Count)).Value.domain;
+        }
         public static string getTrans(string value)
         {
             if (!trans.ContainsKey(_langs[Main._region]))
