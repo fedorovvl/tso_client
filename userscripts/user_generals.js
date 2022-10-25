@@ -1,35 +1,49 @@
 
-// ========== Generals COMMAND
-const _exudGeneralsLang = [ 
-								[ ["en-uk"] , 
-									[
-										[ "ByName", "Sort by Name" ] ,
-										[ "ByType", "Sort by Type" ] ,
-										[ "ShowGuest", "Show Guests" ] ,
-										[ "HideGuest", "Hide Guests" ] ,
-										[ "ShowUnselected", "Show Unselected" ] ,
-										[ "HideUnselected", "Hide Unselected" ] ,
-										[ "SelectAll", "Select All" ] ,
-										[ "Load", "Load" ] ,
-										[ "CommandSent", "Command sent" ] ,									
-										[ "ColumnOwner", "Owner" ] 
-									]
-								]
-								,
-								[ ["pt-br"] , 
-									[
-										[ "ByName", "Classificar por nome" ] ,
-										[ "ByType", "Classificar por tipo" ] ,
-										[ "ShowGuest", "Todos" ] ,
-										[ "HideGuest", "Somente os meus" ] ,
-										[ "ShowUnselected", "Todos" ] ,
-										[ "HideUnselected", "Somente selecionados" ] ,
-										[ "SelectAll", "Selecionar todos" ] ,
-										[ "Load", "Carregar" ] ,
-										[ "ColumnOwner", "Proprietario" ] 
-									]
-								]
-						];
+// ========== Generals COMMAND\
+const _exudGeneralsLang = [
+    [
+        ["en-uk"] ,
+        [
+            [ "ByName", "Sort by Name" ] ,
+            [ "ByType", "Sort by Type" ] ,
+            [ "ShowGuest", "Show Guests" ] ,
+            [ "HideGuest", "Hide Guests" ] ,
+            [ "ShowUnselected", "Show Unselected" ] ,
+            [ "HideUnselected", "Hide Unselected" ] ,
+            [ "SelectAll", "Select All" ] ,
+            [ "Load", "Load" ] ,
+            [ "CommandSent", "Command sent" ] ,
+            [ "ColumnOwner", "Owner" ]
+        ]
+    ], [
+        ["pt-br"] ,
+        [
+            [ "ByName", "Classificar por nome" ] ,
+            [ "ByType", "Classificar por tipo" ] ,
+            [ "ShowGuest", "Todos" ] ,
+            [ "HideGuest", "Somente os meus" ] ,
+            [ "ShowUnselected", "Todos" ] ,
+            [ "HideUnselected", "Somente selecionados" ] ,
+            [ "SelectAll", "Selecionar todos" ] ,
+            [ "Load", "Carregar" ] ,
+            [ "ColumnOwner", "Proprietario" ]
+        ]
+    ], [
+        ["pl-pl"] ,
+        [
+            [ "ByName", "Sortuj po nazwie" ] ,
+            [ "ByType", "Sortuj po typie" ] ,
+            [ "ShowGuest", "Pokaż gości" ] ,
+            [ "HideGuest", "Ukryj gości" ] ,
+            [ "ShowUnselected", "Pokaż niezaznaczonych" ] ,
+            [ "HideUnselected", "Ukryj niezaznaczonych" ] ,
+            [ "SelectAll", "Zaznacz wszystkich" ] ,
+            [ "Load", "Załaduj" ] ,
+            [ "CommandSent", "Generał wysłany" ] ,
+            [ "ColumnOwner", "Właściciel" ]
+        ]
+    ]
+];
 
 addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
 
