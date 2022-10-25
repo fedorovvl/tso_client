@@ -89,7 +89,7 @@ function createTableRow(data, isHeader)
 			item[1]
 		);
 	});
-	return '</div>' + out;
+	return out + '</div>';
 }
 
 function reloadScripts(event)
