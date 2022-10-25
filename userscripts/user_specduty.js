@@ -131,14 +131,16 @@ function dutyGetData() {
 				isValid = (item.GetBaseType() == 2);
 				break;
 			case 3:
-				isValid = _exudDutySPECIALIST_TYPE.IsGeneral(item.GetType());
 				var pid = item.getPlayerID();
+				isValid = (_exudDutySPECIALIST_TYPE.IsGeneral(item.GetType()) && (pid == PlayerID));
+				/** I see it later
 				if (isValid && (PlayerID != pid))
 				{
 					var pname = GI.GetPlayerName_string(pid);
 					if (pname != null)
 						ItemName += ' (' + pname + ')';
 				}
+				*/
 				break;
 		}
 
