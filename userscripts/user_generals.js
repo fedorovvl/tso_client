@@ -3,61 +3,40 @@
 const _exudGeneralsLang = [ 
 								[ ["en-uk"] , 
 									[
-										[ "menuItemName", "Generals" ] ,
-										[ "StarMenu", "Star Menu !" ] ,
-										[ "Home", "Home" ] ,
 										[ "ByName", "Sort by Name" ] ,
 										[ "ByType", "Sort by Type" ] ,
 										[ "ShowGuest", "Show Guests" ] ,
 										[ "HideGuest", "Hide Guests" ] ,
 										[ "ShowUnselected", "Show Unselected" ] ,
 										[ "HideUnselected", "Hide Unselected" ] ,
-										[ "Send", "Send" ] ,
 										[ "SelectAll", "Select All" ] ,
 										[ "Load", "Load" ] ,
-										[ "Save", "Save" ] ,
-										[ "AllFiles", "All files" ] ,
-										[ "CommandSent", "Command sent" ] ,
-										[ "ColumnName", "Name" ] ,
-										[ "ColumnHasElites", "Has Elites" ] ,
-										[ "ColumnTotalArmy", "Total Army" ] ,
-										[ "ColumnOwner", "Owner" ] ,
-										[ "Yes", "yes" ] 
+										[ "CommandSent", "Command sent" ] ,									
+										[ "ColumnOwner", "Owner" ] 
 									]
-								] ,
+								]
+								,
 								[ ["pt-br"] , 
 									[
-										[ "menuItemName", "Generais" ] ,
-										[ "StarMenu", "Menu Estrela" ] ,
-										[ "Home", "Ilha Principal" ] ,
 										[ "ByName", "Classificar por nome" ] ,
 										[ "ByType", "Classificar por tipo" ] ,
 										[ "ShowGuest", "Todos" ] ,
 										[ "HideGuest", "Somente os meus" ] ,
 										[ "ShowUnselected", "Todos" ] ,
 										[ "HideUnselected", "Somente selecionados" ] ,
-										[ "Send", "Enviar" ] ,
 										[ "SelectAll", "Selecionar todos" ] ,
 										[ "Load", "Carregar" ] ,
-										[ "Save", "Salvar" ] ,
-										[ "AllFiles", "Todos os arquivos" ] ,
-										[ "CommandSent", "Comando enviado" ] ,
-										[ "ColumnName", "Nome" ] ,
-										[ "ColumnHasElites", "Tropas de elite" ] ,
-										[ "ColumnTotalArmy", "Totale exercito" ] ,
-										[ "ColumnOwner", "Proprietario" ] ,
-										[ "Yes", "sim" ] 
+										[ "ColumnOwner", "Proprietario" ] 
 									]
 								]
 						];
 
-addToolsMenuItem(_exudGeneralsGetLabel("menuItemName"), _exudGeneralsMenuHandler);
+addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
 
 var _exudGeneralsSortType = 0; // 0 = type/name  1 = name/type
 var _exudGeneralsHideGuest = false;
 var _exudGeneralsHideUnselected = false;
 
-						
 function _exudGeneralsGetLabel(id)
 {
 	
@@ -85,6 +64,7 @@ function _exudGeneralsGetLanguage(id)
 }
 
 
+
 function _exudGeneralsMenuHandler(event)
 {
 	// close all modals
@@ -95,7 +75,7 @@ function _exudGeneralsMenuHandler(event)
 		// create new one by copying buffmodal
 		$("#buffModal").clone().attr('id', 'udSpecModal').appendTo(".container");
 		// change title
-		$("#udSpecModal .modal-title").text("Generals");
+		$("#udSpecModal .modal-title").text(loca.GetText("ACL", "MilitarySpecialists"));
 		// change data id
 		$("#udSpecModal .modal-body").attr('id', 'udSpecModalData');
 		// remove buttons except close
@@ -130,12 +110,12 @@ function _exudGetGeneralsData() {
 		Adventures = AdvManager.getAdventures(); //Vector.<dAdventureClientInfoVO>
 		hasAdv = (Adventures != null && Adventures.length > 0);
 		
-		out += 'Send to <select id="udcboSendZones">';
+		out += '<select id="udcboSendZones">';
 		out += '<option value="-1">-----</option>';
-		out += '<option value="98">'+_exudGeneralsGetLabel("StarMenu")+'</option>';
+		out += '<option value="98">'+loca.GetText("LAB", "StarMenu")+'</option>';
 		
 		if (isAdventureZone)
-			out += '<option value="99">'+_exudGeneralsGetLabel("Home")+'</option>';
+			out += '<option value="99">'+loca.GetText("LAB", "ReturnHome")+'</option>';
 
 		if (hasAdv)
 		{
@@ -155,14 +135,14 @@ function _exudGetGeneralsData() {
 		}
 		
 		out += '</select> (* = guest)';
-		out += ' <button type="button" class="btn btn-success _exudSendGeneralsBtn">'+_exudGeneralsGetLabel("Send")+'</button><br/>';
+		out += ' <button type="button" class="btn btn-success _exudSendGeneralsBtn">'+loca.GetText("LAB", "Send")+'</button><br/>';
 		out += ' <button type="button" class="btn btn-sm _exudSelectAllGeneralsBtn">'+_exudGeneralsGetLabel("SelectAll")+'</button>';
 		out += ' <button type="button" class="btn btn-sm _exudChangeGeneralSortBtn">' + (_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType"))+'</button>';
 		out += ' <button type="button" class="btn btn-sm _exudHideGuestGeneralsBtn">'+(_exudGeneralsHideGuest  ? _exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest"))+'</button>';
 		out += ' <button type="button" class="btn btn-sm _exudHideUnselectedGeneralsBtn">'+(_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected"))+'</button><br/>';
 
 		out += ' <button type="button" class="btn btn-sm _exudSpecLoadTemplateBtn">'+_exudGeneralsGetLabel("Load")+'</button>';
-		out += ' <button type="button" class="btn btn-sm _exudSpecSaveTemplateBtn">'+_exudGeneralsGetLabel("Save")+'</button>';
+		out += ' <button type="button" class="btn btn-sm _exudSpecSaveTemplateBtn">'+loca.GetText("LAB", "Save")+'</button>';
 		out += '</br>';
 		
 		out += '<div id="_exudGeneralsDivTable">';
@@ -223,9 +203,9 @@ function _exudMakeGeneralsTable(Selected) {
 
 	try {	
 		out = '<table id="udSpecTable"><tr>';	
-		out += '<td width="350px">'+_exudGeneralsGetLabel("ColumnName")+'</td>';
-		out += '<td width="80px">'+_exudGeneralsGetLabel("ColumnHasElites")+'</td>';
-		out += '<td width="100px">'+_exudGeneralsGetLabel("ColumnTotalArmy")+'</td>';
+		out += '<td width="350px">'+loca.GetText("LAB","Name")+'</td>';
+		out += '<td width="80px">'+loca.GetText("LAB", "EliteUnits")+'</td>';
+		out += '<td width="100px">'+loca.GetText("LAB", "Army")+'</td>';
 		out += '<td width="80px">'+_exudGeneralsGetLabel("ColumnOwner")+'</td>';
 		out += '</tr>'; 
 		
@@ -246,9 +226,9 @@ function _exudMakeGeneralsTable(Selected) {
 				else
 					out += '<td>   '+S.Name+'</td>';
 			
-				out += '<td>'+(S.HasElites ? _exudGeneralsGetLabel("Yes") : '')+'</td>';
+				out += '<td>'+(S.HasElites ? loca.GetText("LAB", "YES"): '')+'</td>';
 				out += '<td>'+(S.TotalArmy>0?S.TotalArmy:'')+'</td>';
-				out += '<td>'+(S.Owner ? _exudGeneralsGetLabel("Yes"): '')+'</td>';
+				out += '<td>'+(S.Owner ? loca.GetText("LAB", "YES"): '')+'</td>';
 				out += '</tr>'; 
 			}
 			catch (error2) {
@@ -299,7 +279,7 @@ function _exudGenTemplateSaved(event)
 function _exudGeneralsLoadData()
 {
 	file = new air.File(readLastDir('genspec'));
-	txtFilter = new air.FileFilter(_exudGeneralsGetLabel("AllFiles"), "*.*"); 
+	txtFilter = new air.FileFilter("All Files" , "*.*"); 
 	file.browseForOpen("Open", [txtFilter]); 
 	file.addEventListener(air.Event.SELECT, _exudGenloadTemplateComplete); 
 }
