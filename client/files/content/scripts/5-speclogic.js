@@ -7,7 +7,7 @@ $("#specTimeType").change(function(){
 	});
 });
 var dtf = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
-dtf.setDateTimePattern("y-MM-dd HH:mm"); 
+dtf.setDateTimePattern("MM-dd HH:mm"); 
 
 function multiSelectSpec()
 {

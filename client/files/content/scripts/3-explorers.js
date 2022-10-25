@@ -20,7 +20,11 @@ function menuExplorersHandler(event)
 				if (skill.getId() == 40) { bean = true; }
 			}
 		  });
-		  out = out + '<div class="row"><div class="col-xs-4 col-sm-4 col-lg-4 name">' + item.getName(false) + '</div><div class="col-xs-3 col-sm-3 col-lg-3">&nbsp;</div><div class="col-xs-5 col-sm-5 col-lg-5">' + createExplorerDropdown(item.GetUniqueID(), art, bean) + '</div></div>';
+		  out += createTableRow([
+			[4, getImageTag(item.getIconID(), '10%') + item.getName(false)],
+			[3, '&nbsp;'],
+			[5, createExplorerDropdown(item.GetUniqueID(), art, bean)]
+		  ]);
 	  }
 	});
 	out = out + '</div>';
