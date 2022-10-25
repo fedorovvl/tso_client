@@ -1,5 +1,6 @@
 var info = {};
 var infoTree = {};
+var missMatch = {};
 var currentCheckboxes = '';
 $("#managerModal").on('show.bs.modal hide.bs.modal', function(){ window.nativeWindow.stage.swapChildrenAt(0, 1); });
 
@@ -7,8 +8,10 @@ function scriptsManagerWindow()
 {
 	$( "div[role='dialog']:not(#managerModal):visible").modal("hide");
 	$('#managerProceed').attr("disabled", true);
+	$('#managerReinstall').attr("disabled", true);
 	currentScripts = getCurrentScripts();
 	currentCheckboxes = '';
+	missMatch = {};
 	out = '<div class="container-fluid">';
 	if(info == '') {
 		out += '<p>Unable to get info from github</p>';
@@ -25,6 +28,7 @@ function scriptsManagerWindow()
 			[1,st],
 			[2,'<input type="checkbox" id="'+name+'" '+(currentScripts[name] ? 'checked' : '')+'>']
 		]);
+		if(st != 'ok') { missMatch[name] = true; }
 		currentCheckboxes += (currentScripts[name] ? '1' : '0');
 		delete currentScripts[name];
 	}
@@ -45,6 +49,9 @@ function scriptsManagerWindow()
 		$("#managerModalData input[type=checkbox]").each(function(i, item) { checkboxes += + item.checked; });
 		$('#managerProceed').attr("disabled", checkboxes == currentCheckboxes);
 	});
+	if(Object.keys(missMatch).length > 0) {
+		$('#managerReinstall').attr("disabled", false);
+	}
 	$('#managerModalData a').click(function(event) { 
 		event.preventDefault();
 		air.navigateToURL(new air.URLRequest(this)); 
@@ -52,6 +59,25 @@ function scriptsManagerWindow()
 	$('#managerModal:not(:visible)').modal({backdrop: "static"});
 }
 
+function managerReinstall()
+{
+	out = '';
+	for(item in missMatch)
+	{
+		$.get("https://raw.githubusercontent.com/fedorovvl/tso_client/master/userscripts/"+item, function(data) {
+			fileName = this.url.replace(/^.*[\\\/]/, '');
+			out += '<p>Reinstall '+fileName+'<\p>';
+			$("#managerModalData").html('<div class="container-fluid">'+out+'<\p>');
+			file = new air.File(air.File.applicationDirectory.resolvePath("userscripts/"+fileName).nativePath);
+			var fileStream = new air.FileStream();
+			fileStream.open(file, air.FileMode.WRITE);
+			fileStream.writeUTFBytes(data);
+			fileStream.close();
+			delete missMatch[fileName];
+			if(Object.keys(missMatch).length == 0) { finishProceed(); }
+		});
+	}
+}
 
 function getScriptField(data)
 {
