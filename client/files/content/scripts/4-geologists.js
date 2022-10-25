@@ -15,7 +15,7 @@ function menuGeologistsHandler(event)
 		  if (item.GetTask() != null) { return; }
 		  isThereAnySpec = true;
 		  out += createTableRow([
-			[4, getImageTag(item.getIconID(), '10%') + item.getName(false)],
+			[4, getImageTag(item.getIconID(), '10%') + item.getName(false), 'name'],
 			[3, '&nbsp;'],
 			[5, createGeologistDropdown(item.GetUniqueID(), playerLevel, false)]
 		  ]);

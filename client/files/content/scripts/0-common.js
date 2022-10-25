@@ -82,7 +82,12 @@ function createTableRow(data, isHeader)
 {
 	var out = '<div class="row">';
 	data.forEach(function(item) {
-		out += '<div class="col-xs-'+item[0]+' col-sm-'+item[0]+' col-lg-'+item[0]+'" '+(isHeader ? 'style="background-color:gray;height:23px"' : '')+'>'+item[1]+'</div>'
+		out += '<div class="col-xs-{0} col-sm-{0} col-lg-{0} {2}" {1}>{3}</div>'.format(
+			item[0],
+			isHeader ? 'style="background-color:gray;height:23px"' : '',
+			item[2] ? item[2] : '',
+			item[1]
+		);
 	});
 	return '</div>' + out;
 }

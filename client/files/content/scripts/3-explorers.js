@@ -21,7 +21,7 @@ function menuExplorersHandler(event)
 			}
 		  });
 		  out += createTableRow([
-			[4, getImageTag(item.getIconID(), '10%') + item.getName(false)],
+			[4, getImageTag(item.getIconID(), '10%') + item.getName(false), 'name'],
 			[3, '&nbsp;'],
 			[5, createExplorerDropdown(item.GetUniqueID(), art, bean)]
 		  ]);
