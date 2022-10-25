@@ -1,5 +1,49 @@
 
-addToolsMenuItem("Collectables" + " (Ctrl + F4)", _exudHLColl, 115, true);
+
+const _exudCollectablesLang = [ 
+								[ ["en-uk"] , 
+									[
+										[ "menuItemName", "Collectables" ] ,
+										[ "error1", "Error loading building vector !" ] ,
+										[ "CommandSent", "Command Sent" ] 
+									]
+								] ,
+								[ ["pt-br"] , 
+									[
+										[ "menuItemName", "Collecionaveis" ] ,
+										[ "error1", "Erroro carregando os dados !" ] ,
+										[ "CommandSent", "Comandos enviados" ] 
+									]
+								]
+						];
+						
+addToolsMenuItem(_exudCollGetLabel("menuItemName") + " (Ctrl + F4)", _exudHLColl, 115, true);
+						
+						
+function _exudCollGetLabel(id)
+{
+	var idL = loca.getSelectedLanguage();
+	var ls = _exudCollGetLanguage(idL);
+	
+	var y = 0;
+
+	for(y = 0 ; y < ls.length ; y++)
+		if (ls[y][0] == id)
+			return ls[y][1];
+
+	return "RES not found : " + id;
+}	
+
+function _exudCollGetLanguage(id)
+{
+	
+	var y = 0;
+	for(y = 0 ; y < _exudCollectablesLang.length ; y++)
+		if (_exudCollectablesLang[y][0] == id)
+			return _exudCollectablesLang[y][1];
+		
+	return _exudCollectablesLang[0][1]; // English default
+}
 
 function _exudHLColl(event) {
 	try 
@@ -9,7 +53,7 @@ function _exudHLColl(event) {
 		var GI = swmmo.application.mGameInterface;
 		var _Buildings = GI.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector();
 		if (_Buildings == null || typeof _Buildings == "undefined") {
-			alert("Error loading building vector !");
+			alert(_exudCollGetLabel("error1"));
 			return;
 		}
 
@@ -74,7 +118,7 @@ function _exudHLColl(event) {
 		catch (error3) {
 		}
 
-		showAlert("Command Sent", false, 'success');	
+		showAlert(_exudCollGetLabel("CommandSent"), false, 'success');	
 	}
 	catch (error) {
 		alert(error.message);
