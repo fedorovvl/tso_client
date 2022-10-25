@@ -34,6 +34,26 @@ TimedQueue.prototype = {
     }
 }
 
+if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+}
+
+function getImageTag(name, w, h)
+{
+	var bd = assets.GetBitmapData(name);
+	var ba = bd.encode(bd.rect, new window.runtime.flash.display.PNGEncoderOptions(true));
+	b64encoder.encodeBytes(ba);
+	return '<img style="width: {0};height: {1};" src="data:image/png;base64,{2}" />'.format(w ? w : 'auto', h ? h : 'auto', b64encoder.toString());
+}
+
 function createToolsMenu()
 {
 	try{
