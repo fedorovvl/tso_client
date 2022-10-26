@@ -1,261 +1,167 @@
 
-// ========== Generals COMMAND\
-const _exudGeneralsLang = [
-    [
-        ["en-uk"] ,
-        [
-            [ "ByName", "Sort by Name" ] ,
-            [ "ByType", "Sort by Type" ] ,
-            [ "ShowGuest", "Show Guests" ] ,
-            [ "HideGuest", "Hide Guests" ] ,
-            [ "ShowUnselected", "Show Unselected" ] ,
-            [ "HideUnselected", "Hide Unselected" ] ,
-            [ "SelectAll", "Select All" ] ,
-            [ "Load", "Load" ] ,
-            [ "CommandSent", "Command sent" ] ,
-            [ "ColumnOwner", "Owner" ]
-        ]
-    ], [
-        ["pt-br"] ,
-        [
-            [ "ByName", "Classificar por nome" ] ,
-            [ "ByType", "Classificar por tipo" ] ,
-            [ "ShowGuest", "Todos" ] ,
-            [ "HideGuest", "Somente os meus" ] ,
-            [ "ShowUnselected", "Todos" ] ,
-            [ "HideUnselected", "Somente selecionados" ] ,
-            [ "SelectAll", "Selecionar todos" ] ,
-            [ "Load", "Carregar" ] ,
-            [ "ColumnOwner", "Proprietario" ]
-        ]
-    ], [
-        ["pl-pl"] ,
-        [
-            [ "ByName", "Sortuj po nazwie" ] ,
-            [ "ByType", "Sortuj po typie" ] ,
-            [ "ShowGuest", "Pokaż gości" ] ,
-            [ "HideGuest", "Ukryj gości" ] ,
-            [ "ShowUnselected", "Pokaż niezaznaczonych" ] ,
-            [ "HideUnselected", "Ukryj niezaznaczonych" ] ,
-            [ "SelectAll", "Zaznacz wszystkich" ] ,
-            [ "Load", "Załaduj" ] ,
-            [ "CommandSent", "Generał wysłany" ] ,
-            [ "ColumnOwner", "Właściciel" ]
-        ]
-    ]
-];
+// ========== Generals COMMAND
+const _exudGeneralsLang = {
+	"en-uk": {
+		"ByName": "Sort by Name",
+        "ByType": "Sort by Type",
+        "ShowGuest": "Show Guests",
+        "HideGuest": "Hide Guests",
+        "ShowUnselected": "Show Unselected",
+        "HideUnselected": "Hide Unselected",
+        "SelectAll": "Select All",
+        "Load": "Load",
+        "CommandSent": "Command sent",
+        "ColumnOwner": "Owner"
+    },
+    "pt-br": {
+        "ByName": "Classificar por nome",
+        "ByType": "Classificar por tipo",
+        "ShowGuest": "Todos",
+        "HideGuest": "Somente os meus",
+        "ShowUnselected": "Todos",
+        "HideUnselected": "Somente selecionados",
+        "SelectAll": "Selecionar todos",
+        "Load": "Carregar",
+        "ColumnOwner": "Proprietario"
+    },
+    "pl-pl": {
+        "ByName": "Sortuj po nazwie",
+        "ByType": "Sortuj po typie",
+        "ShowGuest": "Pokaż gości",
+        "HideGuest": "Ukryj gości",
+        "ShowUnselected": "Pokaż niezaznaczonych",
+        "HideUnselected": "Ukryj niezaznaczonych",
+        "SelectAll": "Zaznacz wszystkich",
+        "Load": "Załaduj",
+        "CommandSent": "Generał wysłany",
+        "ColumnOwner": "Właściciel"
+    }
+};
 
 addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
 
 var _exudGeneralsSortType = 0; // 0 = type/name  1 = name/type
 var _exudGeneralsHideGuest = false;
 var _exudGeneralsHideUnselected = false;
+var _exudGeneralsToggleselected = false;
+var idL = loca.getSelectedLanguage();
 
 function _exudGeneralsGetLabel(id)
 {
-	
-	var idL = loca.getSelectedLanguage();
-	var ls = _exudGeneralsGetLanguage(idL);
-	
-	var y = 0;
-
-	for(y = 0 ; y < ls.length ; y++)
-		if (ls[y][0] == id)
-			return ls[y][1];
-
-	return "RES not found : " + id;
+	if(!_exudGeneralsLang[idL] && !_exudGeneralsLang["en-uk"][id]) { return "RES not found : " + id; }
+	return _exudGeneralsLang[idL] && _exudGeneralsLang[idL][id] ? _exudGeneralsLang[idL][id] : _exudGeneralsLang["en-uk"][id];
 }	
-
-function _exudGeneralsGetLanguage(id)
-{
-	
-	var y = 0;
-	for(y = 0 ; y < _exudGeneralsLang.length ; y++)
-		if (_exudGeneralsLang[y][0] == id)
-			return _exudGeneralsLang[y][1];
-		
-	return _exudGeneralsLang[0][1]; // English default
-}
-
-
 
 function _exudGeneralsMenuHandler(event)
 {
+	$('#udSpecModal').remove();
 	// close all modals
 	$( "div[role='dialog']:not(#udSpecModal):visible").modal("hide");
-	// check if modal window already exist
-	if($("#udSpecModal").length == 0)
+	// create modal
+	createModalWindow('udSpecModal', loca.GetText("ACL", "MilitarySpecialists"));
+	if($('#udSpecModal .modal-footer ._exudSpecLoadTemplateBtn').length == 0)
 	{
-		// create new one by copying buffmodal
-		$("#buffModal").clone().attr('id', 'udSpecModal').appendTo(".container");
-		// change title
-		$("#udSpecModal .modal-title").text(loca.GetText("ACL", "MilitarySpecialists"));
-		// change data id
-		$("#udSpecModal .modal-body").attr('id', 'udSpecModalData');
-		// remove buttons except close
-		$("#udSpecModal .modal-footer button:not(.btn-danger)").remove();
-		// add flipflop
-		$("#udSpecModal").on('show.bs.modal hide.bs.modal', function(){ window.nativeWindow.stage.swapChildrenAt(0, 1); });
+		$("#udSpecModal .modal-footer").prepend([
+			$('<button>').attr({ "id": "_exudSpecLoadTemplateBtn", "class": "btn btn-primary pull-left _exudSpecLoadTemplateBtn" }).text(_exudGeneralsGetLabel("Load")),
+			$('<button>').attr({ "id": "_exudSpecSaveTemplateBtn", "class": "btn btn-primary pull-left _exudSpecSaveTemplateBtn" }).text(loca.GetText("LAB", "Save")),
+			$('<button>').attr({ "id": "_exudSpecSaveTemplateBtn", "class": "btn btn-success _exudSendGeneralsBtn" }).text(loca.GetText("LAB", "Send"))
+		]);
+		$('#udSpecModal ._exudSpecLoadTemplateBtn').click(_exudGeneralsLoadData);
+		$('#udSpecModal ._exudSpecSaveTemplateBtn').click(_exudGeneralsSaveData);
+		$('#udSpecModal ._exudSendGeneralsBtn').click(_exudGeneralsSend);
 	}
-
 	_exudGetGeneralsData();
 
 	$('#udSpecModal:not(:visible)').modal({backdrop: "static"});
 }
 
-function _exudGetGeneralsData() {
-
-	var out = '';
-	var GI = null;
-	var CPZ_ID = 0;
-	var AdvManager = null;
-	var PlayerID = 0;
-	var isAdventureZone = false;
-	var Adventures = null;
-	var hasAdv = false;
-
-
-	try {
-		GI = swmmo.application.mGameInterface;
-		CPZ_ID = GI.mCurrentViewedZoneID;
-		AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
-		PlayerID = GI.mCurrentPlayer.GetPlayerId();
-		isAdventureZone = GI.mCurrentPlayer.mIsAdventureZone;
-		Adventures = AdvManager.getAdventures(); //Vector.<dAdventureClientInfoVO>
-		hasAdv = (Adventures != null && Adventures.length > 0);
+function _exudGetGeneralsData()
+{
+	try
+	{
+		var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
+		var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
 		
-		out += '<select id="udcboSendZones">';
-		out += '<option value="-1">-----</option>';
-		out += '<option value="98">'+loca.GetText("LAB", "StarMenu")+'</option>';
+		select = $('<select>', { id: 'udcboSendZones' });
+		select.append($('<option>', { value: '-1' }).text('-----').prop("outerHTML"));
+		select.append($('<option>', { value: '98' }).text(loca.GetText("LAB", "StarMenu")).prop("outerHTML"));
 		
-		if (isAdventureZone)
-			out += '<option value="99">'+loca.GetText("LAB", "ReturnHome")+'</option>';
+		if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
+			select.append($('<option>', { value: swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() }).text(loca.GetText("LAB", "ReturnHome")).prop("outerHTML"));
 
-		if (hasAdv)
-		{
-			var y = 0;
-			for(y = 0 ; y < Adventures.length; y++)
-			{
-				var A = Adventures[y];
-				if (A.zoneID != CPZ_ID)
-				{
-					if (A.ownerPlayerID == PlayerID)
-						out += '<option value="'+y+'">'+A.adventureName+'</option>';
-					else
-						out += '<option value="'+y+'">*'+A.adventureName+'</option>';
-				}
-					
+		AdvManager.getAdventures().forEach(function(item){
+			if (item.zoneID != swmmo.application.mGameInterface.mCurrentViewedZoneID) {
+				select.append($('<option>', { value: item.zoneID }).text((item.ownerPlayerID != PlayerID ? '*' : '') + loca.GetText("ADN", item.adventureName)).prop("outerHTML"));
 			}
-		}
+		});
 		
-		out += '</select> (* = guest)';
-		out += ' <button type="button" class="btn btn-success _exudSendGeneralsBtn">'+loca.GetText("LAB", "Send")+'</button><br/>';
-		out += ' <button type="button" class="btn btn-sm _exudSelectAllGeneralsBtn">'+_exudGeneralsGetLabel("SelectAll")+'</button>';
-		out += ' <button type="button" class="btn btn-sm _exudChangeGeneralSortBtn">' + (_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType"))+'</button>';
-		out += ' <button type="button" class="btn btn-sm _exudHideGuestGeneralsBtn">'+(_exudGeneralsHideGuest  ? _exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest"))+'</button>';
-		out += ' <button type="button" class="btn btn-sm _exudHideUnselectedGeneralsBtn">'+(_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected"))+'</button><br/>';
+		out = select.prop("outerHTML") + ' (* = guest) ';
+		out += $('<button>').attr({ "class": "btn btn-sm _exudSelectAllGeneralsBtn" }).text(
+			_exudGeneralsGetLabel("SelectAll")
+		).prop("outerHTML") + ' ';
+		out += $('<button>').attr({ "class": "btn btn-sm _exudChangeGeneralSortBtn" }).text(
+			_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType")
+		).prop("outerHTML") + ' ';
+		out += $('<button>').attr({ "class": "btn btn-sm _exudHideGuestGeneralsBtn" }).text(
+			_exudGeneralsHideGuest  ? _exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest")
+		).prop("outerHTML") + ' ';
+		out += $('<button>').attr({ "class": "btn btn-sm _exudHideUnselectedGeneralsBtn" }).text(
+			_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected")
+		).prop("outerHTML") + ' ';
+		
+		out += '</br></br><div id="_exudGeneralsDivTable">{0}</div>'.format(_exudMakeGeneralsTable());
 
-		out += ' <button type="button" class="btn btn-sm _exudSpecLoadTemplateBtn">'+_exudGeneralsGetLabel("Load")+'</button>';
-		out += ' <button type="button" class="btn btn-sm _exudSpecSaveTemplateBtn">'+loca.GetText("LAB", "Save")+'</button>';
-		out += '</br>';
-		
-		out += '<div id="_exudGeneralsDivTable">';
-		out += _exudMakeGeneralsTable(null);
-		out += '</div>';
-		
-	}
-	catch (error) {
+	} catch (error) {
 		alert(error.message);
 	}
 	
-	out = '<div class="container-fluid" id="exSpecMainDiv">' + out + '</div>';
-	$('#udSpecModalData').html(out);
-	
-	$('#udSpecModalData ._exudSendGeneralsBtn').click(_exudGeneralsSend);
-	$('#udSpecModalData ._exudSelectAllGeneralsBtn').click(_exudSelectAllGenerals);
-	$('#udSpecModalData ._exudSpecLoadTemplateBtn').click(_exudGeneralsLoadData);
-	$('#udSpecModalData ._exudSpecSaveTemplateBtn').click(_exudGeneralsSaveData);
-	$('#udSpecModalData ._exudChangeGeneralSortBtn').click(_exudChangeGeneralSort);
-	$('#udSpecModalData ._exudHideGuestGeneralsBtn').click(_exudChangeHideGuestGenerals);
-	$('#udSpecModalData ._exudHideUnselectedGeneralsBtn').click(_exudChangeHideUnselectedGenerals);
+	$('#udSpecModalData').html('<div class="container-fluid" id="exSpecMainDiv">' + out + '</div>');
+
+	$('#udSpecModalData ._exudSelectAllGeneralsBtn').click(function() {
+		_exudGeneralsToggleselected = !_exudGeneralsToggleselected;
+		$('#udSpecModalData input[type="checkbox"]').each(function(i, item) { 
+			item.checked = _exudGeneralsToggleselected;	
+		});
+	});
+
+	$('#udSpecModalData ._exudChangeGeneralSortBtn').click(function(){
+		if (++_exudGeneralsSortType == 2)
+			_exudGeneralsSortType = 0;
+		$('#udSpecModalData ._exudChangeGeneralSortBtn').html(_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType"));
+		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+	});
+	$('#udSpecModalData ._exudHideGuestGeneralsBtn').click(function(){
+		_exudGeneralsHideGuest = !_exudGeneralsHideGuest;
+		$('#udSpecModalData ._exudHideGuestGeneralsBtn').html(_exudGeneralsHideGuest  ?_exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest"));
+		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+	});
+	$('#udSpecModalData ._exudHideUnselectedGeneralsBtn').click(function(){
+		_exudGeneralsHideUnselected = !_exudGeneralsHideUnselected;
+		$('#udSpecModalData ._exudHideUnselectedGeneralsBtn').html(_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected"));
+		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+	});
 }
 
-function _exudChangeHideGuestGenerals()
+function _exudMakeGeneralsTable()
 {
-	_exudGeneralsHideGuest = !_exudGeneralsHideGuest;
-	$('#udSpecModalData ._exudHideGuestGeneralsBtn').html((_exudGeneralsHideGuest  ?_exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest")));
-		_exudRefreshGeneralsTable();
-
-}
-function _exudChangeHideUnselectedGenerals()
-{
-	_exudGeneralsHideUnselected = !_exudGeneralsHideUnselected;
-	$('#udSpecModalData ._exudHideUnselectedGeneralsBtn').html((_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected")));
-		_exudRefreshGeneralsTable();
-}
-
-function _exudChangeGeneralSort() {
-	if (++_exudGeneralsSortType == 2)
-		_exudGeneralsSortType = 0;
-
-	$('#udSpecModalData ._exudChangeGeneralSortBtn').html((_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType")));
-	
-	_exudRefreshGeneralsTable();
-}
-
-function _exudRefreshGeneralsTable()
-{
-	var checks = _exudGeneralsGetChecked();
-	
-	var out = _exudMakeGeneralsTable(checks);
-	$('#_exudGeneralsDivTable').html(out);
-}
-
-function _exudMakeGeneralsTable(Selected) {
-
-	var out = '';
-
-	try {	
-		out = '<table id="udSpecTable"><tr>';	
-		out += '<td width="350px">'+loca.GetText("LAB","Name")+'</td>';
-		out += '<td width="80px">'+loca.GetText("LAB", "EliteUnits")+'</td>';
-		out += '<td width="100px">'+loca.GetText("LAB", "Army")+'</td>';
-		out += '<td width="80px">'+_exudGeneralsGetLabel("ColumnOwner")+'</td>';
-		out += '</tr>'; 
-		
-		var y = 0;
-		var listS = _exudGetSpecialists();
-				
-		for(y = 0 ; y < listS.length ; y++)
-		{
-			try {
-				var S = listS[y];
-				if (_exudGeneralsHideGuest &&  !S.Owner) continue;
-				if (_exudGeneralsHideUnselected && Selected != null && Selected.indexOf(S.UID)<0) continue;
-				
-				out += '<tr>'; 
-
-				if (_exudGeneralsIsSelectable(S))
-					out += '<td><input type="checkbox" id="udSpecChk_'+S.UID+'"'+(Selected != null && Selected.indexOf(S.UID)>=0?' checked':'')+'/> '+S.Name+'</td>';
-				else
-					out += '<td>   '+S.Name+'</td>';
-			
-				out += '<td>'+(S.HasElites ? loca.GetText("LAB", "YES"): '')+'</td>';
-				out += '<td>'+(S.TotalArmy>0?S.TotalArmy:'')+'</td>';
-				out += '<td>'+(S.Owner ? loca.GetText("LAB", "YES"): '')+'</td>';
-				out += '</tr>'; 
-			}
-			catch (error2) {
-			}
-		}
-		
-		out += '</table>';
-		
-	}
-	catch (error) {
-		alert(error.message);
-	}
-
+	var Selected = _exudGeneralsGetChecked();
+	var out = createTableRow([
+		[4, loca.GetText("LAB","Name")],
+		[3, loca.GetText("LAB", "EliteUnits")],
+		[3, loca.GetText("LAB", "Army")],
+		[2, _exudGeneralsGetLabel("ColumnOwner")]
+	], true);
+	_exudGetSpecialists().forEach(function(item){
+		if (_exudGeneralsHideGuest && !item.Owner) return;
+		if (_exudGeneralsHideUnselected && Selected.indexOf(item.UID)<0) return;
+		var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''), item.Name);
+		out += createTableRow([
+			[4, !_exudGeneralsIsSelectable(item) ? item.Name : checkbox],
+			[3, (item.HasElites ? loca.GetText("LAB", "YES"): '')],
+			[3, (item.TotalArmy>0?item.TotalArmy:'')],
+			[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
+		]);
+	});
 	return out;
 }
 
@@ -267,277 +173,143 @@ function _exudGeneralsIsSelectable(S)
 function _exudGeneralsSaveData()
 {
 	var listS = new Array();
-		var checks = document.getElementById('_exudGeneralsDivTable').getElementsByTagName('input');
-		if (checks.length > 0)
-		 {
-			 for(y = 0 ; y < checks.length ; y++)
-			 {
-				 var c = checks[y];
-				if (c.type == "checkbox" &&  _exudGeneralsIsMyCheck(c) && c.checked)
-					 listS.push(c.id); 
-			 }
-		 }
-		 
-		if (listS.length > 0)
-		{
-			var dataToSave = JSON.stringify(listS);
-			var file = new air.File(readLastDir('genspec')).resolvePath("specGenerals.txt");
-			file.addEventListener(air.Event.COMPLETE, _exudGenTemplateSaved); 
-			file.save(dataToSave);
+	$('#udSpecModalData input[type="checkbox"]').each(function(i, item) { 
+		if(item.checked) {
+			listS.push(item.id);
 		}
+	});
+	if (listS.length > 0) {
+		var file = new air.File(readLastDir('genspec')).resolvePath("specGenerals.txt");
+		file.addEventListener(air.Event.COMPLETE, function(event){
+			saveLastDir('genspec', event.target.parent.nativePath);
+		}); 
+		file.save(JSON.stringify(listS));
+	}	
 }
-function _exudGenTemplateSaved(event) 
-{ 
-    saveLastDir('genspec', event.target.parent.nativePath); 
-}
+
 function _exudGeneralsLoadData()
 {
-	file = new air.File(readLastDir('genspec'));
-	txtFilter = new air.FileFilter("All Files" , "*.*"); 
+	var file = new air.File(readLastDir('genspec'));
+	var txtFilter = new air.FileFilter("All Files" , "*.*"); 
 	file.browseForOpen("Open", [txtFilter]); 
-	file.addEventListener(air.Event.SELECT, _exudGenloadTemplateComplete); 
+	file.addEventListener(air.Event.SELECT, function(event){
+		event.target.addEventListener(air.Event.COMPLETE, _exudGenLoadTemplateLoaded); 
+		event.target.load();
+	}); 
 }
-function _exudGenloadTemplateComplete(event)
-{
-	event.target.addEventListener(air.Event.COMPLETE, _exudGenLoadTemplateLoaded); 
-	event.target.load();
-}
+
 function _exudGenLoadTemplateLoaded(event)
 {
-	var listS;
+	var listS = [];
 	try{
 	  listS = JSON.parse(event.target.data);
 	} catch(e) {
 	  alert("Bad template file");
 	  return;
 	}
-	
-		var checks = document.getElementById('_exudGeneralsDivTable').getElementsByTagName('input');
-		
-		if (checks.length > 0)
-		 {
-			 for(y = 0 ; y < checks.length ; y++)
-			 {
-				 var c = checks[y];
-				 try {
-					 
-					 if (c.type == "checkbox" &&  _exudGeneralsIsMyCheck(c))
-					 {
-						
-						c.checked = (listS.indexOf(c.id)>=0);
-					 }
-				 }
-				 catch(e) {}
-			 }
-		 }
-}
-
-function _exudSelectAllGenerals()
-{
-		var checks = document.getElementById('_exudGeneralsDivTable').getElementsByTagName('input');
-		if (checks.length > 0)
-		 {
-			 for(y = 0 ; y < checks.length ; y++)
-			 {
-				 var c = checks[y];
-				 if (c.type == "checkbox" &&  _exudGeneralsIsMyCheck(c) && !c.checked)
-					c.checked = true;
-			 }
-		 }
+	$('#udSpecModalData input[type="checkbox"]').each(function(i, item) { 
+		item.checked = listS.indexOf(item.id) >= 0;
+	});
 }
 
 function _exudGeneralsGetChecked()
 {
 	var GensUID = new Array();
-	var checks = document.getElementById('_exudGeneralsDivTable').getElementsByTagName('input');
-
-	if (checks.length > 0)
-		for(y = 0 ; y < checks.length ; y++)
-		{
-			try{
-				
-				var c = checks[y];
-				
-				if (c.type == "checkbox" && c.checked && _exudGeneralsIsMyCheck(c) )
-					 GensUID.push(c.id.replace('udSpecChk_', '')); 
-
-			}
-			catch (e) {alert(e.message);}
+	$('#udSpecModalData input[type="checkbox"]').each(function(i, item) { 
+		if(item.checked) {
+			GensUID.push(item.id); 
 		}
+	});
 	return GensUID;
-}
-
-function _exudGeneralsIsMyCheck(c)
-{
-	try{
-		return (c.id.substr(0,10) == 'udSpecChk_');
-	}
-	catch (e) {
-		
-	}
 }
 
 function _exudGeneralsSend()
 {
-
-	 try {
+	try
+	{
 		var OptionSelected = $('#udcboSendZones option:selected').val();
 		if (OptionSelected == -1) return;
-		var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
-		var checkedUID = _exudGeneralsGetChecked();
-		var GI = swmmo.application.mGameInterface;
-		var CPZ = GI.mCurrentPlayerZone;	
-		var Specialists = CPZ.GetSpecialists_vector(); // Vector.<cSpecialist>		
-		var Adventures = AdvManager.getAdventures();
-		var y = 0;
-		var GHZ_ID = GI.mCurrentPlayer.GetHomeZoneId();
-		
-		if (checkedUID.length > 0)
-		 {
-			 for(y = 0 ; y < checkedUID.length ; y++)
-			 {
-				 try {
-					 var suid = checkedUID[y];
-					 var S = _exudGetSpecialistbyUID(Specialists,suid);
-					 if (S != null)
-					 {
-						 switch(OptionSelected)
-						 {
-							 case '0':  // adv 0
-								 _exudSendToZone( S, Adventures[0].zoneID);
-								break;
-							 case '1': // adv 1
-								 _exudSendToZone(S, Adventures[1].zoneID);
-								break;
-							 case '98': // star menu
-								if (S.GetGarrisonGridIdx() > 0) // not in star menu
-									_exudSendGeneralToStar(S);//setTimeout(_exudSendGeneralToStar, offset_func, S);
-								break;
-							 case '99': // home
-								 _exudSendToZone( S, GHZ_ID);
-								break;
-							default:
-								break;
-						 }
-					 }
-				 }
-				 catch (error2) {
-					 alert(error2.message);
-				 }												 
-			 }
-
-			$('#udSpecModal').modal('hide');	
-			showAlert(_exudGeneralsGetLabel("CommandSent"), false, 'success');			
-		 }
-		 
+		var Specialists = swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector(); // Vector.<cSpecialist>	
+		var Services = swmmo.getDefinitionByName("com.bluebyte.tso.service::ServiceManager").getInstance();
+		_exudGeneralsGetChecked().forEach(function(item){
+			var S = _exudGetSpecialistbyUID(Specialists,item);
+			if (S == null) { return; }
+			if (OptionSelected == '98' && S.GetGarrisonGridIdx() > 0) {
+				_exudSendGeneralToStar(S);
+			}
+			if (OptionSelected != '98') {
+				Services.specialist.sendToZone(S, OptionSelected);
+			}
+		});
+		$('#udSpecModal').modal('hide');	
+		showAlert(_exudGeneralsGetLabel("CommandSent"), false, 'success');			
 	 }
 	 catch (error) {
 		 alert(error.message);
 	 }
 }
 
-function _exudSendToZone(S, Z)
-{
-	try{
-	var Services = swmmo.getDefinitionByName("com.bluebyte.tso.service::ServiceManager").getInstance();
-	Services.specialist.sendToZone(S,Z);
-	}
-	catch (error) {
-	}
-}
-
 function _exudSendGeneralToStar(S)
 {
-	try {			
-			swmmo.application.mGameInterface.mCurrentCursor.mCurrentSpecialist = S;
-			specTaskDef = swmmo.getDefinitionByName("Communication.VO::dStartSpecialistTaskVO");
-			stask = new specTaskDef();
-			stask.uniqueID = S.GetUniqueID();
-			stask.subTaskID = 0;
+	try
+	{			
+		swmmo.application.mGameInterface.mCurrentCursor.mCurrentSpecialist = S;
+		specTaskDef = swmmo.getDefinitionByName("Communication.VO::dStartSpecialistTaskVO");
+		stask = new specTaskDef();
+		stask.uniqueID = S.GetUniqueID();
+		stask.subTaskID = 0;
 
-			swmmo.application.mGameInterface.SendServerAction(95,12,swmmo.application.mGameInterface.mCurrentCursor.GetGridPosition(),0,stask);
-			wfcDef = swmmo.getDefinitionByName("Specialists::cSpecialistTask_TravelToStarMenu");
-			wfc = new wfcDef(swmmo.application.mGameInterface,S,0,12);
-			S.SetTask(wfc);
-
+		swmmo.application.mGameInterface.SendServerAction(95,12,swmmo.application.mGameInterface.mCurrentCursor.GetGridPosition(),0,stask);
+		wfcDef = swmmo.getDefinitionByName("Specialists::cSpecialistTask_TravelToStarMenu");
+		wfc = new wfcDef(swmmo.application.mGameInterface,S,0,12);
+		S.SetTask(wfc);
 	}
-	catch (error) {
-	}
+	catch (error) {	}
 }
-
 
 function _exudGetSpecialistbyUID(specs, uid)
 {
-	try {
-	var y = 0;
-	for(y = 0 ; y < specs.length ; y++)
-		try{
+	for(y = 0 ; y < specs.length ; y++) {
 		if (specs[y].GetUniqueID().toKeyString() == uid)
 			return specs[y];
-		}
-		catch (error2) {
-		}
 	}
-	catch (error) {
-	}
-		
 	return null;
 }
 
 function _exudGetSpecialists()
 {
-		var GI = swmmo.application.mGameInterface;
-		var CPZ = GI.mCurrentPlayerZone;	
-		var SPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
-		var Specialists = CPZ.GetSpecialists_vector(); // Vector.<cSpecialist>
-		var PlayerID = GI.mCurrentPlayer.GetPlayerId();
-
-		var y = 0;
-		var listS = new Array();
+	var SPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
+	var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
+	var listS = new Array();
+	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
+		if (!SPECIALIST_TYPE.IsGeneral(item.GetType()))
+			return;
+		listS.push({
+			"UID" : item.GetUniqueID().toKeyString(),
+			"BaseType" : item.GetBaseType(),
+			"HasElites" : item.GetArmy().HasEliteUnits(),
+			"HasUnits" : item.HasUnits(),
+			"Name" : item.getName(false).replace('<b>', '').replace('</b>',''),
+			"PlayerID" : item.getPlayerID(),
+			"Type" : item.GetType(),
+			"XP" : item.GetXP(),
+			"Travelling" : item.isTravellingAway(),
+			"InUse": item.IsInUse(),
+			"Owner" : (PlayerID == item.getPlayerID()),
+			"IsGeneral" : true,
+			"TotalArmy" : item.GetArmy().GetUnitsCount()
+		});
+	});
+	if (listS.length > 1)
+		listS.sort(_exudCompareGenerals);
 		
-		for(y = 0 ; y < Specialists.length ; y++)
-		{
-			var S = Specialists[y];
-			if (!SPECIALIST_TYPE.IsGeneral(S.GetType()))
-				continue;
-
-			try {
-				var army = S.GetArmy();
-				
-			const iS = {
-				"UID" : S.GetUniqueID().toKeyString(),
-				"BaseType" : S.GetBaseType(),
-				"HasElites" : army.HasEliteUnits(),
-				"HasUnits" : S.HasUnits(),
-				"Name" : S.getName(false).replace('<b>', '').replace('</b>',''),
-				"PlayerID" : S.getPlayerID(),
-				"Type" : S.GetType(),
-				"XP" : S.GetXP(),
-				"Travelling" : S.isTravellingAway(),
-				"InUse": S.IsInUse(),
-				"Owner" : (PlayerID == S.getPlayerID()),
-				"IsGeneral" : SPECIALIST_TYPE.IsGeneral(S.GetType()),
-				"TotalArmy" : army.GetUnitsCount()
-				};
-			listS.push(iS);
-			
-			}
-			catch (error) {
-			}
-		}
-		
-		if (listS.length > 1)
-			listS.sort(_exudCompareGenerals);
-		
-		return listS;
+	return listS;	
 }
 
 function _exudCompareGenerals( a, b ) {
 	try{
 		if (!b.Owner && a.Owner) return -1;
 		if (!a.Owner && b.Owner) return 1;
-		if (a.IsGeneral && !b.IsGeneral) return -1;
-		if (!a.IsGeneral && b.IsGeneral) return 1;
 		switch(_exudGeneralsSortType)
 		{
 			case 1:
