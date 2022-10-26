@@ -32,6 +32,7 @@ function menuAuctionHandler(event)
 		return; 
 	}
 	$( "div[role='dialog']:not(#aucModal):visible").modal("hide");
+	$('#aucModal .modal-title').html(getImageTag('icon_logistics.png') + ' '+loca.GetText("LAB", "BlackMarketAuction"));
 	$('#auxPlaceBet').hide();
 	out = '<div class="container-fluid">';
 	if(currentAuc == undefined) {

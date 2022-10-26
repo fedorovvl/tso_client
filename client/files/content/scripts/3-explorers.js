@@ -3,7 +3,7 @@ addMenuItem(loca.GetText("SPE", "Explorer") + " (F3)", menuExplorersHandler, 114
 function menuExplorersHandler(event)
 {
 	$( "div[role='dialog']:not(#specModal):visible").modal("hide");
-	$('#specModal .modal-title').html(getImageTag('icon_explorer.png')+' Explorers manager');
+	$('#specModal .modal-title').html(getImageTag('icon_explorer.png')+' '+loca.GetText("SPE", "Explorer"));
 	if(swmmo.application.mGameInterface.isOnHomzone() == false) {
 		showAlert("It's not your home zone", false, 'danger');
 		return;

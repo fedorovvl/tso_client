@@ -3,7 +3,7 @@ addMenuItem(loca.GetText("SPE", "Geologist") + " (F4)", menuGeologistsHandler, 1
 function menuGeologistsHandler(event)
 {
 	$( "div[role='dialog']:not(#specModal):visible").modal("hide");
-	$('#specModal .modal-title').html(getImageTag('icon_geologist.png')+' Geologists manager');
+	$('#specModal .modal-title').html(getImageTag('icon_geologist.png')+' '+loca.GetText("SPE", "Geologist"));
 	if(swmmo.application.mGameInterface.isOnHomzone() == false) {
 		showAlert("It's not your home zone", false, 'danger');
 		return;

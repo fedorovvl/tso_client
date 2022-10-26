@@ -11,10 +11,11 @@ addMenuItem(loca.GetText("LAB", "Buffs") + " (F5)", menuBuffsHandler, 116);
 function menuBuffsHandler(event)
 {
 	$( "div[role='dialog']:not(#buffModal):visible").modal("hide");
+	$('#buffModal .modal-title').html(getImageTag('ProductivityBuffLvl3', '45px') + ' '+loca.GetText("LAB", "Buffs"));
 	$('#buffSubmit, #buffReset, #buffSaveTemplate').hide();
 	out = '<div class="container-fluid">';
 	if(!buffRecordEnabled && buffRecord == null) {
-		out = out + '<h2 class="text-center">EXPERIMENTAL!</h2><p><strong>Welcome to buff manager.</strong></p><p>You can record what you need to buff and then replay it automatically. Press "Start recording" button and buff your (or friend) buildings. After that come back and press "Stop recording". You will see list of buildings and its buffs. Save it as temlate and next time just load template and press Submit.</p><p>Buildings with red background will not be buffed.. also if one of available buff rows be red not all buildings with this buff will be buffed</p><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">Start recording</button>';
+		out = out + '<strong>Welcome to buff manager.</strong></p><p>You can record what you need to buff and then replay it automatically. Press "Start recording" button and buff your (or friend) buildings. After that come back and press "Stop recording". You will see list of buildings and its buffs. Save it as temlate and next time just load template and press Submit.</p><p>Buildings with red background will not be buffed.. also if one of available buff rows be red not all buildings with this buff will be buffed</p><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">Start recording</button>';
 	}
 	if(buffRecordEnabled) {
 		out = out + '<p><h2 class="text-center">Recording in progress!</h2></p><button type="button" class="btn btn-primary btn-lg btn-block" id="stopRecording">Stop recording</button>';
