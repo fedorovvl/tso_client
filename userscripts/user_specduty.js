@@ -52,9 +52,10 @@ function _exudspecDutyGetLabel(id)
 
 function dutyGetData() {
 	out = createTableRow([
-			[6, loca.GetText("LAB","Name")],
-			[3, _exudspecDutyGetLabel("ColumnEstimated")],
-			[3, _exudspecDutyGetLabel("ColumnArrival")]
+			[4, loca.GetText("LAB","Name")],
+			[4, loca.GetText("LAB","TriggerRequiredActiveQuest")],
+			[2, _exudspecDutyGetLabel("ColumnEstimated")],
+			[2, _exudspecDutyGetLabel("ColumnArrival")]
 	], true);
 	var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
 	isThereAnySpec = false;
@@ -70,8 +71,12 @@ function dutyGetData() {
 				ItemName += ' (' + pname + ')';
 		}
 		} catch (e) {} // looking for something better
-		
-		listSpec.push( [ ItemName , item.GetTask().GetRemainingTime(), getImageTag(item.getIconID(), '10%')  ]  );
+		if(_exudSpecDutyType != 3) {
+			task = loca.GetText("LAB", item.GetTask().getTaskDefinition().mainTask.taskName_string+item.GetTask().getTaskDefinition().taskType_string);
+		} else {
+			task = loca.GetText("LAB", "SpecialistTask8");
+		}
+		listSpec.push( [ ItemName , item.GetTask().GetRemainingTime(), getImageTag(item.getIconID(), '10%'), task  ]  );
 		isThereAnySpec = true;
 	});
 	
@@ -79,12 +84,12 @@ function dutyGetData() {
 		return out + _exudspecDutyGetLabel("NoData");
 
 	listSpec.sort(dutyCompare);
-	
 	listSpec.forEach(function(item){
 		out += createTableRow([
-			[6, item[2] + item[0]],
-			[3, loca.FormatDuration(item[1], 1)],
-			[3, dtf.format(new window.runtime.Date(Date.now() + item[1]))]
+			[4, item[2] + item[0]],
+			[4, item[3]],
+			[2, loca.FormatDuration(item[1], 1)],
+			[2, dtf.format(new window.runtime.Date(Date.now() + item[1]))]
 		]);
 	});
 	
