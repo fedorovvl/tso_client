@@ -2,7 +2,7 @@
 // ========== Generals COMMAND
 const _exudGeneralsLang = {
 	"en-uk": {
-		"ByName": "Sort by Name",
+	"ByName": "Sort by Name",
         "ByType": "Sort by Type",
         "ShowGuest": "Show Guests",
         "HideGuest": "Hide Guests",
@@ -35,6 +35,18 @@ const _exudGeneralsLang = {
         "Load": "Załaduj",
         "CommandSent": "Generał wysłany",
         "ColumnOwner": "Właściciel"
+    },
+    "ru-ru": {
+	"ByName": "Сортировать по имени",
+        "ByType": "Сортировать по типу",
+        "ShowGuest": "Показать генералов гостя",
+        "HideGuest": "Спрятать генералов гостя",
+        "ShowUnselected": "Показать всех",
+        "HideUnselected": "Показать отмеченных",
+        "SelectAll": "Выбрать всех",
+        "Load": "Загрузить",
+        "CommandSent": "Отправить",
+        "ColumnOwner": "Владелец"
     }
 };
 
