@@ -294,6 +294,7 @@ namespace client
             }
             catch(Exception ex)
             {
+                result = " ERROR " + ex.Message;
                 if (Main.debug)
                     File.AppendAllText("debug.txt", url + ex.Message + ex.StackTrace + "\r\n");
             }

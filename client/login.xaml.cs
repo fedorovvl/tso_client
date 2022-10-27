@@ -233,7 +233,11 @@ namespace client
             {
                 AddToRich(Servers.getTrans("emptyauth"));
             }
-            else AddToRich(Servers.getTrans("autherr") + res);
+            else
+            {
+                AddToRich(Servers.getTrans("autherr") + res);
+                MainAuth();
+            }
         }
 
         public bool PrepareFlash(string htmlPage, bool old_auth)

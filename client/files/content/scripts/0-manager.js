@@ -7,6 +7,7 @@ $("#managerModal").on('show.bs.modal hide.bs.modal', function(){ window.nativeWi
 function scriptsManagerWindow()
 {
 	$( "div[role='dialog']:not(#managerModal):visible").modal("hide");
+	$('#managerModal .modal-title').html(getImageTag('BattleBuffKill_random_unit_type_limited') + ' ' + loca.GetText("LAB", 'EventProgression'));
 	$('#managerProceed').attr("disabled", true);
 	$('#managerReinstall').attr("disabled", true);
 	currentScripts = getCurrentScripts();
