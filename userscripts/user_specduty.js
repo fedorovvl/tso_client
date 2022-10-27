@@ -63,12 +63,15 @@ function dutyGetData() {
 		var isValid = item.GetBaseType() == _exudSpecDutyType || (_exudSpecDutyType == 3 && _exudDutySPECIALIST_TYPE.IsGeneral(item.GetType()));
 		if(item.GetTask() == null || !isValid) { return; }
 		var ItemName = item.getName(false);
+		try{
 		if(_exudSpecDutyType == 3 && PlayerID != item.getPlayerID()) {
-			var pname = swmmo.application.mGameInterface.GetPlayerName_string(pid);
+			var pname = swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID());
 			if (pname != null)
 				ItemName += ' (' + pname + ')';
 		}
-		listSpec.push( [ ItemName , item.GetTask().GetRemainingTime() ]  );
+		} catch (e) {} // looking for something better
+		
+		listSpec.push( [ ItemName , item.GetTask().GetRemainingTime(), getImageTag(item.getIconID(), '10%')  ]  );
 		isThereAnySpec = true;
 	});
 	
@@ -79,7 +82,7 @@ function dutyGetData() {
 	
 	listSpec.forEach(function(item){
 		out += createTableRow([
-			[6, item[0]],
+			[6, item[2] + item[0]],
 			[3, loca.FormatDuration(item[1], 1)],
 			[3, dtf.format(new window.runtime.Date(Date.now() + item[1]))]
 		]);
