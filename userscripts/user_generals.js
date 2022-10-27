@@ -2,7 +2,7 @@
 // ========== Generals COMMAND
 const _exudGeneralsLang = {
 	"en-uk": {
-		"ByName": "Sort by Name",
+	"ByName": "Sort by Name",
         "ByType": "Sort by Type",
         "ShowGuest": "Show Guests",
         "HideGuest": "Hide Guests",
@@ -37,7 +37,7 @@ const _exudGeneralsLang = {
         "ColumnOwner": "Właściciel"
     }
     "ru-ru": {
-		"ByName": "Сортировать по имени",
+	"ByName": "Сортировать по имени",
         "ByType": "Сортировать по типу",
         "ShowGuest": "Показать генералов гостя",
         "HideGuest": "Спрятать генералов гостя",
