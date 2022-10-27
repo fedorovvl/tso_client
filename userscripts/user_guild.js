@@ -25,7 +25,7 @@ function _exudGuildMenuHandler(event) {
 
 function _exGMCSVexport()
 {
-	var out = 'name;quest;active;level\n';
+	var out = 'name;level;quest;active\n';
 	_members.forEach(function(m) {
 		out += '{0};{1};{2};{3}\n'.format(m.name,m.level,m.quest,m.active);
 	});
