@@ -154,9 +154,9 @@ function _exudMakeGeneralsTable()
 	_exudGetSpecialists().forEach(function(item){
 		if (_exudGeneralsHideGuest && !item.Owner) return;
 		if (_exudGeneralsHideUnselected && Selected.indexOf(item.UID)<0) return;
-		var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''), item.Name);
+		var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''), item.Icon + item.Name);
 		out += createTableRow([
-			[4, !_exudGeneralsIsSelectable(item) ? item.Name : checkbox],
+			[4, !_exudGeneralsIsSelectable(item) ? item.Icon + item.Name : checkbox],
 			[3, (item.HasElites ? loca.GetText("LAB", "YES"): '')],
 			[3, (item.TotalArmy>0?item.TotalArmy:'')],
 			[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
@@ -297,7 +297,8 @@ function _exudGetSpecialists()
 			"InUse": item.IsInUse(),
 			"Owner" : (PlayerID == item.getPlayerID()),
 			"IsGeneral" : true,
-			"TotalArmy" : item.GetArmy().GetUnitsCount()
+			"TotalArmy" : item.GetArmy().GetUnitsCount(),
+			"Icon" : getImageTag(item.getIconID(), '10%')
 		});
 	});
 	if (listS.length > 1)
