@@ -55,7 +55,7 @@ function menuExplorersHandler(event)
 function createExplorerDropdown(id, art, bean, mass)
 {
 	if(mass) { id = 'mass';	} else { id = id.uniqueID1 + '_' + id.uniqueID2; }	
-	select = $('<select>', { id: 'expl-'+id });
+	select = $('<select>', { id: 'expl-'+id }).attr('class', 'form-control');
 	select.append($('<option>', { value: '0' }).text(loca.GetText("LAB", "Cancel")).prop("outerHTML"));
 	treasureGroup = $('<optgroup>', { label: loca.GetText("LAB", "FindTreasure") });
 	treasureGroup.append($('<option>', { value: '1,0' }).text(loca.GetText("LAB", "FindTreasureShort")).prop("outerHTML"));

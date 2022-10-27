@@ -16,7 +16,7 @@ function scriptsManagerWindow()
 	if(info == '') {
 		out += '<p>Unable to get info from github</p>';
 	}
-	out += createTableRow([[2,"Filename"],[2,"ScriptName"],[2,"Author"],[3,"Description"],[1,"Status"],[2,"Install/Reinstall"]], true);
+	out += createTableRow([[2,"Filename"],[2,"ScriptName"],[2,"Author"],[3,"Description"],[1,"Status"],[2,"Installed"]], true);
 	info = (info == 'error') ? {} : info;
 	for(name in info) {
 		st = checkSize(info[name].size, currentScripts[name]);

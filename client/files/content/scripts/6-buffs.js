@@ -56,12 +56,20 @@ function getBuffsAvailableHTML()
 		}
 	});
 	if(Object.keys(buffNeeded).length == 0){ return '';	}
-	result = '<br><p>Buffs will be used:</p><div class="row" style="margin-bottom:1rem!important"><div class="col-xs-8 col-sm-8 col-lg-8"  style="background-color:gray;height:23px">Buff</div><div class="col-xs-2 col-sm-2 col-lg-2"  style="background-color:gray;height:23px">Needed</div><div class="col-xs-2 col-sm-2 col-lg-2" style="background-color:gray;height:23px">Available</div></div>';
+	result = '<br><p>Buffs will be used:</p>';
+	result += createTableRow([
+			[8, loca.GetText("LAB", 'Buff')],
+			[2, loca.GetText("LAB", 'Requires')],
+			[2, loca.GetText("LAB", 'Available')]
+	], true);
 	for ( buffName in buffNeeded ) {
 		count = getBuffAvailableCount(buffName);
-		style = "#ffebee";
-		if(count >= buffNeeded[buffName]) { style = "#f1f8e9"; }
-		result = result + '<div class="row" style="background-color:'+style+';"><div class="col-xs-8 col-sm-8 col-lg-8" >'+loca.GetText("RES", buffName)+'</div><div class="col-xs-2 col-sm-2 col-lg-2">'+buffNeeded[buffName]+'</div><div class="col-xs-2 col-sm-2 col-lg-2">'+count+'</div></div>';
+		style = count >= buffNeeded[buffName] ? "buffReady" : "buffNotReady";
+		result += createTableRow([
+			[8, loca.GetText("RES", buffName)],
+			[2, buffNeeded[buffName]],
+			[2, count, style]
+		]);
 	}
 	return result;
 }
@@ -88,18 +96,27 @@ function getBuffHTML()
 		result = result + '<p><strong>This buff list not for your zone!</strong></p>';
 		isZoneRight = false;
 	}
-	result = result + '<div class="row" style="margin-bottom:1rem!important"><div class="col-xs-1 col-sm-1 col-lg-1"  style="background-color:gray;height:23px">Grid</div><div class="col-xs-4 col-sm-4 col-lg-4"  style="background-color:gray;height:23px">Builing</div><div class="col-xs-5 col-sm-5 col-lg-5"  style="background-color:gray;height:23px">Buff</div><div class="col-xs-2 col-sm-2 col-lg-2"  style="background-color:gray;height:23px">Status</div></div>';
+	result += createTableRow([
+			[1, '#'],
+			[4, loca.GetText("LAB", 'Name')],
+			[5, loca.GetText("LAB", 'Buff')],
+			[2, loca.GetText("LAB", 'ProductionStatus')]
+	], true);
 	buffRecordFiltered = [];
 	$.each(buffRecord['data'], function(index, data) { 
 		status = getBuffStatus(data, isZoneRight);
-		style = "#ffebee";
 		// too dirty
 		if(data['buffName'].indexOf("RemoveBuff") >= 0) { 
 			if(status == 'already buffed') { status = 'ready'; } 
 			else if(status == 'ready') { status = 'not buffed'; } 
 		}
-		if(status == 'ready') { buffRecordFiltered.push(data); style = "#f1f8e9"; }
-		result = result + '<div class="row" style="background-color:'+style+';"><div class="col-xs-1 col-sm-1 col-lg-1">'+data['buiGrid']+'</div><div class="col-xs-4 col-sm-4 col-lg-4">'+loca.GetText("BUI", data['buiName'])+'</div><div class="col-xs-5 col-sm-5 col-lg-5 name">'+loca.GetText("RES", data['buffName'])+'</div><div class="col-xs-2 col-sm-2 col-lg-2">'+status+'<button type="button" class="close" value="'+data['buiGrid']+'"><span>&times;</span></button></div></div>';
+		if(status == 'ready') { buffRecordFiltered.push(data); }
+		result += createTableRow([
+			[1, data['buiGrid']],
+			[4, loca.GetText("BUI", data['buiName'])],
+			[5, loca.GetText("RES", data['buffName'])],
+			[2, status + '<button type="button" class="close" value="'+data['buiGrid']+'"><span>&times;</span></button>', (status == 'ready') ? "buffReady" : "buffNotReady"]
+		]);
 	});
 	return result;
 }

@@ -81,11 +81,13 @@ function createToolsMenu()
 function createTableRow(data, isHeader)
 {
 	var out = '<div class="row">';
+	var i = 0;
 	data.forEach(function(item) {
+		i++;
 		out += '<div class="col-xs-{0} col-sm-{0} col-lg-{0} {2}" {1}>{3}</div>'.format(
 			item[0],
-			isHeader ? 'style="background-color:gray;height:23px"' : '',
-			item[2] ? item[2] : '',
+			isHeader ? 'style="border-radius:{0};"'.format(i == 1 ? '10px 0px 0px 10px' : (i == data.length ? '0px 10px 10px 0px' : '')) : '',
+			isHeader ? 'tblHeader' : (item[2] ? item[2] : ''),
 			item[1]
 		);
 	});

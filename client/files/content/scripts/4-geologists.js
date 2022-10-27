@@ -49,7 +49,7 @@ function menuGeologistsHandler(event)
 function createGeologistDropdown(id, level, mass)
 {
 	if(mass) { id = 'mass';	} else { id = id.uniqueID1 + '_' + id.uniqueID2; }	
-	select = $('<select>', { id: 'expl-'+id });
+	select = $('<select>', { id: 'expl-'+id }).attr('class', 'form-control');
 	select.append($('<option>', { value: '0' }).text(loca.GetText("LAB", "Cancel")).prop("outerHTML"));
 	select.append($('<option>', { value: '0,0' }).text(loca.GetText("TOT", "FindDepositStone")).prop("outerHTML"));
 	if(level >= 9 || mass) { select.append($('<option>', { value: '0,1' }).text(loca.GetText("TOT", "FindDepositBronzeOre")).prop("outerHTML")); }
