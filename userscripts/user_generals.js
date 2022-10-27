@@ -36,6 +36,18 @@ const _exudGeneralsLang = {
         "CommandSent": "Generał wysłany",
         "ColumnOwner": "Właściciel"
     }
+    "ru-ru": {
+		"ByName": "Сортировать по имени",
+        "ByType": "Сортировать по типу",
+        "ShowGuest": "Показать генералов гостя",
+        "HideGuest": "Спрятать генералов гостя",
+        "ShowUnselected": "Показать невыбранных",
+        "HideUnselected": "Спрятать невыбранных",
+        "SelectAll": "Выбрать всех",
+        "Load": "Загрузить",
+        "CommandSent": "Отправить",
+        "ColumnOwner": "Владелец"
+    }
 };
 
 addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
