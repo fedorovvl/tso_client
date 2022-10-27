@@ -3,6 +3,6 @@
   <version>1.5.2.0</version>
   <url>https://github.com/fedorovvl/tso_client/releases/tag/v1.5.2/</url>
   <changelog>https://github.com/fedorovvl/tso_client/releases</changelog>
-  <mandatory>true</mandatory>
+  <mandatory>false</mandatory>
 </item>
 
