@@ -25,6 +25,7 @@ function specDutyTime(event) {
 	$("div[role='dialog']:not(#dutyModal):visible").modal("hide");
 	// create modal
 	createModalWindow('dutyModal', _exudspecDutyGetLabel("menuTitle"));
+	$('#dutyModal .modal-title').html(getImageTag('IntrepidExplorer') + ' ' + _exudspecDutyGetLabel("menuTitle"));
 	if($('#dutyModal .modal-footer .dutyExplorersBtn').length == 0)
 	{
 		$("#dutyModal .modal-footer").prepend([
@@ -36,6 +37,16 @@ function specDutyTime(event) {
 			_exudSpecDutyType = _exudBtnToSpecType[this.id];
 			$('#_exudDutyResultDiv').html(dutyGetData());
 		});
+	}
+	if($('#dutyModal .modal-header .container-fluid').length == 0)
+	{
+		$('#dutyModal .modal-header').append('<div class="container-fluid"><br>' + createTableRow([
+			[4, loca.GetText("LAB","Name")],
+			[4, loca.GetText("LAB","TriggerRequiredActiveQuest")],
+			[2, _exudspecDutyGetLabel("ColumnEstimated")],
+			[2, _exudspecDutyGetLabel("ColumnArrival")]
+			], true) + '</div>'
+		);
 	}
 	// fill modal data 
 	$('#dutyModalData').html('<div class="container-fluid"><div id="_exudDutyResultDiv">'+dutyGetData()+'</div></div>');
@@ -51,12 +62,7 @@ function _exudspecDutyGetLabel(id)
 }	
 
 function dutyGetData() {
-	out = createTableRow([
-			[4, loca.GetText("LAB","Name")],
-			[4, loca.GetText("LAB","TriggerRequiredActiveQuest")],
-			[2, _exudspecDutyGetLabel("ColumnEstimated")],
-			[2, _exudspecDutyGetLabel("ColumnArrival")]
-	], true);
+	out = '';
 	var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
 	isThereAnySpec = false;
 	var listSpec = new Array();
