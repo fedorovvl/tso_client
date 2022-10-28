@@ -19,6 +19,7 @@ function _exudGuildMenuHandler(event) {
 	// fill modal data 
 	$('#GuildModalData').html('<div class="container-fluid">{0}</div>'.format(_exudGuildGetData()));
 	// show modal
+	$("#GuildModal .modal-footer .btn-danger").html(loca.GetText("LAB", "Close"));
 	$('#GuildModal:not(:visible)').modal({ backdrop: "static" });
 
 }

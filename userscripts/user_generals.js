@@ -83,7 +83,7 @@ function _exudGeneralsMenuHandler(event)
 		$('#udSpecModal ._exudSendGeneralsBtn').click(_exudGeneralsSend);
 	}
 	_exudGetGeneralsData();
-
+	$("#udSpecModal .modal-footer .btn-danger").html(loca.GetText("LAB", "Close"));
 	$('#udSpecModal:not(:visible)').modal({backdrop: "static"});
 }
 
@@ -158,9 +158,9 @@ function _exudMakeGeneralsTable()
 {
 	var Selected = _exudGeneralsGetChecked();
 	var out = createTableRow([
-		[4, loca.GetText("LAB","Name")],
+		[5, loca.GetText("LAB","Name")],
 		[3, loca.GetText("LAB", "EliteUnits")],
-		[3, loca.GetText("LAB", "Army")],
+		[2, loca.GetText("LAB", "Army")],
 		[2, _exudGeneralsGetLabel("ColumnOwner")]
 	], true);
 	_exudGetSpecialists().forEach(function(item){
@@ -168,9 +168,9 @@ function _exudMakeGeneralsTable()
 		if (_exudGeneralsHideUnselected && Selected.indexOf(item.UID)<0) return;
 		var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''), item.Icon + item.Name);
 		out += createTableRow([
-			[4, !_exudGeneralsIsSelectable(item) ? item.Icon + item.Name : checkbox],
+			[5, !_exudGeneralsIsSelectable(item) ? item.Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
 			[3, (item.HasElites ? loca.GetText("LAB", "YES"): '')],
-			[3, (item.TotalArmy>0?item.TotalArmy:'')],
+			[2, (item.TotalArmy>0?item.TotalArmy:'')],
 			[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
 		]);
 	});
@@ -227,11 +227,14 @@ function _exudGenLoadTemplateLoaded(event)
 function _exudGeneralsGetChecked()
 {
 	var GensUID = new Array();
+	try{
 	$('#udSpecModalData input[type="checkbox"]').each(function(i, item) { 
 		if(item.checked) {
 			GensUID.push(item.id); 
 		}
 	});
+	}
+	catch (e) {}
 	return GensUID;
 }
 
@@ -310,7 +313,8 @@ function _exudGetSpecialists()
 			"Owner" : (PlayerID == item.getPlayerID()),
 			"IsGeneral" : true,
 			"TotalArmy" : item.GetArmy().GetUnitsCount(),
-			"Icon" : getImageTag(item.getIconID(), '10%')
+			"Icon" : getImageTag(item.getIconID(), '10%')	,
+			"PlayerName" : (swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID()) != null ? swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID()) : '')
 		});
 	});
 	if (listS.length > 1)

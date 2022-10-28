@@ -4,14 +4,16 @@ const _exudspecDutyLang = {
 		"menuTitle": "Specialists duty time"  ,
 		"ColumnEstimated": "Estimated"  ,
 		"ColumnArrival": "Arrival"  ,
-		"NoData": "No data found!" 
+		"NoData": "No data found!"  ,
+		"YOU": "you"
 	},
 	"pt-br": {
 		"menuItemName": "Tarefas Ativas"  ,
 		"menuTitle": "Tempo das tarefas dos especialistas"  ,
 		"ColumnEstimated": "Estimado"  ,
 		"ColumnArrival": "Chegada"  ,
-		"NoData": "Nenhuma tarefa encontrada!" 
+		"NoData": "Nenhuma tarefa encontrada!"  ,
+		"YOU": "Você"
 	}
 };
 var _exudSpecDutyType = 1; // 1 = explorer 2 = geologist 3 = generals
@@ -25,7 +27,10 @@ function specDutyTime(event) {
 	$("div[role='dialog']:not(#dutyModal):visible").modal("hide");
 	// create modal
 	createModalWindow('dutyModal', _exudspecDutyGetLabel("menuTitle"));
-	$('#dutyModal .modal-title').html(getImageTag('IntrepidExplorer') + ' ' + _exudspecDutyGetLabel("menuTitle"));
+	$('#dutyModal .modal-title').html(
+		getImageTag('IntrepidExplorer') + ' ' 
+		+ _exudspecDutyGetLabel("menuTitle") 
+		+ (  swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone ?	' : ' + loca.GetText("ADN", swmmo.application.mGameInterface.getAdventureName()) : ''	  )	);
 	if($('#dutyModal .modal-footer .dutyExplorersBtn').length == 0)
 	{
 		$("#dutyModal .modal-footer").prepend([
@@ -49,7 +54,15 @@ function specDutyTime(event) {
 		);
 	}
 	// fill modal data 
+	_exudSpecDutyType = (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone ? 3 : 1);
+
+	$('#dutyExplorersBtn').attr("disabled", swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone);
+	$('#dutyGeologistBtn').attr("disabled", swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone);
+
+
 	$('#dutyModalData').html('<div class="container-fluid"><div id="_exudDutyResultDiv">'+dutyGetData()+'</div></div>');
+	
+	$("#dutyModal .modal-footer .btn-danger").html(loca.GetText("LAB", "Close"));
 	// show modal
 	$('#dutyModal:not(:visible)').modal({ backdrop: "static" });
 
@@ -70,13 +83,21 @@ function dutyGetData() {
 		var isValid = item.GetBaseType() == _exudSpecDutyType || (_exudSpecDutyType == 3 && _exudDutySPECIALIST_TYPE.IsGeneral(item.GetType()));
 		if(item.GetTask() == null || !isValid) { return; }
 		var ItemName = item.getName(false);
+		
 		try{
-		if(_exudSpecDutyType == 3 && PlayerID != item.getPlayerID()) {
-			var pname = swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID());
-			if (pname != null)
-				ItemName += ' (' + pname + ')';
-		}
+			if(_exudSpecDutyType == 3 && item.getPlayerID() > 0) {
+				if (PlayerID != item.getPlayerID()) {
+					var pname = swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID());
+					
+					if (pname != null)
+						ItemName += ' (' + pname + ')';
+					else
+						ItemName += ' (' + _exudspecDutyGetLabel("YOU") + ')';
+					
+				}
+			}
 		} catch (e) {} // looking for something better
+		
 		if(_exudSpecDutyType != 3) {
 			task = loca.GetText("LAB", item.GetTask().getTaskDefinition().mainTask.taskName_string+item.GetTask().getTaskDefinition().taskType_string);
 		} else {
