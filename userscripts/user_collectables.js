@@ -16,12 +16,24 @@ function _exudHLColl(event) {
 			};
 		};
 	}
+	
+	
 	swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
 		if(item == null) { return; }
-		if(col.getBuildingIsNormalCollectible(item.GetBuildingName_string()) || col.getBuildingIsEventCollectible(item.GetBuildingName_string()) || (extra[item.GetBuildingName_string()] && item.mIsSelectable)) {
-			x.add(function(){ swmmo.application.mGameInterface.SelectBuilding(item); });
-		}
-	});
+		if(
+			col.getBuildingIsNormalCollectible(item.GetBuildingName_string()) || col.getBuildingIsEventCollectible(item.GetBuildingName_string()) 
+			|| (
+					extra[item.GetBuildingName_string()] && item.mIsSelectable && item.GetGOContainer().mIsAttackable  
+					&& (
+							item.GetGOContainer().ui == "decoration" 
+							|| item.GetGOContainer().ui == "none"
+						)						
+				)
+		  ) {
+				x.add(function(){ swmmo.application.mGameInterface.SelectBuilding(item); });
+			}
+		});	
+	
 	if(x.len() == 0) {
 		showAlert("No collectibles found", false, 'warning');
 		return;
