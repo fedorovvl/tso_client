@@ -14,6 +14,14 @@ const _exudspecDutyLang = {
 		"ColumnArrival": "Chegada"  ,
 		"NoData": "Nenhuma tarefa encontrada!"  ,
 		"YOU": "Você"
+	},
+	"fr-fr": {
+        "menuItemName": "Tâches des Spécialistes"  ,
+        "menuTitle": "Temps d'exécution des Spécialistes"  ,
+        "ColumnEstimated": "Estimé"  ,
+        "ColumnArrival": "Arrivée"  ,
+        "NoData": "Pas d'information !",
+        "YOU": "Vous"
 	}
 };
 var _exudSpecDutyType = 1; // 1 = explorer 2 = geologist 3 = generals
