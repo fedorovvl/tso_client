@@ -88,11 +88,7 @@ function dutyGetData() {
 			if(_exudSpecDutyType == 3 && item.getPlayerID() > 0) {
 				if (PlayerID != item.getPlayerID()) {
 					var pname = swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID());
-					
-					if (pname != null)
-						ItemName += ' (' + pname + ')';
-					else
-						ItemName += ' (' + _exudspecDutyGetLabel("YOU") + ')';
+					ItemName += ' ({0})'.format(pname != null ? pname : _exudspecDutyGetLabel("YOU"));
 					
 				}
 			}
