@@ -171,7 +171,7 @@ function _exudMakeGeneralsTable()
 	var Selected = _exudGeneralsGetChecked();
 	var out = createTableRow([
 		[5, loca.GetText("LAB","Name")],
-		[3, loca.GetText("LAB", "EliteUnits")],
+		[3, loca.GetText("LAB", "StarMenu")],
 		[2, loca.GetText("LAB", "Army")],
 		[2, _exudGeneralsGetLabel("ColumnOwner")]
 	], true);
@@ -181,7 +181,7 @@ function _exudMakeGeneralsTable()
 		var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''), item.Icon + item.Name);
 		out += createTableRow([
 			[5, !_exudGeneralsIsSelectable(item) ? item.Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
-			[3, (item.HasElites ? loca.GetText("LAB", "YES"): '')],
+			[3, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
 			[2, (item.TotalArmy>0?item.TotalArmy:'')],
 			[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
 		]);
@@ -326,7 +326,8 @@ function _exudGetSpecialists()
 			"IsGeneral" : true,
 			"TotalArmy" : item.GetArmy().GetUnitsCount(),
 			"Icon" : getImageTag(item.getIconID(), '10%')	,
-			"PlayerName" : (swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID()) != null ? swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID()) : '')
+			"PlayerName" : (swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID()) != null ? swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID()) : ''),
+			"GridPosition" : item.GetGarrisonGridIdx() 
 		});
 	});
 	if (listS.length > 1)

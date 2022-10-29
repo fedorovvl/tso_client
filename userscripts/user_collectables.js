@@ -23,11 +23,8 @@ function _exudHLColl(event) {
 		if(
 			col.getBuildingIsNormalCollectible(item.GetBuildingName_string()) || col.getBuildingIsEventCollectible(item.GetBuildingName_string()) 
 			|| (
-					extra[item.GetBuildingName_string()] && item.mIsSelectable && item.GetGOContainer().mIsAttackable  
-					&& (
-							item.GetGOContainer().ui == "decoration" 
-							|| item.GetGOContainer().ui == "none"
-						)						
+					extra[item.GetBuildingName_string()] && item.mIsSelectable && item.GetGOContainer().mIsAttackable  && !item.GetGOContainer().mIsLeaderCamp
+					&& item.GetGOContainer().ui != "enemy" && (item.GetArmy() == null || !item.GetArmy().HasUnits())				
 				)
 		  ) {
 				x.add(function(){ swmmo.application.mGameInterface.SelectBuilding(item); });
