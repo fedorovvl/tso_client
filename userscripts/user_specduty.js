@@ -5,7 +5,8 @@ const _exudspecDutyLang = {
 		"ColumnEstimated": "Estimated"  ,
 		"ColumnArrival": "Arrival"  ,
 		"NoData": "No data found!"  ,
-		"YOU": "you"
+		"YOU": "you",
+		"HideShowGuest" : "Hide/Show Guest"
 	},
 	"pt-br": {
 		"menuItemName": "Tarefas em andamento"  ,
@@ -13,7 +14,8 @@ const _exudspecDutyLang = {
 		"ColumnEstimated": "Estimado"  ,
 		"ColumnArrival": "Chegada"  ,
 		"NoData": "Nenhuma tarefa encontrada!"  ,
-		"YOU": "Você"
+		"YOU": "Você",
+		"HideShowGuest" : "Todos/Apenas meus"
 	},
 	"fr-fr": {
         "menuItemName": "Tâches des Spécialistes"  ,
@@ -29,9 +31,11 @@ const _exudspecDutyLang = {
 		"ColumnEstimated": "Durata"  ,
 		"ColumnArrival": "Arrivo"  ,
 		"NoData": "Nessuna azione trovata!"  ,
-		"YOU": "Tu"
+		"YOU": "Tu",
+		"HideShowGuest" : "Tutti/Solo i miei"
 	}
 };
+var _exudSpecDutyHideGuest = false;
 var _exudSpecDutyType = 1; // 1 = explorer 2 = geologist 3 = generals
 var _exudDutySPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
 var _exudBtnToSpecType = { 'dutyExplorersBtn': 1,'dutyGeologistBtn': 2,'dutyGeneralsBtn': 3 };
@@ -53,9 +57,14 @@ function specDutyTime(event) {
 			$('<button>').attr({ "id": "dutyExplorersBtn", "class": "btn btn-primary pull-left dutyExplorersBtn" }).text(loca.GetText("SPE", "Explorer")),
 			$('<button>').attr({ "id": "dutyGeologistBtn", "class": "btn btn-primary pull-left dutyGeologistBtn" }).text(loca.GetText("SPE", "Geologist")),
 			$('<button>').attr({ "id": "dutyGeneralsBtn", "class": "btn btn-primary pull-left dutyGeneralsBtn" }).text(loca.GetText("SPE", "General")),
+			$('<button>').attr({ "id": "dutyHideShowGuestBtn", "class": "btn btn-primary pull-left dutyHideShowGuestBtn" }).text(_exudspecDutyGetLabel("HideShowGuest"))
 		]);
 		$('button.dutyExplorersBtn, button.dutyGeologistBtn, button.dutyGeneralsBtn').click(function(event) {
 			_exudSpecDutyType = _exudBtnToSpecType[this.id];
+			$('#_exudDutyResultDiv').html(dutyGetData());
+		});
+		$('button.dutyHideShowGuestBtn').click(function(event) {
+			__exudSpecDutyHideGuest = !_exudSpecDutyHideGuest;
 			$('#_exudDutyResultDiv').html(dutyGetData());
 		});
 	}
@@ -100,7 +109,11 @@ function dutyGetData() {
 		var isValid = item.GetBaseType() == _exudSpecDutyType || (_exudSpecDutyType == 3 && _exudDutySPECIALIST_TYPE.IsGeneral(item.GetType()));
 		if(item.GetTask() == null || !isValid) { return; }
 		var ItemName = item.getName(false);
-		if (PlayerID == item.getPlayerID())	++mySpecTot;
+		if (PlayerID == item.getPlayerID())
+			++mySpecTot;
+		else
+			if (!__exudSpecDutyHideGuest)
+				continue;
 		try{
 			if(_exudSpecDutyType == 3 && item.getPlayerID() > 0) {
 				if (PlayerID != item.getPlayerID()) {
