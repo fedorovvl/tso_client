@@ -11,7 +11,8 @@ const _exudGeneralsLang = {
         "SelectAll": "Select All",
         "Load": "Load",
         "CommandSent": "Command sent",
-        "ColumnOwner": "Owner"
+        "ColumnOwner": "Owner",
+		"IsGuest": " (* = guest) "
     },
     "pt-br": {
         "ByName": "Classificar por nome",
@@ -22,7 +23,8 @@ const _exudGeneralsLang = {
         "HideUnselected": "Somente selecionados",
         "SelectAll": "Selecionar todos",
         "Load": "Carregar",
-        "ColumnOwner": "Proprietario"
+        "ColumnOwner": "Proprietario",
+		"IsGuest": " (* = convidado) "
     },
     "pl-pl": {
         "ByName": "Sortuj po nazwie",
@@ -119,7 +121,7 @@ function _exudGetGeneralsData()
 			}
 		});
 		
-		out = select.prop("outerHTML") + ' (* = guest) ';
+		out = select.prop("outerHTML") + _exudGeneralsGetLabel("IsGuest");
 		out += $('<button>').attr({ "class": "btn btn-sm _exudSelectAllGeneralsBtn" }).text(
 			_exudGeneralsGetLabel("SelectAll")
 		).prop("outerHTML") + ' ';
