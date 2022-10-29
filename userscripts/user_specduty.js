@@ -107,19 +107,29 @@ function dutyGetData() {
 		var isValid = item.GetBaseType() == _exudSpecDutyType || (_exudSpecDutyType == 3 && _exudDutySPECIALIST_TYPE.IsGeneral(item.GetType()));
 		if(item.GetTask() == null || !isValid) { return; }
 		var ItemName = item.getName(false);
+		var i_pid = -1;
+		try{
+			i_pid = item.getPlayerID();
+		}
+		catch (e) {
+		}
 		if ((PlayerID == item.getPlayerID()) || !_exudSpecDutyHideGuest)
 			{
-				if (PlayerID == item.getPlayerID())
+				var pname = "";
+				if (PlayerID == i_pid)
+				{
 					++mySpecTot;
+					pname = _exudspecDutyGetLabel("YOU");
+				}
+				
 				try{
-					if(_exudSpecDutyType == 3 && item.getPlayerID() > 0) {
-						if (PlayerID != item.getPlayerID()) {
-							var pname = swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID());
-							ItemName += ' ({0})'.format(pname != null ? pname : _exudspecDutyGetLabel("YOU"));
-							
-						}
+					if(_exudSpecDutyType == 3 && i_pid > 0 && PlayerID != i_pid) {
+						pname = swmmo.application.mGameInterface.GetPlayerName_string(i_pid);
 					}
-				} catch (e) {} // looking for something better
+				} catch (e) {} 
+				
+				if (pname != null && pname != "")
+					ItemName += ' ({0})'.format(pname);
 				
 				if(_exudSpecDutyType != 3) {
 					task = loca.GetText("LAB", item.GetTask().getTaskDefinition().mainTask.taskName_string+item.GetTask().getTaskDefinition().taskType_string);
