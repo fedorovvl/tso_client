@@ -132,7 +132,7 @@ function dutyGetData() {
 	});
 	
 	$('#dutyModal .modal-title').html( 
-							(_exudSpecDutyType == 1 ? getImageTag('IntrepidExplorer') : _exudSpecDutyType == 2 ? getImageTag('DiligentGeologist') : getImageTag('GeneralVargus'))
+							(_exudSpecDutyType == 1 ? getImageTag('IntrepidExplorer') : _exudSpecDutyType == 2 ? getImageTag('icon_geologist.png') : getImageTag('icon_general.png'))
 							+ ' ' 
 							+ _exudspecDutyGetLabel("menuTitle") 
 							+ ( mySpecTot > 0 ? " (" + mySpecTot + ")" : "")
@@ -147,8 +147,8 @@ function dutyGetData() {
 		out += createTableRow([
 			[4,item[2] + item[0]],
 			[4, item[3]],
-			[2, loca.FormatDuration(item[1], 1)],
-			[2, dtf.format(new window.runtime.Date(Date.now() + item[1]))]
+			[2, (item[1] > 0 ? loca.FormatDuration(item[1], 1) : "")],
+			[2, (item[1] > 0 ? dtf.format(new window.runtime.Date(Date.now() + item[1])) : "")]
 		]);
 	});
 	
