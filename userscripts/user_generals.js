@@ -61,6 +61,18 @@ const _exudGeneralsLang = {
         "Load": "Charger",
         "CommandSent": "Envoyer",
         "ColumnOwner": "Propriétaire"
+    },
+    "it-it": {
+        "ByName": "Ordina per nome",
+        "ByType": "Ordina per tipo",
+        "ShowGuest": "Di tutti",
+        "HideGuest": "Solo i miei",
+        "ShowUnselected": "Tutti",
+        "HideUnselected": "Solo selezionati",
+        "SelectAll": "Seleciona tutto",
+        "Load": "Apri",
+        "ColumnOwner": "Proprietario",
+		"IsGuest": " (* = invitato) "
     }
 };
 
