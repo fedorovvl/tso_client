@@ -8,8 +8,8 @@ const _exudspecDutyLang = {
 		"YOU": "you"
 	},
 	"pt-br": {
-		"menuItemName": "Tarefas Ativas"  ,
-		"menuTitle": "Tempo das tarefas dos especialistas"  ,
+		"menuItemName": "Tarefas em andamento"  ,
+		"menuTitle": "Tarefas em andamento dos especialistas"  ,
 		"ColumnEstimated": "Estimado"  ,
 		"ColumnArrival": "Chegada"  ,
 		"NoData": "Nenhuma tarefa encontrada!"  ,
@@ -22,6 +22,14 @@ const _exudspecDutyLang = {
         "ColumnArrival": "Arrivée"  ,
         "NoData": "Pas d'information !",
         "YOU": "Vous"
+	},
+	"it-it": {
+		"menuItemName": "Azioni in corso"  ,
+		"menuTitle": "Azioni in corso degli specialisti"  ,
+		"ColumnEstimated": "Durata"  ,
+		"ColumnArrival": "Arrivo"  ,
+		"NoData": "Nessuna azione trovata!"  ,
+		"YOU": "Tu"
 	}
 };
 var _exudSpecDutyType = 1; // 1 = explorer 2 = geologist 3 = generals
