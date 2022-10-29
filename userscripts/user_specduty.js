@@ -57,14 +57,14 @@ function specDutyTime(event) {
 			$('<button>').attr({ "id": "dutyExplorersBtn", "class": "btn btn-primary pull-left dutyExplorersBtn" }).text(loca.GetText("SPE", "Explorer")),
 			$('<button>').attr({ "id": "dutyGeologistBtn", "class": "btn btn-primary pull-left dutyGeologistBtn" }).text(loca.GetText("SPE", "Geologist")),
 			$('<button>').attr({ "id": "dutyGeneralsBtn", "class": "btn btn-primary pull-left dutyGeneralsBtn" }).text(loca.GetText("SPE", "General")),
-			$('<button>').attr({ "id": "dutyHideShowGuestBtn", "class": "btn btn-primary pull-left dutyHideShowGuestBtn" }).text(_exudspecDutyGetLabel("HideShowGuest"))
+			$('<button>').attr({ "id": "dutyHideShowGuestBtn", "class": "btn btn-primary pull-left dutyHideShowGuestBtn" }).text(_exudspecDutyGetLabel("HideShowGuest")),
 		]);
 		$('button.dutyExplorersBtn, button.dutyGeologistBtn, button.dutyGeneralsBtn').click(function(event) {
 			_exudSpecDutyType = _exudBtnToSpecType[this.id];
 			$('#_exudDutyResultDiv').html(dutyGetData());
 		});
 		$('button.dutyHideShowGuestBtn').click(function(event) {
-			__exudSpecDutyHideGuest = !_exudSpecDutyHideGuest;
+			_exudSpecDutyHideGuest = !_exudSpecDutyHideGuest;
 			$('#_exudDutyResultDiv').html(dutyGetData());
 		});
 	}
@@ -109,28 +109,28 @@ function dutyGetData() {
 		var isValid = item.GetBaseType() == _exudSpecDutyType || (_exudSpecDutyType == 3 && _exudDutySPECIALIST_TYPE.IsGeneral(item.GetType()));
 		if(item.GetTask() == null || !isValid) { return; }
 		var ItemName = item.getName(false);
-		if (PlayerID == item.getPlayerID())
-			++mySpecTot;
-		else
-			if (!__exudSpecDutyHideGuest)
-				continue;
-		try{
-			if(_exudSpecDutyType == 3 && item.getPlayerID() > 0) {
-				if (PlayerID != item.getPlayerID()) {
-					var pname = swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID());
-					ItemName += ' ({0})'.format(pname != null ? pname : _exudspecDutyGetLabel("YOU"));
-					
+		if ((PlayerID == item.getPlayerID()) || !_exudSpecDutyHideGuest)
+			{
+				if (PlayerID == item.getPlayerID())
+					++mySpecTot;
+				try{
+					if(_exudSpecDutyType == 3 && item.getPlayerID() > 0) {
+						if (PlayerID != item.getPlayerID()) {
+							var pname = swmmo.application.mGameInterface.GetPlayerName_string(item.getPlayerID());
+							ItemName += ' ({0})'.format(pname != null ? pname : _exudspecDutyGetLabel("YOU"));
+							
+						}
+					}
+				} catch (e) {} // looking for something better
+				
+				if(_exudSpecDutyType != 3) {
+					task = loca.GetText("LAB", item.GetTask().getTaskDefinition().mainTask.taskName_string+item.GetTask().getTaskDefinition().taskType_string);
+				} else {
+					task = loca.GetText("LAB", "SpecialistTask8");
 				}
+				listSpec.push( [ ItemName , item.GetTask().GetRemainingTime(), getImageTag(item.getIconID(), '10%'), task  ]  );
+				isThereAnySpec = true;
 			}
-		} catch (e) {} // looking for something better
-		
-		if(_exudSpecDutyType != 3) {
-			task = loca.GetText("LAB", item.GetTask().getTaskDefinition().mainTask.taskName_string+item.GetTask().getTaskDefinition().taskType_string);
-		} else {
-			task = loca.GetText("LAB", "SpecialistTask8");
-		}
-		listSpec.push( [ ItemName , item.GetTask().GetRemainingTime(), getImageTag(item.getIconID(), '10%'), task  ]  );
-		isThereAnySpec = true;
 	});
 	
 	if(!isThereAnySpec)
