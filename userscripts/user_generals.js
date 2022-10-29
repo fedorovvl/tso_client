@@ -92,7 +92,9 @@ function _exudGeneralsGetLabel(id)
 
 function _exudGeneralsMenuHandler(event)
 {
+
 	$('#udSpecModal').remove();
+
 	// close all modals
 	$( "div[role='dialog']:not(#udSpecModal):visible").modal("hide");
 	// create modal
@@ -108,9 +110,12 @@ function _exudGeneralsMenuHandler(event)
 		$('#udSpecModal ._exudSpecSaveTemplateBtn').click(_exudGeneralsSaveData);
 		$('#udSpecModal ._exudSendGeneralsBtn').click(_exudGeneralsSend);
 	}
+
 	_exudGetGeneralsData();
+
 	$("#udSpecModal .modal-footer .btn-danger").html(loca.GetText("LAB", "Close"));
 	$('#udSpecModal:not(:visible)').modal({backdrop: "static"});
+
 }
 
 function _exudGetGeneralsData()
@@ -150,9 +155,10 @@ function _exudGetGeneralsData()
 		out += '</br></br><div id="_exudGeneralsDivTable">{0}</div>'.format(_exudMakeGeneralsTable());
 
 	} catch (error) {
-		alert(error.message);
+		alert("Err: " + error.message);
 	}
 	
+
 	$('#udSpecModalData').html('<div class="container-fluid" id="exSpecMainDiv">' + out + '</div>');
 
 	$('#udSpecModalData ._exudSelectAllGeneralsBtn').click(function() {
@@ -178,6 +184,7 @@ function _exudGetGeneralsData()
 		$('#udSpecModalData ._exudHideUnselectedGeneralsBtn').html(_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected"));
 		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
 	});
+
 }
 
 function _exudMakeGeneralsTable()

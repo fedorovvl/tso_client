@@ -23,7 +23,8 @@ const _exudspecDutyLang = {
         "ColumnEstimated": "Estimé"  ,
         "ColumnArrival": "Arrivée"  ,
         "NoData": "Pas d'information !",
-        "YOU": "Vous"
+        "YOU": "Vous",
+      "HideShowGuest" : "Masquer/Afficher Invité(s)"
 	},
 	"it-it": {
 		"menuItemName": "Azioni in corso"  ,
@@ -47,10 +48,7 @@ function specDutyTime(event) {
 	$("div[role='dialog']:not(#dutyModal):visible").modal("hide");
 	// create modal
 	createModalWindow('dutyModal', _exudspecDutyGetLabel("menuTitle"));
-	$('#dutyModal .modal-title').html(
-		getImageTag('IntrepidExplorer') + ' ' 
-		+ _exudspecDutyGetLabel("menuTitle") 
-		+ (  swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone ?	' : ' + loca.GetText("ADN", swmmo.application.mGameInterface.getAdventureName()) : ''	  )	);
+			
 	if($('#dutyModal .modal-footer .dutyExplorersBtn').length == 0)
 	{
 		$("#dutyModal .modal-footer").prepend([
@@ -133,6 +131,14 @@ function dutyGetData() {
 			}
 	});
 	
+	$('#dutyModal .modal-title').html( 
+							(_exudSpecDutyType == 1 ? getImageTag('IntrepidExplorer') : _exudSpecDutyType == 2 ? getImageTag('DiligentGeologist') : getImageTag('GeneralVargus'))
+							+ ' ' 
+							+ _exudspecDutyGetLabel("menuTitle") 
+							+ ( mySpecTot > 0 ? " (" + mySpecTot + ")" : "")
+							+ (  swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone ?	' : ' + loca.GetText("ADN", swmmo.application.mGameInterface.getAdventureName()) : '' )	
+						);	
+	
 	if(!isThereAnySpec)
 		return out + _exudspecDutyGetLabel("NoData");
 
@@ -146,12 +152,6 @@ function dutyGetData() {
 		]);
 	});
 	
-	out += createTableRow([
-			[4,  "{0} : {1}".format(loca.GetText("SPE", (_exudSpecDutyType==1 ? "Explorer" : _exudSpecDutyType ==2 ? "Geologist" : "General") ) ,mySpecTot)],
-			[4, ""],
-			[2, ""],
-			[2, ""]
-		]);
 	
 	return out;
 }
