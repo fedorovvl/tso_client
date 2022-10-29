@@ -87,11 +87,12 @@ function dutyGetData() {
 	var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
 	isThereAnySpec = false;
 	var listSpec = new Array();
+	var mySpecTot = 0;
 	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().sort(0).forEach(function(item){
 		var isValid = item.GetBaseType() == _exudSpecDutyType || (_exudSpecDutyType == 3 && _exudDutySPECIALIST_TYPE.IsGeneral(item.GetType()));
 		if(item.GetTask() == null || !isValid) { return; }
 		var ItemName = item.getName(false);
-		
+		if (PlayerID == item.getPlayerID())	++mySpecTot;
 		try{
 			if(_exudSpecDutyType == 3 && item.getPlayerID() > 0) {
 				if (PlayerID != item.getPlayerID()) {
@@ -117,12 +118,19 @@ function dutyGetData() {
 	listSpec.sort(dutyCompare);
 	listSpec.forEach(function(item){
 		out += createTableRow([
-			[4, item[2] + item[0]],
+			[4,item[2] + item[0]],
 			[4, item[3]],
 			[2, loca.FormatDuration(item[1], 1)],
 			[2, dtf.format(new window.runtime.Date(Date.now() + item[1]))]
 		]);
 	});
+	
+	out += createTableRow([
+			[4,  "{0} : {1}".format(loca.GetText("SPE", (_exudSpecDutyType==1 ? "Explorer" : _exudSpecDutyType ==2 ? "Geologist" : "General") ) ,mySpecTot)],
+			[4, ""],
+			[2, ""],
+			[2, ""]
+		]);
 	
 	return out;
 }
