@@ -37,7 +37,7 @@ function menuAuctionHandler(event)
 		$('#aucModal .aucPlace').click(auxPlaceBet);
 		$('#aucModal .aucReload').click(aucReloadData);
 	}
-	$('#auxPlaceBet').attr('disabled', true);
+	$('#aucModal .aucPlace').attr('disabled', true);
 	out = '<div class="container-fluid">';
 	if(currentAuc == undefined) {
 		out = '<p class="text-center">' + loca.GetText("LAB", 'BlackMarketAuctionInactive') + '</p>';
@@ -60,7 +60,7 @@ function menuAuctionHandler(event)
 		var resources = swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(swmmo.application.mGameInterface.mCurrentPlayer);
 		out += '<p>{0} {1} {2}</p>'.format(getText('auc_you_have'), resources.GetResourceAmount(aucDefinition.Costs.Cost.name.v), loca.GetText("RES", aucDefinition.Costs.Cost.name.v));
 		if(resources.GetResourceAmount(aucDefinition.Costs.Cost.name.v) > nextBet && !aucCheckPlayer() && endTime > 0) {
-			$('#auxPlaceBet').attr('disabled', false);
+			$('#aucModal .aucPlace').attr('disabled', false);
 		}
 		if(aucCheckPlayer())
 		{
@@ -104,8 +104,8 @@ function aucResultResponseHandler(event, data)
 function aucReloadData()
 {
 	swmmo.application.mGameInterface.SendServerActionSimple(15000, null, aucResponder);
-	$('#aucReloadData').attr("disabled", true);
-	setTimeout(function() { $('#aucReloadData').removeAttr("disabled"); }, 10000);
+	$('#aucModal .aucReload').attr("disabled", true);
+	setTimeout(function() { $('#aucModal .aucReload').removeAttr("disabled"); }, 10000);
 }
 
 function auxPlaceBet()
@@ -114,6 +114,6 @@ function auxPlaceBet()
 	bidPacket.auctionId = currentAuc.auctionId;
 	bidPacket.biddingCount = currentAuc.biddingCount;
 	swmmo.application.mGameInterface.mClientMessages.SendMessagetoServer(15001, swmmo.application.mGameInterface.mCurrentViewedZoneID, bidPacket, aucResponder);
-	$('#auxPlaceBet').attr("disabled", true);
-	setTimeout(function() { $('#auxPlaceBet').removeAttr("disabled"); }, 10000);
+	$('#aucModal .aucPlace').attr("disabled", true);
+	setTimeout(function() { $('#aucModal .aucPlace').removeAttr("disabled"); }, 10000);
 }
