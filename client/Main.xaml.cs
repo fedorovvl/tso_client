@@ -172,6 +172,16 @@ namespace client
                 Directory.CreateDirectory(ClientDirectory);
             using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
             {
+                // ensure that scripts dir always fresh
+                if(Directory.Exists(Path.Combine(ClientDirectory, "scripts")))
+                {
+                    DirectoryInfo dir = new DirectoryInfo(Path.Combine(ClientDirectory, "scripts"));
+                    foreach (FileInfo fi in dir.GetFiles())
+                    {
+                        if (!debug)
+                            fi.Delete();
+                    }
+                }
                 if (!debug)
                     unzip.ExtractToDirectory(ClientDirectory);
             }

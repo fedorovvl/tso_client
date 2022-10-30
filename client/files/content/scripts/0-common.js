@@ -86,7 +86,7 @@ function createTableRow(data, isHeader)
 		i++;
 		out += '<div class="col-xs-{0} col-sm-{0} col-lg-{0} {2}" {1}>{3}</div>'.format(
 			item[0],
-			isHeader ? 'style="border-radius:{0};"'.format(i == 1 ? '10px 0px 0px 10px' : (i == data.length ? '0px 10px 10px 0px' : '')) : '0px',
+			isHeader ? 'style="border-radius:{0};"'.format(i == 1 ? '10px 0px 0px 10px' : (i == data.length ? '0px 10px 10px 0px' : '0px')) : '',
 			isHeader ? 'tblHeader ' + (item[2] ? item[2] : '') : (item[2] ? item[2] : ''),
 			item[1]
 		);
@@ -133,6 +133,37 @@ function createModalWindow(id, title)
 		// add flipflop
 		$(modalId).on('show.bs.modal hide.bs.modal', function () { window.nativeWindow.stage.swapChildrenAt(0, 1); });
 	}
+}
+
+function createSettingsWindow(id, savefunc, size)
+{
+	const modalId = "#{0}settings".format(id);
+	if ($(modalId).length == 0) {
+		// create new one by copying buffmodal
+		$("#dummyModal").clone().attr('id', id + 'settings').appendTo(".container");
+		// change title
+		$(modalId + " .modal-title").html(loca.GetText("LAB", "ToggleOptionsPanel"));
+		$(modalId + " .modal-title").addClass('text-center');
+		// change data id
+		$(modalId + " .modal-body").attr('id', id + 'settingsData');
+		// small Window
+		$(modalId + " .modal-dialog").removeClass('modal-lg');
+		$(modalId + " .modal-dialog").addClass('modal-dialog-centered '+ (size ? size : ''));
+		// translate close button
+		$(modalId + " .btnClose").text(loca.GetText("LAB", "Close"));
+		// add save button
+		$(modalId + " .modal-footer").prepend([
+			$('<button>').attr({ "class": "btn btn-primary pull-left" }).text(loca.GetText("LAB", "Save")),
+		]);
+		$(modalId + " .btn-primary").click(savefunc);
+	}
+}
+
+function createSwitch(checkboxId, isChecked)
+{
+	return $('<label>', { 'class': "switch" })
+		.append($('<input>', { 'type': 'checkbox', 'id': checkboxId, 'checked': isChecked }))
+		.append($('<span/>', { 'class': 'slider round' })).prop('outerHTML');
 }
 
 function addToolsMenuItem(name, fn, key, ctrl)
