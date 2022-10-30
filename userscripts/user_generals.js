@@ -354,7 +354,7 @@ function _exudGetSpecialists()
 			"Owner" : (PlayerID == i_pid),
 			"IsGeneral" : true,
 			"TotalArmy" : item.GetArmy().GetUnitsCount(),
-			"Icon" : getImageTag(item.getIconID(), '10%')	,
+			"Icon" : getImageTag(item.getIconID(), '24px', '24px')	,
 			"PlayerName" : (i_pid > 0 && i_pid != PlayerID ? swmmo.application.mGameInterface.GetPlayerName_string(i_pid) : null),
 			"GridPosition" : item.GetGarrisonGridIdx() 
 		});
