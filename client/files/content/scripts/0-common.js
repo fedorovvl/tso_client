@@ -181,15 +181,25 @@ function showGameAlert(message)
 	msg.image.source = assets.GetBitmap("1-Up.png");
 }
 
-function getText(id)
+function getText(id, module)
 {
-	if(!baseTranslation[gameLang] && !baseTranslation["en-uk"][id]) { return "RES not found : " + id; }
-	return baseTranslation[idL] && baseTranslation[gameLang][id] ? baseTranslation[gameLang][id] : baseTranslation["en-uk"][id];
+	searchPath = !module ? baseTranslation[gameLang] : baseTranslation[module][gameLang];
+	backupPath = !module ? baseTranslation["en-uk"] : baseTranslation[module]["en-uk"];
+	searchPath = typeof searchPath == "undefined" ? {} : searchPath;
+	backupPath = typeof backupPath == "undefined" ? {} : backupPath;
+	if(!searchPath[id] && !backupPath[id]) { return "RES not found : " + id; }
+	return searchPath[id] ? searchPath[id] : backupPath[id];
 }
 
-function extendBaseLang(data)
+function extendBaseLang(data, module)
 {
-	$.extend(baseTranslation, data);
+	extend_data = { };
+	if(module) {
+		extend_data[module] = data;
+	} else {
+		extend_data = data;
+	}
+	$.extend(baseTranslation, extend_data);
 }
 
 function saveLastDir(type, dir)
