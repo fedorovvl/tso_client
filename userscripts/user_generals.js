@@ -109,6 +109,79 @@ function _exudGeneralsMenuHandler(event)
 		$('#udSpecModal ._exudSpecLoadTemplateBtn').click(_exudGeneralsLoadData);
 		$('#udSpecModal ._exudSpecSaveTemplateBtn').click(_exudGeneralsSaveData);
 		$('#udSpecModal ._exudSendGeneralsBtn').click(_exudGeneralsSend);
+		
+		$('#udSpecModal .modal-title').html( getImageTag('icon_general.png') + loca.GetText("ACL", "MilitarySpecialists"));
+		
+		var out = '<div class="container-fluid">';
+		try
+		{
+			var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
+			var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
+			
+			select = $('<select>', { id: 'udcboSendZones' });
+			select.append($('<option>', { value: '-1' }).text('-----').prop("outerHTML"));
+			select.append($('<option>', { value: '98' }).text(loca.GetText("LAB", "StarMenu")).prop("outerHTML"));
+			
+			if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
+				select.append($('<option>', { value: swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() }).text(loca.GetText("LAB", "ReturnHome")).prop("outerHTML"));
+
+			AdvManager.getAdventures().forEach(function(item){
+				if (item.zoneID != swmmo.application.mGameInterface.mCurrentViewedZoneID) {
+					select.append($('<option>', { value: item.zoneID }).text((item.ownerPlayerID != PlayerID ? '*' : '') + loca.GetText("ADN", item.adventureName)).prop("outerHTML"));
+				}
+			});
+			
+			out += select.prop("outerHTML") + _exudGeneralsGetLabel("IsGuest");
+			out += $('<button>').attr({ "class": "btn btn-sm _exudSelectAllGeneralsBtn" }).text(
+				_exudGeneralsGetLabel("SelectAll")
+			).prop("outerHTML") + ' ';
+			out += $('<button>').attr({ "class": "btn btn-sm _exudChangeGeneralSortBtn" }).text(
+				_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType")
+			).prop("outerHTML") + ' ';
+			out += $('<button>').attr({ "class": "btn btn-sm _exudHideGuestGeneralsBtn" }).text(
+				_exudGeneralsHideGuest  ? _exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest")
+			).prop("outerHTML") + ' ';
+			out += $('<button>').attr({ "class": "btn btn-sm _exudHideUnselectedGeneralsBtn" }).text(
+				_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected")
+			).prop("outerHTML") + ' ';
+			
+		} catch (error) {
+			alert("Err: " + error.message);
+		}
+			
+		out += '<br/>' + createTableRow([
+			[6, loca.GetText("LAB","Name")],
+			[3, loca.GetText("LAB", "StarMenu")],
+			[1, loca.GetText("LAB", "Army")],
+			[2, _exudGeneralsGetLabel("ColumnOwner")]
+		], true) ;
+		
+		out += '</div>';
+
+		$('#udSpecModal .modal-header').append(out);	
+			
+		$('#udSpecModal ._exudSelectAllGeneralsBtn').click(function() {
+			_exudGeneralsToggleselected = !_exudGeneralsToggleselected;
+			$('#udSpecModalData input[type="checkbox"]').each(function(i, item) { 
+				item.checked = _exudGeneralsToggleselected;	
+				});
+		});
+
+		$('#udSpecModal ._exudChangeGeneralSortBtn').click(function(){
+			if (++_exudGeneralsSortType == 2)	_exudGeneralsSortType = 0;
+			$('#udSpecModal .modal-header ._exudChangeGeneralSortBtn').html(_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType"));
+			$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+		});
+		$('#udSpecModal ._exudHideGuestGeneralsBtn').click(function(){
+			_exudGeneralsHideGuest = !_exudGeneralsHideGuest;
+			$('#udSpecModal .modal-header ._exudHideGuestGeneralsBtn').html(_exudGeneralsHideGuest  ?_exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest"));
+			$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+		});
+		$('#udSpecModal ._exudHideUnselectedGeneralsBtn').click(function(){
+			_exudGeneralsHideUnselected = !_exudGeneralsHideUnselected;
+			$('#udSpecModal .modal-header ._exudHideUnselectedGeneralsBtn').html(_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected"));
+			$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+		});
 	}
 
 	_exudGetGeneralsData();
@@ -120,82 +193,17 @@ function _exudGeneralsMenuHandler(event)
 
 function _exudGetGeneralsData()
 {
-	try
-	{
-		var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
-		var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
-		
-		select = $('<select>', { id: 'udcboSendZones' });
-		select.append($('<option>', { value: '-1' }).text('-----').prop("outerHTML"));
-		select.append($('<option>', { value: '98' }).text(loca.GetText("LAB", "StarMenu")).prop("outerHTML"));
-		
-		if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
-			select.append($('<option>', { value: swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() }).text(loca.GetText("LAB", "ReturnHome")).prop("outerHTML"));
-
-		AdvManager.getAdventures().forEach(function(item){
-			if (item.zoneID != swmmo.application.mGameInterface.mCurrentViewedZoneID) {
-				select.append($('<option>', { value: item.zoneID }).text((item.ownerPlayerID != PlayerID ? '*' : '') + loca.GetText("ADN", item.adventureName)).prop("outerHTML"));
-			}
-		});
-		
-		out = select.prop("outerHTML") + _exudGeneralsGetLabel("IsGuest");
-		out += $('<button>').attr({ "class": "btn btn-sm _exudSelectAllGeneralsBtn" }).text(
-			_exudGeneralsGetLabel("SelectAll")
-		).prop("outerHTML") + ' ';
-		out += $('<button>').attr({ "class": "btn btn-sm _exudChangeGeneralSortBtn" }).text(
-			_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType")
-		).prop("outerHTML") + ' ';
-		out += $('<button>').attr({ "class": "btn btn-sm _exudHideGuestGeneralsBtn" }).text(
-			_exudGeneralsHideGuest  ? _exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest")
-		).prop("outerHTML") + ' ';
-		out += $('<button>').attr({ "class": "btn btn-sm _exudHideUnselectedGeneralsBtn" }).text(
-			_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected")
-		).prop("outerHTML") + ' ';
-		
-		out += '</br></br><div id="_exudGeneralsDivTable">{0}</div>'.format(_exudMakeGeneralsTable());
-
-	} catch (error) {
-		alert("Err: " + error.message);
-	}
+	var out = '<div id="_exudGeneralsDivTable">{0}</div>'.format(_exudMakeGeneralsTable());
 	
-
 	$('#udSpecModalData').html('<div class="container-fluid" id="exSpecMainDiv">' + out + '</div>');
-
-	$('#udSpecModalData ._exudSelectAllGeneralsBtn').click(function() {
-		_exudGeneralsToggleselected = !_exudGeneralsToggleselected;
-		$('#udSpecModalData input[type="checkbox"]').each(function(i, item) { 
-			item.checked = _exudGeneralsToggleselected;	
-		});
-	});
-
-	$('#udSpecModalData ._exudChangeGeneralSortBtn').click(function(){
-		if (++_exudGeneralsSortType == 2)
-			_exudGeneralsSortType = 0;
-		$('#udSpecModalData ._exudChangeGeneralSortBtn').html(_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType"));
-		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
-	});
-	$('#udSpecModalData ._exudHideGuestGeneralsBtn').click(function(){
-		_exudGeneralsHideGuest = !_exudGeneralsHideGuest;
-		$('#udSpecModalData ._exudHideGuestGeneralsBtn').html(_exudGeneralsHideGuest  ?_exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest"));
-		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
-	});
-	$('#udSpecModalData ._exudHideUnselectedGeneralsBtn').click(function(){
-		_exudGeneralsHideUnselected = !_exudGeneralsHideUnselected;
-		$('#udSpecModalData ._exudHideUnselectedGeneralsBtn').html(_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected"));
-		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
-	});
 
 }
 
 function _exudMakeGeneralsTable()
 {
 	var Selected = _exudGeneralsGetChecked();
-	var out = createTableRow([
-		[6, loca.GetText("LAB","Name")],
-		[3, loca.GetText("LAB", "StarMenu")],
-		[1, loca.GetText("LAB", "Army")],
-		[2, _exudGeneralsGetLabel("ColumnOwner")]
-	], true);
+	var out = "";
+	
 	_exudGetSpecialists().forEach(function(item){
 		if (_exudGeneralsHideGuest && !item.Owner) return;
 		if (_exudGeneralsHideUnselected && Selected.indexOf(item.UID)<0) return;
