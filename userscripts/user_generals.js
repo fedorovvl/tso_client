@@ -110,7 +110,7 @@ function _exudGeneralsMenuHandler(event)
 		$('#udSpecModal ._exudSpecSaveTemplateBtn').click(_exudGeneralsSaveData);
 		$('#udSpecModal ._exudSendGeneralsBtn').click(_exudGeneralsSend);
 		
-		$('#udSpecModal .modal-title').html( getImageTag('icon_general.png') + loca.GetText("ACL", "MilitarySpecialists"));
+		_exudGetGeneralsTitle(0);
 		
 		var out = '<div class="container-fluid">';
 		try
@@ -191,6 +191,11 @@ function _exudGeneralsMenuHandler(event)
 
 }
 
+function _exudGetGeneralsTitle(x)
+{
+	$('#udSpecModal .modal-title').html( getImageTag('icon_general.png') + loca.GetText("ACL", "MilitarySpecialists") + (x>0 ? " ("+x+")" : ""));
+}
+
 function _exudGetGeneralsData()
 {
 	var out = '<div id="_exudGeneralsDivTable">{0}</div>'.format(_exudMakeGeneralsTable());
@@ -203,10 +208,12 @@ function _exudMakeGeneralsTable()
 {
 	var Selected = _exudGeneralsGetChecked();
 	var out = "";
+	var myGens = 0;
 	
 	_exudGetSpecialists().forEach(function(item){
 		if (_exudGeneralsHideGuest && !item.Owner) return;
 		if (_exudGeneralsHideUnselected && Selected.indexOf(item.UID)<0) return;
+		if (item.Owner) ++myGens;
 		var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''), item.Icon + item.Name);
 		out += createTableRow([
 			[6, !_exudGeneralsIsSelectable(item) ? item.Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
@@ -215,6 +222,9 @@ function _exudMakeGeneralsTable()
 			[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
 		]);
 	});
+	
+	_exudGetGeneralsTitle(myGens);
+	
 	return out;
 }
 
