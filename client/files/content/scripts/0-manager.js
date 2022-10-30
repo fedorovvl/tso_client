@@ -2,22 +2,49 @@ var info = {};
 var infoTree = {};
 var missMatch = {};
 var currentCheckboxes = '';
-$("#managerModal").on('show.bs.modal hide.bs.modal', function(){ window.nativeWindow.stage.swapChildrenAt(0, 1); });
 
 function scriptsManagerWindow()
 {
 	$( "div[role='dialog']:not(#managerModal):visible").modal("hide");
-	$('#managerModal .modal-title').html(getImageTag('BattleBuffKill_random_unit_type_limited') + ' ' + loca.GetText("LAB", 'EventProgression'));
-	$('#managerProceed').attr("disabled", true);
-	$('#managerReinstall').attr("disabled", true);
-	currentScripts = getCurrentScripts();
+	createModalWindow('managerModal', getImageTag('BattleBuffKill_random_unit_type_limited') + ' ' + loca.GetText("LAB", 'EventProgression'));
+	if($('#managerModal .managerSubmit').length == 0)
+	{
+		$("#managerModal .btnClose").text(getText('btn_close'));
+		$("#managerModal .modal-footer").prepend([
+			$('<button>').attr({ "class": "btn btn-primary managerFix" }).text(getText('btn_fix')),
+			$('<button>').attr({ "class": "btn btn-primary managerSubmit" }).text(getText('btn_submit'))
+		]);
+		$('#managerModal .managerFix').click(managerReinstall);
+		$('#managerModal .managerSubmit').click(managerProceed);
+	}
+	$('.managerSubmit, .managerFix').attr("disabled", true);
 	currentCheckboxes = '';
 	missMatch = {};
 	out = '<div class="container-fluid">';
 	if(info == '') {
 		out += '<p>Unable to get info from github</p>';
 	}
-	out += createTableRow([[2,"Filename"],[2,"ScriptName"],[2,"Author"],[3,"Description"],[1,"Status"],[2,"Installed"]], true);
+	out += managerGetData();
+	$("#managerModalData").html(out);
+	$("#managerModalData input[type=checkbox]").change(function(){
+		var checkboxes = '';
+		$("#managerModalData input[type=checkbox]").each(function(i, item) { checkboxes += + item.checked; });
+		$('.managerSubmit').attr("disabled", checkboxes == currentCheckboxes);
+	});
+	if(Object.keys(missMatch).length > 0) {
+		$('.managerFix').attr("disabled", false);
+	}
+	$('#managerModalData a').click(function(event) { 
+		event.preventDefault();
+		air.navigateToURL(new air.URLRequest(this)); 
+	});
+	$('#managerModal:not(:visible)').modal({backdrop: "static"});
+}
+
+function managerGetData()
+{
+	currentScripts = getCurrentScripts();
+	out = createTableRow([[2,"Filename"],[2,"ScriptName"],[2,"Author"],[3,"Description"],[2,"Status"],[1,"Installed"]], true);
 	info = (info == 'error') ? {} : info;
 	for(name in info) {
 		st = checkSize(info[name].size, currentScripts[name]);
@@ -26,8 +53,8 @@ function scriptsManagerWindow()
 			[2,getScriptField(info[name])],
 			[2,info[name].author],
 			[3,'<span data-tooltip="'+info[name].longDesc+'">'+info[name].shortDesc+'</span>'],
-			[1,st],
-			[2,'<input type="checkbox" id="'+name+'" '+(currentScripts[name] ? 'checked' : '')+'>']
+			[2,st == 'ok' ? st : getText('manager_mismatch')],
+			[1,'<input type="checkbox" id="'+name+'" '+(currentScripts[name] ? 'checked' : '')+'>']
 		]);
 		if(st != 'ok') { missMatch[name] = true; }
 		currentCheckboxes += (currentScripts[name] ? '1' : '0');
@@ -39,25 +66,12 @@ function scriptsManagerWindow()
 			[2,'You'],
 			[2,'trust'],
 			[3,'this'],
-			[1,'file?'],
-			[2,'<input type="checkbox" id="'+item+'" checked>']
+			[2,'file?'],
+			[1,'<input type="checkbox" id="'+item+'" checked>']
 		]);
 		currentCheckboxes += '1';
 	}
-	$("#managerModalData").html(out);
-	$("#managerModalData input[type=checkbox]").change(function(){
-		var checkboxes = '';
-		$("#managerModalData input[type=checkbox]").each(function(i, item) { checkboxes += + item.checked; });
-		$('#managerProceed').attr("disabled", checkboxes == currentCheckboxes);
-	});
-	if(Object.keys(missMatch).length > 0) {
-		$('#managerReinstall').attr("disabled", false);
-	}
-	$('#managerModalData a').click(function(event) { 
-		event.preventDefault();
-		air.navigateToURL(new air.URLRequest(this)); 
-	});
-	$('#managerModal:not(:visible)').modal({backdrop: "static"});
+	return out;
 }
 
 function managerReinstall()

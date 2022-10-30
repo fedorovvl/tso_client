@@ -68,6 +68,18 @@ namespace client
             set { _langRemember = value; OnPropertyChanged("langRemember"); }
         }
         public event PropertyChangedEventHandler PropertyChanged;
+        string[] args_help = new string[] {
+            "--config - set config file",
+            "--login - set login",
+            "--password - set password",
+            "--collect - autoconfirm ubicolleck check",
+            "--autologin - allows to start client with login/password from setting.dat",
+            "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro] - changes the game interface language.",
+            "--window [fullscreen|maximized] - initital game window size",
+            "--skip - allows to skip update checking of client.swf",
+            "--http_timeout - set http requests timeout",
+            "--debug - creates a debug.txt file with an error report in case of failure"
+        };
 
         protected void OnPropertyChanged(string propertyName)
         {
@@ -477,6 +489,12 @@ namespace client
                 butt.IsEnabled = false;
                 new Thread(checkVersion) { IsBackground = true }.Start();
             }
+        }
+
+        private void Label_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            MessageBox.Show("Available arguments:\n" + String.Join("\n", args_help), "Info", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

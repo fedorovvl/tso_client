@@ -3,10 +3,15 @@ addMenuItem(loca.GetText("SPE", "Geologist") + " (F4)", menuGeologistsHandler, 1
 function menuGeologistsHandler(event)
 {
 	$( "div[role='dialog']:not(#specModal):visible").modal("hide");
-	$('#specModal .modal-title').html(getImageTag('icon_geologist.png')+' '+loca.GetText("SPE", "Geologist"));
+	createModalWindow('specModal', '');
+	$("#specModal .modal-title").html(getImageTag('icon_geologist.png')+' '+loca.GetText("SPE", "Geologist"));
 	if(swmmo.application.mGameInterface.isOnHomzone() == false) {
-		showGameAlert("It's not your home zone");
+		showGameAlert(getText('not_home'));
 		return;
+	}
+	if($('#specModal .specSaveTemplate').length == 0)
+	{
+		createSpecWindow();
 	}
 	playerLevel = swmmo.application.mGameInterface.mHomePlayer.GetPlayerLevel();
     out = '<div class="container-fluid">';
@@ -24,7 +29,7 @@ function menuGeologistsHandler(event)
 	});
 	out = out + '</div>';
 	if(!isThereAnySpec){
-		showGameAlert("You don't have free geologists");
+		showGameAlert(getText('no_free_geo'));
 		return;
 	}
 	$("#specModal .massSend").html(createGeologistDropdown(1, 1, true));

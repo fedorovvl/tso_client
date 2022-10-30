@@ -86,8 +86,8 @@ function createTableRow(data, isHeader)
 		i++;
 		out += '<div class="col-xs-{0} col-sm-{0} col-lg-{0} {2}" {1}>{3}</div>'.format(
 			item[0],
-			isHeader ? 'style="border-radius:{0};"'.format(i == 1 ? '10px 0px 0px 10px' : (i == data.length ? '0px 10px 10px 0px' : '')) : '',
-			isHeader ? 'tblHeader' : (item[2] ? item[2] : ''),
+			isHeader ? 'style="border-radius:{0};"'.format(i == 1 ? '10px 0px 0px 10px' : (i == data.length ? '0px 10px 10px 0px' : '')) : '0px',
+			isHeader ? 'tblHeader ' + (item[2] ? item[2] : '') : (item[2] ? item[2] : ''),
 			item[1]
 		);
 	});
@@ -121,13 +121,15 @@ function createModalWindow(id, title)
 	const modalId = "#" + id;
 	if ($(modalId).length == 0) {
 		// create new one by copying buffmodal
-		$("#buffModal").clone().attr('id', id).appendTo(".container");
+		$("#dummyModal").clone().attr('id', id).appendTo(".container");
 		// change title
-		$(modalId + " .modal-title").text(title);
+		$(modalId + " .modal-title").html(title);
 		// change data id
 		$(modalId + " .modal-body").attr('id', id + 'Data');
 		// remove buttons except close
 		$(modalId + " .modal-footer button:not(.btn-danger)").remove();
+		// translate close button
+		$(modalId + " .btnClose").text(getText('btn_close'));
 		// add flipflop
 		$(modalId).on('show.bs.modal hide.bs.modal', function () { window.nativeWindow.stage.swapChildrenAt(0, 1); });
 	}
@@ -177,6 +179,17 @@ function showGameAlert(message)
 	msg.headlineLabel.text = "Client";
 	msg.messageBody.text = message;
 	msg.image.source = assets.GetBitmap("1-Up.png");
+}
+
+function getText(id)
+{
+	if(!baseTranslation[gameLang] && !baseTranslation["en-uk"][id]) { return "RES not found : " + id; }
+	return baseTranslation[idL] && baseTranslation[gameLang][id] ? baseTranslation[gameLang][id] : baseTranslation["en-uk"][id];
+}
+
+function extendBaseLang(data)
+{
+	$.extend(baseTranslation, data);
 }
 
 function saveLastDir(type, dir)

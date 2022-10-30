@@ -6,7 +6,7 @@ function buffAplied(event){
     if(event.data.buffOwnerID != swmmo.application.mGameInterface.mCurrentPlayer.getPlayerID()) { return; }
 	if(!checkBuffType(event.data.buff.GetType())) { 
 		if(isDebug) {
-			showGameAlert("Buff not recorded. type - " + event.data.buff.GetType());
+			showGameAlert(getText('buff_not_recorded') + event.data.buff.GetType());
 		}
 		return; 
 	}
@@ -57,19 +57,19 @@ function checkBuffType(type)
 
 function getBuffStatus(data, zoneStatus)
 {
-	if(!zoneStatus) { return 'wrong zone'; }
+	if(!zoneStatus) { return 'buff_wrong_zone'; }
 	bui = swmmo.application.mGameInterface.mCurrentPlayerZone.GetBuildingFromGridPosition(data['buiGrid']);
-	if(bui == null) { return 'not exist'; }
-	if(bui.GetBuildingName_string() != data['buiName']) { return 'name mismatch'; }
-	if(bui.productionBuff != null && checkBuffType(bui.productionBuff.GetBuffDefinition().GetName_string())) { return 'already buffed'; }
-	return 'ready';
+	if(bui == null) { return 'buff_not_exist'; }
+	if(bui.GetBuildingName_string() != data['buiName']) { return 'buff_wrong_name'; }
+	if(bui.productionBuff != null && checkBuffType(bui.productionBuff.GetBuffDefinition().GetName_string())) { return 'buff_buffed'; }
+	return 'buff_ready';
 }
 
 function startRecording()
 {
 	try{
 		$('#buffModal').modal('hide');
-		showGameAlert("Recording started!");
+		showGameAlert(getText('buff_rec_start'));
 		swmmo.application.mGameInterface.channels.BUFF.addPropertyObserver("buffApplied", buff);
 		buffRecordEnabled = true;
 	} catch(e) {
@@ -79,7 +79,7 @@ function startRecording()
 function stopRecording()
 {
 	buffRecordEnabled = false;
-	showGameAlert("Recording stoped!");
+	showGameAlert(getText('buff_rec_stop'));
 	swmmo.application.mGameInterface.channels.BUFF.removePropertyObserver("buffApplied", buff);
 	menuBuffsHandler(null);
 }
@@ -111,7 +111,7 @@ function buffLoadTemplateLoaded(event)
 	try{
 	  buffRecord = JSON.parse(event.target.data);
 	} catch(e) {
-	  alert("Bad template file");
+	  alert(getText('bad_template'));
 	  return;
 	}
 	buffSourceRecord = false;
@@ -129,7 +129,7 @@ function buffDoJob()
 	});
 	x.run();
 	$('#buffModal').modal('hide');
-	showGameAlert("Start buffing");
+	showGameAlert(getText('command_sent'));
 }
 function sendBuffPacket(buffId, grid)
 {

@@ -302,5 +302,6 @@
         <Image HorizontalAlignment="Left" Height="20" Margin="130,114,0,0" VerticalAlignment="Top" Width="20" Source="files/ButtonIconThrowAway.png"/>
         <Button Height="18" ToolTip="Open tso_portable folder" HorizontalAlignment="Left" Margin="155,114,0,0" VerticalAlignment="Top" Width="16" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Background="#00000000" Foreground="White" BorderThickness="0" Click="openTsoFolder_Click" />
         <Button Height="18" ToolTip="Delete tso_portable folder" HorizontalAlignment="Left" Margin="130,114,0,0" VerticalAlignment="Top" Width="16" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Background="#00000000" Foreground="White" BorderThickness="0" Click="resetTsoFolder_Click" />
+        <Label Content="?" Cursor="Hand" HorizontalAlignment="Left" MouseLeftButtonDown="Label_MouseLeftButtonDown" Margin="121,349,0,0" VerticalAlignment="Top" Foreground="White" Height="22" Width="15" FontSize="10"/>
     </Grid>
 </Window>

@@ -1,13 +1,32 @@
-$("#specModal").on('show.bs.modal hide.bs.modal', function(){ window.nativeWindow.stage.swapChildrenAt(0, 1); });
-$("#specTimeType").change(function(){
-	$('#specModalData select[id!="expl-mass"]').each(function(i, select){
-		if(select.value != '0') {
-			$(select.parentNode.parentNode.childNodes[1]).html(getTaskDurationText(select.id.replace('expl-', ''), select.value));
-		}
-	});
-});
 var dtf = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
 dtf.setDateTimePattern("MM-dd HH:mm"); 
+
+function createSpecWindow()
+{
+	const headerRow = createTableRow([
+			[4, loca.GetText("LAB","Name")],
+			[3, '<label class="switch"><input type="checkbox" id="specTimeType"><span class="slider round"></span></label><div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getText('spec_time_normal'))],
+			[5, '', 'massSend']
+		], true);
+	$("#specModal .modal-header").append([$('<br/>'), $('<div>', {'class': 'container-fluid'}).html(headerRow)]);
+	$("#specTimeType").change(function(){
+		$('#specModalData select[id!="expl-mass"]').each(function(i, select){
+			if(select.value != '0') {
+				$(select.parentNode.parentNode.childNodes[1]).html(getTaskDurationText(select.id.replace('expl-', ''), select.value));
+			}
+		});
+		$("#specTimeTypeLang").text($(this).is(':checked') ? getText('spec_time_arrival') : getText('spec_time_normal'));
+	});
+	$("#specModal .btnClose").text(getText('btn_close'));
+	$("#specModal .modal-footer").prepend([
+		$('<button>').attr({ "class": "btn btn-success specSend" }).text(getText('btn_submit')),
+		$('<button>').attr({ "class": "btn btn-primary pull-left specSaveTemplate" }).text(getText('save_template')),
+		$('<button>').attr({ "class": "btn btn-primary pull-left specLoadTemplate" }).text(getText('load_template')),
+	]);
+	$('#specModal .specSaveTemplate').click(saveSpecTemplate);
+	$('#specModal .specLoadTemplate').click(loadSpecTemplate);
+	$('#specModal .specSend').click(sendSpec);
+}
 
 function multiSelectSpec()
 {
@@ -107,7 +126,7 @@ function sendSpec()
 	});
 	x.run();
 	$('#specModal').modal('hide');
-	showGameAlert("We send specialists to their tasks");
+	showGameAlert(getText('command_sent'));
 }
 function sendSpecPacket(uniqueId, task)
 {
@@ -156,7 +175,7 @@ function loadSpecTemplateLoaded(event)
 	try{
 	  savedData = JSON.parse(event.target.data);
 	} catch(e) {
-	  alert("Bad template file");
+	  alert(getText('bad_template'));
 	  return;
 	}
 	$('#specModalData select[id!="expl-mass"]').map(function() { $(this).val(0); });

@@ -5,27 +5,43 @@ var buffSourceRecord = false;
 var buffsAvailable = {};
 var buffInProgress = false;
 
-$("#buffModal").on('show.bs.modal hide.bs.modal', function(){ window.nativeWindow.stage.swapChildrenAt(0, 1); });
 addMenuItem(loca.GetText("LAB", "Buffs") + " (F5)", menuBuffsHandler, 116);
 
 function menuBuffsHandler(event)
 {
-	$( "div[role='dialog']:not(#buffModal):visible").modal("hide");
-	$('#buffModal .modal-title').html(getImageTag('ProductivityBuffLvl3', '45px') + ' '+loca.GetText("LAB", "Buffs"));
-	$('#buffSubmit, #buffReset, #buffSaveTemplate').hide();
+	$("div[role='dialog']:not(#buffModal):visible").modal("hide");
+	createModalWindow('buffModal', getImageTag('ProductivityBuffLvl3', '45px') + ' '+loca.GetText("LAB", "Buffs"));
+	if($('#buffModal .buffSaveTemplate').length == 0)
+	{
+		$("#buffModal .modal-footer").prepend([
+			$('<button>').attr({ "class": "btn btn-success buffSubmit" }).text(getText('btn_submit')),
+			$('<button>').attr({ "class": "btn btn-warning buffReset" }).text(getText('btn_reset')),
+			$('<button>').attr({ "class": "btn btn-primary pull-left buffSaveTemplate" }).text(getText('save_template')),
+			$('<button>').attr({ "class": "btn btn-primary pull-left buffLoadTemplate" }).text(getText('load_template')),
+		]);
+		$('#buffModal .buffSaveTemplate').click(buffSaveTemplate);
+		$('#buffModal .buffLoadTemplate').click(buffLoadTemplate);
+		$('#buffModal .buffReset').click(buffResetData);
+		$('#buffModal .buffSubmit').click(buffDoJob);
+	}
+
+	$('.buffSubmit, .buffReset, .buffSaveTemplate').attr('disabled', 'true');
 	out = '<div class="container-fluid">';
 	if(!buffRecordEnabled && buffRecord == null) {
-		out = out + '<strong>Welcome to buff manager.</strong></p><p>You can record what you need to buff and then replay it automatically. Press "Start recording" button and buff your (or friend) buildings. After that come back and press "Stop recording". You will see list of buildings and its buffs. Save it as temlate and next time just load template and press Submit.</p><p>Buildings with red background will not be buffed.. also if one of available buff rows be red not all buildings with this buff will be buffed</p><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">Start recording</button>';
+		out += '<strong>{0}</strong></p>{1}'.format(getText('buff_welcome'), getText('buff_welcome_block'));
 	}
 	if(buffRecordEnabled) {
-		out = out + '<p><h2 class="text-center">Recording in progress!</h2></p><button type="button" class="btn btn-primary btn-lg btn-block" id="stopRecording">Stop recording</button>';
+		out += '<p><h2 class="text-center">{0}</h2></p><button type="button" class="btn btn-primary btn-lg btn-block" id="stopRecording">{1}</button>'.format(
+			getText('buff_rec_progress'),
+			getText('buff_stop_record')
+		);
 	}
 	if(!buffRecordEnabled && buffRecord != null) {
-		out = out + getBuffHTML() + getBuffsAvailableHTML()+'<br><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">Record more</button>';
+		out += getBuffHTML() + getBuffsAvailableHTML() + '<br><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">' + getText('buff_record_more') + '</button>';
 		if(buffRecordFiltered.length > 0){
-			$('#buffSubmit').show();
+			$('.buffSubmit').attr('disabled', false);
 		}
-		$('#buffReset, #buffSaveTemplate').show();
+		$('.buffReset, .buffSaveTemplate').attr('disabled', false);
 	}
 	out += '</div>';
 	$("#buffModalData").html(out);
@@ -56,7 +72,7 @@ function getBuffsAvailableHTML()
 		}
 	});
 	if(Object.keys(buffNeeded).length == 0){ return '';	}
-	result = '<br><p>Buffs will be used:</p>';
+	result = '<br><p>{0}</p>'.formcat(getText('buff_used'));
 	result += createTableRow([
 			[8, loca.GetText("LAB", 'Buff')],
 			[2, loca.GetText("LAB", 'Requires')],
@@ -90,10 +106,10 @@ function getBuffAvailableCount(buffName)
 
 function getBuffHTML()
 {
-	result = '<p>BuffList ZoneID: ' + buffRecord["zoneId"] + '</p><p>BuffList ZoneOwner: ' + buffRecord["zoneUser"] + '</p>';
+	result = '<p>{0} {1}</p>'.format(getText('buff_zoneowner'), buffRecord["zoneUser"]);
 	isZoneRight = true;
 	if(buffRecord["zoneId"] != swmmo.application.mGameInterface.mCurrentViewedZoneID) {
-		result = result + '<p><strong>This buff list not for your zone!</strong></p>';
+		result += '<p><strong>' + getText('buff_not_your_zone') + '</strong></p>';
 		isZoneRight = false;
 	}
 	result += createTableRow([
@@ -107,17 +123,16 @@ function getBuffHTML()
 		status = getBuffStatus(data, isZoneRight);
 		// too dirty
 		if(data['buffName'].indexOf("RemoveBuff") >= 0) { 
-			if(status == 'already buffed') { status = 'ready'; } 
-			else if(status == 'ready') { status = 'not buffed'; } 
+			if(status == 'buff_buffed') { status = 'buff_ready'; } 
+			else if(status == 'buff_ready') { status = 'buff_not_buffed'; } 
 		}
-		if(status == 'ready') { buffRecordFiltered.push(data); }
+		if(status == 'buff_ready') { buffRecordFiltered.push(data); }
 		result += createTableRow([
 			[1, data['buiGrid']],
 			[4, loca.GetText("BUI", data['buiName'])],
 			[5, loca.GetText("RES", data['buffName'])],
-			[2, status + '<button type="button" class="close" value="'+data['buiGrid']+'"><span>&times;</span></button>', (status == 'ready') ? "buffReady" : "buffNotReady"]
+			[2, getText(status) + '<button type="button" class="close" value="'+data['buiGrid']+'"><span>&times;</span></button>', (status == 'buff_ready') ? "buffReady" : "buffNotReady"]
 		]);
 	});
 	return result;
 }
-

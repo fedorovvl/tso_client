@@ -4,8 +4,6 @@ if(isDebug) {
 	addMenuItem("CustomCode", menuCustomHandler);
 	addMenuItem("SaveHTML", menuSaveHandler);
 }
-addKeybBind(menuCollectibleHandler, 116, true);
-
 function menuCustomHandler(event)
 {
 	try{
@@ -27,21 +25,4 @@ function menuSaveHandler(event)
 {
 	file = air.File.documentsDirectory.resolvePath("swmmo.html");
 	file.save($('html').prop('outerHTML'));
-}
-
-function menuCollectibleHandler(event)
-{
-  col = swmmo.getDefinitionByName("Collections::CollectionsManager").getInstance();
-  var x = new TimedQueue(1000);
-  swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
-    if(col.getBuildingIsNormalCollectible(item.GetBuildingName_string()) || col.getBuildingIsEventCollectible(item.GetBuildingName_string())) {
-	  x.add(function(){ item.handleSelectBuilding(); });
-	}
-  });
-  if(x.len() == 0) {
-	showGameAlert("No collectibles found");
-	return;
-  }
-  showGameAlert("Don't tell ubisoft about what happened here =)");
-  x.run();
 }

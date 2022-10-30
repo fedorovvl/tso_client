@@ -3,10 +3,15 @@ addMenuItem(loca.GetText("SPE", "Explorer") + " (F3)", menuExplorersHandler, 114
 function menuExplorersHandler(event)
 {
 	$( "div[role='dialog']:not(#specModal):visible").modal("hide");
-	$('#specModal .modal-title').html(getImageTag('icon_explorer.png')+' '+loca.GetText("SPE", "Explorer"));
+	createModalWindow('specModal', '');
+	$("#specModal .modal-title").html(getImageTag('icon_explorer.png')+' '+loca.GetText("SPE", "Explorer"));
 	if(swmmo.application.mGameInterface.isOnHomzone() == false) {
-		showGameAlert("It's not your home zone");
+		showGameAlert(getText('not_home'));
 		return;
+	}
+	if($('#specModal .specSaveTemplate').length == 0)
+	{
+		createSpecWindow();
 	}
     out = '<div class="container-fluid">';
 	isThereAnySpec = false;
@@ -30,7 +35,7 @@ function menuExplorersHandler(event)
 	});
 	out = out + '</div>';
 	if(!isThereAnySpec){
-		showGameAlert("You don't have free explorers");
+		showGameAlert(getText('no_free_expl'));
 		return;
 	}
 	$("#specModal .massSend").html(createExplorerDropdown(null, true, true, true));
