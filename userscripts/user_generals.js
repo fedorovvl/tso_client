@@ -78,8 +78,8 @@ const _exudGeneralsLang = {
 
 addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
 
-var _exudGeneralsSortType = 0; // 0 = type/name  1 = name/type
-var _exudGeneralsHideGuest = false;
+var _exudGeneralsSortType = 1; // 0 = type/name  1 = name/type
+var _exudGeneralsHideGuest = true;
 var _exudGeneralsHideUnselected = false;
 var _exudGeneralsToggleselected = false;
 var idL = loca.getSelectedLanguage();
@@ -149,9 +149,10 @@ function _exudGeneralsMenuHandler(event)
 			alert("Err: " + error.message);
 		}
 			
-		out += '<br/>' + createTableRow([
+		out += '<br/><br/>' + createTableRow([
+			[1, ""],
 			[6, loca.GetText("LAB","Name")],
-			[3, loca.GetText("LAB", "StarMenu")],
+			[2, loca.GetText("LAB", "StarMenu")],
 			[1, loca.GetText("LAB", "Army")],
 			[2, _exudGeneralsGetLabel("ColumnOwner")]
 		], true) ;
@@ -214,10 +215,11 @@ function _exudMakeGeneralsTable()
 		if (_exudGeneralsHideGuest && !item.Owner) return;
 		if (_exudGeneralsHideUnselected && Selected.indexOf(item.UID)<0) return;
 		if (item.Owner) ++myGens;
-		var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''), item.Icon + item.Name);
+		var checkbox = '<input type="checkbox" id="{0}"{1}/>'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''));
 		out += createTableRow([
-			[6, !_exudGeneralsIsSelectable(item) ? item.Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
-			[3, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
+			[1, !_exudGeneralsIsSelectable(item) ? "": checkbox],
+			[6, !_exudGeneralsIsSelectable(item) ? item.Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): item.Icon + item.Name],
+			[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
 			[1, (item.TotalArmy>0?item.TotalArmy:'')],
 			[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
 		]);
