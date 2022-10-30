@@ -16,17 +16,14 @@ function _exudGuildMenuHandler(event) {
 		);
 		$('#GuildModal ._exudCSVexportBtn').click(_exGMCSVexport);
 		
-		$('#GuildModal .modal-header').append("<br/>" + createTableRow([
-		[5, loca.GetText("LAB", "UserName")],
-		[3, loca.GetText("LAB", "GuildQuestStatus")],
-		[2, loca.GetText("LAB", "GuildOnlineLast24")],
-		[2, loca.GetText("LAB", "GuildLevel")]
-		], true)
-		);		
-	
+		$('#GuildModal .modal-header').append('<div class="container-fluid"><br/>' + createTableRow([
+					[5, loca.GetText("LAB", "UserName")],
+					[3, loca.GetText("LAB", "GuildQuestStatus")],
+					[2, loca.GetText("LAB", "GuildOnlineLast24")],
+					[2, loca.GetText("LAB", "GuildLevel")]
+					], true)  + '</div>'
+					);			
 	}
-	
-
 	
 	// fill modal data 
 	$('#GuildModalData').html('<div class="container-fluid">{0}</div>'.format(_exudGuildGetData()));
@@ -56,14 +53,7 @@ function _exudGuildGetData() {
 	
 	if (guild == null || typeof guild == "undefined") { return '<H3>No Data</H3>'; }
 	$("#GuildModal .modal-title").text("{0} ( {2}: {1} )".format(guild.name, guild.members.length, loca.GetText("LAB", "GuildMembers")));
-	/*
-	out += createTableRow([
-		[5, loca.GetText("LAB", "UserName")],
-		[3, loca.GetText("LAB", "GuildQuestStatus")],
-		[2, loca.GetText("LAB", "GuildOnlineLast24")],
-		[2, loca.GetText("LAB", "GuildLevel")]
-	], true);
-	*/
+	
 	_members = new Array();
 	for(key in guild.members)
 	{
