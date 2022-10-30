@@ -150,7 +150,8 @@ function _exudGeneralsMenuHandler(event)
 		}
 			
 		out += '<br/><br/>' + createTableRow([
-			[7, loca.GetText("LAB","Name")],
+			[1, ""],
+			[6, loca.GetText("LAB","Name")],
 			[2, loca.GetText("LAB", "StarMenu")],
 			[1, loca.GetText("LAB", "Army")],
 			[2, _exudGeneralsGetLabel("ColumnOwner")]
@@ -214,9 +215,10 @@ function _exudMakeGeneralsTable()
 		if (_exudGeneralsHideGuest && !item.Owner) return;
 		if (_exudGeneralsHideUnselected && Selected.indexOf(item.UID)<0) return;
 		if (item.Owner) ++myGens;
-		var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''),  item.Icon + item.Name);
+		var checkbox = '<input type="checkbox" id="{0}"{1}/>'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''));
 		out += createTableRow([
-			[7, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + item.Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
+			[1, !_exudGeneralsIsSelectable(item) ? "": checkbox],
+			[6, !_exudGeneralsIsSelectable(item) ? item.Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): item.Icon + item.Name],
 			[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
 			[1, (item.TotalArmy>0?item.TotalArmy:'')],
 			[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
