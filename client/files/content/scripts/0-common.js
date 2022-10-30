@@ -170,6 +170,15 @@ function showAlert(message, sameLayer, level)
 	}, 1500);
 }
 
+function showGameAlert(message)
+{
+	var msg = new alertItem();
+	swmmo.getDefinitionByName("globalFlash").gui.mAvatarMessageList.mClientMessages.addChild(msg);
+	msg.headlineLabel.text = "Client";
+	msg.messageBody.text = message;
+	msg.image.source = assets.GetBitmap("1-Up.png");
+}
+
 function saveLastDir(type, dir)
 {
 	try{

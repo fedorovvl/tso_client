@@ -107,7 +107,7 @@ function sendSpec()
 	});
 	x.run();
 	$('#specModal').modal('hide');
-	showAlert("We send specialists to their tasks", false, 'success');
+	showGameAlert("We send specialists to their tasks");
 }
 function sendSpecPacket(uniqueId, task)
 {

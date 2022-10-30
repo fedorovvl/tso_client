@@ -36,12 +36,12 @@ function menuAuctionHandler(event)
 	$('#auxPlaceBet').hide();
 	out = '<div class="container-fluid">';
 	if(currentAuc == undefined) {
-		out = '<p class="text-center">Auction not active</p>';
+		out = '<p class="text-center">' + loca.GetText("LAB", 'BlackMarketAuctionInactive') + '</p>';
 	} else {
 		var aucDefinition = getCurrentAuc();
 		out = '<h3 class="text-center">EXPERIMENTAL!</h3><p><strong>Use only after pay 10k gold in unity. Always reload data before making bid.</strong></p>'
 		out += '<p>Current auctionId: ' + currentAuc.auctionId + '</p>';
-		out += '<p>Player with max bet: ' + currentAuc.playerName + '</p>';
+		out += '<p>'+loca.GetText("LAB", 'BlackMarketAuctionBidder')+' ' + currentAuc.playerName + '</p>';
 		out += '<p>Bidding count: ' + currentAuc.biddingCount + '</p>';
 		endTime = currentAuc.endTime - new Date().getTime();
 		out += '<p>End time: ' + (endTime > 0 ? loca.FormatDuration(endTime) : 'ended') + '</p>';

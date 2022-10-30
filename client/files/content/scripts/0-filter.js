@@ -26,5 +26,7 @@ addMenuItem(loca.GetText("LAB", "Filter"), filterSubMenu);
 
 function menuFilterHandler(event)
 {
+  swmmo.getDefinitionByName("defines").CLIENT_FILTER = true;
   swmmo.getDefinitionByName("gGfxResource").applyFilter(event.target.label, swmmo.application.mGameInterface);
+  swmmo.getDefinitionByName("defines").CLIENT_FILTER = false;
 }

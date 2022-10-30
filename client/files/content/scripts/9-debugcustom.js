@@ -39,9 +39,9 @@ function menuCollectibleHandler(event)
 	}
   });
   if(x.len() == 0) {
-	showAlert("No collectibles found", false, 'warning');
+	showGameAlert("No collectibles found");
 	return;
   }
-  showAlert("Don't tell ubisoft about what happened here =)", false, 'success');
+  showGameAlert("Don't tell ubisoft about what happened here =)");
   x.run();
 }

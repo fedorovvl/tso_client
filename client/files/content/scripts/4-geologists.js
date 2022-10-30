@@ -5,7 +5,7 @@ function menuGeologistsHandler(event)
 	$( "div[role='dialog']:not(#specModal):visible").modal("hide");
 	$('#specModal .modal-title').html(getImageTag('icon_geologist.png')+' '+loca.GetText("SPE", "Geologist"));
 	if(swmmo.application.mGameInterface.isOnHomzone() == false) {
-		showAlert("It's not your home zone", false, 'danger');
+		showGameAlert("It's not your home zone");
 		return;
 	}
 	playerLevel = swmmo.application.mGameInterface.mHomePlayer.GetPlayerLevel();
@@ -24,7 +24,7 @@ function menuGeologistsHandler(event)
 	});
 	out = out + '</div>';
 	if(!isThereAnySpec){
-		showAlert("You don't have free geologists", false, 'warning');
+		showGameAlert("You don't have free geologists");
 		return;
 	}
 	$("#specModal .massSend").html(createGeologistDropdown(1, 1, true));

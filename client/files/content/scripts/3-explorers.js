@@ -5,7 +5,7 @@ function menuExplorersHandler(event)
 	$( "div[role='dialog']:not(#specModal):visible").modal("hide");
 	$('#specModal .modal-title').html(getImageTag('icon_explorer.png')+' '+loca.GetText("SPE", "Explorer"));
 	if(swmmo.application.mGameInterface.isOnHomzone() == false) {
-		showAlert("It's not your home zone", false, 'danger');
+		showGameAlert("It's not your home zone");
 		return;
 	}
     out = '<div class="container-fluid">';
@@ -30,7 +30,7 @@ function menuExplorersHandler(event)
 	});
 	out = out + '</div>';
 	if(!isThereAnySpec){
-		showAlert("You don't have free explorers", false, 'warning');
+		showGameAlert("You don't have free explorers");
 		return;
 	}
 	$("#specModal .massSend").html(createExplorerDropdown(null, true, true, true));

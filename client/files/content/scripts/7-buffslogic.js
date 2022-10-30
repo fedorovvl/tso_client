@@ -6,7 +6,7 @@ function buffAplied(event){
     if(event.data.buffOwnerID != swmmo.application.mGameInterface.mCurrentPlayer.getPlayerID()) { return; }
 	if(!checkBuffType(event.data.buff.GetType())) { 
 		if(isDebug) {
-			showAlert("Buff not recorded. type - " + event.data.buff.GetType(), false, 'warning');
+			showGameAlert("Buff not recorded. type - " + event.data.buff.GetType());
 		}
 		return; 
 	}
@@ -69,7 +69,7 @@ function startRecording()
 {
 	try{
 		$('#buffModal').modal('hide');
-		showAlert("Recording started!", false, 'success');
+		showGameAlert("Recording started!");
 		swmmo.application.mGameInterface.channels.BUFF.addPropertyObserver("buffApplied", buff);
 		buffRecordEnabled = true;
 	} catch(e) {
@@ -79,7 +79,7 @@ function startRecording()
 function stopRecording()
 {
 	buffRecordEnabled = false;
-	showAlert("Recording stoped!", true, 'success');
+	showGameAlert("Recording stoped!");
 	swmmo.application.mGameInterface.channels.BUFF.removePropertyObserver("buffApplied", buff);
 	menuBuffsHandler(null);
 }
@@ -129,7 +129,7 @@ function buffDoJob()
 	});
 	x.run();
 	$('#buffModal').modal('hide');
-	showAlert("Start buffing", false, 'success');
+	showGameAlert("Start buffing");
 }
 function sendBuffPacket(buffId, grid)
 {
