@@ -28,7 +28,11 @@ function menuBuffsHandler(event)
 	$('.buffSubmit, .buffReset, .buffSaveTemplate').attr('disabled', 'true');
 	out = '<div class="container-fluid">';
 	if(!buffRecordEnabled && buffRecord == null) {
-		out += '<strong>{0}</strong></p>{1}'.format(getText('buff_welcome'), getText('buff_welcome_block'));
+		out += '<strong>{0}</strong></p>{1}{2}'.format(
+			getText('buff_welcome'),
+			getText('buff_welcome_block'),
+			$('<button>', { 'class': "btn btn-primary btn-lg btn-block", 'id' :"startRecording"}).text(getText('buff_start_record')).prop('outerHTML')
+		);
 	}
 	if(buffRecordEnabled) {
 		out += '<p><h2 class="text-center">{0}</h2></p><button type="button" class="btn btn-primary btn-lg btn-block" id="stopRecording">{1}</button>'.format(
