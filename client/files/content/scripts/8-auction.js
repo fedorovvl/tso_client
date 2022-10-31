@@ -29,7 +29,6 @@ function menuAuctionHandler(event)
 	createModalWindow('aucModal', getImageTag('icon_logistics.png') + ' '+loca.GetText("LAB", "BlackMarketAuction"));
 	if($('#aucModal .aucPlace').length == 0)
 	{
-		$("#aucModal .btnClose").text(getText('btn_close'));
 		$("#aucModal .modal-footer").prepend([
 			$('<button>').attr({ "class": "btn btn-success aucPlace" }).text(getText('auc_do_bid')),
 			$('<button>').attr({ "class": "btn btn-primary pull-left aucReload" }).text(getText('btn_reload'))

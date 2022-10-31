@@ -9,6 +9,7 @@ function createSpecWindow()
 			[5, '', 'massSend']
 		], true);
 	$("#specModal .modal-header").append([$('<br/>'), $('<div>', {'class': 'container-fluid'}).html(headerRow)]);
+	$("#specModal .modal-title").append($('<button>').attr({ "class": "btn btn-settings pull-right" }).text(loca.GetText("LAB", "ToggleOptionsPanel")));
 	$("#specTimeType").change(function(){
 		$('#specModalData select[id!="expl-mass"]').each(function(i, select){
 			if(select.value != '0') {
@@ -17,15 +18,39 @@ function createSpecWindow()
 		});
 		$("#specTimeTypeLang").text($(this).is(':checked') ? getText('spec_time_arrival') : getText('spec_time_normal'));
 	});
-	$("#specModal .btnClose").text(getText('btn_close'));
 	$("#specModal .modal-footer").prepend([
 		$('<button>').attr({ "class": "btn btn-success specSend" }).text(getText('btn_submit')),
 		$('<button>').attr({ "class": "btn btn-primary pull-left specSaveTemplate" }).text(getText('save_template')),
 		$('<button>').attr({ "class": "btn btn-primary pull-left specLoadTemplate" }).text(getText('load_template')),
 	]);
+	$('#specModal .btn-settings').click(specSettingsWindow);
 	$('#specModal .specSaveTemplate').click(saveSpecTemplate);
 	$('#specModal .specLoadTemplate').click(loadSpecTemplate);
 	$('#specModal .specSend').click(sendSpec);
+}
+
+function specSettingsWindow()
+{
+	createSettingsWindow('specModal', specSettingsSave);
+	$('#specModalsettingsData').html(specCreateSettings());
+	$('#specModalsettings:not(:visible)').modal({backdrop: "static"});
+}
+
+function specCreateSettings()
+{
+	out = createTableRow([[3, loca.GetText("LAB", "ProductionStatus")],[9, 'Description']], true);
+	out += createTableRow([[3, createSwitch('specDefaultTimeType', true)],[9, 'Default time type Needed/Arrival']]);
+	out += createTableRow([[3, $('<input>', { 'type': 'text', 'class': 'form-control', 'id': 'specDefaultSmth'}).prop('outerHTML')],[9, 'test texbox setting']]);
+	out += createTableRow([[12, $('<p>', {'class': 'text-center', 'style': 'margin:0px;'}).text('Default job').prop('outerHTML')]]);
+	out += createTableRow([[12, createExplorerDropdown(null, true, true, true)]]);
+	out += createTableRow([[3, createSwitch('bsTest3', false)],[9, 'descriptio n3descri']]);
+	out += createTableRow([[3, createSwitch('bsTest4', true)],[9, 'description4']]);
+	return out;
+}
+
+function specSettingsSave()
+{
+	alert('save');
 }
 
 function multiSelectSpec()

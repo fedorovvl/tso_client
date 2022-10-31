@@ -129,7 +129,7 @@ function createModalWindow(id, title)
 		// remove buttons except close
 		$(modalId + " .modal-footer button:not(.btn-danger)").remove();
 		// translate close button
-		$(modalId + " .btnClose").text(getText('btn_close'));
+		$(modalId + " .btnClose").text(loca.GetText("LAB", "Close"));
 		// add flipflop
 		$(modalId).on('show.bs.modal hide.bs.modal', function () { window.nativeWindow.stage.swapChildrenAt(0, 1); });
 	}

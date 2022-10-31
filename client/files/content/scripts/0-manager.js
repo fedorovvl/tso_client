@@ -9,7 +9,6 @@ function scriptsManagerWindow()
 	createModalWindow('managerModal', getImageTag('BattleBuffKill_random_unit_type_limited') + ' ' + loca.GetText("LAB", 'EventProgression'));
 	if($('#managerModal .managerSubmit').length == 0)
 	{
-		$("#managerModal .btnClose").text(getText('btn_close'));
 		$("#managerModal .modal-footer").prepend([
 			$('<button>').attr({ "class": "btn btn-primary managerFix" }).text(getText('btn_fix')),
 			$('<button>').attr({ "class": "btn btn-primary managerSubmit" }).text(getText('btn_submit'))

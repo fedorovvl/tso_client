@@ -88,7 +88,9 @@ namespace client
 
         public Main()
         {
- 
+            cmd = new Arguments(Environment.GetCommandLineArgs());
+            if (cmd["lang"] != null && Servers._langs.ContainsKey(cmd["lang"]))
+                lang = Servers._langs[cmd["lang"]];
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             System.Net.ServicePointManager.Expect100Continue = false;
@@ -112,7 +114,6 @@ namespace client
         }
         private void Main_Loaded(object sender, RoutedEventArgs e)
         {
-            cmd = new Arguments(Environment.GetCommandLineArgs());
             if (cmd["config"] != null && File.Exists(cmd["config"]))
                 setting_file = cmd["config"];
             ReadSettings();
@@ -120,8 +121,6 @@ namespace client
                 debug = true;
             if (cmd["http_timeout"] != null && IsNumeric(cmd["http_timeout"]))
                 http_timeout = int.Parse(cmd["http_timeout"]);
-            if (cmd["lang"] != null && Servers._langs.ContainsKey(cmd["lang"]))
-                lang = Servers._langs[cmd["lang"]];
             if (cmd["login"] != null && cmd["password"] != null)
             {
                 login.Text = cmd["login"];

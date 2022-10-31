@@ -246,9 +246,10 @@ namespace client
         }
         public static string getTrans(string value)
         {
-            if (!trans.ContainsKey(_langs[Main._region]))
+            string lang = string.IsNullOrEmpty(Main.lang) ? Main._region : Main.cmd["lang"];
+            if (!trans.ContainsKey(_langs[lang]))
                 return trans["en-uk"][value];
-            return trans[_langs[Main._region]][value];
+            return trans[_langs[lang]][value];
         }
     }
 
