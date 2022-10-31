@@ -156,6 +156,7 @@ function createSettingsWindow(id, savefunc, size)
 			$('<button>').attr({ "class": "btn btn-primary pull-left" }).text(loca.GetText("LAB", "Save")),
 		]);
 		$(modalId + " .btn-primary").click(savefunc);
+		$(modalId).on('hidden.bs.modal', function () { $(modalId).remove(); });
 	}
 }
 
