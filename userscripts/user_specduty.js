@@ -18,13 +18,13 @@ const _exudspecDutyLang = {
 		"HideShowGuest" : "Todos/Apenas meus"
 	},
 	"fr-fr": {
-        "menuItemName": "Tâches des Spécialistes"  ,
-        "menuTitle": "Temps d'exécution des Spécialistes"  ,
-        "ColumnEstimated": "Estimé"  ,
-        "ColumnArrival": "Arrivée"  ,
-        "NoData": "Pas d'information !",
-        "YOU": "Vous",
-      "HideShowGuest" : "Masquer/Afficher Invité(s)"
+        	"menuItemName": "Tâches des Spécialistes"  ,
+        	"menuTitle": "Temps d'exécution des Spécialistes"  ,
+        	"ColumnEstimated": "Estimé"  ,
+        	"ColumnArrival": "Arrivée"  ,
+        	"NoData": "Pas d'information !",
+        	"YOU": "Vous",
+        	"HideShowGuest" : "Masquer/Afficher Invité(s)"
 	},
 	"it-it": {
 		"menuItemName": "Azioni in corso"  ,
@@ -34,6 +34,24 @@ const _exudspecDutyLang = {
 		"NoData": "Nessuna azione trovata!"  ,
 		"YOU": "Tu",
 		"HideShowGuest" : "Tutti/Solo i miei"
+	},
+	"es-es": {
+		"menuItemName": "Especialistas"  ,
+		"menuTitle": "Tareas de los especialistas"  ,
+		"ColumnEstimated": "Duración"  ,
+		"ColumnArrival": "Hora de llegada"  ,
+		"NoData": "Sin datos"  ,
+		"YOU": "Tú",
+		"HideShowGuest" : "Todos/Solo míos"
+	},
+	"es-mx": {
+		"menuItemName": "Especialistas"  ,
+		"menuTitle": "Tareas de los especialistas"  ,
+		"ColumnEstimated": "Duración"  ,
+		"ColumnArrival": "Hora de llegada"  ,
+		"NoData": "Sin datos"  ,
+		"YOU": "Tú",
+		"HideShowGuest" : "Todos/Solo míos"
 	}
 };
 var _exudSpecDutyHideGuest = false;

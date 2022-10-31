@@ -73,6 +73,32 @@ const _exudGeneralsLang = {
         "Load": "Apri",
         "ColumnOwner": "Proprietario",
 		"IsGuest": " (* = invitato) "
+    },
+    "es-es": {
+        "ByName": "Orden: Nombre",
+        "ByType": "Orden: Tipo",
+        "ShowGuest": "Ver generales de amigos",
+        "HideGuest": "Ver solo los míos",
+        "ShowUnselected": "Todos",
+        "HideUnselected": "Seleccionados",
+        "SelectAll": "Seleccionar todos",
+        "Load": "Cargar",
+	"CommandSent": "Comando enviado",
+        "ColumnOwner": "Propietario",
+	"IsGuest": " (* = invitado) "
+    },
+    "es-mx": {
+        "ByName": "Ordenar: Nombre",
+        "ByType": "Ordenar: Tipo",
+        "ShowGuest": "Ver generales de amigos",
+        "HideGuest": "Ver solo los míos",
+        "ShowUnselected": "Todos",
+        "HideUnselected": "Seleccionados",
+        "SelectAll": "Seleccionar todos",
+        "Load": "Cargar",
+	"CommandSent": "Comando enviado",
+        "ColumnOwner": "Propietario",
+	"IsGuest": " (* = invitado) "
     }
 };
 
