@@ -76,7 +76,7 @@ function getBuffsAvailableHTML()
 		}
 	});
 	if(Object.keys(buffNeeded).length == 0){ return '';	}
-	result = '<br><p>{0}</p>'.formcat(getText('buff_used'));
+	result = '<br><p>{0}</p>'.format(getText('buff_used'));
 	result += createTableRow([
 			[8, loca.GetText("LAB", 'Buff')],
 			[2, loca.GetText("LAB", 'Requires')],
