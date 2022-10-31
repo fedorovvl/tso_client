@@ -12,20 +12,24 @@ const _exudGeneralsLang = {
         "Load": "Load",
         "CommandSent": "Command sent",
         "ColumnOwner": "Owner",
-		"IsGuest": " (* = guest) "
+		"IsGuest": " (* guest) ",
+		"SelectedFirst": "Selected First",
+		"ExcludeStarMenu": "Exclude Star Menu"
     },
     "pt-br": {
         "ByName": "Classificar por nome",
         "ByType": "Classificar por tipo",
         "ShowGuest": "Todos",
-        "HideGuest": "Somente os meus",
+        "HideGuest": "Excluir outros jogadores",
         "ShowUnselected": "Todos",
         "HideUnselected": "Somente selecionados",
         "SelectAll": "Selecionar todos",
         "Load": "Carregar",
         "ColumnOwner": "Proprietario",
-		"IsGuest": " (* = convidado) "
-    },
+		"IsGuest": " (* = convidado) ",
+		"SelectedFirst": "Selecionado primeiro",
+		"ExcludeStarMenu": "Excluir Menu Estrela"
+   },
     "pl-pl": {
         "ByName": "Sortuj po nazwie",
         "ByType": "Sortuj po typie",
@@ -60,13 +64,16 @@ const _exudGeneralsLang = {
         "SelectAll": "Sélectionner Tout",
         "Load": "Charger",
         "CommandSent": "Envoyer",
-        "ColumnOwner": "Propriétaire"
+        "ColumnOwner": "Propriétaire",
+		"IsGuest": " (* Invité) ",
+		"SelectedFirst": "Sélection en Premier",
+		 "ExcludeStarMenu": "Masquer les Généraux en Etoile"
     },
     "it-it": {
         "ByName": "Ordina per nome",
         "ByType": "Ordina per tipo",
         "ShowGuest": "Di tutti",
-        "HideGuest": "Solo i miei",
+        "HideGuest": "Escludi altri giocatori",
         "ShowUnselected": "Tutti",
         "HideUnselected": "Solo selezionati",
         "SelectAll": "Seleciona tutto",
@@ -109,6 +116,8 @@ var _exudGeneralsHideGuest = true;
 var _exudGeneralsHideUnselected = false;
 var _exudGeneralsToggleselected = false;
 var idL = loca.getSelectedLanguage();
+var _exudGeneralsSelectedFirst = false;
+var _exudGeneralsExcludeStarMenu = false;
 
 function _exudGeneralsGetLabel(id)
 {
@@ -120,7 +129,17 @@ function _exudGeneralsMenuHandler(event)
 {
 
 	$('#udSpecModal').remove();
+	
+	try{
+		_exudGeneralsSortType = readSettings('_exudGeneralsSortType',  'usMKF_Generals');
+		_exudGeneralsHideUnselected = readSettings('_exudGeneralsHideUnselected', 'usMKF_Generals');
+		_exudGeneralsHideGuest = readSettings('_exudGeneralsHideGuest',  'usMKF_Generals');
+		_exudGeneralsSelectedFirst = readSettings('_exudGeneralsSelectedFirst',  'usMKF_Generals');
+		_exudGeneralsExcludeStarMenu = readSettings('_exudGeneralsExcludeStarMenu',  'usMKF_Generals');
+	}
+	catch (e) {}
 
+	
 	// close all modals
 	$( "div[role='dialog']:not(#udSpecModal):visible").modal("hide");
 	// create modal
@@ -132,11 +151,16 @@ function _exudGeneralsMenuHandler(event)
 			$('<button>').attr({ "id": "_exudSpecSaveTemplateBtn", "class": "btn btn-primary pull-left _exudSpecSaveTemplateBtn" }).text(loca.GetText("LAB", "Save")),
 			$('<button>').attr({ "id": "_exudSpecSaveTemplateBtn", "class": "btn btn-success _exudSendGeneralsBtn" }).text(loca.GetText("LAB", "Send"))
 		]);
+		
+
+
+
 		$('#udSpecModal ._exudSpecLoadTemplateBtn').click(_exudGeneralsLoadData);
 		$('#udSpecModal ._exudSpecSaveTemplateBtn').click(_exudGeneralsSaveData);
 		$('#udSpecModal ._exudSendGeneralsBtn').click(_exudGeneralsSend);
 		
 		_exudGetGeneralsTitle(0);
+		
 		
 		var out = '<div class="container-fluid">';
 		try
@@ -161,18 +185,12 @@ function _exudGeneralsMenuHandler(event)
 			out += $('<button>').attr({ "class": "btn btn-sm _exudSelectAllGeneralsBtn" }).text(
 				_exudGeneralsGetLabel("SelectAll")
 			).prop("outerHTML") + ' ';
-			out += $('<button>').attr({ "class": "btn btn-sm _exudChangeGeneralSortBtn" }).text(
-				_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType")
+
+			out += $('<button>').attr({ "class": "btn btn-sm _exudGeneralRefreshBtn" }).text(
+			loca.GetText("LAB", "Update")
 			).prop("outerHTML") + ' ';
-			out += $('<button>').attr({ "class": "btn btn-sm _exudHideGuestGeneralsBtn" }).text(
-				_exudGeneralsHideGuest  ? _exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest")
-			).prop("outerHTML") + ' ';
-			out += $('<button>').attr({ "class": "btn btn-sm _exudHideUnselectedGeneralsBtn" }).text(
-				_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected")
-			).prop("outerHTML") + ' ';
-			
 		} catch (error) {
-			alert("Err: " + error.message);
+			alert("Err (retry): " + error.message);
 		}
 			
 		out += '<br/><br/>' + createTableRow([
@@ -192,34 +210,118 @@ function _exudGeneralsMenuHandler(event)
 				item.checked = _exudGeneralsToggleselected;	
 				});
 		});
-
-		$('#udSpecModal ._exudChangeGeneralSortBtn').click(function(){
-			if (++_exudGeneralsSortType == 2)	_exudGeneralsSortType = 0;
-			$('#udSpecModal .modal-header ._exudChangeGeneralSortBtn').html(_exudGeneralsSortType == 0 ? _exudGeneralsGetLabel("ByName") : _exudGeneralsGetLabel("ByType"));
-			$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
-		});
-		$('#udSpecModal ._exudHideGuestGeneralsBtn').click(function(){
-			_exudGeneralsHideGuest = !_exudGeneralsHideGuest;
-			$('#udSpecModal .modal-header ._exudHideGuestGeneralsBtn').html(_exudGeneralsHideGuest  ?_exudGeneralsGetLabel("ShowGuest") : _exudGeneralsGetLabel("HideGuest"));
-			$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
-		});
-		$('#udSpecModal ._exudHideUnselectedGeneralsBtn').click(function(){
-			_exudGeneralsHideUnselected = !_exudGeneralsHideUnselected;
-			$('#udSpecModal .modal-header ._exudHideUnselectedGeneralsBtn').html(_exudGeneralsHideUnselected ? _exudGeneralsGetLabel("ShowUnselected") : _exudGeneralsGetLabel("HideUnselected"));
-			$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
-		});
+				
 	}
 
 	_exudGetGeneralsData();
 
 	$("#udSpecModal .modal-footer .btn-danger").html(loca.GetText("LAB", "Close"));
 	$('#udSpecModal:not(:visible)').modal({backdrop: "static"});
-
 }
-
 function _exudGetGeneralsTitle(x)
 {
 	$('#udSpecModal .modal-title').html( getImageTag('icon_general.png') + loca.GetText("ACL", "MilitarySpecialists") + (x>0 ? " ("+x+")" : ""));
+	$("#udSpecModal .modal-title").append($('<button>').attr({ "class": "btn btn-settings pull-right" }).text(loca.GetText("LAB", "ToggleOptionsPanel")));
+	$('#udSpecModal .btn-settings').click(_exudGeneralsOptions);
+}
+
+function _exudGeneralsSaveSettings()
+{
+
+	try{
+	var s = {
+		'_exudGeneralsSortType' : _exudGeneralsSortType,
+		'_exudGeneralsHideUnselected' : _exudGeneralsHideUnselected,
+		'_exudGeneralsHideGuest' : _exudGeneralsHideGuest,
+		'_exudGeneralsSelectedFirst' : _exudGeneralsSelectedFirst,
+		'_exudGeneralsExcludeStarMenu' : _exudGeneralsExcludeStarMenu
+	}
+	
+	storeSettings(s, 'usMKF_Generals');
+	alert("Saved");
+	}
+	catch
+	(e) {
+		alert(e.message);
+	}
+
+
+}
+
+function _exudGeneralsOptions()
+{
+	createSettingsWindow('udSpecModal', function(){_exudGeneralsSaveSettings();},  'modal-sm');
+	$('#udSpecModalsettingsData').html(_exudGeneralsOptionsCreateSettings());
+	$('#udSpecModalsettings:not(:visible)').modal({backdrop: "static"});
+
+	$('#_exudChangeGeneralSortFloatBtn').change(function(){
+		if (++_exudGeneralsSortType == 2)	_exudGeneralsSortType = 0;
+		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+	});
+	$('#udSpecModal ._exudGeneralRefreshBtn').click(function(){
+		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());			
+	});
+	$('#_exudHideUnselectedGeneralsFloatBtn').change(function(){
+		_exudGeneralsHideUnselected = !_exudGeneralsHideUnselected;
+		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+	});
+	$('#_exudHideGuestGeneralsFloatBtn').change(function(){
+		_exudGeneralsHideGuest = !_exudGeneralsHideGuest;
+		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+	});
+	$('#_exudGeneralsSelectedFirstFloatBtn').change(function(){
+		_exudGeneralsSelectedFirst = !_exudGeneralsSelectedFirst;
+		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+	});
+	$('#_exudGeneralsExcludeStarMenuFloatBtn').change(function(){
+		_exudGeneralsExcludeStarMenu = !_exudGeneralsExcludeStarMenu;
+		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+	});
+
+
+}
+
+function _exudGeneralsOptionsCreateSettings()
+{
+		var out = '';
+		
+		try{
+
+		out += '<div style="float: clear"><div style="float: left;">';
+		out += createSwitch("_exudChangeGeneralSortFloatBtn", (_exudGeneralsSortType==1));
+		out += '</div>';
+		out += '<div>&nbsp;&nbsp;'+_exudGeneralsGetLabel("ByName") +'</div>';
+		out += '</div><br/>';
+		
+		out += '<div style="float: clear"><div style="float: left">';
+		out += createSwitch("_exudHideGuestGeneralsFloatBtn", _exudGeneralsHideGuest);
+		out += '</div>';
+		out += '<div >&nbsp;&nbsp;'+_exudGeneralsGetLabel("HideGuest") +'</div>';
+		out += '</div><br/>';
+
+		out += '<div style="float: clear"><div style="float: left;">';
+		out += createSwitch("_exudHideUnselectedGeneralsFloatBtn", (_exudGeneralsHideUnselected));
+		out += '</div>';
+		out += '<div >&nbsp;&nbsp;'+_exudGeneralsGetLabel("HideUnselected") +'</div>';
+		out += '</div><br/>';
+		
+		out += '<div style="float: clear"><div style="float: left;">';
+		out += createSwitch("_exudGeneralsSelectedFirstFloatBtn", (_exudGeneralsSelectedFirst));
+		out += '</div>';
+		out += '<div >&nbsp;&nbsp;'+_exudGeneralsGetLabel("SelectedFirst") +'</div>';
+		out += '</div><br/>';
+
+		out += '<div style="float: clear"><div style="float: left ">';
+		out += createSwitch("_exudGeneralsExcludeStarMenuFloatBtn", (_exudGeneralsExcludeStarMenu));
+		out += '</div>';
+		out += '<div>&nbsp;&nbsp;'+_exudGeneralsGetLabel("ExcludeStarMenu") +'</div>';
+		out += '</div><br/>';
+
+		}
+		catch (e) { alert(e.message); }
+
+		return out;
+
 }
 
 function _exudGetGeneralsData()
@@ -230,27 +332,41 @@ function _exudGetGeneralsData()
 
 }
 
-function _exudMakeGeneralsTable()
+function _exudMakeGeneralsTable(_sel)
 {
-	var Selected = _exudGeneralsGetChecked();
-	var out = "";
-	var myGens = 0;
+	var out = "";	
+	try{
+		var Selected = (_sel == null || _sel == undefined ?_exudGeneralsGetChecked() : _sel);
+		var myGens = 0;
 	
-	_exudGetSpecialists().forEach(function(item){
-		if (_exudGeneralsHideGuest && !item.Owner) return;
-		if (_exudGeneralsHideUnselected && Selected.indexOf(item.UID)<0) return;
-		if (item.Owner) ++myGens;
-		var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (Selected.indexOf(item.UID) >= 0 ? ' checked' : ''),  item.Icon + item.Name);
-		out += createTableRow([
-			[7, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + item.Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
-			[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
-			[1, (item.TotalArmy>0?item.TotalArmy:'')],
-			[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
-		]);
+		_exudGetSpecialists().forEach(function(item){
+			try{
+				var IsSelected = (Selected.indexOf(item.UID) >= 0);
+				
+				if (_exudGeneralsHideGuest && !item.Owner) return;
+				if (_exudGeneralsExcludeStarMenu && (item.GridPosition < 1) && !IsSelected) return;
+				if (_exudGeneralsHideUnselected && !IsSelected) return;
+				if (item.Owner) ++myGens;
+				
+				var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (IsSelected ? ' checked' : ''),  item.Icon + item.Name);
+
+				out += createTableRow([
+					[7, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + item.Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
+					[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
+					[1, (item.TotalArmy>0?item.TotalArmy:'')],
+					[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
+				]);
+			}
+			catch (e) {
+				//alert("MGT: " + e.message);
+			}
 	});
 	
 	_exudGetGeneralsTitle(myGens);
-	
+	}
+	catch (e) {
+			alert(e.message);
+	}
 	return out;
 }
 
@@ -289,16 +405,14 @@ function _exudGeneralsLoadData()
 
 function _exudGenLoadTemplateLoaded(event)
 {
-	var listS = [];
+	var listS = new Array();
 	try{
 	  listS = JSON.parse(event.target.data);
 	} catch(e) {
 	  alert("Bad template file");
 	  return;
 	}
-	$('#udSpecModalData input[type="checkbox"]').each(function(i, item) { 
-		item.checked = listS.indexOf(item.id) >= 0;
-	});
+	$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable(listS));	
 }
 
 function _exudGeneralsGetChecked()
@@ -311,8 +425,18 @@ function _exudGeneralsGetChecked()
 		}
 	});
 	}
-	catch (e) {}
+	catch (e) {
+		//alert("GGC:" + e.message);
+		}
 	return GensUID;
+}
+
+function _exudGeneralsIsCheked(uid)
+{
+	try{
+return 	$('input:checkbox[id^="'+uid+'"]:checked').length>0;
+	} catch (e) {}
+	return false;
 }
 
 function _exudGeneralsSend()
@@ -415,6 +539,13 @@ function _exudGetSpecialists()
 
 function _exudCompareGenerals( a, b ) {
 	try{
+		if (_exudGeneralsSelectedFirst)
+		{
+			var a_chkd = _exudGeneralsIsCheked(a.UID);
+			var b_chkd = _exudGeneralsIsCheked(b.UID);
+			if (a_chkd != b_chkd) 
+				return (a_chkd ? -1 : 1);
+		}
 		if (!b.Owner && a.Owner) return -1;
 		if (!a.Owner && b.Owner) return 1;
 		switch(_exudGeneralsSortType)
@@ -433,7 +564,7 @@ function _exudCompareGenerals( a, b ) {
 		}
 	}
 	catch (error) {
-				alert("compare error : " + error.message);
+				//alert("compare error : " + error.message);
 	}
 	return 0;
 }
