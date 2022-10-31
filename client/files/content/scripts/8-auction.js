@@ -5,6 +5,7 @@ var aucResponderDef = swmmo.getDefinitionByName("ServerState::ResponderSimple");
 var aucResponder = new aucResponderDef(aucResultResponseHandler, aucFailResponseHandler);
 var aucLoaderDef = swmmo.getDefinitionByName("nLib::TSOURLLoader");
 var aucLoader = new aucLoaderDef();
+var bidPacket;
 aucLoader.addEventListener(air.Event.COMPLETE, aucCompleteURLHandler);
 aucLoader.loadFile("black_market_auction_config.xml");
 window.runtime.flash.net.registerClassAlias(
@@ -94,6 +95,16 @@ function aucFailResponseHandler(event, data)
 function aucResultResponseHandler(event, data)
 {
 	currentAuc = data.data;
+	if(bidPacket) {
+		try
+		{
+			var aucDefinition = getCurrentAuc();
+			var nextBet = (aucDefinition.AuctionIncrements.AuctionIncrement.count.v * bidPacket.biddingCount) + aucDefinition.Costs.Cost.count.v;
+			var resources = swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(swmmo.application.mGameInterface.mCurrentPlayer);
+			resources.AddResource(aucDefinition.Costs.Cost.name.v, -nextBet, 14, null);
+			bidPacket = null;
+		} catch(e) { alert(e); }
+	}
 	if($('#aucModal .aucPlace').length > 0)
 	{
 		menuAuctionHandler(null);
@@ -109,7 +120,7 @@ function aucReloadData()
 
 function auxPlaceBet()
 {
-	var bidPacket = new window.runtime.Communication.VO.BlackMarketAuction.dBlackMarketAuctionBidVO()
+	bidPacket = new window.runtime.Communication.VO.BlackMarketAuction.dBlackMarketAuctionBidVO()
 	bidPacket.auctionId = currentAuc.auctionId;
 	bidPacket.biddingCount = currentAuc.biddingCount;
 	swmmo.application.mGameInterface.mClientMessages.SendMessagetoServer(15001, swmmo.application.mGameInterface.mCurrentViewedZoneID, bidPacket, aucResponder);

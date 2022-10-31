@@ -193,17 +193,6 @@ function addKeybBind(fn, key, ctrl, user)
     }
 }
 
-function showAlert(message, sameLayer, level)
-{
-	$('#'+level+'alertMessage').text(message);
-	if(!sameLayer) { window.nativeWindow.stage.swapChildrenAt(0, 1); }
-	$('.alert-'+level).show(500);
-	setTimeout(function(){ 
-		$('.alert-'+level).hide(500);
-		if(!sameLayer) setTimeout(function(){ window.nativeWindow.stage.swapChildrenAt(0, 1); }, 500);
-	}, 1500);
-}
-
 function showGameAlert(message)
 {
 	var msg = new alertItem();
