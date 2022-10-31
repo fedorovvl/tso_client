@@ -17,7 +17,7 @@ function menuBuffsHandler(event)
 			$('<button>').attr({ "class": "btn btn-success buffSubmit" }).text(getText('btn_submit')),
 			$('<button>').attr({ "class": "btn btn-warning buffReset" }).text(getText('btn_reset')),
 			$('<button>').attr({ "class": "btn btn-primary pull-left buffSaveTemplate" }).text(getText('save_template')),
-			$('<button>').attr({ "class": "btn btn-primary pull-left buffLoadTemplate" }).text(getText('load_template')),
+			$('<button>').attr({ "class": "btn btn-primary pull-left buffLoadTemplate" }).text(getText('load_template'))
 		]);
 		$('#buffModal .buffSaveTemplate').click(buffSaveTemplate);
 		$('#buffModal .buffLoadTemplate').click(buffLoadTemplate);
