@@ -1,8 +1,7 @@
-// langs needed de-de,fr-fr,nl-nl,cz-cz,pt-br,it-it,el-gr,ro-ro
+// langs needed de-de,fr-fr,nl-nl,cz-cz,it-it,el-gr,ro-ro
 
 const baseTranslation = { 
 	'en-uk': {
-		'btn_close': 'Close',
 		'btn_submit': 'Submit',
 		'btn_reset': 'Reset',
 		'btn_reload': 'Reload',
@@ -51,7 +50,6 @@ const baseTranslation = {
 		'auc_do_bid': 'Place bid'
 	},
 	'en-us': {
-		'btn_close': 'Close',
 		'btn_submit': 'Submit',
 		'btn_reset': 'Reset',
 		'btn_reload': 'Reload',
@@ -100,7 +98,6 @@ const baseTranslation = {
 		'auc_do_bid': 'Place bid'
 	},
 	'ru-ru': {
-		'btn_close': 'Закрыть',
 		'btn_submit': 'Отправить',
 		'btn_reset': 'Сбросить',
 		'btn_reload': 'Обновить',
@@ -149,7 +146,6 @@ const baseTranslation = {
 		'auc_do_bid': 'Сделать ставку'
 	},
 	'es-es': {
-		'btn_close': 'Cerrar',
 		'btn_submit': 'Enviar',
 		'btn_reset': 'Reiniciar',
 		'btn_reload': 'Recargar',
@@ -198,7 +194,6 @@ const baseTranslation = {
 		'auc_do_bid': 'Pujar'
 	},
 	'es-mx': {
-		'btn_close': 'Cerrar',
 		'btn_submit': 'Enviar',
 		'btn_reset': 'Reiniciar',
 		'btn_reload': 'Recargar',
@@ -247,7 +242,6 @@ const baseTranslation = {
 		'auc_do_bid': 'Pujar'
 	},
 	"pl-pl": {
-		"btn_close":"Zamknij",
 		"btn_submit":"Wyślij",
 		"btn_reset":"Resetuj",
 		"btn_reload":"Przeładuj",
@@ -296,7 +290,6 @@ const baseTranslation = {
 		"auc_do_bid":"Złóż ofertę"
    },
 	'pt-br': {
-		'btn_close': 'Fechar',
 		'btn_submit': 'Confirmar',
 		'btn_reset': 'Redefinir',
 		'btn_reload': 'Recarregar',
