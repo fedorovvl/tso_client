@@ -3,7 +3,9 @@ var currentAuc;
 var aucShopItem = swmmo.getDefinitionByName("ShopSystem::cShopItem");
 var aucResponderDef = swmmo.getDefinitionByName("ServerState::ResponderSimple");
 var aucResponder = new aucResponderDef(aucResultResponseHandler, aucFailResponseHandler);
+var aucUnlockResponder = new aucResponderDef(aucUnlockResultResponseHandler, aucFailResponseHandler);
 var aucLoaderDef = swmmo.getDefinitionByName("nLib::TSOURLLoader");
+var resources = swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(swmmo.application.mGameInterface.mCurrentPlayer);
 var aucLoader = new aucLoaderDef();
 var bidPacket;
 aucLoader.addEventListener(air.Event.COMPLETE, aucCompleteURLHandler);
@@ -32,14 +34,26 @@ function menuAuctionHandler(event)
 	{
 		$("#aucModal .modal-footer").prepend([
 			$('<button>').attr({ "class": "btn btn-success aucPlace" }).text(getText('auc_do_bid')),
+			$('<button>').attr({ "class": "btn btn-success aucUnlock" }).text(loca.GetText("LAB", 'QuestFinish')),
 			$('<button>').attr({ "class": "btn btn-primary pull-left aucReload" }).text(getText('btn_reload'))
 		]);
 		$('#aucModal .aucPlace').click(auxPlaceBet);
+		$('#aucModal .aucUnlock').click(aucUnlock);
 		$('#aucModal .aucReload').click(aucReloadData);
 	}
 	$('#aucModal .aucPlace').attr('disabled', true);
+	$('#aucModal .aucUnlock').hide();
 	out = '<div class="container-fluid">';
-	if(currentAuc == undefined) {
+	if(!swmmo.application.mGameInterface.mHomePlayer.mBlackMarketUnlocked)
+	{
+		out = '<p class="text-center">{0} 10000 {1}'.format(loca.GetText("LAB", 'BlackMarketAuctionUnlockCost'), getImageTag("Coin"));
+		out += '<p class="text-center">' + loca.GetText("LAB", 'BlackMarketAuctionUnlock') + '</p>';
+		$('#aucModal .aucUnlock').show();
+		$('#aucModal .aucUnlock').attr("disabled", (resources.GetResourceAmount("Coin") < 10000));
+		if(resources.GetResourceAmount("Coin") < 10000) {
+			out += '<br><br><p class="text-center">' + loca.GetText("ALM", 'ItemPurchaseMissingResource') + '</p>';
+		}
+	} else if(currentAuc == undefined) {
 		out = '<p class="text-center">' + loca.GetText("LAB", 'BlackMarketAuctionInactive') + '</p>';
 	} else {
 		var aucDefinition = getCurrentAuc();
@@ -57,7 +71,6 @@ function menuAuctionHandler(event)
 		out += '<p>{0} {1}</p>'.format(getText('auc_increment'), aucDefinition.AuctionIncrements.AuctionIncrement.count.v);
 		var nextBet = (aucDefinition.AuctionIncrements.AuctionIncrement.count.v * currentAuc.biddingCount) + aucDefinition.Costs.Cost.count.v;
 		out += '<p>{0} {1} {2}</p>'.format(getText('auc_bid_for'), nextBet, loca.GetText("RES", aucDefinition.Costs.Cost.name.v));
-		var resources = swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(swmmo.application.mGameInterface.mCurrentPlayer);
 		out += '<p>{0} {1} {2}</p>'.format(getText('auc_you_have'), resources.GetResourceAmount(aucDefinition.Costs.Cost.name.v), loca.GetText("RES", aucDefinition.Costs.Cost.name.v));
 		if(resources.GetResourceAmount(aucDefinition.Costs.Cost.name.v) > nextBet && !aucCheckPlayer() && endTime > 0) {
 			$('#aucModal .aucPlace').attr('disabled', false);
@@ -90,6 +103,7 @@ function getCurrentAuc()
 function aucFailResponseHandler(event, data)
 {
 	alert("error " + data);
+	menuAuctionHandler(null);
 }
 
 function aucResultResponseHandler(event, data)
@@ -100,7 +114,6 @@ function aucResultResponseHandler(event, data)
 		{
 			var aucDefinition = getCurrentAuc();
 			var nextBet = (aucDefinition.AuctionIncrements.AuctionIncrement.count.v * bidPacket.biddingCount) + aucDefinition.Costs.Cost.count.v;
-			var resources = swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(swmmo.application.mGameInterface.mCurrentPlayer);
 			resources.AddResource(aucDefinition.Costs.Cost.name.v, -nextBet, 14, null);
 			bidPacket = null;
 		} catch(e) { alert(e); }
@@ -109,6 +122,12 @@ function aucResultResponseHandler(event, data)
 	{
 		menuAuctionHandler(null);
 	}
+}
+function aucUnlockResultResponseHandler(event, data)
+{
+	swmmo.application.mGameInterface.mHomePlayer.mBlackMarketUnlocked = true;
+	resources.AddResource("Coin", -10000, 14, null);
+	menuAuctionHandler(null);
 }
 
 function aucReloadData()
@@ -126,4 +145,10 @@ function auxPlaceBet()
 	swmmo.application.mGameInterface.mClientMessages.SendMessagetoServer(15001, swmmo.application.mGameInterface.mCurrentViewedZoneID, bidPacket, aucResponder);
 	$('#aucModal .aucPlace').attr("disabled", true);
 	setTimeout(function() { $('#aucModal .aucPlace').removeAttr("disabled"); }, 10000);
+}
+
+function aucUnlock()
+{
+	swmmo.application.mGameInterface.mClientMessages.SendMessagetoServer(15002, swmmo.application.mGameInterface.mCurrentViewedZoneID, null, aucUnlockResponder);
+	$('#aucModal .aucUnlock').attr("disabled", true);
 }
