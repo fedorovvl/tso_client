@@ -7,7 +7,7 @@ var aucUnlockResponder = new aucResponderDef(aucUnlockResultResponseHandler, auc
 var aucLoaderDef = swmmo.getDefinitionByName("nLib::TSOURLLoader");
 var resources = swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(swmmo.application.mGameInterface.mCurrentPlayer);
 var aucLoader = new aucLoaderDef();
-var bidPacket;
+var bidPacket = null;
 aucLoader.addEventListener(air.Event.COMPLETE, aucCompleteURLHandler);
 aucLoader.loadFile("black_market_auction_config.xml");
 window.runtime.flash.net.registerClassAlias(

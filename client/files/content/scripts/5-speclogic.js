@@ -19,7 +19,6 @@ function createSpecWindow()
 		$('<button>').attr({ "class": "btn btn-primary pull-left specSaveTemplate" }).text(getText('save_template')),
 		$('<button>').attr({ "class": "btn btn-primary pull-left specLoadTemplate" }).text(getText('load_template')),
 	]);
-	$('#specModal .btn-settings').click(specSettingsWindow);
 	$('#specModal .specSaveTemplate').click(saveSpecTemplate);
 	$('#specModal .specLoadTemplate').click(loadSpecTemplate);
 	$('#specModal .specSend').click(sendSpec);
