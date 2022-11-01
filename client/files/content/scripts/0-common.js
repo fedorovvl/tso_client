@@ -192,7 +192,11 @@ function addKeybBind(fn, key, ctrl, user)
 	  }
     }
 }
-
+//backward compatibility
+function showAlert(message, sameLayer, level)
+{
+	showGameAlert(message);
+}
 function showGameAlert(message)
 {
 	var msg = new alertItem();
