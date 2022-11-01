@@ -186,9 +186,15 @@ function _exudGeneralsMenuHandler(event)
 				_exudGeneralsGetLabel("SelectAll")
 			).prop("outerHTML") + ' ';
 
+			out += $('<button>').attr({ "class": "btn btn-sm _exudGeneralsSelectedFirstBtn" }).text(
+				_exudGeneralsGetLabel("SelectedFirst") 
+			).prop("outerHTML") + ' ';
+
+
 			out += $('<button>').attr({ "class": "btn btn-sm _exudGeneralRefreshBtn" }).text(
 			loca.GetText("LAB", "Update")
 			).prop("outerHTML") + ' ';
+			
 		} catch (error) {
 			alert("Err (retry): " + error.message);
 		}
@@ -211,6 +217,10 @@ function _exudGeneralsMenuHandler(event)
 				});
 		});
 				
+		$('#udSpecModal ._exudGeneralsSelectedFirstBtn').click(function() {
+					_exudGeneralsSelectedFirst = !_exudGeneralsSelectedFirst;
+				$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
+		});
 	}
 
 	_exudGetGeneralsData();
@@ -269,10 +279,12 @@ function _exudGeneralsOptions()
 		_exudGeneralsHideGuest = !_exudGeneralsHideGuest;
 		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
 	});
+	/*
 	$('#_exudGeneralsSelectedFirstFloatBtn').change(function(){
 		_exudGeneralsSelectedFirst = !_exudGeneralsSelectedFirst;
 		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
 	});
+	*/
 	$('#_exudGeneralsExcludeStarMenuFloatBtn').change(function(){
 		_exudGeneralsExcludeStarMenu = !_exudGeneralsExcludeStarMenu;
 		$('#_exudGeneralsDivTable').html(_exudMakeGeneralsTable());
@@ -304,13 +316,13 @@ function _exudGeneralsOptionsCreateSettings()
 		out += '</div>';
 		out += '<div >&nbsp;&nbsp;'+_exudGeneralsGetLabel("HideUnselected") +'</div>';
 		out += '</div><br/>';
-		
+		/*
 		out += '<div style="float: clear"><div style="float: left;">';
 		out += createSwitch("_exudGeneralsSelectedFirstFloatBtn", (_exudGeneralsSelectedFirst));
 		out += '</div>';
 		out += '<div >&nbsp;&nbsp;'+_exudGeneralsGetLabel("SelectedFirst") +'</div>';
 		out += '</div><br/>';
-
+*/
 		out += '<div style="float: clear"><div style="float: left ">';
 		out += createSwitch("_exudGeneralsExcludeStarMenuFloatBtn", (_exudGeneralsExcludeStarMenu));
 		out += '</div>';
