@@ -1,9 +1,13 @@
+var buffEventTracker = new window.runtime.ClientBuff();
+buffEventTracker.addEventListener("buffApply", buffApliedHandler);
+const availableBuffTypes = ["ProductivityBuff", "RecruitingBuff", "ProvisionerBuff", "BookbinderBuff", "AreaBuff", "RemoveBuff"];
 var buffRecordEnabled = false;
 var buffRecord;
 var buffRecordFiltered;
 var buffSourceRecord = false;
 var buffsAvailable = {};
 var buffInProgress = false;
+var buffTemplates;
 
 addMenuItem(loca.GetText("LAB", "Buffs") + " (F5)", menuBuffsHandler, 116);
 
@@ -11,6 +15,11 @@ function menuBuffsHandler(event)
 {
 	$("div[role='dialog']:not(#buffModal):visible").modal("hide");
 	createModalWindow('buffModal', getImageTag('ProductivityBuffLvl3', '45px') + ' '+loca.GetText("LAB", "Buffs"));
+	buffTemplates = new SaveLoadTemplate('buff', function(data) {
+		buffRecord = data;
+		buffSourceRecord = false;
+		menuBuffsHandler(null);
+	});
 	if($('#buffModal .buffSaveTemplate').length == 0)
 	{
 		$("#buffModal .modal-footer").prepend([
@@ -19,9 +28,12 @@ function menuBuffsHandler(event)
 			$('<button>').attr({ "class": "btn btn-primary pull-left buffSaveTemplate" }).text(getText('save_template')),
 			$('<button>').attr({ "class": "btn btn-primary pull-left buffLoadTemplate" }).text(getText('load_template'))
 		]);
-		$('#buffModal .buffSaveTemplate').click(buffSaveTemplate);
-		$('#buffModal .buffLoadTemplate').click(buffLoadTemplate);
-		$('#buffModal .buffReset').click(buffResetData);
+		$('#buffModal .buffSaveTemplate').click(function(){ buffTemplates.save(buffRecord); });
+		$('#buffModal .buffLoadTemplate').click(function() { buffTemplates.load(); });
+		$('#buffModal .buffReset').click(function() {
+			buffRecord = null;
+			menuBuffsHandler(null);
+		});
 		$('#buffModal .buffSubmit').click(buffDoJob);
 	}
 
@@ -35,10 +47,8 @@ function menuBuffsHandler(event)
 		);
 	}
 	if(buffRecordEnabled) {
-		out += '<p><h2 class="text-center">{0}</h2></p><button type="button" class="btn btn-primary btn-lg btn-block" id="stopRecording">{1}</button>'.format(
-			getText('buff_rec_progress'),
-			getText('buff_stop_record')
-		);
+		out += $('<p>').append($('<h2>', { 'class': 'text-center' }).text(getText('buff_rec_progress'))).prop('outerHTML');
+		out += $('<button>', { 'class': 'btn btn-primary btn-lg btn-block', 'id': 'stopRecording' }).text(getText('buff_stop_record')).prop('outerHTML');
 	}
 	if(!buffRecordEnabled && buffRecord != null) {
 		out += getBuffHTML() + getBuffsAvailableHTML() + '<br><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">' + getText('buff_record_more') + '</button>';
@@ -54,14 +64,21 @@ function menuBuffsHandler(event)
 		buffRecordFiltered = buffRecordFiltered.filter(function(e) { return e.buiGrid != grid; });
 		buffRecord['data'] = buffRecord['data'].filter(function(e) { return e.buiGrid != grid; });
 		$(e.currentTarget).closest('.row').remove();
-		if(buffRecordFiltered.length == 0){
-			buffResetData();
-		} else {
-			menuBuffsHandler(null);
-		}
+		if(buffRecordFiltered.length == 0) { buffRecord = null; }
+		menuBuffsHandler(null);
 	});
-	$( "#startRecording" ).click(startRecording);
-	$( "#stopRecording" ).click(stopRecording);
+	$( "#startRecording" ).click(function(){
+		$('#buffModal').modal('hide');
+		showGameAlert(getText('buff_rec_start'));
+		swmmo.application.mGameInterface.channels.BUFF.addPropertyObserver("buffApplied", buffEventTracker);
+		buffRecordEnabled = true;
+	});
+	$( "#stopRecording" ).click(function(){
+		buffRecordEnabled = false;
+		showGameAlert(getText('buff_rec_stop'));
+		swmmo.application.mGameInterface.channels.BUFF.removePropertyObserver("buffApplied", buffEventTracker);
+		menuBuffsHandler(null);
+	});
 	$('#buffModal:not(:visible)').modal({backdrop: "static"});
 }
 
@@ -139,4 +156,69 @@ function getBuffHTML()
 		]);
 	});
 	return result;
+}
+
+function buffApliedHandler(event){
+	if(!buffRecordEnabled) { return; }
+    if(event.data.buffOwnerID != swmmo.application.mGameInterface.mCurrentPlayer.getPlayerID()) { return; }
+	if(!checkBuffType(event.data.buff.GetType())) { 
+		showGameAlert(getText('buff_not_recorded') + event.data.buff.GetType());
+		return; 
+	}
+	if(buffRecord == null) { 
+		zoneUser = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerName_string();
+		if(swmmo.application.mGameInterface.isOnHomzone() == false) {
+			try{
+				zoneUser = globalFlash.gui.mFriendsList.GetFriendById(swmmo.application.mGameInterface.mCurrentViewedZoneID).username;
+			} catch(e) {
+				zoneUser = globalFlash.gui.mFriendsList.GetGuildMemberById(swmmo.application.mGameInterface.mCurrentViewedZoneID).username;
+			}
+		}
+		buffRecord = { 
+			zoneId: swmmo.application.mGameInterface.mCurrentViewedZoneID, 
+			zoneUser: zoneUser, 
+			data: []
+		};
+	} else {
+		if(swmmo.application.mGameInterface.mCurrentViewedZoneID != buffRecord['zoneId']) { return; }
+		if($.grep(buffRecord['data'], function(e) { return e.buiGrid == event.data.target.GetGrid(); }).length > 0){ return; }
+	}
+	buffRecord['data'].push({
+		buffName: event.data.buff.GetBuffDefinition().GetName_string(),
+		buiGrid: event.data.target.GetGrid(),
+		buiName: event.data.target.GetBuildingName_string()
+	});
+}
+
+function checkBuffType(type)
+{
+	return availableBuffTypes.filter(function(item) { return type.indexOf(item); }).length > 0;
+}
+
+function getBuffStatus(data, zoneStatus)
+{
+	if(!zoneStatus) { return 'buff_wrong_zone'; }
+	bui = swmmo.application.mGameInterface.mCurrentPlayerZone.GetBuildingFromGridPosition(data['buiGrid']);
+	if(bui == null) { return 'buff_not_exist'; }
+	if(bui.GetBuildingName_string() != data['buiName']) { return 'buff_wrong_name'; }
+	if(bui.productionBuff != null && checkBuffType(bui.productionBuff.GetBuffDefinition().GetName_string())) { return 'buff_buffed'; }
+	return 'buff_ready';
+}
+
+function buffDoJob()
+{
+	var x = new TimedQueue(1000);
+	$.each(buffRecordFiltered, function(i, item) {
+		if(buffsAvailable[item.buffName].count > 0) {
+			buffsAvailable[item.buffName].count -= 1;
+			uniqueIdArr = buffsAvailable[item.buffName].id.split("_");
+			x.add(function(){ 
+				uniqueID = swmmo.getDefinitionByName("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
+				swmmo.application.mGameInterface.SendServerAction(61, 0, grid, 0, uniqueID);
+			});
+		}
+	});
+	x.run();
+	$('#buffModal').modal('hide');
+	showGameAlert(getText('command_sent'));
 }

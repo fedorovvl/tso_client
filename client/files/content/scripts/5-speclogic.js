@@ -1,5 +1,18 @@
+var specTemplates;
+
 function createSpecWindow()
 {
+	specTemplates = new SaveLoadTemplate('spec', function(data) {
+		$('#specModalData select[id!="expl-mass"]').map(function() { $(this).val(0); });
+		$.each(data, function(spec, val) { $('#' + spec).val(val);	});
+		$('#specModalData select[id!="expl-mass"]').each(function(i, select){
+			if($('#' + select.id).val() != undefined && $('#' + select.id).val() != '0') {
+				$(select.parentNode.parentNode.childNodes[1]).html(getTaskDurationText(select.id.replace('expl-', ''), $('#' + select.id).val()));
+			} else {
+				$(select.parentNode.parentNode.childNodes[1]).html('&nbsp;');
+			}
+		});
+	});
 	const headerRow = createTableRow([
 			[4, loca.GetText("LAB","Name")],
 			[3, '<label class="switch"><input type="checkbox" id="specTimeType"><span class="slider round"></span></label><div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getText('spec_time_normal'))],
@@ -19,8 +32,12 @@ function createSpecWindow()
 		$('<button>').attr({ "class": "btn btn-primary pull-left specSaveTemplate" }).text(getText('save_template')),
 		$('<button>').attr({ "class": "btn btn-primary pull-left specLoadTemplate" }).text(getText('load_template')),
 	]);
-	$('#specModal .specSaveTemplate').click(saveSpecTemplate);
-	$('#specModal .specLoadTemplate').click(loadSpecTemplate);
+	$('#specModal .specSaveTemplate').click(function(){
+		dataToSave = {};
+		$('#specModalData select[id!="expl-mass"]').map(function() { dataToSave[$(this).attr('id')] = $(this).val(); });
+		specTemplates.save(dataToSave);
+	});
+	$('#specModal .specLoadTemplate').click(function() { specTemplates.load(); });
 	$('#specModal .specSend').click(sendSpec);
 }
 
@@ -139,49 +156,4 @@ function sendSpecPacket(uniqueId, task)
 	} catch (ex) {
 		alert(ex);
 	}
-}
-
-function saveSpecTemplate()
-{
-	dataToSave = {};
-	$('#specModalData select[id!="expl-mass"]').map(function() { dataToSave[$(this).attr('id')] = $(this).val(); })
-	file = new air.File(readLastDir('spec')).resolvePath("specTemplate.txt");
-	file.addEventListener(air.Event.COMPLETE, specTemplateSaved); 
-	file.save(JSON.stringify(dataToSave, null, "  "));
-}
-function specTemplateSaved(event) 
-{ 
-    saveLastDir('spec', event.target.parent.nativePath); 
-}
-function loadSpecTemplate()
-{
-	file = new air.File(readLastDir('spec'));
-	txtFilter = new air.FileFilter("All files", "*.*"); 
-	file.browseForOpen("Open", [txtFilter]); 
-	file.addEventListener(air.Event.SELECT, loadSpecTemplateComplete); 
-}
-function loadSpecTemplateComplete(event)
-{
-	event.target.addEventListener(air.Event.COMPLETE, loadSpecTemplateLoaded); 
-	event.target.load();
-}
-function loadSpecTemplateLoaded(event)
-{
-	savedData = {};
-	try{
-	  savedData = JSON.parse(event.target.data);
-	} catch(e) {
-	  alert(getText('bad_template'));
-	  return;
-	}
-	$('#specModalData select[id!="expl-mass"]').map(function() { $(this).val(0); });
-	$.each(savedData, function(spec, val) { $('#' + spec).val(val);	});
-	$('#specModalData select[id!="expl-mass"]').each(function(i, select){
-		if($('#' + select.id).val() != undefined && $('#' + select.id).val() != '0') {
-			$(select.parentNode.parentNode.childNodes[1]).html(getTaskDurationText(select.id.replace('expl-', ''), $('#' + select.id).val()));
-		} else {
-			$(select.parentNode.parentNode.childNodes[1]).html('&nbsp;');
-		}
-	});
-
 }

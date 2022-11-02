@@ -1,3 +1,43 @@
+var SaveLoadTemplate = function(module, loadCallback){
+	this.module = module;
+	this.loadCallback = loadCallback;
+	this.lastDir = readSettings(module + 'lastDir');
+}
+SaveLoadTemplate.prototype = {
+	save: function(data) {
+		var self = this;
+		file = new air.File(this.getLastDir()).resolvePath("{0}Template.txt".format(this.module));
+		file.addEventListener(air.Event.COMPLETE, function(event){
+			var lastDir = {};
+			lastDir[self.module + 'lastDir'] = event.target.parent.nativePath;
+			self.lastDir = event.target.parent.nativePath;
+			storeSettings(lastDir);
+		}); 
+		file.save(JSON.stringify(data, null, "  "));
+	},
+	getLastDir: function() {
+		return this.lastDir != null ? this.lastDir : air.File.documentsDirectory.nativePath;
+	},
+	load: function() {
+		var self = this;
+		file = new air.File(this.getLastDir());
+		txtFilter = new air.FileFilter("All files", "*.*"); 
+		file.browseForOpen("Open", [txtFilter]); 
+		file.addEventListener(air.Event.SELECT, function(event) {
+			event.target.addEventListener(air.Event.COMPLETE, function(event) {
+				try {
+					var data = JSON.parse(event.target.data);
+					self.loadCallback(data);
+				} catch(e) {
+					alert(getText('bad_template'));
+					return;
+				}
+			}); 
+			event.target.load();
+		});
+	}
+}
+
 var TimedQueue = function(defaultDelay){
     this.queue = [];
     this.index = 0;
