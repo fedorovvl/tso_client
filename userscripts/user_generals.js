@@ -14,7 +14,8 @@ const _exudGeneralsLang = {
         "ColumnOwner": "Owner",
 		"IsGuest": " (* guest) ",
 		"SelectedFirst": "Selected First",
-		"ExcludeStarMenu": "Exclude Star Menu"
+		"ExcludeStarMenu": "Exclude Star Menu",
+		"SkillTip": "Click on general icon to open the Skill Tree."
     },
     "pt-br": {
         "ByName": "Classificar por nome",
@@ -28,7 +29,8 @@ const _exudGeneralsLang = {
         "ColumnOwner": "Proprietario",
 		"IsGuest": " (* = convidado) ",
 		"SelectedFirst": "Selecionado primeiro",
-		"ExcludeStarMenu": "Excluir Menu Estrela"
+		"ExcludeStarMenu": "Excluir Menu Estrela",
+		"SkillTip" : "Clicar no icone do general para abrir a arvore das abilidades"
    },
     "pl-pl": {
         "ByName": "Sortuj po nazwie",
@@ -127,7 +129,8 @@ function _exudGeneralsGetLabel(id)
 var _exudGeneralsOpening = false;
 function _exudGeneralsMenuHandler(event)
 {
-
+	showGameAlert(_exudGeneralsGetLabel("SkillTip"));
+	
 	var myStyle = document.getElementById('_exudGeneralsSyle');
 	if (myStyle != null && myStyle != undefined)
 		myStyle.parentNode.removeChild(myStyle);
