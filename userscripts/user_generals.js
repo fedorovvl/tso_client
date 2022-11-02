@@ -195,13 +195,22 @@ function _exudGeneralsMenuHandler(event)
 		} catch (error) {
 			alert("Err (retry): " + error.message);
 		}
-			
-		out += '<br/><br/>' + createTableRow([
-			[7, loca.GetText("LAB","Name")],
-			[2, loca.GetText("LAB", "StarMenu")],
-			[1, loca.GetText("LAB", "Army")],
-			[2, _exudGeneralsGetLabel("ColumnOwner")]
-		], true) ;
+			if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
+			{
+				out += '<br/><br/>' + createTableRow([
+					[7, loca.GetText("LAB","Name")],
+					[2, loca.GetText("LAB", "StarMenu")],
+					[1, loca.GetText("LAB", "Army")],
+					[2, _exudGeneralsGetLabel("ColumnOwner")]
+				], true) ;
+			}
+			else{
+				out += '<br/><br/>' + createTableRow([
+					[9, loca.GetText("LAB","Name")],
+					[2, loca.GetText("LAB", "StarMenu")],
+					[1, loca.GetText("LAB", "Army")]
+				], true) ;
+			}
 		out += '</div>';
 
 		$('#udGeneralsModal .modal-header').append(out);	
@@ -228,7 +237,16 @@ function _exudGeneralsMenuHandler(event)
 
 function _exudGetGeneralsTitle(x)
 {
-	$('#udGeneralsModal .modal-title').html( getImageTag('icon_general.png') + loca.GetText("ACL", "MilitarySpecialists") + (x>0 ? " ("+x+")" : ""));
+	var pname = "";
+	if (!swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone &&
+		!swmmo.application.mGameInterface.isOnHomzone())
+	{
+		try{
+			pname = swmmo.application.mGameInterface.mHomePlayer.GetPlayerName_string() + " - " + swmmo.application.mGameInterface.mHomePlayer.GetPlayerLevel();
+		}
+		catch(e) {}
+	}
+	$('#udGeneralsModal .modal-title').html( getImageTag('icon_general.png') + loca.GetText("ACL", "MilitarySpecialists") + (x>0 ? " ("+x+")" : "") + (pname != "" ? " (" + pname + ")" : ""));
 	$("#udGeneralsModal .modal-title").append($('<button>').attr({ "class": "btn btn-settings pull-right" }).text(loca.GetText("LAB", "ToggleOptionsPanel")));
 	$('#udGeneralsModal .btn-settings').click(_exudGeneralsOptions);
 }
@@ -373,12 +391,23 @@ function _exudMakeGeneralsTable(_sel)
 				
 				var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (IsSelected ? ' checked' : ''),  Icon + item.Name);
 
-				out += createTableRow([
-					[7, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
-					[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
-					[1, (item.TotalArmy>0?item.TotalArmy:'')],
-					[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
-				]);
+
+				if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
+				{
+					out += createTableRow([
+						[7, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
+						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
+						[1, (item.TotalArmy>0?item.TotalArmy:'')],
+						[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
+					]);
+				}
+				else{
+						out += createTableRow([
+						[9, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name : checkbox],
+						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
+						[1, (item.TotalArmy>0?item.TotalArmy:'')]
+					]);
+				}
 			}
 			catch (e) {
 				//alert("MGT: " + e.message);
