@@ -237,7 +237,8 @@ function _exudGeneralsMenuHandler(event)
 				});
 		});
 		$('#udGeneralsModal ._exudGeneralRefreshBtn').click(function(){
-			_exudMakeGeneralsTable();			
+			_exudMakeGeneralsTable();		
+			showGameAlert(getText('command_sent'));			
 		});
 	
 		$('#udGeneralsModal ._exudGeneralsSelectedFirstBtn').click(function() {
@@ -288,8 +289,6 @@ function _exudGeneralsSaveSettings()
 	(e) {
 		alert(e.message);
 	}
-
-
 }
 
 function _exudGeneralsOptions()
@@ -586,7 +585,8 @@ function _exudGeneralsSend()
 			}
 		});
 		$('#udGeneralsModal').modal('hide');	
-		showAlert(_exudGeneralsGetLabel("CommandSent"), false, 'success');			
+		showGameAlert(getText('command_sent'));			
+		
 	 }
 	 catch (error) {
 		 alert("send error : " + error.message);
