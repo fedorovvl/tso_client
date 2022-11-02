@@ -540,6 +540,8 @@ function _exudGenLoadTemplateLoaded(event)
 	  return;
 	}
 	_exudMakeGeneralsTable(listS);	
+			if (_exudGeneralsSelectedFirst)
+			_exudMakeGeneralsTable();
 	}
 
 function _exudGeneralsGetChecked()
