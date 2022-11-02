@@ -128,6 +128,17 @@ var _exudGeneralsOpening = false;
 function _exudGeneralsMenuHandler(event)
 {
 
+	var myStyle = document.getElementById('_exudGeneralsSyle');
+	if (myStyle != null && myStyle != undefined)
+		myStyle.parentNode.removeChild(myStyle);
+	
+	myStyle = ".CellWithComment{  position:relative; } ";
+	myStyle += ".CellComment{  display:none;  position:absolute;   z-index:100;  border:1px;  background-color:#B2A589;  border-style:solid;  border-width:1px;  border-color:black;  padding:3px;  color:black;   top:320px;   left:0px; width: 250px} ";
+	myStyle += ".CellWithComment:hover span.CellComment{  display:block;}";
+	var sheet = document.createElement('style')
+	sheet.innerHTML = myStyle;
+	document.body.appendChild(sheet);
+	
 	_exudGeneralsOpening = true;
 	$('#udGeneralsModal').remove();
 	
@@ -382,15 +393,10 @@ function _exudMakeGeneralsTable(_sel)
 				if (_exudGeneralsExcludeStarMenu && (item.GridPosition < 1) && !IsSelected) return;
 				if (_exudGeneralsHideUnselected && !IsSelected) return;
 				if (item.Owner) ++myGens;
-				
-				var Icon = item.Icon.replace('<img','<img id="exudSTIMG'+item.UID+'"').replace('style="', 'style="cursor: pointer;');
-			//	if (myGens < 2)
-			//		alert(Icon);
-				
-				//Icon = '<div onclick="_exudGeneralsOpenSkillTree();">' + Icon + '</div>';
+				var tooltip = loca.GetText("HIL", "Help_window_skilltrees_0");
+				var Icon = item.Icon.replace('<img','<img title="'+tooltip+'" id="exudSTIMG'+item.UID+'"').replace('style="', 'style="cursor: pointer;');
 				
 				var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (IsSelected ? ' checked' : ''),  Icon + item.Name);
-
 
 				if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
 				{
@@ -448,7 +454,7 @@ function _exudGeneralsOpenSkillTree(e)
 		$("#_exudGeneralsSkillTree").css({left : e.target.parentElement.offsetLeft + 200 ,  top : e.target.parentElement.offsetTop, position:'absolute'}); 
 		
 		var out = '';
-		out += '<table style="margin-left: 20px;padding:5px"';
+		out += '<table border="1" style="margin-left: 10px;margin-top: 5px;padding:5px"';
 		var y = 0;
 		var x = 0;
 		for(y = 0; y < 5; y++)
@@ -459,7 +465,6 @@ function _exudGeneralsOpenSkillTree(e)
 			out += "</tr>";
 		}
 		out += "</table>";
-		//out += '<div style="position: absolute;left: 220px;top: 1px;"><input type="button" id="_exudGeneralsSkillTreeCloseBtn" value ="X"/></div>';
 		out += '<div style="position: absolute;left: 220px;top: 1px;"><button" style="cursor: pointer;" id="_exudGeneralsSkillTreeCloseBtn">'+getImageTag("attackweakesttarget_negative.png")+'</button></div>';
 		out += '</div>';	
 		$("#_exudGeneralsSkillTree").html(out);
@@ -472,18 +477,10 @@ function _exudGeneralsOpenSkillTree(e)
 		}
 	} catch (e) {}
 }
-function getImageByID(id, w, h)
-{
-	var bd = assets.GetBitmapNumber(id, null);
-	alert(bd);
-	var ba = bd.encode(bd.rect, new window.runtime.flash.display.PNGEncoderOptions(true));
-	b64encoder.encodeBytes(ba);
-	return '<img style="width: {0};height: {1};" src="data:image/png;base64,{2}" />'.format(w ? w : 'auto', h ? h : 'auto', b64encoder.toString());
-}
 
 function _exudGeneralsSkillTreeAddCell(General, x, y)
 {
-	var out = '<td width="50px" height="60px">';
+	var out = '';
 	if (General.Skills != null && General.Skills.length > 0)
 		General.Skills.forEach(function(item) {
 				if (item[0].PositionX == x && item[0].PositionY == y)
@@ -491,11 +488,14 @@ function _exudGeneralsSkillTreeAddCell(General, x, y)
 					var inum =  item[0].Level + "/" + item[0].MaxLevel;
 					if (item[0].Level > 0)
 						inum = "<b>" + inum + "</b>";
-					out +=  getImageTag(item[0].IconString, '24px', '24px') + "<br/>" + inum;
+					out = "<td class='CellWithComment' align='center' width='50px' height='60px' style='background: "+(item[0].Level > 0 ? "#B2A500" : "#B2A589")+"'>";
+					out += getImageTag(item[0].IconString, '24px', '24px') + "<br/>" + inum ;	
+					out += "<span class='CellComment'>"+item[0].Description+"</span>";
+					out + "</td>";
 				}
 		});
 	
-	return out + "</td>";
+	return out;
 }
 
 function _exudGeneralsIsSelectable(S)
@@ -704,7 +704,7 @@ function _exudGeneralsGetSkills(itemS)
 			var SKILL_DATA = new Array();
 			SKILL_DATA.push({
 							"Name" : item.getName(),
-							"Description" : loca.GetText("LAB", item.getName()),
+							"Description" : loca.GetText("LAB", item.getName()).replace("'", " ").replace('"', ' '),
 							"ID" : item.getId(),
 							"UnappliedPoints" : item.getUnappliedPoints(),
 							"PositionX" : item.getPosition().x,
