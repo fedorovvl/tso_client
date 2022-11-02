@@ -32,10 +32,10 @@ function _exudHLColl(event) {
 		});	
 	
 	if(x.len() == 0) {
-		showAlert("No collectibles found", false, 'warning');
+		showGameAlert("No collectibles found");
 		return;
 	}
-	showAlert("Command Sent", false, 'success');	
+	showGameAlert(getText('command_sent'));
 	x.run();
 }
 
