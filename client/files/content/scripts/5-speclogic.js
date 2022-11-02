@@ -1,4 +1,19 @@
 var specTemplates;
+createSpecMenu();
+
+function createSpecMenu()
+{
+	specMenu = new air.NativeMenu();
+	explItem = new air.NativeMenuItem(loca.GetText("SPE", "Explorer") + " (F3)");
+	explItem.addEventListener(air.Event.SELECT, menuExplorersHandler);
+	geoItem = new air.NativeMenuItem(loca.GetText("SPE", "Geologist") + " (F4)");
+	geoItem.addEventListener(air.Event.SELECT, menuGeologistsHandler);
+	specMenu.addItem(explItem);
+	specMenu.addItem(geoItem);
+	addMenuItem(loca.GetText("LAB", "Specialists"), specMenu);
+	addKeybBind(menuExplorersHandler, 114);
+	addKeybBind(menuGeologistsHandler, 115);
+}
 
 function createSpecWindow()
 {

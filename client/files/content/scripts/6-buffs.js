@@ -9,8 +9,6 @@ var buffsAvailable = {};
 var buffInProgress = false;
 var buffTemplates;
 
-addMenuItem(loca.GetText("LAB", "Buffs") + " (F5)", menuBuffsHandler, 116);
-
 function menuBuffsHandler(event)
 {
 	$("div[role='dialog']:not(#buffModal):visible").modal("hide");

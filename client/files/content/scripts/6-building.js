@@ -1,10 +1,11 @@
+createProdMenu();
+
 var buildingSelectedTracker = new window.runtime.ClientBuff();
 buildingSelectedTracker.addEventListener("buffApply", buildingSelectedHandler);
 var buildingRecordEnabled = false;
 var buildingRecord;
 var buildingTemplates;
 
-addMenuItem(loca.GetText("LAB", "Production"), menuBuildingHandler);
 
 function menuBuildingHandler(event)
 {
@@ -128,4 +129,18 @@ function buildingSelectedHandler(event){
 	if(className != "GUI.GAME::cBuildingInfoPanel") { return; }
 	if(buildingRecord == null) { buildingRecord = {}; }
 	buildingRecord[building.GetGrid()] = { 'status': !building.IsProductionActive(), 'name': building.GetBuildingName_string() };
+}
+
+function createProdMenu()
+{
+	prodMenu = new air.NativeMenu();
+	buffsItem = new air.NativeMenuItem(loca.GetText("LAB", "Buffs") + " (F5)");
+	buffsItem.addEventListener(air.Event.SELECT, menuBuffsHandler);
+	buiItem = new air.NativeMenuItem(loca.GetText("LAB", "Production") + " (F7)");
+	buiItem.addEventListener(air.Event.SELECT, menuBuildingHandler);
+	prodMenu.addItem(buffsItem);
+	prodMenu.addItem(buiItem);
+	addMenuItem(loca.GetText("LAB", "Buildings"), prodMenu);
+	addKeybBind(menuBuffsHandler, 116);
+	addKeybBind(menuBuildingHandler, 118);
 }
