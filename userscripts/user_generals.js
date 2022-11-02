@@ -135,6 +135,7 @@ function _exudGeneralsMenuHandler(event)
 	myStyle = ".CellWithComment{  position:relative; } ";
 	myStyle += ".CellComment{  display:none;  position:absolute;   z-index:100;  border:1px;  background-color:#B2A589;  border-style:solid;  border-width:1px;  border-color:black;  padding:3px;  color:black;   top:320px;   left:0px; width: 250px} ";
 	myStyle += ".CellWithComment:hover span.CellComment{  display:block;}";
+	
 	var sheet = document.createElement('style')
 	sheet.innerHTML = myStyle;
 	document.body.appendChild(sheet);
@@ -200,7 +201,7 @@ function _exudGeneralsMenuHandler(event)
 
 
 			out += $('<button>').attr({ "class": "btn btn-sm _exudGeneralRefreshBtn" }).text(
-			loca.GetText("LAB", "Update")
+				loca.GetText("LAB", "Update")
 			).prop("outerHTML") + ' ';
 			
 		} catch (error) {
@@ -232,10 +233,13 @@ function _exudGeneralsMenuHandler(event)
 				item.checked = _exudGeneralsToggleselected;	
 				});
 		});
-				
+		$('#udGeneralsModal ._exudGeneralRefreshBtn').click(function(){
+			_exudMakeGeneralsTable();			
+		});
+	
 		$('#udGeneralsModal ._exudGeneralsSelectedFirstBtn').click(function() {
-					_exudGeneralsSelectedFirst = !_exudGeneralsSelectedFirst;
-				_exudMakeGeneralsTable();
+			_exudGeneralsSelectedFirst = !_exudGeneralsSelectedFirst;
+			_exudMakeGeneralsTable();
 		});
 	}
 
@@ -296,9 +300,6 @@ function _exudGeneralsOptions()
 		if (++_exudGeneralsSortType == 2)	_exudGeneralsSortType = 0;
 		_exudMakeGeneralsTable();
 	});
-	$('#udGeneralsModal ._exudGeneralRefreshBtn').click(function(){
-		_exudMakeGeneralsTable();			
-	});
 	$('#_exudHideUnselectedGeneralsFloatBtn').change(function(){
 		if (_exudGeneralsOpening) return;
 		_exudGeneralsHideUnselected = !_exudGeneralsHideUnselected;
@@ -308,13 +309,7 @@ function _exudGeneralsOptions()
 		if (_exudGeneralsOpening) return;
 		_exudGeneralsHideGuest = !_exudGeneralsHideGuest;
 		_exudMakeGeneralsTable();
-	});
-	/*
-	$('#_exudGeneralsSelectedFirstFloatBtn').change(function(){
-		_exudGeneralsSelectedFirst = !_exudGeneralsSelectedFirst;
-		_exudMakeGeneralsTable();
-	});
-	*/
+	});	
 	$('#_exudGeneralsExcludeStarMenuFloatBtn').change(function(){
 		if (_exudGeneralsOpening) return;
 		_exudGeneralsExcludeStarMenu = !_exudGeneralsExcludeStarMenu;
@@ -394,8 +389,9 @@ function _exudMakeGeneralsTable(_sel)
 				if (_exudGeneralsHideUnselected && !IsSelected) return;
 				if (item.Owner) ++myGens;
 				var tooltip = loca.GetText("HIL", "Help_window_skilltrees_0");
-				var Icon = item.Icon.replace('<img','<img title="'+tooltip+'" id="exudSTIMG'+item.UID+'"').replace('style="', 'style="cursor: pointer;');
+				var Icon =  item.Icon.replace('<img','<img id="exudSTIMG'+item.UID+'"').replace('style="', 'style="cursor: pointer;');
 				
+
 				var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (IsSelected ? ' checked' : ''),  Icon + item.Name);
 
 				if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
@@ -450,6 +446,7 @@ function _exudGeneralsOpenSkillTree(e)
 		if (Spec != null)
 		{
 		var General = _exudGeneralsGetGeneralStruct(Spec, PlayerID);
+		if (General == null) return;
 		document.getElementById('_exudGeneralsSkillTree').style.visibility = "visible";
 		$("#_exudGeneralsSkillTree").css({left : e.target.parentElement.offsetLeft + 200 ,  top : e.target.parentElement.offsetTop, position:'absolute'}); 
 		
@@ -644,48 +641,54 @@ function _exudGetSpecialists()
 		try{
 			if (!SPECIALIST_TYPE.IsGeneral(item.GetType()))
 				return;
-
-			listS.push(_exudGeneralsGetGeneralStruct(item, PlayerID));
+			var General = _exudGeneralsGetGeneralStruct(item, PlayerID);
+			if (General != null)
+				listS.push(General);
 		}
 		catch (e) {
-				//alert("Push error : " + e.message); when general is moving to adventure, some data like playerID etc are null or undefined. so air throw a 1009 error. I ignore this item at the moment, it appear after some seconds
 		}
 	});
+	
+	try{
 	if (listS.length > 1)
 		listS.sort(_exudCompareGenerals);
+	}
+	catch (e) {
+	}
 		
 	return listS;	
 }
 
 function _exudGeneralsGetGeneralStruct(item, PlayerID)
 {
-		i_pid = -1;
+
 		try{
-			i_pid = item.getPlayerID();
-			}
+			i_pid = -1;
+			i_pid = item.getPlayerID();		
+
+			var s = {
+				"UID" : item.GetUniqueID().toKeyString(),
+				"BaseType" : item.GetBaseType(),
+				"HasElites" : item.GetArmy().HasEliteUnits(),
+				"HasUnits" : item.HasUnits(),
+				"Name" : item.getName(false).replace('<b>', '').replace('</b>',''),
+				"PlayerID" : i_pid,
+				"Type" : item.GetType(),
+				"XP" : item.GetXP(),
+				"Travelling" : item.isTravellingAway(),
+				"InUse": item.IsInUse(),
+				"Owner" : (PlayerID == i_pid),
+				"IsGeneral" : true,
+				"TotalArmy" : item.GetArmy().GetUnitsCount(),
+				"Icon" : getImageTag(item.getIconID(), '24px', '24px')	,
+				"PlayerName" : (i_pid > 0 && i_pid != PlayerID ? swmmo.application.mGameInterface.GetPlayerName_string(i_pid) : null),
+				"GridPosition" : item.GetGarrisonGridIdx() ,
+				"Skills" : _exudGeneralsGetSkills(item)
+				};
+			return s;
+		}
 		catch (e){}
-		
-		var s = {
-			"UID" : item.GetUniqueID().toKeyString(),
-			"BaseType" : item.GetBaseType(),
-			"HasElites" : item.GetArmy().HasEliteUnits(),
-			"HasUnits" : item.HasUnits(),
-			"Name" : item.getName(false).replace('<b>', '').replace('</b>',''),
-			"PlayerID" : i_pid,
-			"Type" : item.GetType(),
-			"XP" : item.GetXP(),
-			"Travelling" : item.isTravellingAway(),
-			"InUse": item.IsInUse(),
-			"Owner" : (PlayerID == i_pid),
-			"IsGeneral" : true,
-			"TotalArmy" : item.GetArmy().GetUnitsCount(),
-			"Icon" : getImageTag(item.getIconID(), '24px', '24px')	,
-			"PlayerName" : (i_pid > 0 && i_pid != PlayerID ? swmmo.application.mGameInterface.GetPlayerName_string(i_pid) : null),
-			"GridPosition" : item.GetGarrisonGridIdx() ,
-			"Skills" : _exudGeneralsGetSkills(item)
-		};
-		
-		return s;
+	return null;
 }
 //this.skillIcon.source = gAssetManager.GetBitmap((_arg_1 as cSkill).getDefinition().icon_string);
 
