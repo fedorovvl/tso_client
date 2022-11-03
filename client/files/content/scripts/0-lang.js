@@ -51,7 +51,7 @@ const baseTranslation = {
 		'prod_estimate': 'Estimated time',
 		'prod_finish': 'Finish time',
 		'prod_timed': 'Timed production',
-		'prod_queuesize': 'Queue size',
+		'prod_queuesize': 'Queue size'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -103,7 +103,7 @@ const baseTranslation = {
 		'prod_estimate': 'Расчетное время',
 		'prod_finish': 'Время завершения',
 		'prod_timed': 'Очереди производства',
-		'prod_queuesize': 'Размер очереди',
+		'prod_queuesize': 'Размер очереди'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
@@ -151,7 +151,11 @@ const baseTranslation = {
 		'auc_bid_for': "Gebotsbetrag:",
 		'auc_you_have': "Sie haben:",
 		'auc_your_max': "Sie sind Höchstbietender, es kann kein Gebot gemacht werden",
-		'auc_do_bid': 'Gebot machen'
+		'auc_do_bid': 'Gebot machen',
+		'prod_estimate': 'Geschätzte Zeit',
+		'prod_finish': 'Endzeit',
+		'prod_timed': 'Zeitgesteuerte Produktion',
+		'prod_queuesize': 'Warteschlangengröße'
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
