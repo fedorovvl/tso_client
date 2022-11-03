@@ -406,6 +406,9 @@ function _exudMakeGeneralsTable(_sel)
 				if (item.Owner) ++myGens;
 				var tooltip = loca.GetText("HIL", "Help_window_skilltrees_0");
 				var Icon =  item.Icon.replace('<img','<img id="exudSTIMG'+item.UID+'"').replace('style="', 'style="cursor: pointer;');
+				var IconMap = "";
+				if (item.GridPosition > 0)
+					IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudSTGENPOS'+item.UID+'"').replace('style="', 'style="cursor: pointer;')
 				
 
 				var checkbox = '<input type="checkbox" id="{0}"{1}/> {2}'.format(item.UID, (IsSelected ? ' checked' : ''),  Icon + item.Name);
@@ -416,13 +419,13 @@ function _exudMakeGeneralsTable(_sel)
 						[7, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
 						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
 						[1, (item.TotalArmy>0?item.TotalArmy:'')],
-						[2, (item.Owner ? loca.GetText("LAB", "YES"): '')]
+						[2, (item.Owner ? loca.GetText("LAB", "YES"): IconMap)]
 					]);
 				}
 				else{
 						out += createTableRow([
 						[9, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name : checkbox],
-						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
+						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): IconMap)],
 						[1, (item.TotalArmy>0?item.TotalArmy:'')]
 					]);
 				}
@@ -447,13 +450,36 @@ function _exudMakeGeneralsTable(_sel)
 	var x = 0;
 	for(x = 0; x < imgs.length ; x++)
 	{
-		imgs[x].addEventListener("click", function(e) {
-				_exudGeneralsOpenSkillTree(e);
-		});
+		var idimg = imgs[x].id;
+	
+		if (idimg.indexOf("exudSTIMG") >= 0)
+		{
+			imgs[x].addEventListener("click", function(e) {
+					_exudGeneralsOpenSkillTree(e);
+			});
+		}
+		else		
+			{
+				if (idimg.indexOf("exudSTGENPOS") >= 0)
+				{
+					imgs[x].addEventListener("click", function(e) {
+							_exudGeneralsGoToMap(e);
+					});
+				}
+			}
+
 	}
 	
 }
-
+function _exudGeneralsGoToMap(e)
+{
+	try {
+			var Spec = _exudGeneralsFindByID(e.target.id.replace("exudSTGENPOS",""));
+			
+			if (Spec != null)
+				swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(Spec.GetGarrisonGridIdx());
+		} catch (e) {}
+}
 function _exudGeneralsOpenSkillTree(e)
 {
 	try {
