@@ -248,7 +248,11 @@ const baseTranslation = {
 		'auc_bid_for': "Puja por:",
 		'auc_you_have': "Tienes:",
 		'auc_your_max': "Eres el mejor postor, no puedes pujar de nuevo",
-		'auc_do_bid': 'Pujar'
+		'auc_do_bid': 'Pujar',
+		'prod_estimate': 'Tiempo estimado',
+		'prod_finish': 'Data de fin',
+		'prod_timed': 'Crono Producción',
+		'prod_queuesize': 'Tamaño en cola'
 	},
 	"pl-pl": {
 		"btn_submit":"Wyślij",
