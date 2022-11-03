@@ -200,7 +200,11 @@ const baseTranslation = {
 		'auc_bid_for': "Enchérissez pour:",
 		'auc_you_have': "Vous avez:",
 		'auc_your_max': "Votre Enchère est la plus haute, donc vous ne pouvez pas Surenchérir",
-		'auc_do_bid': 'Enchèrir'
+		'auc_do_bid': 'Enchèrir',
+		'prod_estimate': 'Temps Estimé',
+		'prod_finish': 'Date de Fin',
+		'prod_timed': 'Production Chronométrée',
+		'prod_queuesize': 'Taille de la file'
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
