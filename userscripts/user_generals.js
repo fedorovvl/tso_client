@@ -36,7 +36,8 @@ const _exudGeneralsLang = {
         "SelectAll": "Zaznacz wszystkich",
         "Load": "Załaduj",
         "CommandSent": "Generał wysłany",
-        "ColumnOwner": "Właściciel"
+        "ColumnOwner": "Właściciel",
+        "IsGuest": " (* = gość) "
     },
     "ru-ru": {
 		"ByName": "Сортировать по имени",
