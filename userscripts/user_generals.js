@@ -110,7 +110,7 @@ const _exudGeneralsLang = {
 	"IsGuest": " (* = invitado) "
     }
 };
-
+var _exudGeneralsTemplates;
 addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
 
 var _exudGeneralsSortType = 1; // 0 = type/name  1 = name/type
@@ -127,8 +127,15 @@ function _exudGeneralsGetLabel(id)
 	return _exudGeneralsLang[idL] && _exudGeneralsLang[idL][id] ? _exudGeneralsLang[idL][id] : _exudGeneralsLang["en-uk"][id];
 }	
 var _exudGeneralsOpening = false;
+
 function _exudGeneralsMenuHandler(event)
 {
+	_exudGeneralsTemplates = new SaveLoadTemplate('genspec', function(data) {
+		_exudMakeGeneralsTable(data);	
+		if (_exudGeneralsSelectedFirst)
+			_exudMakeGeneralsTable();			
+	});
+	
 	showGameAlert(_exudGeneralsGetLabel("SkillTip"));
 	
 	var myStyle = document.getElementById('_exudGeneralsSyle');
@@ -160,17 +167,30 @@ function _exudGeneralsMenuHandler(event)
 	$( "div[role='dialog']:not(#udGeneralsModal):visible").modal("hide");
 	// create modal
 	createModalWindow('udGeneralsModal', loca.GetText("ACL", "MilitarySpecialists"));
-	if($('#udGeneralsModal .modal-footer ._exudSpecLoadTemplateBtn').length == 0)
+	if($('#udGeneralsModal .modal-footer ._exudGeneralsLoadTemplateBtn').length == 0)
 	{
 		$("#udGeneralsModal .modal-footer").prepend([
-			$('<button>').attr({ "id": "_exudSpecLoadTemplateBtn", "class": "btn btn-primary pull-left _exudSpecLoadTemplateBtn" }).text(_exudGeneralsGetLabel("Load")),
-			$('<button>').attr({ "id": "_exudSpecSaveTemplateBtn", "class": "btn btn-primary pull-left _exudSpecSaveTemplateBtn" }).text(loca.GetText("LAB", "Save")),
-			$('<button>').attr({ "id": "_exudSpecSaveTemplateBtn", "class": "btn btn-success _exudSendGeneralsBtn" }).text(loca.GetText("LAB", "Send"))
+			$('<button>').attr({ "id": "_exudGeneralsLoadTemplateBtn", "class": "btn btn-primary pull-left _exudGeneralsLoadTemplateBtn" }).text(getText('load_template')),
+			$('<button>').attr({ "id": "_exudGeneralsSaveTemplateBtn", "class": "btn btn-primary pull-left _exudGeneralsSaveTemplateBtn" }).text(getText('save_template')),
+			$('<button>').attr({ "id": "_exudGeneralsSaveTemplateBtn", "class": "btn btn-success _exudGeneralsSendGeneralsBtn" }).text(loca.GetText("LAB", "Send"))
 		]);		
 
-		$('#udGeneralsModal ._exudSpecLoadTemplateBtn').click(_exudGeneralsLoadData);
-		$('#udGeneralsModal ._exudSpecSaveTemplateBtn').click(_exudGeneralsSaveData);
-		$('#udGeneralsModal ._exudSendGeneralsBtn').click(_exudGeneralsSend);
+		$('#udGeneralsModal ._exudGeneralsLoadTemplateBtn').click(function() { _exudGeneralsTemplates.load(); });
+		
+		$('#udGeneralsModal ._exudGeneralsSaveTemplateBtn').click(function(){
+			var dataToSave = new Array();
+			$('#udGeneralsModalData input[type="checkbox"]').each(function(i, item) { 
+				if(item.checked) {
+					dataToSave.push(item.id);
+				}
+			});
+			if (dataToSave.length > 0)
+				_exudGeneralsTemplates.save(dataToSave);
+		});
+		
+		
+		
+		$('#udGeneralsModal ._exudGeneralsSendGeneralsBtn').click(_exudGeneralsSend);
 		
 		_exudGetGeneralsTitle(0);
 				
@@ -342,13 +362,7 @@ function _exudGeneralsOptionsCreateSettings()
 		out += '</div>';
 		out += '<div >&nbsp;&nbsp;'+_exudGeneralsGetLabel("HideUnselected") +'</div>';
 		out += '</div><br/>';
-		/*
-		out += '<div style="float: clear"><div style="float: left;">';
-		out += createSwitch("_exudGeneralsSelectedFirstFloatBtn", (_exudGeneralsSelectedFirst));
-		out += '</div>';
-		out += '<div >&nbsp;&nbsp;'+_exudGeneralsGetLabel("SelectedFirst") +'</div>';
-		out += '</div><br/>';
-*/
+		
 		out += '<div style="float: clear"><div style="float: left ">';
 		out += createSwitch("_exudGeneralsExcludeStarMenuFloatBtn", (_exudGeneralsExcludeStarMenu));
 		out += '</div>';
@@ -501,48 +515,6 @@ function _exudGeneralsIsSelectable(S)
 {
 	return (S.Owner && !S.InUse && !S.Travelling)
 }
-
-function _exudGeneralsSaveData()
-{
-	var listS = new Array();
-	$('#udGeneralsModalData input[type="checkbox"]').each(function(i, item) { 
-		if(item.checked) {
-			listS.push(item.id);
-		}
-	});
-	if (listS.length > 0) {
-		var file = new air.File(readLastDir('genspec')).resolvePath("specGenerals.txt");
-		file.addEventListener(air.Event.COMPLETE, function(event){
-			saveLastDir('genspec', event.target.parent.nativePath);
-		}); 
-		file.save(JSON.stringify(listS));
-	}	
-}
-
-function _exudGeneralsLoadData()
-{
-	var file = new air.File(readLastDir('genspec'));
-	var txtFilter = new air.FileFilter("All Files" , "*.*"); 
-	file.browseForOpen("Open", [txtFilter]); 
-	file.addEventListener(air.Event.SELECT, function(event){
-		event.target.addEventListener(air.Event.COMPLETE, _exudGenLoadTemplateLoaded); 
-		event.target.load();
-	}); 
-}
-
-function _exudGenLoadTemplateLoaded(event)
-{
-	var listS = new Array();
-	try{
-	  listS = JSON.parse(event.target.data);
-	} catch(e) {
-	  alert("Bad template file");
-	  return;
-	}
-	_exudMakeGeneralsTable(listS);	
-			if (_exudGeneralsSelectedFirst)
-			_exudMakeGeneralsTable();
-	}
 
 function _exudGeneralsGetChecked()
 {
