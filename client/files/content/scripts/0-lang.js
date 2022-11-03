@@ -51,7 +51,9 @@ const baseTranslation = {
 		'prod_estimate': 'Estimated time',
 		'prod_finish': 'Finish time',
 		'prod_timed': 'Timed production',
-		'prod_queuesize': 'Queue size'
+		'prod_queuesize': 'Queue size',
+		'prod_welcome': 'Welcome to production manager!',
+		'prod_welcome_block': '<p>You can record buildings and then mass stop or start them. Press "Start recording" button and select your buildings. After that come back and press "Stop recording". You will see list of buildings with current status. Save it as a template and next time just load template and press Submit.</p>'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -103,7 +105,9 @@ const baseTranslation = {
 		'prod_estimate': 'Расчетное время',
 		'prod_finish': 'Время завершения',
 		'prod_timed': 'Очереди производства',
-		'prod_queuesize': 'Размер очереди'
+		'prod_queuesize': 'Размер очереди',
+		'prod_welcome': 'Добро пожаловать в менеджер производства!',
+		'prod_welcome_block': '<p>Вы можете записать нужные здания, чтобы потом массово запускать либо останавливать их. Нажмите "Начать запись" и выделяйте свои здания кликая на них. После окончания вернитесь сюда и нажмите кнопку "Остановить запись". Вы увидите список зданий и их статус. Сохраните его как шаблон. В следующий раз загрузите шаблон, проверьте список и нажмите "Отправить".</p>'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',

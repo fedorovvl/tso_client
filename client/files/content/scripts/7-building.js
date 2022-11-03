@@ -44,8 +44,8 @@ function menuBuildingHandler(event)
 	out = '<div class="container-fluid">';
 	if(!buildingRecordEnabled && buildingRecord == null) {
 		out += '<strong>{0}</strong></p>{1}{2}'.format(
-			getText('buff_welcome'),
-			getText('buff_welcome_block'),
+			getText('prod_welcome'),
+			getText('prod_welcome_block'),
 			$('<button>', { 'class': "btn btn-primary btn-lg btn-block", 'id' :"buildingStartRecording"}).text(getText('buff_start_record')).prop('outerHTML')
 		);
 	}
