@@ -138,8 +138,11 @@ function createProdMenu()
 	buffsItem.addEventListener(air.Event.SELECT, menuBuffsHandler);
 	buiItem = new air.NativeMenuItem(loca.GetText("LAB", "Production") + " (F7)");
 	buiItem.addEventListener(air.Event.SELECT, menuBuildingHandler);
+	prodItem = new air.NativeMenuItem(getText('prod_timed'));
+	prodItem.addEventListener(air.Event.SELECT, TimedMenuHandler);
 	prodMenu.addItem(buffsItem);
 	prodMenu.addItem(buiItem);
+	prodMenu.addItem(prodItem);
 	addMenuItem(loca.GetText("LAB", "Buildings"), prodMenu);
 	addKeybBind(menuBuffsHandler, 116);
 	addKeybBind(menuBuildingHandler, 118);

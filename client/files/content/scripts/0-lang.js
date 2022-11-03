@@ -47,7 +47,11 @@ const baseTranslation = {
 		'auc_bid_for': "Place bet for:",
 		'auc_you_have': "You have:",
 		'auc_your_max': "You are the highest bidder, so you can't place another bet",
-		'auc_do_bid': 'Place bid'
+		'auc_do_bid': 'Place bid',
+		'prod_estimate': 'Estimated time',
+		'prod_finish': 'Finish time',
+		'prod_timed': 'Timed production',
+		'prod_queuesize': 'Queue size',
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -95,7 +99,11 @@ const baseTranslation = {
 		'auc_bid_for': "Разместить ставку за:",
 		'auc_you_have': "У вас есть:",
 		'auc_your_max': "Ваша ставка максимальная, нельзя сделать ставку",
-		'auc_do_bid': 'Сделать ставку'
+		'auc_do_bid': 'Сделать ставку',
+		'prod_estimate': 'Расчетное время',
+		'prod_finish': 'Время завершения',
+		'prod_timed': 'Очереди производства',
+		'prod_queuesize': 'Размер очереди',
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
