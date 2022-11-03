@@ -170,8 +170,8 @@ function _exudGeneralsMenuHandler(event)
 	if($('#udGeneralsModal .modal-footer ._exudGeneralsLoadTemplateBtn').length == 0)
 	{
 		$("#udGeneralsModal .modal-footer").prepend([
-			$('<button>').attr({ "id": "_exudGeneralsLoadTemplateBtn", "class": "btn btn-primary pull-left _exudGeneralsLoadTemplateBtn" }).text(getText('load_template')),
 			$('<button>').attr({ "id": "_exudGeneralsSaveTemplateBtn", "class": "btn btn-primary pull-left _exudGeneralsSaveTemplateBtn" }).text(getText('save_template')),
+			$('<button>').attr({ "id": "_exudGeneralsLoadTemplateBtn", "class": "btn btn-primary pull-left _exudGeneralsLoadTemplateBtn" }).text(getText('load_template')),
 			$('<button>').attr({ "id": "_exudGeneralsSaveTemplateBtn", "class": "btn btn-success _exudGeneralsSendGeneralsBtn" }).text(loca.GetText("LAB", "Send"))
 		]);		
 
