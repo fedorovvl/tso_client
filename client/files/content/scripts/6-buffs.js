@@ -21,8 +21,8 @@ function menuBuffsHandler(event)
 	if($('#buffModal .buffSaveTemplate').length == 0)
 	{
 		$("#buffModal .modal-footer").prepend([
-			$('<button>').attr({ "class": "btn btn-success buffSubmit" }).text(getText('btn_submit')),
 			$('<button>').attr({ "class": "btn btn-warning buffReset" }).text(getText('btn_reset')),
+			$('<button>').attr({ "class": "btn btn-success buffSubmit" }).text(getText('btn_submit')),
 			$('<button>').attr({ "class": "btn btn-primary pull-left buffSaveTemplate" }).text(getText('save_template')),
 			$('<button>').attr({ "class": "btn btn-primary pull-left buffLoadTemplate" }).text(getText('load_template'))
 		]);
@@ -212,7 +212,7 @@ function buffDoJob()
 			uniqueIdArr = buffsAvailable[item.buffName].id.split("_");
 			x.add(function(){ 
 				uniqueID = swmmo.getDefinitionByName("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
-				swmmo.application.mGameInterface.SendServerAction(61, 0, grid, 0, uniqueID);
+				swmmo.application.mGameInterface.SendServerAction(61, 0, item.buiGrid, 0, uniqueID);
 			});
 		}
 	});
