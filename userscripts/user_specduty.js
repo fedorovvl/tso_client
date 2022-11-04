@@ -52,6 +52,15 @@ const _exudspecDutyLang = {
 		"NoData": "Sin datos"  ,
 		"YOU": "Tú",
 		"HideShowGuest" : "Todos/Solo míos"
+	},
+	"pl-pl": {
+        "menuItemName": "Specjaliści",
+        "menuTitle": "Specjaliści w użyciu",
+        "ColumnEstimated": "Do końca",
+        "ColumnArrival": "Zakończenie",
+        "NoData": "Brak danych",
+        "YOU": "Ty",
+        "HideShowGuest" : "Pokaż/Ukryj gości"
 	}
 };
 var _exudSpecDutyHideGuest = false;
