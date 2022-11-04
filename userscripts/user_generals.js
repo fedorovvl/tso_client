@@ -54,7 +54,8 @@ const _exudGeneralsLang = {
         "SelectAll": "Выбрать всех",
         "Load": "Загрузить",
         "CommandSent": "Отправить",
-        "ColumnOwner": "Владелец"
+        "ColumnOwner": "Владелец",
+		"SkillTip": "Нажмите на иконку генерала чтобы открыть его дерево навыков"
     },
 	"fr-fr": {
 		"ByName": "Trier par Nom",
@@ -69,7 +70,8 @@ const _exudGeneralsLang = {
         "ColumnOwner": "Propriétaire",
 		"IsGuest": " (* Invité) ",
 		"SelectedFirst": "Sélection en Premier",
-		 "ExcludeStarMenu": "Masquer les Généraux en Etoile"
+		 "ExcludeStarMenu": "Masquer les Généraux en Etoile",
+		 "SkillTip" : "Cliquer sur Général pour voir ses compétences."
     },
     "it-it": {
         "ByName": "Ordina per nome",
@@ -136,7 +138,7 @@ function _exudGeneralsMenuHandler(event)
 			_exudMakeGeneralsTable();			
 	});
 	
-	showGameAlert(_exudGeneralsGetLabel("SkillTip"));
+	//showGameAlert(_exudGeneralsGetLabel("SkillTip"));
 	
 	var myStyle = document.getElementById('_exudGeneralsSyle');
 	if (myStyle != null && myStyle != undefined)
@@ -174,6 +176,8 @@ function _exudGeneralsMenuHandler(event)
 			$('<button>').attr({ "id": "_exudGeneralsLoadTemplateBtn", "class": "btn btn-primary pull-left _exudGeneralsLoadTemplateBtn" }).text(getText('load_template')),
 			$('<button>').attr({ "id": "_exudGeneralsSaveTemplateBtn", "class": "btn btn-success _exudGeneralsSendGeneralsBtn" }).text(loca.GetText("LAB", "Send"))
 		]);		
+		
+		$("#udGeneralsModal .modal-footer").append(['<p align="left" style="font-size: 10px">* {0}</p>'.format(_exudGeneralsGetLabel("SkillTip"))]);
 
 		$('#udGeneralsModal ._exudGeneralsLoadTemplateBtn').click(function() { _exudGeneralsTemplates.load(); });
 		
