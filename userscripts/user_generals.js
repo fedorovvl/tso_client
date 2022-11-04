@@ -304,6 +304,7 @@ function _exudGeneralsSaveSettings()
 	
 	storeSettings(s, 'usMKF_Generals');
 	//alert("Saved");
+	$('#udGeneralsModalsettings').modal("hide");
 	}
 	catch
 	(e) {
