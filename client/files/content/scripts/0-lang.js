@@ -270,6 +270,7 @@ const baseTranslation = {
 		'prod_timed': 'Crono Producción',
 		'prod_queuesize': 'Tamaño en cola',
 		'prod_welcome': '¡Bienvenido al gestor de Producción!'
+		'prod_welcome_block': '<p>Puedes grabar edificios y luego detenerlos o iniciarlos en masa. Presiona el botón "Iniciar grabación" y selecciona tus edificios. Después de eso, regresa y presiona "Detener grabación". Verás una lista de edificios con el estado actual. Guárdalo como plantilla y la próxima vez simplemente cargue la plantilla y presiona Enviar.</p>'
 	},
 	"pl-pl": {
 		"btn_submit":"Wyślij",
