@@ -504,10 +504,10 @@ namespace client
             {
                 try
                 {
-                    Directory.Delete(ClientDirectory, true);
+                    Directory.Delete(Path.Combine(ClientDirectory, "scripts"), true);
+                    Directory.Delete(Path.Combine(ClientDirectory, "userscripts"), true);
                 }
                 catch { }
-                butt.IsEnabled = false;
                 new Thread(checkVersion) { IsBackground = true }.Start();
             }
         }

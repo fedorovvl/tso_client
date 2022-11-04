@@ -268,7 +268,8 @@ const baseTranslation = {
 		'prod_estimate': 'Tiempo estimado',
 		'prod_finish': 'Data de fin',
 		'prod_timed': 'Crono Producción',
-		'prod_queuesize': 'Tamaño en cola'
+		'prod_queuesize': 'Tamaño en cola',
+		'prod_welcome': '¡Bienvenido al gestor de Producción!'
 	},
 	"pl-pl": {
 		"btn_submit":"Wyślij",
@@ -316,7 +317,12 @@ const baseTranslation = {
 		"auc_bid_for":"Postaw zakład na:",
 		"auc_you_have":"Posiadasz:",
 		"auc_your_max":"Twój zakład jest maksymalny, więc nie możesz postawić kolejnego zakładu",
-		"auc_do_bid":"Złóż ofertę"
+		"auc_do_bid":"Złóż ofertę",
+		"prod_estimate": 'Szacowany czas',
+        "prod_finish": 'Godzina zakończenia',
+        "prod_timed": 'Produkcja na czas',
+        "prod_queuesize": 'Rozmiar kolejki',
+        "prod_welcome": 'Witamy w menadżerze produkcji!'
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',
@@ -364,6 +370,11 @@ const baseTranslation = {
 		'auc_bid_for': "Apostar para:",
 		'auc_you_have': "Você tem:",
 		'auc_your_max': "Você é o licitante mais alto, então não pode fazer outra aposta",
-		'auc_do_bid': 'Apostar'
+		'auc_do_bid': 'Apostar',
+		'prod_estimate': 'Tempo estimado',
+		'prod_finish': 'Tempo de término da produção',
+		'prod_timed': 'Filas de produção',
+		'prod_queuesize': 'Tamanho da fila',
+		'prod_welcome': 'Bemvindo ao gerenciador de produção!'
 	}
 };
