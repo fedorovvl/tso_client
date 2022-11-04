@@ -10,7 +10,6 @@ function TimedMenuHandler(event)
 			showGameAlert(getText('not_home'));
 			return;
 		}
-		$('.buildingSubmit, .buildingReset, .buildingSaveTemplate').attr('disabled', 'true');
 		out = '<div class="container-fluid">';
 		out += createTableRow([
 				[4, loca.GetText("LAB", "Name")],
