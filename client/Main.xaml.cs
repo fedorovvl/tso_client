@@ -306,6 +306,10 @@ namespace client
             }
             if (settings.Length > 3)
             {
+                if(settings[2].Length > 1)
+                {
+                    settings[2] = Convert.ToInt16(bool.Parse(settings[2])).ToString();
+                }
                 swf_upsteam.IsChecked = upstream_swf = Convert.ToBoolean(Convert.ToInt16(settings[2]));
                 try
                 {
