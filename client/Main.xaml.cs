@@ -42,7 +42,7 @@ namespace client
         private string _langRemember;
         public string appversion
         {
-            get { return "1.5.2.0"; }
+            get { return "1.5.3.0"; }
         }
         public string langLogin
         {
