@@ -214,7 +214,9 @@ const baseTranslation = {
 		'prod_estimate': 'Temps Estimé',
 		'prod_finish': 'Date de Fin',
 		'prod_timed': 'Production Chronométrée',
-		'prod_queuesize': 'Taille de la file'
+		'prod_queuesize': 'Taille de la file',
+		'prod_welcome': 'Bienvenue dans le Gestionnaire de l’état de production !',
+        'prod_welcome_block': "<p>Vous pouvez enregistrer l’état de production des bâtiments puis les arrêter ou les démarrer en masse. Cliquer sur le bouton 'Début de l'enregistrement' et sélectionnez vos bâtiments. Après cela, revenez ici et cliquer sur 'Arrêter l'Enregistrement'. Vous verrez la liste des bâtiments avec l'état actuel. Enregistrer cette liste comme Modèle et la fois suivante, cliquer simplement sur 'Charger Modèle' puis 'Soumettre'.</p>"
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',

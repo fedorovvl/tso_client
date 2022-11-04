@@ -14,6 +14,7 @@ using System.ComponentModel;
 using AutoUpdaterDotNET;
 using System.Security.Cryptography;
 using System.Reflection;
+using System.Web.Script.Serialization;
 
 namespace client
 {
@@ -207,25 +208,34 @@ namespace client
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
                 string chksum = string.Empty;
                 bool needDownload = false;
-                if (File.Exists(System.IO.Path.Combine(ClientDirectory, "client.swf")))
-                    chksum = BitConverter.ToString(SHA1.Create().ComputeHash(File.OpenRead(System.IO.Path.Combine(ClientDirectory, "client.swf")))).ToLower().Replace("-", "");
-                else
+                if (File.Exists(System.IO.Path.Combine(ClientDirectory, "client.swf"))) {
+                    byte[] chksumdata = File.ReadAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"));
+                    byte[] chksumheader = UTF8Encoding.UTF8.GetBytes("blob " + chksumdata.Length + "\0");
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        ms.Write(chksumheader, 0, chksumheader.Length);
+                        ms.Write(chksumdata, 0, chksumdata.Length);
+                        chksum = BitConverter.ToString(SHA1.Create().ComputeHash(ms.ToArray())).ToLower().Replace("-", "");
+                    }
+                } else
                     needDownload = true;
                 if(!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
                     {
-                        Url = "https://sirris.tsomaps.com/client.swf.sum",
+                        Url = "https://api.github.com/repos/fedorovvl/tso_client/contents/client.swf",
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string rchksum = post.Post(ref _cookies).Trim();
-                    if (chksum != rchksum)
+                    var json = new JavaScriptSerializer();
+                    gitFile data = json.Deserialize<gitFile>(rchksum);
+                    if (chksum != data.sha)
                         needDownload = true;
                 }
                 if (needDownload)
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
-                    byte[] client = DownloadFile("https://sirris.tsomaps.com/client.swf");
+                    byte[] client = DownloadFile("https://raw.githubusercontent.com/fedorovvl/tso_client/master/client.swf");
                     File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
                 }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -505,5 +515,11 @@ namespace client
             e.Handled = true;
             MessageBox.Show("Available arguments:\n" + String.Join("\n", args_help), "Info", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+    }
+
+    public class gitFile
+    {
+        public string sha { get; set; }
+        public string download_url { get; set; }
     }
 }
