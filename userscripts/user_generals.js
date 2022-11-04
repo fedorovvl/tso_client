@@ -380,7 +380,7 @@ function _exudGetGeneralsData()
 {
 	var out = '<div class="container-fluid" id="exGeneralsMainDiv">';
 		out += '<div id="_exudGeneralsDivTable"></div>';
-		out += '<divclass="modal-dialog" id="_exudGeneralsSkillTree" style="position:absolute; top: 50%; left: 50%; color: black; background: #B2A589; font-weight: bold; visibility:hidden; border : thick solid #000000 ; border-width: 2px; width:250px ; height:350px;"></div>';
+		out += '<div class="modal-dialog" id="_exudGeneralsSkillTree" style="position:absolute; top: 1; left: 1; color: black; background: #B2A589; font-weight: bold; visibility:hidden; border : thick solid #000000 ; border-width: 2px; width:250px ; height:350px;"></div>';
 		out += '</div>';
 
 	$('#udGeneralsModalData').html(out);
