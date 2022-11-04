@@ -236,6 +236,38 @@ namespace client
                 { "exit", "sair" },
                 { "remember", "Lembrar" },
               }
+           },
+           { "es-es", new Dictionary<string, string>() {
+                { "login", "E-Mail" },
+                { "password", "Contraseña" },
+                { "letsplay", "Listo para jugar" },
+                { "checking", "Verificando el cliente..." },
+                { "downloading", "Descargando..." },
+                { "emptypass", "Contraseña vacía." },
+                { "emptylogin", "E-Mail vacío." },
+                { "collect", "Coleccionables" },
+                { "collecttip", "¿Quieres usar el marcador de coleccionables?\n¡Aperta \"yes\" solo después de abrir UbiCollect.exe!" },
+                { "tryauth", "Intento de inicio de sesión #" },
+                { "nomoretry", "Suficiente... Me cansé :)" },
+                { "auth", "Autentificando..." },
+                { "authok", "Autentificado con éxito" },
+                { "getplay", "Cargando página inicial..." },
+                { "cookieerr", "No conseguí agarrar las cookies :'(" },
+                { "paramserr", "Error de parámetros" },
+                { "autherr", "Error de autentificación. Respuesta - " },
+                { "loginerr", "E-mail o contraseña errada." },
+                { "captchaerr", "Recibí un Captcha... Intenta más tarde." },
+                { "uplayerr", "UPLAY no responde." },
+                { "authex", "Excepción en la página de autentificación." },
+                { "emptyauth", "Respuesta vacía... Esto es extraño." },
+                { "getparams", "Obteniendo parámetros..." },
+                { "tsourlerr", "Error de parámetro tsoUrl." },
+                { "nick", "Nick - " },
+                { "launch", "Iniciando cliente..." },
+                { "run", "JUGAR" },
+                { "exit", "salir" },
+                { "remember", "Recordar" },
+              }
            }
         };
 
