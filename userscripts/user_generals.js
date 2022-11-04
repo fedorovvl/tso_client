@@ -86,17 +86,20 @@ const _exudGeneralsLang = {
 		"IsGuest": " (* = invitato) "
     },
     "es-es": {
-        "ByName": "Orden: Nombre",
-        "ByType": "Orden: Tipo",
+        "ByName": "Ordenar por nombre",
+        "ByType": "Ordenar por tipo",
         "ShowGuest": "Ver generales de amigos",
-        "HideGuest": "Ver solo los míos",
-        "ShowUnselected": "Todos",
-        "HideUnselected": "Seleccionados",
+        "HideGuest": "Esconder generales de amigos",
+        "ShowUnselected": "Mostrar no seleccionados",
+        "HideUnselected": "Esconder no seleccionados",
         "SelectAll": "Seleccionar todos",
         "Load": "Cargar",
-	"CommandSent": "Comando enviado",
+		"CommandSent": "Comando enviado",
         "ColumnOwner": "Propietario",
-	"IsGuest": " (* = invitado) "
+		"IsGuest": " (* = invitado) ",
+		"SelectedFirst": "Mostrar seleccionados primero",
+		"ExcludeStarMenu": "No mostrar generales en estrella",
+		"SkillTip" : "Haz click en el icono del general para ver su árbol de habilidades."
     },
     "es-mx": {
         "ByName": "Ordenar: Nombre",
@@ -107,9 +110,9 @@ const _exudGeneralsLang = {
         "HideUnselected": "Seleccionados",
         "SelectAll": "Seleccionar todos",
         "Load": "Cargar",
-	"CommandSent": "Comando enviado",
+		"CommandSent": "Comando enviado",
         "ColumnOwner": "Propietario",
-	"IsGuest": " (* = invitado) "
+		"IsGuest": " (* = invitado) "
     }
 };
 var _exudGeneralsTemplates;
