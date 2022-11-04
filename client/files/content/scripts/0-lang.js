@@ -159,7 +159,9 @@ const baseTranslation = {
 		'prod_estimate': 'Geschätzte Zeit',
 		'prod_finish': 'Endzeit',
 		'prod_timed': 'Zeitgesteuerte Produktion',
-		'prod_queuesize': 'Warteschlangengröße'
+		'prod_queuesize': 'Warteschlangengröße',
+		'prod_welcome': 'Herzlich Wilkommen im Manager für Produktionen!',
+		'prod_welcome_block': '<p>Sie können Gebäude aufnehmen und dann die Produktionen im Manager stoppen oder starten. Klicken Sie "Aufnahme starten" an und klicken Ihre Gebäuden an die in der Liste erscheinen sollen. Danach klicken Sie wieder im Produktionsmanager auf "Aufnahme stoppen" an. Es wird dann eine Liste der angeklickten Gebäude angezeigt. Speichern sie diese als Vorlage. Nächstes Mal können Sie die Vorlage laden, Sie sehen den "Status" und können mit dem Schieberegler die Gebäudeproduktion steuern, abschließend auf "Senden" klicken.</p>'
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
