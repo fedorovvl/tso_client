@@ -303,7 +303,7 @@ function _exudGeneralsSaveSettings()
 	}
 	
 	storeSettings(s, 'usMKF_Generals');
-	alert("Saved");
+	//alert("Saved");
 	}
 	catch
 	(e) {
