@@ -29,6 +29,7 @@ namespace client
         public static string setting_file = "settings.dat";
         public static string lang = string.Empty;
         public static bool auto = false;
+        public static bool upstream_swf = false;
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
         public static int http_timeout = 20000;
@@ -128,7 +129,6 @@ namespace client
                 password.Password = cmd["password"];
                 pwd.Visibility = System.Windows.Visibility.Collapsed;
             }
-            butt.IsEnabled = false;
             new Thread(checkVersion) { IsBackground = true }.Start();
         }
 
@@ -167,7 +167,7 @@ namespace client
             AutoUpdater.ShowSkipButton = true;
             AutoUpdater.OpenDownloadPage = true;
             AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
-            Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
+            Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
             using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
@@ -219,11 +219,12 @@ namespace client
                     }
                 } else
                     needDownload = true;
-                if(!string.IsNullOrEmpty(chksum))
+                string swf_filename = !upstream_swf ? "client.swf" : "client_upstream.swf";
+                if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
                     {
-                        Url = "https://api.github.com/repos/fedorovvl/tso_client/contents/client.swf",
+                        Url = "https://api.github.com/repos/fedorovvl/tso_client/contents/" + swf_filename,
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string rchksum = post.Post(ref _cookies).Trim();
@@ -235,7 +236,7 @@ namespace client
                 if (needDownload)
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
-                    byte[] client = DownloadFile("https://raw.githubusercontent.com/fedorovvl/tso_client/master/client.swf");
+                    byte[] client = DownloadFile("https://raw.githubusercontent.com/fedorovvl/tso_client/master/" + swf_filename);
                     File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
                 }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -305,6 +306,7 @@ namespace client
             }
             if (settings.Length > 3)
             {
+                swf_upsteam.IsChecked = upstream_swf = Convert.ToBoolean(Convert.ToInt16(settings[2]));
                 try
                 {
                     if (settings.Length > 5)
@@ -388,7 +390,7 @@ namespace client
                 return;
             }
             error.Text = string.Empty;
-            byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", "0", "0", "0", _regionUid));
+            byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", swf_upsteam.IsChecked == true ? 1 : 0, "0", "0", _regionUid));
             File.WriteAllBytes(setting_file, ProtectedData.Protect(saveData, additionalEntropy, DataProtectionScope.LocalMachine));
             this.Visibility = System.Windows.Visibility.Hidden;
             bool collections = (cmd["collect"] != null) ? true : false;
@@ -514,6 +516,12 @@ namespace client
         {
             e.Handled = true;
             MessageBox.Show("Available arguments:\n" + String.Join("\n", args_help), "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void swf_upsteam_Click(object sender, RoutedEventArgs e)
+        {
+            upstream_swf = (bool)(sender as CheckBox).IsChecked;
+            new Thread(checkVersion) { IsBackground = true }.Start();
         }
     }
 
