@@ -323,7 +323,8 @@ const baseTranslation = {
         "prod_finish": 'Godzina zakończenia',
         "prod_timed": 'Produkcja na czas',
         "prod_queuesize": 'Rozmiar kolejki',
-        "prod_welcome": 'Witamy w menadżerze produkcji!'
+        "prod_welcome": 'Witamy w menadżerze produkcji!',
+		'prod_welcome_block': '<p>Możesz stworzyć listę budynków, w których będziesz zbiorczo uruchamiał i zatrzymywał produkcję. Naciśnij przycisk "Rozpocznij nagrywanie" i wybierz budynki na mapie. Następnie wróć do menadżera produkcji i naciśnij "Zatrzymaj nagrywanie". Zobaczysz listę budynków z aktualnym statusem produkcji. Zapisz listę jako plik, który później będziesz mógł wczytać i sterować produkcją przyciskiem Wyślij.</p>'
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',
@@ -356,7 +357,7 @@ const baseTranslation = {
 		'buff_start_record': 'Iniciar gravação',
 		'buff_stop_record': 'Parar gravação',
 		'buff_record_more': 'Gravar mais',
-		'buff_welcome': 'Bemvindo ao gerenciador de catalização!',
+		'buff_welcome': 'Bem-vindo ao gerente de catalização!',
 		'buff_welcome_block': '<p>Você pode gravar o que precisa para catalizar e depois reproduzi-lo automaticamente. Pressione o botão "Iniciar gravação" e catalize seus edifícios (ou amigos). Depois disso, volte e pressione "Parar gravação". Você verá a lista de edifícios e seus catalizadores. Salve-o como um modelo e da próxima vez apenas carregue o modelo e pressione Confirmar.</p><p>Edifícios com fundo vermelho não serão catalizados. Além disso, se uma das fileiras de catalizadores disponíveis for vermelha, nem todos os edifícios serão catalizados com este catalizador.</p>',
 		'experimental': "EXPERIMENTAL",
 		'auc_warning': 'Use somente após pagar 10k de moedas de ouro. Sempre recarregue os dados antes de fazer um lance.',
@@ -376,6 +377,7 @@ const baseTranslation = {
 		'prod_finish': 'Tempo de término da produção',
 		'prod_timed': 'Filas de produção',
 		'prod_queuesize': 'Tamanho da fila',
-		'prod_welcome': 'Bemvindo ao gerenciador de produção!'
+		'prod_welcome': 'Bem-vindo ao gerente de produção!',
+		'prod_welcome_block': '<p>Esta opçãopermite criar listas de edifícios  para ativar e desativar ao mesmo tempo. Após "Iniciar gravação", selecione os edifícios que deseja colocar na lista. Uma vez selecionado, volte aqui e pressione "Parar gravação". A lista de edifícios selecionados com seu status relativo será exibida. Salve o modelo assim da próxima vez, basta recarregar e "Confirmar".</p>'
 	}
 };
