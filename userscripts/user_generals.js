@@ -143,7 +143,7 @@ function _exudGeneralsMenuHandler(event)
 		myStyle.parentNode.removeChild(myStyle);
 	
 	myStyle = ".CellWithComment{  position:relative; } ";
-	myStyle += ".CellComment{  display:none;  position:absolute;   z-index:100;  border:1px;  background-color:#B2A589;  border-style:solid;  border-width:1px;  border-color:black;  padding:3px;  color:black;   top:320px;   left:0px; width: 250px} ";
+	myStyle += ".CellComment{  display:none;  position:absolute;   z-index:100;  border:1px;  background-color:#B2A589;  border-style:solid;  border-width:1px;  border-color:black;  padding:3px;  color:black;   top:350px;   left:0px; width: 250px} ";
 	myStyle += ".CellWithComment:hover span.CellComment{  display:block;}";
 	
 	var sheet = document.createElement('style')
@@ -380,7 +380,7 @@ function _exudGetGeneralsData()
 {
 	var out = '<div class="container-fluid" id="exGeneralsMainDiv">';
 		out += '<div id="_exudGeneralsDivTable"></div>';
-		out += '<divclass="modal-dialog" id="_exudGeneralsSkillTree" style="position:absolute; top: 50%; left: 50%; color: black; background: #B2A589; font-weight: bold; visibility:hidden; border : thick solid #000000 ; border-width: 2px; width:250px ; height:320px;"></div>';
+		out += '<divclass="modal-dialog" id="_exudGeneralsSkillTree" style="position:absolute; top: 50%; left: 50%; color: black; background: #B2A589; font-weight: bold; visibility:hidden; border : thick solid #000000 ; border-width: 2px; width:250px ; height:350px;"></div>';
 		out += '</div>';
 
 	$('#udGeneralsModalData').html(out);
@@ -490,19 +490,27 @@ function _exudGeneralsOpenSkillTree(e)
 		var General = _exudGeneralsGetGeneralStruct(Spec, PlayerID);
 		if (General == null) return;
 		document.getElementById('_exudGeneralsSkillTree').style.visibility = "visible";
-		$("#_exudGeneralsSkillTree").css({left : e.target.parentElement.offsetLeft + 200 ,  top : e.target.parentElement.offsetTop, position:'absolute'}); 
+//		$("#_exudGeneralsSkillTree").css({left : e.target.parentElement.offsetLeft + 200 ,  top : e.target.parentElement.offsetTop, position:'absolute'}); 
+		$("#_exudGeneralsSkillTree").css({left : 250 ,  top : 10, position:'absolute'}); 
 		
 		var out = '';
-		out += '<table border="1" style="margin-left: 10px;margin-top: 5px;padding:5px"';
+		out += '<table width="200px" border="0" style="margin-left: 10px;margin-top: 5px;padding:5px; margin-right: 30px"';
+		out += '<tr><td style="white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;">'+General.Icon + ' ' + General.Name+'</td></tr>';
+		out += '</table>';
+	
+		out += '<table border="1" style="margin-left: 10px;margin-top: 5px;padding:5px; margin-right: 30px"';
 		var y = 0;
 		var x = 0;
+		var rows = "";
 		for(y = 0; y < 5; y++)
 		{
-			out += "<tr>";
+			rows += "<tr>";
 			for(x = 0; x < 4; x++)
-				out += _exudGeneralsSkillTreeAddCell(General, x, y);
-			out += "</tr>";
+				rows += _exudGeneralsSkillTreeAddCell(General, x, y);
+			rows += "</tr>";
 		}
+		
+		out += rows;
 		out += "</table>";
 		out += '<div style="position: absolute;left: 220px;top: 1px;"><button" style="cursor: pointer;" id="_exudGeneralsSkillTreeCloseBtn">'+getImageTag("attackweakesttarget_negative.png")+'</button></div>';
 		out += '</div>';	
