@@ -143,17 +143,20 @@ function dutyGetData() {
 		if ((PlayerID == item.getPlayerID()) || !_exudSpecDutyHideGuest)
 			{
 				var pname = "";
-				if (PlayerID == i_pid)
+				if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
 				{
-					++mySpecTot;
-					pname = _exudspecDutyGetLabel("YOU");
-				}
-				
-				try{
-					if(_exudSpecDutyType == 3 && i_pid > 0 && PlayerID != i_pid) {
-						pname = swmmo.application.mGameInterface.GetPlayerName_string(i_pid);
+					if (PlayerID == i_pid)
+					{
+						++mySpecTot;
+						pname = _exudspecDutyGetLabel("YOU");
 					}
-				} catch (e) {} 
+					
+					try{
+						if(_exudSpecDutyType == 3 && i_pid > 0 && PlayerID != i_pid) {
+							pname = swmmo.application.mGameInterface.GetPlayerName_string(i_pid);
+						}
+					} catch (e) {} 
+				}			
 				
 				if (pname != null && pname != "")
 					ItemName += ' ({0})'.format(pname);
@@ -173,7 +176,9 @@ function dutyGetData() {
 							+ ' ' 
 							+ _exudspecDutyGetLabel("menuTitle") 
 							+ ( mySpecTot > 0 ? " (" + mySpecTot + ")" : "")
-							+ (  swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone ?	' : ' + loca.GetText("ADN", swmmo.application.mGameInterface.getAdventureName()) : '' )	
+							+ (  swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone ?	' : ' + loca.GetText("ADN", swmmo.application.mGameInterface.getAdventureName()) : 
+								(swmmo.application.mGameInterface.isOnHomzone() ? '' : " (" + swmmo.application.mGameInterface.mHomePlayer.GetPlayerName_string() + " - " + swmmo.application.mGameInterface.mHomePlayer.GetPlayerLevel() + ")")
+							  )
 						);	
 	
 	if(!isThereAnySpec)
