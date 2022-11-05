@@ -27,7 +27,7 @@ const _exudGeneralsLang = {
         "SelectAll": "Selecionar todos",
         "Load": "Carregar",
         "ColumnOwner": "Proprietario",
-		"IsGuest": " (* = convidado) ",
+		"IsGuest": " (*convidado) ",
 		"SelectedFirst": "Selecionado primeiro",
 		"ExcludeStarMenu": "Excluir Menu Estrela",
 		"SkillTip" : "Clicar no icone do general para abrir a arvore das abilidades"
@@ -188,8 +188,7 @@ function _exudGeneralsMenuHandler(event)
 	{
 		$("#udGeneralsModal .modal-footer").prepend([
 			$('<button>').attr({ "id": "_exudGeneralsSaveTemplateBtn", "class": "btn btn-primary pull-left _exudGeneralsSaveTemplateBtn" }).text(getText('save_template')),
-			$('<button>').attr({ "id": "_exudGeneralsLoadTemplateBtn", "class": "btn btn-primary pull-left _exudGeneralsLoadTemplateBtn" }).text(getText('load_template')),
-			$('<button>').attr({ "id": "_exudGeneralsSaveTemplateBtn", "class": "btn btn-success _exudGeneralsSendGeneralsBtn" }).text(loca.GetText("LAB", "Send"))
+			$('<button>').attr({ "id": "_exudGeneralsLoadTemplateBtn", "class": "btn btn-primary pull-left _exudGeneralsLoadTemplateBtn" }).text(getText('load_template'))
 		]);
 
 		$("#udGeneralsModal .modal-footer").append(['<p align="left" style="font-size: 10px">* {0}</p>'.format(_exudGeneralsGetLabel("SkillTip"))]);
@@ -218,7 +217,7 @@ function _exudGeneralsMenuHandler(event)
 		{
 			var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
 			var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
-
+			
 			select = $('<select>', { id: 'udcboSendZones' });
 			select.append($('<option>', { value: '-1' }).text('-----').prop("outerHTML"));
 			select.append($('<option>', { value: '98' }).text(loca.GetText("LAB", "StarMenu")).prop("outerHTML"));
@@ -232,19 +231,26 @@ function _exudGeneralsMenuHandler(event)
 				}
 			});
 
-			out += select.prop("outerHTML") + _exudGeneralsGetLabel("IsGuest");
+			//out += select.prop("outerHTML") + _exudGeneralsGetLabel("IsGuest");
+			out += select.prop("outerHTML")+ ' ';
+			
+			out += $('<button>').attr({ "class": "btn btn-sm _exudGeneralsSendGeneralsBtn" }).text(
+				loca.GetText("LAB", "Send")
+			).prop("outerHTML") + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+			
 			out += $('<button>').attr({ "class": "btn btn-sm _exudSelectAllGeneralsBtn" }).text(
 				_exudGeneralsGetLabel("SelectAll")
-			).prop("outerHTML") + ' ';
+			).prop("outerHTML") + '&nbsp;&nbsp;&nbsp;';
 
 			out += $('<button>').attr({ "class": "btn btn-sm _exudGeneralsSelectedFirstBtn" }).text(
 				_exudGeneralsGetLabel("SelectedFirst")
-			).prop("outerHTML") + ' ';
+			).prop("outerHTML") + '&nbsp;&nbsp;&nbsp;';
 
 
 			out += $('<button>').attr({ "class": "btn btn-sm _exudGeneralRefreshBtn" }).text(
 				loca.GetText("LAB", "Update")
 			).prop("outerHTML") + ' ';
+			out += '<p align="left" style="font-size: 10px">{0}</p>'.format(_exudGeneralsGetLabel("IsGuest")) + '</span>';
 
 		} catch (error) {
 			alert("Err (retry): " + error.message);
