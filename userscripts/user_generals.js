@@ -185,8 +185,8 @@ function _exudGeneralsMenuHandler(event)
 		}
 		var generalsData = _exudMakeGeneralsTable();
 
-		if (generalsData.uniqueIconIDs.length > 0) {
-		    out += '<br/><br/>' + _createTopRowWithIcons(generalsData.uniqueIconIDs);
+        if (generalsData.uniqueIconIDs.length > 0) {
+            out += '<br/><br/>' + _createTopRowWithIcons(generalsData.uniqueIconIDs);
         }
 		out += '<br/><br/>' + createTableRow([
 			[7, loca.GetText("LAB","Name")],
