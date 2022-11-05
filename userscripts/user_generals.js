@@ -154,13 +154,13 @@ function _exudGeneralsMenuHandler(event)
 {
 	_exudGeneralsTemplates = new SaveLoadTemplate('genspec', function(data) {
 		_exudMakeGeneralsTable(data);
-		if (_exudGeneralsSelectedFirst)
+		if (_exudGeneralsSettings['_exudGeneralsSelectedFirst'])
 			_exudMakeGeneralsTable();
 	});
-	
+	$('#udGeneralsStyle').remove();
 	if($('#udGeneralsStyle').length == 0)
 	{
-		$("head").append($("<style>", { 'id': 'udGeneralsStyle' }).text('.dropdown-toggle::after {display: inline-block;width: 0;height: 0;margin-left: .255em;vertical-align: .255em;content: ""; border-top: .3em solid;border-right: .3em solid transparent;  border-bottom: 0; border-left: .3em solid transparent;}#udGeneralsModal .modal-content{height: 90%;}.CellWithComment{position:relative;}.CellComment{display:none;position:absolute;z-index:100;border:1px;background-color:#B2A589;border-style:solid;border-width:1px;  border-color:black;padding:3px;color:black;top:350px;left:0px; width: 250px}.CellWithComment:hover span.CellComment{display:block;}#_exudGeneralsSkillTree{position:absolute; top: 1; left: 1; color: black; background: #B2A589; font-weight: bold; display:none; border : thick solid #000000 ; border-width: 2px; width:250px ; height:350px;}'));
+		$("head").append($("<style>", { 'id': 'udGeneralsStyle' }).text('.dropdown-toggle::after {display: inline-block;width: 0;height: 0;margin-left: .255em;vertical-align: .255em;content: ""; border-top: .3em solid;border-right: .3em solid transparent;  border-bottom: 0; border-left: .3em solid transparent;}#udGeneralsModal .modal-content{height: 90%;}.CellWithComment{position:relative;}#_exudGeneralsSkillTree{position:absolute; top: 1; left: 1; color: black; background: #B2A589; font-weight: bold; display:none; border : thick solid #000000 ; border-width: 2px; width:210px;}'));
 	}
 
 	_exudGeneralsOpening = true;
@@ -237,38 +237,25 @@ function _exudGeneralsMenuHandler(event)
 		}
 		out += '<div id="topRowWithIcons" class="text-center" style="display: none;"></div>';
 
-		var massCheckbox = $('<input>', { 'type': 'checkbox', 'class': '_exudSelectAllGeneralsBtn' }).prop('outerHTML') + '&nbsp;&nbsp;';
-		var IconCheck = '<img id="_exudSelectedFirstImage" style="cursor: pointer;"/>';
-		
+		var massCheckbox = $('<input>', { 'type': 'checkbox', 'class': '_exudSelectAllGeneralsBtn', 'data-toggle': 'tooltip', 'data-placement': 'top', 'title': _exudGeneralsGetLabel('SelectAll') }).prop('outerHTML') + '&nbsp;&nbsp;';
         if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone) {
             out += createTableRow([
-                [7, massCheckbox + IconCheck + loca.GetText("LAB","Name") ],
+                [7, massCheckbox + loca.GetText("LAB","Name")],
                 [2, loca.GetText("LAB", "StarMenu")],
                 [1, loca.GetText("LAB", "Army")],
                 [2, _exudGeneralsGetLabel("ColumnOwner")]
             ], true) ;
         } else {
             out += createTableRow([
-                [9, massCheckbox + IconCheck+ loca.GetText("LAB","Name")],
+                [9, massCheckbox + loca.GetText("LAB","Name")],
                 [2, loca.GetText("LAB", "StarMenu")],
                 [1, loca.GetText("LAB", "Army")]
             ], true) ;
         }
 		out += '</div>';
-
-		$('#udGeneralsModal .modal-header').append(out);
 		
-		document.getElementById('_exudSelectedFirstImage').addEventListener("click", function(e) {
-					_exudGeneralsChangeSelectedFirst();
-			});
-			
-			/*
-		$('#udGeneralsModal ._exudSelectedFirstImage').click(function(){
-			_exudGeneralsChangeSelectedFirst();
-		});
-			*/
-		_exudGeneralsSetSelectedFirstImage();
-
+		$('#udGeneralsModal .modal-header').append(out);
+		$('[data-toggle="tooltip"]').tooltip({container: 'body'});
 		$('#udGeneralsModal ._exudSelectAllGeneralsBtn').change(function() {
 			_exudGeneralsSettings['_exudGeneralsToggleselected'] = !_exudGeneralsSettings['_exudGeneralsToggleselected'];
 			$('#udGeneralsModalData input[type="checkbox"]').each(function(i, item) {
@@ -355,24 +342,9 @@ function _exudGeneralsOptions()
 		_exudMakeGeneralsTable();
 	});
 	$('#_exudGeneralsSelectedFirstBtn').click(function() {
-		_exudGeneralsChangeSelectedFirst();
+		_exudGeneralsSettings['_exudGeneralsSelectedFirst'] = !_exudGeneralsSettings['_exudGeneralsSelectedFirst'];
+		_exudMakeGeneralsTable();
 	});
-}
-
-function _exudGeneralsChangeSelectedFirst()
-{
-	_exudGeneralsSettings['_exudGeneralsSelectedFirst'] = !_exudGeneralsSettings['_exudGeneralsSelectedFirst'];
-	_exudGeneralsSetSelectedFirstImage();
-	_exudMakeGeneralsTable();
-}
-
-function _exudGeneralsSetSelectedFirstImage()
-{
-	var bd = assets.GetBitmapData((_exudGeneralsSettings['_exudGeneralsSelectedFirst'] ? "eventmonster_eventmarket_tutorial_defeat.png" : "eventmonster_weeklychallengeship_defeat.png"));
-	var ba = bd.encode(bd.rect, new window.runtime.flash.display.PNGEncoderOptions(true));
-	b64encoder.encodeBytes(ba);
-	var srcText = b64encoder.toString();
-	$('#_exudSelectedFirstImage').attr('src', 'data:image/png;base64,{0}'.format(srcText));
 }
 
 function _exudGeneralsOptionsCreateSettings()
@@ -414,11 +386,11 @@ function _exudGeneralsOptionsCreateSettings()
 
 function _exudGetGeneralsData()
 {
-	var out = '<div class="container-fluid" id="exGeneralsMainDiv">';
-	out += '<div id="_exudGeneralsDivTable"></div>';
-	out += '<div class="modal-dialog _exudGeneralsSkillTree" id="_exudGeneralsSkillTree"></div>';
-	out += '</div>';
-	$('#udGeneralsModalData').html(out);
+	var out = $('<div>', { 'class': 'container-fluid', 'id': 'exGeneralsMainDiv' }).append([
+		$('<div>', { 'id': '_exudGeneralsDivTable' }),
+		$('<div>', { 'class': 'modal-dialog _exudGeneralsSkillTree', 'id': '_exudGeneralsSkillTree' })
+	]);
+	$('#udGeneralsModalData').html(out.prop('outerHTML'));
 
 	_exudMakeGeneralsTable();
 }
@@ -454,12 +426,12 @@ function _exudMakeGeneralsTable(templateData)
 				var IconMap = "";
 				if (item.GridPosition > 0)
 					IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudSTGENPOS'+item.UID+'"').replace('style="', 'style="cursor: pointer;')
-                checkbox = '<input type="checkbox" id="{0}" icon-id="{1}"{2}/> {3}'.format(
-                    item.UID,
-                    item.IconID,
-                    isSelected ? ' checked' : '',
-                    Icon + item.Name
-                );
+					checkbox = '<input type="checkbox" id="{0}" icon-id="{1}"{2}/> {3}'.format(
+						item.UID,
+						item.IconID,
+						isSelected ? ' checked' : '',
+						Icon + item.Name
+					);
 
 				if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
 				{
@@ -489,35 +461,12 @@ function _exudMakeGeneralsTable(templateData)
 			alert(e.message);
 	}
 	$('#_exudGeneralsDivTable').html(out);
+	$('#topRowWithIcons').html('').hide();
 	if (uniqueIconIDs.length > 0) {
         $('#topRowWithIcons').html(_createTopRowWithIcons(uniqueIconIDs)).show();
-    } else {
-	    $('#topRowWithIcons').html('').hide();
     }
-	var imgs = document.getElementById('_exudGeneralsDivTable').getElementsByTagName('img');
-	var x = 0;
-	for(x = 0; x < imgs.length ; x++)
-	{
-		var idimg = imgs[x].id;
-
-		if (idimg.indexOf("exudSTIMG") >= 0)
-		{
-			imgs[x].addEventListener("click", function(e) {
-					_exudGeneralsOpenSkillTree(e);
-			});
-		}
-		else
-			{
-				if (idimg.indexOf("exudSTGENPOS") >= 0)
-				{
-					imgs[x].addEventListener("click", function(e) {
-							_exudGeneralsGoToMap(e);
-					});
-				}
-			}
-
-	}
-
+	$('#_exudGeneralsDivTable img[id^="exudSTIMG"]').click(_exudGeneralsOpenSkillTree);
+	$('#_exudGeneralsDivTable img[id^="exudSTGENPOS"]').click(_exudGeneralsGoToMap);
 }
 function _exudGeneralsGoToMap(e)
 {
@@ -540,28 +489,24 @@ function _exudGeneralsOpenSkillTree(e)
 			$("#_exudGeneralsSkillTree").css({left : 250 ,  top : 10, position:'absolute'});
 			$("#_exudGeneralsSkillTree").show()
 			var out = '';
-			out += '<table width="200px" border="0" style="margin-left: 10px;margin-top: 5px;padding:5px; margin-right: 30px"';
-			out += '<tr><td style="white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:1px;">'+General.Icon + ' ' + General.Name+'</td></tr>';
+			out += '<table width="200px" border="0" style="margin-left: 10px;margin-top: 5px;padding:5px; margin-right: 5px"';
+			out += '<tr><td style="white-space: nowrap; text-overflow:ellipsis; overflow: hidden; min-width:100px;max-width: 100px;">'+General.Icon + ' ' + General.Name+'</td>';
+			out += '<td><button style="cursor: pointer;background: none;border: none;" class="pull-right" id="_exudGeneralsSkillTreeCloseBtn">'+getImageTag("attackweakesttarget_negative.png", '15px')+'</button></td></tr>';
 			out += '</table>';
 
-			out += '<table border="1" style="margin-left: 10px;margin-top: 5px;padding:5px; margin-right: 30px"';
-			var y = 0;
-			var x = 0;
-			var rows = "";
-			for(y = 0; y < 5; y++)
+			out += '<table border="1" width="100%">';
+			for(var y = 0; y < 5; y++)
 			{
-				rows += "<tr>";
-				for(x = 0; x < 4; x++)
-					rows += _exudGeneralsSkillTreeAddCell(General, x, y);
-				rows += "</tr>";
+				out += "<tr>";
+				for(var x = 0; x < 4; x++)
+					out += _exudGeneralsSkillTreeAddCell(General, x, y);
+				out += "</tr>";
 			}
 
-			out += rows;
 			out += "</table>";
-			out += '<div style="position: absolute;left: 220px;top: 1px;"><button" style="cursor: pointer;" id="_exudGeneralsSkillTreeCloseBtn">'+getImageTag("attackweakesttarget_negative.png")+'</button></div>';
 			out += '</div>';
 			$("#_exudGeneralsSkillTree").html(out);
-
+			$('[data-toggle="tooltip"]').tooltip({container: 'body'});
 
 			$('#_exudGeneralsSkillTreeCloseBtn').click(function(){
 				$('#_exudGeneralsSkillTree').hide();
@@ -580,9 +525,8 @@ function _exudGeneralsSkillTreeAddCell(General, x, y)
 			var inum =  item[0].Level + "/" + item[0].MaxLevel;
 			if (item[0].Level > 0)
 				inum = "<b>" + inum + "</b>";
-			out = "<td class='CellWithComment' align='center' width='50px' height='60px' style='background: "+(item[0].Level > 0 ? "#B2A500" : "#B2A589")+"'>";
+			out = "<td data-toggle='tooltip' data-placement='top' title='"+item[0].Description+"' class='CellWithComment' align='center' width='40px' height='50px' style='background: "+(item[0].Level > 0 ? "#B2A500" : "#B2A589")+"'>";
 			out += getImageTag(item[0].IconString, '24px', '24px') + "<br/>" + inum ;
-			out += "<span class='CellComment'>"+item[0].Description+"</span>";
 			out + "</td>";
 		}
 	});
