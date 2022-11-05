@@ -143,13 +143,15 @@ function dutyGetData() {
 		if ((PlayerID == item.getPlayerID()) || !_exudSpecDutyHideGuest)
 			{
 				var pname = "";
+					if (PlayerID == i_pid)
+						++mySpecTot;
+					
 				if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
 				{
 					if (PlayerID == i_pid)
-					{
-						++mySpecTot;
+				
 						pname = _exudspecDutyGetLabel("YOU");
-					}
+
 					
 					try{
 						if(_exudSpecDutyType == 3 && i_pid > 0 && PlayerID != i_pid) {
