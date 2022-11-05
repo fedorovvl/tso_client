@@ -10,7 +10,6 @@ function TimedMenuHandler(event)
 			showGameAlert(getText('not_home'));
 			return;
 		}
-		$('.buildingSubmit, .buildingReset, .buildingSaveTemplate').attr('disabled', 'true');
 		out = '<div class="container-fluid">';
 		out += createTableRow([
 				[4, loca.GetText("LAB", "Name")],
@@ -27,8 +26,10 @@ function TimedMenuHandler(event)
 			var queue = swmmo.application.mGameInterface.mCurrentPlayerZone.GetProductionQueue(type);
 			if(!queue) { return; }
 			if(!queue.mTimedProductions_vector) { return; }
-			if(timedEnum.toString(type) == 'culturebuilding') { return; }
-			//if(queue.mTimedProductions_vector.length == 0) { return; }
+			if(timedEnum.toString(type) == 'culturebuilding') { 
+				out += getCultureInfo(queue);
+				return;
+			}
 			var estimate = calcTotalTime(queue);
 			out += createTableRow([
 				[4, $('<button>', { 
@@ -69,6 +70,16 @@ function TimedMenuHandler(event)
 	} catch(e) { 
 		TimedMenuHandler(null);
 	}
+}
+
+function getCultureInfo(queue)
+{
+	var cooldown = queue.productionBuilding.getRemainingCooldown();
+	return createTableRow([
+		[4, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + loca.GetText("BUI", queue.productionBuilding.GetBuildingName_string())],
+		[5, cooldown <= 0 ? '-' : "{0}: {1}".format(loca.GetText("LAB", "cooldown"), loca.FormatDuration(cooldown, 1)), 'text-center'],
+		[3, cooldown <= 0 ? '-' : dtf.format(new window.runtime.Date(Date.now() + cooldown)) ]
+	]);
 }
 
 function calcTime(item)

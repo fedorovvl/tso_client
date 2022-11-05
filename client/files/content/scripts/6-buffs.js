@@ -209,14 +209,21 @@ function buffDoJob()
 	$.each(buffRecordFiltered, function(i, item) {
 		if(buffsAvailable[item.buffName].count > 0) {
 			buffsAvailable[item.buffName].count -= 1;
-			uniqueIdArr = buffsAvailable[item.buffName].id.split("_");
-			x.add(function(){ 
-				uniqueID = swmmo.getDefinitionByName("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
-				swmmo.application.mGameInterface.SendServerAction(61, 0, item.buiGrid, 0, uniqueID);
-			});
+			x.add(function(){ sendBuffPacket(buffsAvailable[item.buffName].id, item.buiGrid); });
 		}
 	});
 	x.run();
 	$('#buffModal').modal('hide');
 	showGameAlert(getText('command_sent'));
+}
+
+function sendBuffPacket(buffId, grid)
+{
+	try{
+		uniqueIdArr = buffId.split("_");
+		uniqueID = swmmo.getDefinitionByName("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
+		swmmo.application.mGameInterface.SendServerAction(61, 0, grid, 0, uniqueID);
+	} catch (ex) {
+		alert(ex);
+	}
 }

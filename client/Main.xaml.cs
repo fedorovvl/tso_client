@@ -14,6 +14,7 @@ using System.ComponentModel;
 using AutoUpdaterDotNET;
 using System.Security.Cryptography;
 using System.Reflection;
+using System.Web.Script.Serialization;
 
 namespace client
 {
@@ -28,6 +29,7 @@ namespace client
         public static string setting_file = "settings.dat";
         public static string lang = string.Empty;
         public static bool auto = false;
+        public static bool upstream_swf = false;
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
         public static int http_timeout = 20000;
@@ -40,7 +42,7 @@ namespace client
         private string _langRemember;
         public string appversion
         {
-            get { return "1.5.2.0"; }
+            get { return "1.5.3.0"; }
         }
         public string langLogin
         {
@@ -127,7 +129,6 @@ namespace client
                 password.Password = cmd["password"];
                 pwd.Visibility = System.Windows.Visibility.Collapsed;
             }
-            butt.IsEnabled = false;
             new Thread(checkVersion) { IsBackground = true }.Start();
         }
 
@@ -166,7 +167,7 @@ namespace client
             AutoUpdater.ShowSkipButton = true;
             AutoUpdater.OpenDownloadPage = true;
             AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
-            Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
+            Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
             using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
@@ -207,25 +208,35 @@ namespace client
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
                 string chksum = string.Empty;
                 bool needDownload = false;
-                if (File.Exists(System.IO.Path.Combine(ClientDirectory, "client.swf")))
-                    chksum = BitConverter.ToString(SHA1.Create().ComputeHash(File.OpenRead(System.IO.Path.Combine(ClientDirectory, "client.swf")))).ToLower().Replace("-", "");
-                else
+                if (File.Exists(System.IO.Path.Combine(ClientDirectory, "client.swf"))) {
+                    byte[] chksumdata = File.ReadAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"));
+                    byte[] chksumheader = UTF8Encoding.UTF8.GetBytes("blob " + chksumdata.Length + "\0");
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        ms.Write(chksumheader, 0, chksumheader.Length);
+                        ms.Write(chksumdata, 0, chksumdata.Length);
+                        chksum = BitConverter.ToString(SHA1.Create().ComputeHash(ms.ToArray())).ToLower().Replace("-", "");
+                    }
+                } else
                     needDownload = true;
-                if(!string.IsNullOrEmpty(chksum))
+                string swf_filename = !upstream_swf ? "client.swf" : "client_upstream.swf";
+                if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
                     {
-                        Url = "https://sirris.tsomaps.com/client.swf.sum",
+                        Url = "https://api.github.com/repos/fedorovvl/tso_client/contents/" + swf_filename,
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string rchksum = post.Post(ref _cookies).Trim();
-                    if (chksum != rchksum)
+                    var json = new JavaScriptSerializer();
+                    gitFile data = json.Deserialize<gitFile>(rchksum);
+                    if (chksum != data.sha)
                         needDownload = true;
                 }
                 if (needDownload)
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
-                    byte[] client = DownloadFile("https://sirris.tsomaps.com/client.swf");
+                    byte[] client = DownloadFile("https://raw.githubusercontent.com/fedorovvl/tso_client/master/" + swf_filename);
                     File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
                 }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -295,6 +306,11 @@ namespace client
             }
             if (settings.Length > 3)
             {
+                if(settings[2].Length > 1)
+                {
+                    settings[2] = Convert.ToInt16(bool.Parse(settings[2])).ToString();
+                }
+                swf_upsteam.IsChecked = upstream_swf = Convert.ToBoolean(Convert.ToInt16(settings[2]));
                 try
                 {
                     if (settings.Length > 5)
@@ -378,7 +394,7 @@ namespace client
                 return;
             }
             error.Text = string.Empty;
-            byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", "0", "0", "0", _regionUid));
+            byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", swf_upsteam.IsChecked == true ? 1 : 0, "0", "0", _regionUid));
             File.WriteAllBytes(setting_file, ProtectedData.Protect(saveData, additionalEntropy, DataProtectionScope.LocalMachine));
             this.Visibility = System.Windows.Visibility.Hidden;
             bool collections = (cmd["collect"] != null) ? true : false;
@@ -492,10 +508,10 @@ namespace client
             {
                 try
                 {
-                    Directory.Delete(ClientDirectory, true);
+                    Directory.Delete(Path.Combine(ClientDirectory, "scripts"), true);
+                    Directory.Delete(Path.Combine(ClientDirectory, "userscripts"), true);
                 }
                 catch { }
-                butt.IsEnabled = false;
                 new Thread(checkVersion) { IsBackground = true }.Start();
             }
         }
@@ -505,5 +521,17 @@ namespace client
             e.Handled = true;
             MessageBox.Show("Available arguments:\n" + String.Join("\n", args_help), "Info", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        private void swf_upsteam_Click(object sender, RoutedEventArgs e)
+        {
+            upstream_swf = (bool)(sender as CheckBox).IsChecked;
+            new Thread(checkVersion) { IsBackground = true }.Start();
+        }
+    }
+
+    public class gitFile
+    {
+        public string sha { get; set; }
+        public string download_url { get; set; }
     }
 }

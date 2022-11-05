@@ -266,6 +266,20 @@
                 </ControlTemplate>
             </CheckBox.Template>
         </CheckBox>
+        <CheckBox Width="24" Height="25" Margin="38,244,194,131.8" ToolTip="Upstream SWF" Name="swf_upsteam" IsChecked="False" Click="swf_upsteam_Click">
+            <CheckBox.Template>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal">
+                        <Image x:Name="_image" Source="files/unchecked.png"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="_image" Property="Source" Value="files/checked.png"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </CheckBox.Template>
+        </CheckBox>
         <ComboBox Height="22" MaxDropDownHeight="200" SelectedIndex="0" HorizontalAlignment="Left" Margin="72,245,0,0" Foreground="AliceBlue" x:Name="region_list" BorderThickness="0" BorderBrush="#00000000" VerticalAlignment="Top" Width="146" SelectionChanged="Region_list_SelectionChanged">
             <ComboBox.Background>
                 <ImageBrush ImageSource="files/input.png" />

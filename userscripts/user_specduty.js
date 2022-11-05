@@ -36,7 +36,7 @@ const _exudspecDutyLang = {
 		"HideShowGuest" : "Tutti/Solo i miei"
 	},
 	"es-es": {
-		"menuItemName": "Especialistas"  ,
+		"menuItemName": "Crono Especialistas"  ,
 		"menuTitle": "Tareas de los especialistas"  ,
 		"ColumnEstimated": "Duración"  ,
 		"ColumnArrival": "Hora de llegada"  ,
@@ -45,7 +45,7 @@ const _exudspecDutyLang = {
 		"HideShowGuest" : "Todos/Solo míos"
 	},
 	"es-mx": {
-		"menuItemName": "Especialistas"  ,
+		"menuItemName": "Crono Especialistas"  ,
 		"menuTitle": "Tareas de los especialistas"  ,
 		"ColumnEstimated": "Duración"  ,
 		"ColumnArrival": "Hora de llegada"  ,

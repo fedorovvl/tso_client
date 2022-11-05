@@ -57,15 +57,14 @@ function menuAuctionHandler(event)
 		out = '<p class="text-center">' + loca.GetText("LAB", 'BlackMarketAuctionInactive') + '</p>';
 	} else {
 		var aucDefinition = getCurrentAuc();
-		out = '<h3 class="text-center">{0}</h3><p class="text-center"><strong>{1}</strong></p>'.format(getText('experimental'), getText('auc_warning'));
-		out += '<p>{0} {1}</p>'.format(getText('auc_current'), currentAuc.auctionId);
+		out = '<p>{0} {1}</p>'.format(getText('auc_current'), currentAuc.auctionId);
 		out += '<p>'+loca.GetText("LAB", 'BlackMarketAuctionBidder')+' ' + currentAuc.playerName + '</p>';
 		out += '<p>{0} {1}</p>'.format(getText('auc_bidding_count'), currentAuc.biddingCount);
 		endTime = currentAuc.endTime - new Date().getTime();
 		out += '<p>{0} {1}</p>'.format(getText('auc_endtime'), endTime > 0 ? loca.FormatDuration(endTime) : getText('auc_ended'));
 		out += '<p><br></p>';
 		var aucItem = aucShopItem.GetShopItem(aucDefinition.Content.Item.shopItemId.v);
-		out += '<p>{0} {1}</p>'.format(getText('auc_item'), loca.GetText("SHI", aucItem.GetName_string()));
+		out += '<p>{0} {2} {1}</p>'.format(getText('auc_item'), loca.GetText("SHI", aucItem.GetName_string()), getImageTag(aucItem.GetName_string()));
 		out += '<p>{0} {1}</p>'.format(getText('auc_item_desc'), loca.GetText("SD3", aucItem.GetName_string()));
 		out += '<p>{0} {1} {2}</p>'.format(getText('auc_initial_cost'), aucDefinition.Costs.Cost.count.v, loca.GetText("RES", aucDefinition.Costs.Cost.name.v));
 		out += '<p>{0} {1}</p>'.format(getText('auc_increment'), aucDefinition.AuctionIncrements.AuctionIncrement.count.v);

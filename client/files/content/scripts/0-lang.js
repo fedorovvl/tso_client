@@ -52,6 +52,8 @@ const baseTranslation = {
 		'prod_finish': 'Finish time',
 		'prod_timed': 'Timed production',
 		'prod_queuesize': 'Queue size',
+		'prod_welcome': 'Welcome to production manager!',
+		'prod_welcome_block': '<p>You can record buildings and then mass stop or start them. Press "Start recording" button and select your buildings. After that come back and press "Stop recording". You will see list of buildings with current status. Save it as a template and next time just load template and press Submit.</p>'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -104,6 +106,8 @@ const baseTranslation = {
 		'prod_finish': 'Время завершения',
 		'prod_timed': 'Очереди производства',
 		'prod_queuesize': 'Размер очереди',
+		'prod_welcome': 'Добро пожаловать в менеджер производства!',
+		'prod_welcome_block': '<p>Вы можете записать нужные здания, чтобы потом массово запускать либо останавливать их. Нажмите "Начать запись" и выделяйте свои здания кликая на них. После окончания вернитесь сюда и нажмите кнопку "Остановить запись". Вы увидите список зданий и их статус. Сохраните его как шаблон. В следующий раз загрузите шаблон, проверьте список и нажмите "Отправить".</p>'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
@@ -151,7 +155,13 @@ const baseTranslation = {
 		'auc_bid_for': "Gebotsbetrag:",
 		'auc_you_have': "Sie haben:",
 		'auc_your_max': "Sie sind Höchstbietender, es kann kein Gebot gemacht werden",
-		'auc_do_bid': 'Gebot machen'
+		'auc_do_bid': 'Gebot machen',
+		'prod_estimate': 'Geschätzte Zeit',
+		'prod_finish': 'Endzeit',
+		'prod_timed': 'Produktionsstätten Übersicht',
+		'prod_queuesize': 'Warteschlangengröße',
+		'prod_welcome': 'Herzlich Willkommen im Manager für Produktionen!',
+		'prod_welcome_block': '<p>Sie können Gebäude aufnehmen und dann die Produktionen im Manager stoppen oder starten. Klicken Sie "Aufnahme starten" an und klicken dann Ihre Gebäuden an die in der Liste erscheinen sollen. Danach klicken Sie wieder im Produktionsmanager auf "Aufnahme stoppen" an. Es wird dann eine Liste der angeklickten Gebäude angezeigt. Speichern sie diese als Vorlage. Nächstes Mal können Sie die Vorlage laden, Sie sehen den "Status" und können mit dem Schieberegler die Gebäudeproduktion steuern, abschließend auf "Senden" klicken.</p>'
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
@@ -200,7 +210,13 @@ const baseTranslation = {
 		'auc_bid_for': "Enchérissez pour:",
 		'auc_you_have': "Vous avez:",
 		'auc_your_max': "Votre Enchère est la plus haute, donc vous ne pouvez pas Surenchérir",
-		'auc_do_bid': 'Enchèrir'
+		'auc_do_bid': 'Enchèrir',
+		'prod_estimate': 'Temps Estimé',
+		'prod_finish': 'Date de Fin',
+		'prod_timed': 'Production Chronométrée',
+		'prod_queuesize': 'Taille de la file',
+		'prod_welcome': 'Bienvenue dans le Gestionnaire de l’état de production !',
+        'prod_welcome_block': "<p>Vous pouvez enregistrer l’état de production des bâtiments puis les arrêter ou les démarrer en masse. Cliquer sur le bouton 'Début de l'enregistrement' et sélectionnez vos bâtiments. Après cela, revenez ici et cliquer sur 'Arrêter l'Enregistrement'. Vous verrez la liste des bâtiments avec l'état actuel. Enregistrer cette liste comme Modèle et la fois suivante, cliquer simplement sur 'Charger Modèle' puis 'Soumettre'.</p>"
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -248,7 +264,13 @@ const baseTranslation = {
 		'auc_bid_for': "Puja por:",
 		'auc_you_have': "Tienes:",
 		'auc_your_max': "Eres el mejor postor, no puedes pujar de nuevo",
-		'auc_do_bid': 'Pujar'
+		'auc_do_bid': 'Pujar',
+		'prod_estimate': 'Tiempo estimado',
+		'prod_finish': 'Data de fin',
+		'prod_timed': 'Crono Producción',
+		'prod_queuesize': 'Tamaño en cola',
+		'prod_welcome': '¡Bienvenido al gestor de Producción!',
+		'prod_welcome_block': '<p>Puedes grabar edificios y luego detenerlos o iniciarlos en masa. Presiona el botón "Iniciar grabación" y selecciona tus edificios. Después de eso, regresa y presiona "Detener grabación". Verás una lista de edificios con el estado actual. Guárdalo como plantilla y la próxima vez simplemente cargue la plantilla y presiona Enviar.</p>'
 	},
 	"pl-pl": {
 		"btn_submit":"Wyślij",
@@ -296,7 +318,13 @@ const baseTranslation = {
 		"auc_bid_for":"Postaw zakład na:",
 		"auc_you_have":"Posiadasz:",
 		"auc_your_max":"Twój zakład jest maksymalny, więc nie możesz postawić kolejnego zakładu",
-		"auc_do_bid":"Złóż ofertę"
+		"auc_do_bid":"Złóż ofertę",
+		"prod_estimate": 'Szacowany czas',
+        "prod_finish": 'Godzina zakończenia',
+        "prod_timed": 'Produkcja na czas',
+        "prod_queuesize": 'Rozmiar kolejki',
+        "prod_welcome": 'Witamy w menadżerze produkcji!',
+		'prod_welcome_block': '<p>Możesz stworzyć listę budynków, w których będziesz zbiorczo uruchamiał i zatrzymywał produkcję. Naciśnij przycisk "Rozpocznij nagrywanie" i wybierz budynki na mapie. Następnie wróć do menadżera produkcji i naciśnij "Zatrzymaj nagrywanie". Zobaczysz listę budynków z aktualnym statusem produkcji. Zapisz listę jako plik, który później będziesz mógł wczytać i sterować produkcją przyciskiem Wyślij.</p>'
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',
@@ -329,7 +357,7 @@ const baseTranslation = {
 		'buff_start_record': 'Iniciar gravação',
 		'buff_stop_record': 'Parar gravação',
 		'buff_record_more': 'Gravar mais',
-		'buff_welcome': 'Bemvindo ao gerenciador de catalização!',
+		'buff_welcome': 'Bem-vindo ao gerente de catalização!',
 		'buff_welcome_block': '<p>Você pode gravar o que precisa para catalizar e depois reproduzi-lo automaticamente. Pressione o botão "Iniciar gravação" e catalize seus edifícios (ou amigos). Depois disso, volte e pressione "Parar gravação". Você verá a lista de edifícios e seus catalizadores. Salve-o como um modelo e da próxima vez apenas carregue o modelo e pressione Confirmar.</p><p>Edifícios com fundo vermelho não serão catalizados. Além disso, se uma das fileiras de catalizadores disponíveis for vermelha, nem todos os edifícios serão catalizados com este catalizador.</p>',
 		'experimental': "EXPERIMENTAL",
 		'auc_warning': 'Use somente após pagar 10k de moedas de ouro. Sempre recarregue os dados antes de fazer um lance.',
@@ -344,6 +372,12 @@ const baseTranslation = {
 		'auc_bid_for': "Apostar para:",
 		'auc_you_have': "Você tem:",
 		'auc_your_max': "Você é o licitante mais alto, então não pode fazer outra aposta",
-		'auc_do_bid': 'Apostar'
+		'auc_do_bid': 'Apostar',
+		'prod_estimate': 'Tempo estimado',
+		'prod_finish': 'Tempo de término da produção',
+		'prod_timed': 'Filas de produção',
+		'prod_queuesize': 'Tamanho da fila',
+		'prod_welcome': 'Bem-vindo ao gerente de produção!',
+		'prod_welcome_block': '<p>Esta opçãopermite criar listas de edifícios  para ativar e desativar ao mesmo tempo. Após "Iniciar gravação", selecione os edifícios que deseja colocar na lista. Uma vez selecionado, volte aqui e pressione "Parar gravação". A lista de edifícios selecionados com seu status relativo será exibida. Salve o modelo assim da próxima vez, basta recarregar e "Confirmar".</p>'
 	}
 };
