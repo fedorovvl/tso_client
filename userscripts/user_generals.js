@@ -28,7 +28,7 @@ const _exudGeneralsLang = {
         "Load": "Carregar",
         "ColumnOwner": "Proprietario",
 		"IsGuest": " (*convidado) ",
-		"SelectedFirst": "Selecionado primeiro",
+		"SelectedFirst": "Selecionados primeiro",
 		"ExcludeStarMenu": "Excluir Menu Estrela",
 		"SkillTip" : "Clicar no icone do general para abrir a arvore das abilidades"
    },
@@ -243,7 +243,7 @@ function _exudGeneralsMenuHandler(event)
 			).prop("outerHTML") + '&nbsp;&nbsp;&nbsp;';
 
 			out += $('<button>').attr({ "class": "btn btn-sm _exudGeneralsSelectedFirstBtn" }).text(
-				_exudGeneralsGetLabel("SelectedFirst")
+				_exudGeneralsGetSelectedFirstButtonText()
 			).prop("outerHTML") + '&nbsp;&nbsp;&nbsp;';
 
 
@@ -287,6 +287,7 @@ function _exudGeneralsMenuHandler(event)
 
 		$('#udGeneralsModal ._exudGeneralsSelectedFirstBtn').click(function() {
 			_exudGeneralsSelectedFirst = !_exudGeneralsSelectedFirst;
+			$('#udGeneralsModal ._exudGeneralsSelectedFirstBtn').text(_exudGeneralsGetSelectedFirstButtonText());
 			_exudMakeGeneralsTable();
 		});
 
@@ -307,6 +308,18 @@ function _exudGeneralsMenuHandler(event)
 	$("#udGeneralsModal .modal-footer .btn-danger").html(loca.GetText("LAB", "Close"));
 	$('#udGeneralsModal:not(:visible)').modal({backdrop: "static"});
 	_exudGeneralsOpening = false;
+}
+
+function _exudGeneralsGetSelectedFirstButtonText()
+{
+	if (!_exudGeneralsSelectedFirst)
+		return _exudGeneralsGetLabel("SelectedFirst");
+	
+	if (_exudGeneralsSortType == 0)
+		return _exudGeneralsGetLabel("ByType");
+	
+	return _exudGeneralsGetLabel("ByName");
+		
 }
 
 function _exudGetGeneralsTitle(generalCount)
@@ -356,6 +369,7 @@ function _exudGeneralsOptions()
 	$('#_exudChangeGeneralSortFloatBtn').change(function(){
 		if (_exudGeneralsOpening) return;
 		if (++_exudGeneralsSortType == 2)	_exudGeneralsSortType = 0;
+		$('#udGeneralsModal ._exudGeneralsSelectedFirstBtn').text(_exudGeneralsGetSelectedFirstButtonText());
 		_exudMakeGeneralsTable();
 	});
 	$('#_exudHideUnselectedGeneralsFloatBtn').change(function(){
