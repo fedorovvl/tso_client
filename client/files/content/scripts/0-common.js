@@ -246,6 +246,15 @@ function showGameAlert(message)
 	msg.image.source = assets.GetBitmap("1-Up.png");
 }
 
+function showSystemChat(text, module)
+{
+	module = !module ? 'main' : module;
+	try
+	{
+		globalFlash.gui.mChatPanel.PutMessageToChannelWithoutServer("news", new window.runtime.Date(),"Client [{0}]".format(module),text,false,false);
+	} catch (e) {}
+}
+
 function getText(id, module)
 {
 	searchPath = !module ? baseTranslation[gameLang] : baseTranslation[module][gameLang];
