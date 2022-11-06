@@ -123,6 +123,9 @@ const _exudGeneralsLang = {
     }
 };
 var _exudGeneralsTemplates;
+var _exudGeneralsOpening = false;
+var _exudGeneralsSortField = { 'key': 0, 'order': false }
+
 addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
 
 // inital settings
@@ -131,7 +134,8 @@ var _exudGeneralsSettings = {
 	'_exudGeneralsHideUnselected' : false,
 	'_exudGeneralsHideGuest' : true,
 	'_exudGeneralsSelectedFirst' : false,
-	'_exudGeneralsExcludeStarMenu' : false
+	'_exudGeneralsExcludeStarMenu' : false,
+	'_exudGeneralsArmySorted' : false,
 }
 
 function _exudGeneralsGetLabel(id)
@@ -148,7 +152,6 @@ function _createTopRowWithIcons(generalsIconsList) {
     return output;
 }
 
-var _exudGeneralsOpening = false;
 
 function _exudGeneralsMenuHandler(event)
 {
@@ -240,21 +243,24 @@ function _exudGeneralsMenuHandler(event)
 		var massCheckbox = $('<input>', { 'type': 'checkbox', 'class': '_exudSelectAllGeneralsBtn', 'data-toggle': 'tooltip', 'data-placement': 'top', 'title': _exudGeneralsGetLabel('SelectAll') }).prop('outerHTML') + '&nbsp;&nbsp;';
         if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone) {
             out += createTableRow([
-                [7, massCheckbox + loca.GetText("LAB","Name")],
-                [2, loca.GetText("LAB", "StarMenu")],
-                [1, loca.GetText("LAB", "Army")],
+                [7, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+                [2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
+                [1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))],
                 [2, _exudGeneralsGetLabel("ColumnOwner")]
             ], true) ;
         } else {
             out += createTableRow([
-                [9, massCheckbox + loca.GetText("LAB","Name")],
-                [2, loca.GetText("LAB", "StarMenu")],
-                [1, loca.GetText("LAB", "Army")]
+                [9, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+                [2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
+                [1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))]
             ], true) ;
         }
 		out += '</div>';
 		
 		$('#udGeneralsModal .modal-header').append(out);
+	
+		$('#udGeneralsModal .modal-header .row a').click(_exudGeneralsChangeSortingField);		
+		
 		$('[data-toggle="tooltip"]').tooltip({container: 'body'});
 		$('#udGeneralsModal ._exudSelectAllGeneralsBtn').change(function() {
 			_exudGeneralsSettings['_exudGeneralsToggleselected'] = !_exudGeneralsSettings['_exudGeneralsToggleselected'];
@@ -280,11 +286,45 @@ function _exudGeneralsMenuHandler(event)
 	}
 
 	_exudGetGeneralsData();
-
 	$('#udGeneralsModal:not(:visible)').modal({backdrop: "static"});
 	_exudGeneralsOpening = false;
 }
+function _exudGeneralsCreateSortingField(name)
+{
+	var field = $('<a>', { 'style': 'cursor: pointer;text-decoration:none;color:#000;' }).html(name).prop('outerHTML');
+	return field ;
+}
+function _exudGeneralsChangeSortingField(e)
+{
+	var selfIndex = $(this).parent().index();
+	var selfSubIndex = $(this).index();
+	_exudAutoExpDebugMessage("selfIndex =  " + selfIndex);
+	_exudAutoExpDebugMessage("selfSubIndex =  " + selfSubIndex);
+	switch(selfIndex)	{
+		case 0 :
+			switch (selfSubIndex)
+			{
+				case 0:
+						_exudGeneralsSettings['_exudGeneralsSelectedFirst'] = !_exudGeneralsSettings['_exudGeneralsSelectedFirst'];
+					break;
+				case 1 :
+						if (++_exudGeneralsSettings['_exudGeneralsSortType'] == 2)
+							_exudGeneralsSettings['_exudGeneralsSortType'] = 0;
+					break;	
+			}
+			break;
+		case 1 :
+					_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'] = !_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'];
+				break;	
+		case 2 :
+					_exudGeneralsSettings['_exudGeneralsArmySorted'] = !_exudGeneralsSettings['_exudGeneralsArmySorted'];
+				break;	
+	}
 
+	_exudGeneralsSortField['key'] = selfIndex;
+	_exudMakeGeneralsTable();
+
+}
 function _exudGetGeneralsTitle(generalCount)
 {
 	var pname = "";
@@ -702,6 +742,11 @@ function _exudCompareGenerals( a, b ) {
 		}
 		if (!b.Owner && a.Owner) return -1;
 		if (!a.Owner && b.Owner) return 1;
+		if (_exudGeneralsSettings['_exudGeneralsArmySorted'])
+		{
+			if (a.TotalArmy > b.TotalArmy)	return -1;
+			if (a.TotalArmy < b.TotalArmy)	return 1;
+		}
 		switch(_exudGeneralsSettings['_exudGeneralsSortType'])
 		{
 			case 1:
