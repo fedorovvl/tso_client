@@ -44,9 +44,9 @@ const _exudGeneralsLang = {
         "CommandSent": "Generał wysłany",
         "ColumnOwner": "Właściciel",
         "IsGuest": " (* = gość) ",
-        "SelectedFirst": "Selected First",
-        "ExcludeStarMenu": "Exclude Star Menu",
-        "SkillTip": "Click on general icon to open the Skill Tree."
+        "SelectedFirst": "Zaznaczeni na górze",
+        "ExcludeStarMenu": "Nie pokazuj tych z gwiazdy",
+        "SkillTip": "Kliknij na ikonie generała, aby zobaczyć drzewo umiejętności."
     },
     "ru-ru": {
 		"ByName": "Сортировать по имени",
