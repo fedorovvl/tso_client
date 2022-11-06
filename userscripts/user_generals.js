@@ -298,8 +298,8 @@ function _exudGeneralsChangeSortingField(e)
 {
 	var selfIndex = $(this).parent().index();
 	var selfSubIndex = $(this).index();
-	_exudAutoExpDebugMessage("selfIndex =  " + selfIndex);
-	_exudAutoExpDebugMessage("selfSubIndex =  " + selfSubIndex);
+	//_exudAutoExpDebugMessage("selfIndex =  " + selfIndex);
+	//_exudAutoExpDebugMessage("selfSubIndex =  " + selfSubIndex);
 	switch(selfIndex)	{
 		case 0 :
 			switch (selfSubIndex)
