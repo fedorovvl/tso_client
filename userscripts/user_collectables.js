@@ -1,41 +1,55 @@
 addToolsMenuItem(loca.GetText("LAB", "WarehouseTab7") + " (Ctrl + F4)", _exudHLColl, 115, true);
-						
-function _exudHLColl(event) {
-	var x = new TimedQueue(1000);
-	var col = swmmo.getDefinitionByName("Collections::CollectionsManager").getInstance();
-	var extra = {}
-	if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone) {
-		var Quest_vector = swmmo.application.mGameInterface.mNewQuestManager.GetQuestPool().GetQuest_vector();
-		for(qKey in Quest_vector){
-			if (Quest_vector[qKey].isFinished() || !Quest_vector[qKey].IsQuestActive()) { continue; }
-			var questTriggers = Quest_vector[qKey].mQuestDefinition.questTriggers_vector;
-			for(tKey in questTriggers) {
-				if (questTriggers[tKey].name_string != null && questTriggers[tKey].name_string != '') {
-					extra[questTriggers[tKey].name_string] = true;
-				}
-			};
-		};
-	}
-	
-	
-	swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
-		if(item == null) { return; }
-		if(
-			col.getBuildingIsNormalCollectible(item.GetBuildingName_string()) || col.getBuildingIsEventCollectible(item.GetBuildingName_string()) 
-			|| (
-					extra[item.GetBuildingName_string()] && item.mIsSelectable && item.GetGOContainer().mIsAttackable  && !item.GetGOContainer().mIsLeaderCamp
-					&& item.GetGOContainer().ui != "enemy" && (item.GetArmy() == null || !item.GetArmy().HasUnits())				
-				)
-		  ) {
-				x.add(function(){ swmmo.application.mGameInterface.SelectBuilding(item); });
-			}
-		});	
-	
-	if(x.len() == 0) {
-		showGameAlert("No collectibles found");
-		return;
-	}
-	showGameAlert(getText('command_sent'));
-	x.run();
-}
 
+function _exudHLColl(event) {
+    var collectionsManager = swmmo.getDefinitionByName("Collections::CollectionsManager").getInstance(),
+        queue = new TimedQueue(1000),
+        questTriggersMap = {},
+        mGameInterface = swmmo.application.mGameInterface,
+        questVector, questVectors, questTriggerNameString, questTriggers, itemBuildingName, itemGOContainer;
+    if (mGameInterface.mCurrentPlayer.mIsAdventureZone) {
+        questVectors = mGameInterface.mNewQuestManager.GetQuestPool().GetQuest_vector();
+        for (var questVectorName in questVectors){
+            questVector = questVectors[questVectorName];
+            if (!(questVector.isFinished() || !questVector.IsQuestActive())) {
+                questTriggers = questVector.mQuestDefinition.questTriggers_vector;
+                for (var questTriggerName in questTriggers) {
+                    questTriggerNameString = questTriggers[questTriggerName].name_string;
+                    if (questTriggerNameString != null && questTriggerNameString !== '') {
+                        questTriggersMap[questTriggerNameString] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    mGameInterface.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
+        if (item === null) {
+            return;
+        }
+        itemBuildingName = item.GetBuildingName_string();
+        itemGOContainer = item.GetGOContainer();
+        if (
+            collectionsManager.getBuildingIsNormalCollectible(itemBuildingName) ||
+            collectionsManager.getBuildingIsEventCollectible(itemBuildingName) ||
+            (
+                questTriggersMap[itemBuildingName] &&
+                item.mIsSelectable &&
+                itemGOContainer.mIsAttackable &&
+                !itemGOContainer.mIsLeaderCamp &&
+                itemGOContainer.ui !== "enemy" &&
+                (item.GetArmy() == null || !item.GetArmy().HasUnits())
+            )
+        ) {
+            queue.add(function(){
+                mGameInterface.SelectBuilding(item);
+            });
+        }
+    });
+
+    if (queue.len() === 0) {
+        showGameAlert("No collectibles found");
+        return;
+    }
+    showGameAlert(getText('command_sent'));
+    queue.run();
+}
