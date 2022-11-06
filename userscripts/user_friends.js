@@ -105,7 +105,7 @@ function _exudFriendsGetData()
 			]);			
 		});
 	} catch (e) {
-		_exudFriendsGetData();
+		return _exudFriendsGetData();
 	}
 	return out;
 }
