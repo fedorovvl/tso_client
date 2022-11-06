@@ -14,7 +14,7 @@ var _exudFriendsLang = {
 };
 extendBaseLang(_exudFriendsLang, 'exudFriends');
 var _exudFriendsSortField = { 'key': 0, 'order': false }
-var _exudFriendsExclusiveFields = { 2: false, 4: false }
+var _exudFriendsExclusiveFields = { 2: false, 5: false }
 
 function _exudFriendsMenuHandler(event) {
 	// close all modals
@@ -32,7 +32,7 @@ function _exudFriendsMenuHandler(event) {
 			[2, _exudcreateSortingField(loca.GetText("LAB", "ProductionStatus"), _exudFriendsGetImage(2, true))],
 			[2, _exudcreateSortingField(getText('since', 'exudFriends'))],
 			[2, getText('term', 'exudFriends')],
-			[2, _exudcreateSortingField(loca.GetText("LAB", "Guild"), _exudFriendsGetImage(4, true))]
+			[2, _exudcreateSortingField(loca.GetText("LAB", "Guild"), _exudFriendsGetImage(5, true))]
 		], true)  + '</div>');	
 	}
 				
@@ -93,7 +93,7 @@ function _exudFriendsGetData()
 		_friends.sort(_exudFriendsCompare);
 	
 		_friends.forEach(function(item) {
-			if (_exudFriendsExclusiveFields[4]  && item.onlineLast24 == undefined) return;
+			if (_exudFriendsExclusiveFields[5]  && item.onlineLast24 == undefined) return;
 			if (!item.onlineStatus && _exudFriendsExclusiveFields[2] ) return;
 			out += createTableRow([
 				[3, item.username],
@@ -123,7 +123,7 @@ function _exudFriendsCompare(a, b)
 		case 3:
 			res =  (a.friendSince < b.friendSince ? -1 : (a.friendSince == b.friendSince ? 0 : 1));
 		break;
-		case 4:
+		case 5:
 			res =  (a.onlineLast24 != undefined ? -1 : (b.onlineLast24 != undefined ? 1 : -1));
 		break;
 		default:
