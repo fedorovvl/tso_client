@@ -90,11 +90,14 @@ function _exudFriendsGetData()
 		if (_friends == null || _friends.length == 0)
 			return "Nothing to do";
 	
+		_friends = _friends.filter(function(x) {
+			if (_exudFriendsExclusiveFields[5]  && x.onlineLast24 == undefined) return false;
+			if (!x.onlineStatus && _exudFriendsExclusiveFields[2] ) return false;
+			return true;
+		});
 		_friends.sort(_exudFriendsCompare);
 	
 		_friends.forEach(function(item) {
-			if (_exudFriendsExclusiveFields[5]  && item.onlineLast24 == undefined) return;
-			if (!item.onlineStatus && _exudFriendsExclusiveFields[2] ) return;
 			out += createTableRow([
 				[3, item.username],
 				[1, item.playerLevel],
@@ -118,13 +121,13 @@ function _exudFriendsCompare(a, b)
 			res = (a.playerLevel < b.playerLevel ? -1 : (a.playerLevel == b.playerLevel ? 0 : 1));
 		break;
 		case 2:
-			res = (a.onlineStatus ? -1 : (b.onlineStatus ? 1 : -1));
+			res = (a.onlineStatus ? -1 : (b.onlineStatus ? 1 : 0));
 		break;
 		case 3:
 			res =  (a.friendSince < b.friendSince ? -1 : (a.friendSince == b.friendSince ? 0 : 1));
 		break;
 		case 5:
-			res =  (a.onlineLast24 != undefined ? -1 : (b.onlineLast24 != undefined ? 1 : -1));
+			res =  (a.onlineLast24 != undefined ? -1 : (b.onlineLast24 != undefined ? 1 : 0));
 		break;
 		default:
 			res =  a.username.toLowerCase().localeCompare(b.username.toLowerCase());
