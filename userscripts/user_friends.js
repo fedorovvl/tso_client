@@ -13,7 +13,7 @@ var _exudFriendsLang = {
 	}
 };
 extendBaseLang(_exudFriendsLang, 'exudFriends');
-var _exudFriendsSortField = { 'key': 0, 'order': true }
+var _exudFriendsSortField = { 'key': 0, 'order': false }
 var _exudFriendsExclusiveFields = { 2: false, 4: false }
 
 function _exudFriendsMenuHandler(event) {
@@ -60,7 +60,7 @@ function _exudchangeSortingField(e)
 	if(_exudFriendsSortField['key'] == selfIndex)
 		_exudFriendsSortField['order'] = !_exudFriendsSortField['order'];
 	_exudFriendsSortField['key'] = selfIndex;
-	$(this).parent().children("span").html(_exudFriendsSortField['order'] ? '&#8593;' : '&#8595;').show();
+	$(this).parent().children("span").html(!_exudFriendsSortField['order'] ? '&#8593;' : '&#8595;').show();
 	$('#udFriendsModalData .container-fluid').html(_exudFriendsGetData());
 }
 
