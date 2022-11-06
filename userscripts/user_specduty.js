@@ -66,6 +66,7 @@ const _exudspecDutyLang = {
 var _exudSpecDutyHideGuest = false;
 var _exudSpecDutyType = 1; // 1 = explorer 2 = geologist 3 = generals
 var _exudDutySPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
+var _exudDutySPECIALIST_TASK_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TASK_TYPES");
 var _exudBtnToSpecType = { 'dutyExplorersBtn': 1,'dutyGeologistBtn': 2,'dutyGeneralsBtn': 3 };
 var idL = loca.getSelectedLanguage();			
 addToolsMenuItem(_exudspecDutyGetLabel("menuItemName"), specDutyTime);
@@ -166,7 +167,7 @@ function dutyGetData() {
 				if(_exudSpecDutyType != 3) {
 					task = loca.GetText("LAB", item.GetTask().getTaskDefinition().mainTask.taskName_string+item.GetTask().getTaskDefinition().taskType_string);
 				} else {
-					task = loca.GetText("LAB", "SpecialistTask8");
+					task =loca.GetText("LAB","SpecialistTask"+_exudDutySPECIALIST_TASK_TYPE.toString(item.GetTask().CreateTaskVOFromSpecialistTask().type));
 				}
 				listSpec.push( [ ItemName , item.GetTask().GetRemainingTime(), getImageTag(item.getIconID(), '10%'), task  ]  );
 				isThereAnySpec = true;
