@@ -13,7 +13,7 @@ var _exudFriendsLang = {
 	}
 };
 extendBaseLang(_exudFriendsLang, 'exudFriends');
-var _exudFriendsSortField = { 'key': 0, 'order': false }
+var _exudFriendsSortField = { 'key': 0, 'order': true }
 var _exudFriendsExclusiveFields = { 2: false, 5: false }
 
 function _exudFriendsMenuHandler(event) {
@@ -27,23 +27,24 @@ function _exudFriendsMenuHandler(event) {
 	
 	if($('#udFriendsModal .modal-header .container-fluid').length == 0){
 		$('#udFriendsModal .modal-header').append('<br><div class="container-fluid">' + createTableRow([
-			[3, _exudcreateSortingField(loca.GetText("LAB", "UserName"))],
+			[2, _exudcreateSortingField(loca.GetText("LAB", "UserName"))],
 			[1, _exudcreateSortingField(loca.GetText("LAB", "GuildLevel"))],
 			[2, _exudcreateSortingField(loca.GetText("LAB", "ProductionStatus"), _exudFriendsGetImage(2, true))],
 			[2, _exudcreateSortingField(getText('since', 'exudFriends'))],
 			[2, getText('term', 'exudFriends')],
-			[2, _exudcreateSortingField(loca.GetText("LAB", "Guild"), _exudFriendsGetImage(5, true))]
+			[2, _exudcreateSortingField(loca.GetText("LAB", "Guild"), _exudFriendsGetImage(5, true))],
+			[1, loca.GetText("LAB", "Commands")]
 		], true)  + '</div>');	
 	}
 				
 
 	$('#udFriendsModal .modal-header img[id="_exudSortExcl"]').click(_exudFriendsSetIncludeImage);
-	$('#udFriendsModal .modal-header .row a').click(_exudchangeSortingField);
+	$('#udFriendsModal .modal-header .row a').click(_exudFriendsChangeSortingField);
 
 	// fill modal data 
 	$('#udFriendsModalData').html('<div class="container-fluid"></div>');
+	_exudFriendsSortField['order'] = !_exudFriendsSortField['order'];  // trigger changes this value, so to make the previous one invert first
 	$('#udFriendsModal .modal-header .row div:nth-child('+(_exudFriendsSortField['key'] + 1)+') a').trigger( "click" );
-
 	$('#udFriendsModal:not(:visible)').modal({ backdrop: "static" });
 }
 
@@ -53,7 +54,13 @@ function _exudcreateSortingField(name, exclusive)
 	return field + (exclusive ? ' ' + exclusive : '');
 }
 
-function _exudchangeSortingField(e)
+function _exudFriendsRefresh()
+{
+	$('#udFriendsModalData .container-fluid').html(_exudFriendsGetData());
+	$('#udFriendsModalData a[id^="friends_"]').click(_exudFriendsExecuteCommandAndExit);
+}
+
+function _exudFriendsChangeSortingField(e)
 {
 	var selfIndex = $(this).parent().index();
 	$('#udFriendsModal .modal-header .row span').hide();
@@ -61,15 +68,15 @@ function _exudchangeSortingField(e)
 		_exudFriendsSortField['order'] = !_exudFriendsSortField['order'];
 	_exudFriendsSortField['key'] = selfIndex;
 	$(this).parent().children("span").html(!_exudFriendsSortField['order'] ? '&#8593;' : '&#8595;').show();
-	$('#udFriendsModalData .container-fluid').html(_exudFriendsGetData());
+	_exudFriendsRefresh();
 }
 
 function _exudFriendsSetIncludeImage(e)
 {
 	var selfIndex = $(this).parent().index();
 	_exudFriendsExclusiveFields[selfIndex] = !_exudFriendsExclusiveFields[selfIndex];
-	$('#udFriendsModalData .container-fluid').html(_exudFriendsGetData());
 	$(this).attr('src', _exudFriendsGetImage(selfIndex));
+	_exudFriendsRefresh();
 }
 
 function _exudFriendsGetImage(st, asImage)
@@ -99,18 +106,49 @@ function _exudFriendsGetData()
 	
 		_friends.forEach(function(item) {
 			out += createTableRow([
-				[3, item.username],
+				[2, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(item.username).prop('outerHTML')],
 				[1, item.playerLevel],
 				[2, (item.onlineStatus ? getText('online', 'exudFriends') : "")],
 				[2 , dtfex.format(new window.runtime.Date(item.friendSince))],
 				[2 , loca.FormatDuration(Date.now() - item.friendSince, 6)],
-				[2, (item.onlineLast24 != undefined ? loca.GetText("LAB", "YES") : "")]
+				[2, (item.onlineLast24 != undefined ? loca.GetText("LAB", "YES") : "")],
+				[1, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(_exudFriendsCommandImage('icon_pathfinder.png', 'zone', item.id) + "&nbsp;" + _exudFriendsCommandImage('unitcapacity_positive.png', 'wishper', item.id)).prop('outerHTML')]
 			]);			
 		});
 	} catch (e) {
 		return _exudFriendsGetData();
 	}
 	return out;
+}
+
+function _exudFriendsCommandImage(img, type, id)
+{
+	var field =  $('<a>', {'id' : 'friends_'+type+'_' +id, 'style': 'cursor: pointer;text-decoration:none;color:#000;' }).html(getImageTag(img, 18, 18)).prop('outerHTML');
+	return field;
+}
+
+function _exudFriendsExecuteCommandAndExit(e)
+{
+
+	try{
+		var cmd = $(this).attr('id').split('_');
+		var friend = globalFlash.gui.mFriendsList.GetFriendById(cmd[2]);
+		if (friend == null)
+			friend = globalFlash.gui.mFriendsList.GetGuildMemberById(cmd[2])
+		switch(cmd[1])
+		{
+			case 'zone':
+				swmmo.application.mGameInterface.visitZone(cmd[2]);
+				break;
+			case 'wishper':
+				globalFlash.gui.mChatPanel.ActivatePrivateChat(friend.username);
+				break;
+		}	
+		$('#udFriendsModal').modal('hide');
+	}
+	catch (err) {
+		alert("Something was wrong. retry!.")
+	}
 }
 
 function _exudFriendsCompare(a, b)
