@@ -100,7 +100,7 @@ function _exudFriendsGetData()
 				[1, item.playerLevel],
 				[2, (item.onlineStatus ? getText('online', 'exudFriends') : "")],
 				[2 , dtfex.format(new window.runtime.Date(item.friendSince))],
-				[2 , loca.FormatDuration(Date.now() - item.friendSince, 1)],
+				[2 , loca.FormatDuration(Date.now() - item.friendSince, 6)],
 				[2, (item.onlineLast24 != undefined ? loca.GetText("LAB", "YES") : "")]
 			]);			
 		});
