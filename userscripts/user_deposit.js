@@ -3,9 +3,9 @@
 addToolsMenuItem("Deposit Viewer", _exudDepositViewerMenuHandler);
 
 const _exudDepositViewerAssetsNames = [ "Corn", "Wood", "RealWood", "Fish",	"IronOre",	"Coal",	"Stone",
-										"Marble", "Granite", "ExoticWood", "Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
-										"HalloweenResource"
-										];
+					"Marble", "Granite", "ExoticWood", "Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
+					"HalloweenResource"
+					];
 
 function _exudDepositViewerMenuHandler(event) {
 
