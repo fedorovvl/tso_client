@@ -17,26 +17,26 @@ function _exudDepositViewerMenuHandler(event) {
 	select = $('<select>', { id: 'udDepositViewerType' });	
 
 	_exudDepositViewerAssetsNames.forEach(function(item) {
-			select.append($('<option>', { value: item }).text(loca.GetText("RES", item))).prop("outerHTML");
+		select.append($('<option>', { value: item }).text(loca.GetText("RES", item))).prop("outerHTML");
 	});
 	
 	$('#DepositViewerModal .modal-header').html('<div class="container-fluid"><div><span>'+select.prop("outerHTML")+ '</span>  <span>'+loca.GetText("SHG", "Deposits")+' : <span id="dvDepositViewerTotal"></span></span></div><br/>' +
-				createTableRow([
-				[6, loca.GetText("LAB", "Name")],
-				[2, loca.GetText("LAB", "amount")],
-				[2, loca.GetText("LAB", "Visit")]
-			], true) 
-			+ '</div>'
-			);	
+		createTableRow([
+		[6, loca.GetText("LAB", "Name")],
+		[2, loca.GetText("LAB", "amount")],
+		[2, loca.GetText("LAB", "Visit")]
+	], true) 
+	+ '</div>'
+	);	
 				
 
 	$('#DepositViewerModalData').html('<div class="container-fluid">{0}</div>'.format(_exudDepositViewerMakeModal()));
 	var my_options = $("#udDepositViewerType option");
 	my_options.sort(function(a,b) {
-			if (a.text > b.text) return 1;
-			if (a.text < b.text) return -1;
-			return 0;
-			});
+		if (a.text > b.text) return 1;
+		if (a.text < b.text) return -1;
+		return 0;
+		});
 	$("#udDepositViewerType").empty();
 	
 	selectOptions.forEach(function(item) {
@@ -53,12 +53,9 @@ function _exudDepositViewerMenuHandler(event) {
 function _exudDepositViewerMakeModal() {
 
 	var out = '';
-	
 	out += '<div id="dvDepositViewerResult"></div>';
-	
 	return out;
 }
-
 	
 function _exudDepositViewerGetData() {
 
@@ -85,18 +82,18 @@ var OptionSelected = $('#udDepositViewerType option:selected').val();
 	if (OptionSelected != "DepositDepleted")
 		Deposits.forEach(function(item) {
 		try {			
-				if(item == null ||  (OptionSelected != "All" && item.GetName_string() != OptionSelected)) { return; }
-				var gid1 = item.GetGrid();
-				IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
-				$('#dvDepositViewerResult').append(
-					createTableRow([
-						[6, loca.GetText("RES", item.GetName_string())],
-						[2, item.GetAmount()],
-						[2, IconMap]
-					], false) 
-				);
-				document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {_exudDepositViewerGoTo(gid1);});
-				++tot;
+			if(item == null ||  (OptionSelected != "All" && item.GetName_string() != OptionSelected)) { return; }
+			var gid1 = item.GetGrid();
+			IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
+			$('#dvDepositViewerResult').append(
+				createTableRow([
+					[6, loca.GetText("RES", item.GetName_string())],
+					[2, item.GetAmount()],
+					[2, IconMap]
+				], false) 
+			);
+			document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {_exudDepositViewerGoTo(gid1);});
+			++tot;
 		}
 		catch (e) {
 			alert(e.message);
@@ -105,20 +102,20 @@ var OptionSelected = $('#udDepositViewerType option:selected').val();
 	
 		swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mBuildingContainer.forEach(function(item) {
 		try {			
-				if (swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.IsADepletedDeposit(item)) {
-				if(item == null ||   ((OptionSelected != "DepositDepleted") && (OptionSelected != "All") && (item.GetBuildingName_string().indexOf(OptionSelected))) < 0) { return; }
-				var gid1 = item.GetGrid();
-				IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
-				var OrigRes = _exudDepositViewerFindOriginalResource(item.GetBuildingName_string());
-				$('#dvDepositViewerResult').append(
-					createTableRow([
-							[6,  loca.GetText("BUI", item.GetBuildingName_string()) + (OrigRes == "" ? "" : " (" + OrigRes + ")" )],
-							[2, ""],
-							[2, IconMap]
-						], false) 
-				);
-				document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {_exudDepositViewerGoTo(gid1);});
-				++tot;
+			if (swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.IsADepletedDeposit(item)) {
+			if(item == null ||   ((OptionSelected != "DepositDepleted") && (OptionSelected != "All") && (item.GetBuildingName_string().indexOf(OptionSelected))) < 0) { return; }
+			var gid1 = item.GetGrid();
+			IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
+			var OrigRes = _exudDepositViewerFindOriginalResource(item.GetBuildingName_string());
+			$('#dvDepositViewerResult').append(
+				createTableRow([
+					[6,  loca.GetText("BUI", item.GetBuildingName_string()) + (OrigRes == "" ? "" : " (" + OrigRes + ")" )],
+					[2, ""],
+					[2, IconMap]
+					], false) 
+			);
+			document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {_exudDepositViewerGoTo(gid1);});
+			++tot;
 			}
 		}
 		catch (e) {
@@ -135,14 +132,14 @@ function _exudDepositViewerFindOriginalResource(building_name)
 	var res = "";
 	try{
 	_exudDepositViewerAssetsNames.forEach(function(item) {
-			if (building_name.indexOf(item) >= 0)
-				res = item;
+		if (building_name.indexOf(item) >= 0)
+			res = item;
 	});
 	if (res != "") res = loca.GetText("RES", res);
 //	_debugClassesDebugMessage("FindRes : " + building_name + " = " + res);
 	}
 	catch (e) {
-			alert(e.message);
+		alert(e.message);
 	}
 	return res;
 }
