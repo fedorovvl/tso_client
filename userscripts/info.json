@@ -32,5 +32,12 @@
       "longDesc":"Show info about your friends and guild members",
       "author":"MkFera&SirriS",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
+   },
+   "user_deposit.js":{
+      "name":"Deposits",
+      "shortDesc":"Deposits Viewer",
+      "longDesc":"Show info about your deposits",
+      "author":"MkFera",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
    }
 }

@@ -95,7 +95,7 @@ var OptionSelected = $('#udDepositViewerType option:selected').val();
 						[2, IconMap]
 					], false) 
 				);
-				document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(gid1);});
+				document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {_exudDepositViewerGoTo(gid1);});
 				++tot;
 		}
 		catch (e) {
@@ -116,7 +116,7 @@ var OptionSelected = $('#udDepositViewerType option:selected').val();
 							[2, IconMap]
 						], false) 
 			);
-				document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(gid1);});
+				document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {_exudDepositViewerGoTo(gid1);});
 				++tot;
 			}
 		}
@@ -127,5 +127,10 @@ var OptionSelected = $('#udDepositViewerType option:selected').val();
 
 	$('#dvDepositViewerTotal').text(tot);		
 	//$('#dvDepositViewerResult').html(out);
+}
 
+function _exudDepositViewerGoTo(g)
+{
+	swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
+	$('#DepositViewerModal').modal('hide');
 }
