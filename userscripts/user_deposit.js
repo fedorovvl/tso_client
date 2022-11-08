@@ -10,7 +10,7 @@ const _exudDepositViewerAssetsNames = [ "Corn", "Wood", "RealWood", "Fish",	"Iro
 var _exudDepositViewerModalInitialized = false;
 
 function _exudDepositViewerMenuHandler(event) {
-	_debugClassesDebugMessage("_exudDepositViewerMenuHandler");
+	//_debugClassesDebugMessage("_exudDepositViewerMenuHandler");
 	//_debugClassesDebugMessage("_exudDepositViewerModalVersion : " + _exudDepositViewerModalVersion);
 	//_debugClassesDebugMessage("_exudDepositViewerModalInitialized : " + _exudDepositViewerModalInitialized);
 	$("div[role='dialog']:not(#DepositViewerModal):visible").modal("hide");
@@ -19,7 +19,7 @@ function _exudDepositViewerMenuHandler(event) {
 try{
 	if($('#DepositViewerModal .modal-header .container-fluid').length == 0){
 		const selectOptions = [ "---", "DepositDepleted"]; // remove All because too heavy
-		_debugClassesDebugMessage("_exudDepositViewerMenuHandler creating");
+		//_debugClassesDebugMessage("_exudDepositViewerMenuHandler creating");
 
 		createModalWindow('DepositViewerModal', 'Deposit Viewer');
 		select = $('<select>', { id: 'udDepositViewerType' });	
@@ -60,7 +60,7 @@ try{
 	}
 	else
 		_exudDepositViewerGetData();
-		_debugClassesDebugMessage("_exudDepositViewerMenuHandler exiting");
+		//_debugClassesDebugMessage("_exudDepositViewerMenuHandler exiting");
 
 }
 catch (edep) {}
@@ -76,7 +76,7 @@ function _exudDepositViewerMakeModal() {
 
 var _exudDepositViewerGetingData = false;
 function _exudDepositViewerGetData() {
-	_debugClassesDebugMessage("_exudDepositViewer get data");
+	//_debugClassesDebugMessage("_exudDepositViewer get data");
 
 var OptionSelected = $('#udDepositViewerType option:selected').val();
 	if (_exudDepositViewerGetingData) return;
@@ -161,7 +161,7 @@ try{
 								[2, IconMap]
 							], false) 
 						);
-						_debugClassesDebugMessage(loca.GetText("BUI", bld.GetBuildingName_string()) + ": bldGid=" + bldGid);
+						//_debugClassesDebugMessage(loca.GetText("BUI", bld.GetBuildingName_string()) + ": bldGid=" + bldGid);
 						document.getElementById("exudDVPOS_" + bldGid).addEventListener("click",function() {_exudDepositViewerGoTo(bldGid);});
 					}
 					catch (ex) {}
@@ -252,7 +252,7 @@ function _exudDepositViewerFindOriginalResource(building_name)
 function _exudDepositViewerGoTo(g)
 {
 	swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
-	_debugClassesDebugMessage("_exudDepositViewer go and hide");
+	//_debugClassesDebugMessage("_exudDepositViewer go and hide");
 
 	$('#DepositViewerModal').modal('hide');
 }
