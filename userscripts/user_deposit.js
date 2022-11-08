@@ -162,7 +162,8 @@ try{
 							], false) 
 						);
 						//_debugClassesDebugMessage(loca.GetText("BUI", bld.GetBuildingName_string()) + ": bldGid=" + bldGid);
-						document.getElementById("exudDVPOS_" + bldGid).addEventListener("click",function() {_exudDepositViewerGoTo(bldGid);});
+						if (IconMap != "")
+							document.getElementById("exudDVPOS_" + bldGid).addEventListener("click",function() {_exudDepositViewerGoTo(bldGid);});
 					}
 					catch (ex) {}
 				});
@@ -252,7 +253,7 @@ function _exudDepositViewerFindOriginalResource(building_name)
 function _exudDepositViewerGoTo(g)
 {
 	try{
-	//$('#DepositViewerModal').modal('hide');
+	$('#DepositViewerModal').modal('hide');
 	swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
 	//_debugClassesDebugMessage("_exudDepositViewer go and hide");
 
