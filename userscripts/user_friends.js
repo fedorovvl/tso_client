@@ -10,6 +10,11 @@ var _exudFriendsLang = {
 		'online': 'Онлайн',
 		'since': 'Подружились ',
 		'term': 'Срок'
+	},
+	'pl-pl': {
+		'online': 'Online',
+		'since': 'Od kiedy',
+		'term': 'Jak długo'
 	}
 };
 extendBaseLang(_exudFriendsLang, 'exudFriends');
