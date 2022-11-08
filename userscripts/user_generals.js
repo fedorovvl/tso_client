@@ -275,6 +275,8 @@ try {
 		_exudGetGeneralsData();
 		_exudGeneralsModalInitialized = true;
 	}
+	else
+		_exudMakeGeneralsTable();
 }
 catch (egen) {}	
 	$('#udGeneralsModal:not(:visible)').modal({backdrop: "static"});	

@@ -2,15 +2,15 @@
 
 addToolsMenuItem("Deposit Viewer", _exudDepositViewerMenuHandler);
 
-const _exudDepositViewerAssetsNames = [ "Corn", "Wood", "RealWood", "Fish",	"IronOre",	"Coal",	"Stone",
-					"Marble", "Granite", "ExoticWood", "Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
+const _exudDepositViewerAssetsNames = [ "Corn",  "Fish",	"IronOre",	"Coal",	"Stone",
+					"Marble", "Granite", "Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
 					"HalloweenResource"
 					];
 
 var _exudDepositViewerModalInitialized = false;
 
 function _exudDepositViewerMenuHandler(event) {
-
+	//_debugClassesDebugMessage("_exudDepositViewerMenuHandler");
 	//_debugClassesDebugMessage("_exudDepositViewerModalVersion : " + _exudDepositViewerModalVersion);
 	//_debugClassesDebugMessage("_exudDepositViewerModalInitialized : " + _exudDepositViewerModalInitialized);
 	$("div[role='dialog']:not(#DepositViewerModal):visible").modal("hide");
@@ -19,6 +19,7 @@ function _exudDepositViewerMenuHandler(event) {
 try{
 	if($('#DepositViewerModal .modal-header .container-fluid').length == 0){
 		const selectOptions = [ "---", "DepositDepleted"]; // remove All because too heavy
+		//_debugClassesDebugMessage("_exudDepositViewerMenuHandler creating");
 
 		createModalWindow('DepositViewerModal', 'Deposit Viewer');
 		select = $('<select>', { id: 'udDepositViewerType' });	
@@ -57,6 +58,10 @@ try{
 		$('#udDepositViewerType').change(function() {_exudDepositViewerGetData();});	
 		_exudDepositViewerModalInitialized = true;
 	}
+	else
+		_exudDepositViewerGetData();
+		//_debugClassesDebugMessage("_exudDepositViewerMenuHandler exiting");
+
 }
 catch (edep) {}
 	
@@ -71,6 +76,7 @@ function _exudDepositViewerMakeModal() {
 
 var _exudDepositViewerGetingData = false;
 function _exudDepositViewerGetData() {
+	//_debugClassesDebugMessage("_exudDepositViewer get data");
 
 var OptionSelected = $('#udDepositViewerType option:selected').val();
 	if (_exudDepositViewerGetingData) return;
@@ -119,7 +125,9 @@ try{
 				BldDep.forEach(function (bld) {
 					try {
 						var bldGid = bld.GetGrid();
-						IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ bldGid+'"').replace('style="', 'style="cursor: pointer;')
+						IconMap = "";
+						if (bldGid > 0 && bldGid != gid1)
+							IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ bldGid+'"').replace('style="', 'style="cursor: pointer;')
 						timeEnd = 0;
 						timeStr = "";
 						buffName = "";
@@ -153,7 +161,9 @@ try{
 								[2, IconMap]
 							], false) 
 						);
-						document.getElementById("exudDVPOS_" + bldGid).addEventListener("click",function() {_exudDepositViewerGoTo(bldGid);});
+						//_debugClassesDebugMessage(loca.GetText("BUI", bld.GetBuildingName_string()) + ": bldGid=" + bldGid);
+						if (IconMap != "")
+							document.getElementById("exudDVPOS_" + bldGid).addEventListener("click",function() {_exudDepositViewerGoTo(bldGid);});
 					}
 					catch (ex) {}
 				});
@@ -181,7 +191,9 @@ try{
 	Depleted.forEach(function(i) {
 		try {
 			var gid1 = i.Item.GetGrid();
-			IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
+			IconMap = "";
+			if (gid1 > 0)
+				IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
 			$('#dvDepositViewerResult').append(
 				createTableRow([
 						[8,  loca.GetText("BUI", i.Item.GetBuildingName_string()) + (i.Resource == "" ? "" : " (" + i.Resource + ")" )],
@@ -240,6 +252,13 @@ function _exudDepositViewerFindOriginalResource(building_name)
 
 function _exudDepositViewerGoTo(g)
 {
-	swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
+	try{
 	$('#DepositViewerModal').modal('hide');
+	swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
+	//_debugClassesDebugMessage("_exudDepositViewer go and hide");
+
+	}
+	catch (e) {
+		alert(e.message);
+	}
 }
