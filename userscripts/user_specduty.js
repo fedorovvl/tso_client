@@ -74,6 +74,7 @@ addToolsMenuItem(_exudspecDutyGetLabel("menuItemName"), specDutyTime);
 function specDutyTime(event) {
 	// close all modals
 	$("div[role='dialog']:not(#dutyModal):visible").modal("hide");
+	$('#dutyModal').remove();
 	// create modal
 	createModalWindow('dutyModal', _exudspecDutyGetLabel("menuTitle"));
 			
