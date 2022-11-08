@@ -140,7 +140,7 @@ function _exudFriendsGetData()
 
 function _exudFriendsCommandImage(img, type, id)
 {
-	var field =  $('<a>', {'id' : 'friends_'+type+'_' +id, 'style': 'cursor: pointer;text-decoration:none;color:#000;' }).html(getImageTag(img, 18, 18)).prop('outerHTML');
+	var field =  $('<a>', {'id' : 'friends_'+type+'_' +id, 'style': 'cursor: pointer;text-decoration:none;color:#000;' }).html(getImageTag(img, 24, 24)).prop('outerHTML');
 	return field;
 }
 
