@@ -27,8 +27,8 @@ try{
 		_exudDepositViewerAssetsNames.forEach(function(item) {
 			select.append($('<option>', { value: item }).text(loca.GetText("RES", item))).prop("outerHTML");
 		});
-		
 		$('#DepositViewerModal .modal-header').html('<div class="container-fluid"><div><span>'
+			+ getImageTag('buff_transmutation_reagent.png', '45px')+' '
 			+select.prop("outerHTML")
 			+ '</span>  <span>'+loca.GetText("SHG", "Deposits")
 			+' : <span id="dvDepositViewerTotal"></span></span></div><br/>' 
@@ -110,7 +110,7 @@ try{
 			try {			
 				if(item == null ||  (OptionSelected != "All" && item.GetName_string() != OptionSelected)) { return; }
 				var gid1 = item.GetGrid();
-				IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
+				IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
 				
 				$('#dvDepositViewerResult').append(
 					createTableRow([
@@ -127,7 +127,7 @@ try{
 						var bldGid = bld.GetGrid();
 						IconMap = "";
 						if (bldGid > 0 && bldGid != gid1)
-							IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ bldGid+'"').replace('style="', 'style="cursor: pointer;')
+							IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudDVPOS_'+ bldGid+'"').replace('style="', 'style="cursor: pointer;')
 						timeEnd = 0;
 						timeStr = "";
 						buffName = "";
@@ -191,7 +191,7 @@ try{
 	Depleted.forEach(function(i) {
 		try {
 			var gid1 = i.Item.GetGrid();
-			IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
+			IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
 			$('#dvDepositViewerResult').append(
 				createTableRow([
 						[8,  loca.GetText("BUI", i.Item.GetBuildingName_string()) + (i.Resource == "" ? "" : " (" + i.Resource + ")" )],
