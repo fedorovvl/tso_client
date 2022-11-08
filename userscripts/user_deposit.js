@@ -57,6 +57,8 @@ try{
 		$('#udDepositViewerType').change(function() {_exudDepositViewerGetData();});	
 		_exudDepositViewerModalInitialized = true;
 	}
+	else
+		_exudDepositViewerGetData();
 }
 catch (edep) {}
 	

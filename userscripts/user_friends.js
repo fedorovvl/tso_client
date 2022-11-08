@@ -55,10 +55,11 @@ try{
 
 		// fill modal data 
 		$('#udFriendsModalData').html('<div class="container-fluid"></div>');
-		_exudFriendsSortField['order'] = !_exudFriendsSortField['order'];  // trigger changes this value, so to make the previous one invert first
-		$('#udFriendsModal .modal-header .row div:nth-child('+(_exudFriendsSortField['key'] + 1)+') a').trigger( "click" );
 		_exudFriendsModalInitialized = true;
 	}
+
+	_exudFriendsSortField['order'] = !_exudFriendsSortField['order'];  // trigger changes this value, so to make the previous one invert first
+	$('#udFriendsModal .modal-header .row div:nth-child('+(_exudFriendsSortField['key'] + 1)+') a').trigger( "click" );
 }
 catch (efr) {}
 			
