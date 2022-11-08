@@ -7,10 +7,16 @@ const _exudDepositViewerAssetsNames = [ "Corn", "Wood", "RealWood", "Fish",	"Iro
 					"HalloweenResource"
 					];
 
+var _exudDepositViewerModalInitialized = false;
+
 function _exudDepositViewerMenuHandler(event) {
 
+	//_debugClassesDebugMessage("_exudDepositViewerModalVersion : " + _exudDepositViewerModalVersion);
+	//_debugClassesDebugMessage("_exudDepositViewerModalInitialized : " + _exudDepositViewerModalInitialized);
 	$("div[role='dialog']:not(#DepositViewerModal):visible").modal("hide");
-
+	if(!_exudDepositViewerModalInitialized)
+		$('#DepositViewerModal').remove();
+try{
 	if($('#DepositViewerModal .modal-header .container-fluid').length == 0){
 		const selectOptions = [ "---", "DepositDepleted"]; // remove All because too heavy
 
@@ -18,11 +24,14 @@ function _exudDepositViewerMenuHandler(event) {
 		select = $('<select>', { id: 'udDepositViewerType' });	
 
 		_exudDepositViewerAssetsNames.forEach(function(item) {
-				select.append($('<option>', { value: item }).text(loca.GetText("RES", item))).prop("outerHTML");
+			select.append($('<option>', { value: item }).text(loca.GetText("RES", item))).prop("outerHTML");
 		});
 		
-		$('#DepositViewerModal .modal-header').html('<div class="container-fluid"><div><span>'+select.prop("outerHTML")+ '</span>  <span>'+loca.GetText("SHG", "Deposits")+' : <span id="dvDepositViewerTotal"></span></span></div><br/>' +
-				createTableRow([
+		$('#DepositViewerModal .modal-header').html('<div class="container-fluid"><div><span>'
+			+select.prop("outerHTML")
+			+ '</span>  <span>'+loca.GetText("SHG", "Deposits")
+			+' : <span id="dvDepositViewerTotal"></span></span></div><br/>' 
+			+createTableRow([
 				[8, loca.GetText("LAB", "Name")],
 				[2, loca.GetText("LAB", "amount")],
 				[2, loca.GetText("LAB", "Visit")]
@@ -45,10 +54,13 @@ function _exudDepositViewerMenuHandler(event) {
 		});	
 		$("#udDepositViewerType").append( my_options );
 		$("#udDepositViewerType").prop("selectedIndex", 0);
+		$('#udDepositViewerType').change(function() {_exudDepositViewerGetData();});	
+		_exudDepositViewerModalInitialized = true;
 	}
-	$('#udDepositViewerType').change(function() {_exudDepositViewerGetData();	});	
+}
+catch (edep) {}
+	
 	$('#DepositViewerModal:not(:visible)').modal({ backdrop: "static" });
-
 }
 
 function _exudDepositViewerMakeModal() {
