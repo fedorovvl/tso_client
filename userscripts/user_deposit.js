@@ -251,8 +251,13 @@ function _exudDepositViewerFindOriginalResource(building_name)
 
 function _exudDepositViewerGoTo(g)
 {
+	try{
 	swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
 	//_debugClassesDebugMessage("_exudDepositViewer go and hide");
 
-	$('#DepositViewerModal').modal('hide');
+	//$('#DepositViewerModal').modal('hide');
+	}
+	catch (e) {
+		alert(e.message);
+	}
 }
