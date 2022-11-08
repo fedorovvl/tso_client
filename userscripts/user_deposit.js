@@ -2,8 +2,8 @@
 
 addToolsMenuItem("Deposit Viewer", _exudDepositViewerMenuHandler);
 
-const _exudDepositViewerAssetsNames = [ "Corn", "Wood", "RealWood", "Fish",	"IronOre",	"Coal",	"Stone",
-					"Marble", "Granite", "ExoticWood", "Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
+const _exudDepositViewerAssetsNames = [ "Corn",  "Fish",	"IronOre",	"Coal",	"Stone",
+					"Marble", "Granite", "Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
 					"HalloweenResource"
 					];
 
@@ -252,10 +252,10 @@ function _exudDepositViewerFindOriginalResource(building_name)
 function _exudDepositViewerGoTo(g)
 {
 	try{
+	//$('#DepositViewerModal').modal('hide');
 	swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
 	//_debugClassesDebugMessage("_exudDepositViewer go and hide");
 
-	//$('#DepositViewerModal').modal('hide');
 	}
 	catch (e) {
 		alert(e.message);
