@@ -42,7 +42,9 @@ try{
 		$('#udFriendsModal .modal-title').html(getImageTag('Valentines2021SpecialistsBundle', '45px')+' '+loca.GetText("LAB", "Friends"));
 	
 		$('#udFriendsModal .modal-header').append('<br><div class="container-fluid">' + createTableRow([
-			[3, _exudcreateSortingField(loca.GetText("LAB", "UserName"))],
+			[3, _exudcreateSortingField(loca.GetText("LAB", "UserName")) + $('<input>', {
+				'type':'text', 'id':'udFriendsFilter', 'class': 'form-control', 'style': 'display: inline;width: 100px;float: right;'
+			}).prop('outerHTML')],
 			[1, _exudcreateSortingField(loca.GetText("LAB", "GuildLevel"))],
 			[2, _exudcreateSortingField(loca.GetText("LAB", "ProductionStatus"), _exudFriendsGetImage(_exudFriendsModalIdxOnlineFilter, true))],
 			[2, _exudcreateSortingField(getText('since', 'exudFriends'))],
@@ -52,6 +54,20 @@ try{
 
 		$('#udFriendsModal .modal-header img[id="_exudSortExcl"]').click(_exudFriendsSetIncludeImage);
 		$('#udFriendsModal .modal-header .row a').click(_exudFriendsChangeSortingField);
+		$('#udFriendsModal #udFriendsFilter').keyup(function(e) {
+			var val = $(e.target).val();
+			if(!val || val == ''){
+				$('#udFriendsModalData .container-fluid div:hidden').show();
+				return;
+			}
+			$('#udFriendsModalData .container-fluid .row').each(function(i, item){ 
+				if($(item.firstChild.firstChild).text().indexOf(val) == -1) {
+					$(item).hide();
+				} else {
+					$(item).show();
+				}					
+			});
+		});
 
 		// fill modal data 
 		$('#udFriendsModalData').html('<div class="container-fluid"></div>');
