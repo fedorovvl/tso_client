@@ -149,7 +149,6 @@ try{
 				++tot;
 			}
 			catch (e) {
-				alert(e.message);
 			}			
 		});	
 		
@@ -223,7 +222,6 @@ function _exudDepositViewerFindOriginalResource(building_name)
 	if (res != "") res = loca.GetText("RES", res);
 	}
 	catch (e) {
-			alert(e.message);
 	}
 	return res;
 }
