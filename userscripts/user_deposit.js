@@ -1,6 +1,6 @@
 // ========== GUILD COMMAND
 
-addToolsMenuItem("Deposit Viewer", _exudDepositViewerMenuHandler);
+addToolsMenuItem(loca.GetText("LAB", "Trait_LovelyGeologist"), _exudDepositViewerMenuHandler);
 
 const _exudDepositViewerAssetsNames = [ "Corn",  "Fish",	"IronOre",	"Coal",	"Stone",
 					"Marble", "Granite", "Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
@@ -191,9 +191,7 @@ try{
 	Depleted.forEach(function(i) {
 		try {
 			var gid1 = i.Item.GetGrid();
-			IconMap = "";
-			if (gid1 > 0)
-				IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
+			IconMap = getImageTag("accuracy.png", '18px', '18px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
 			$('#dvDepositViewerResult').append(
 				createTableRow([
 						[8,  loca.GetText("BUI", i.Item.GetBuildingName_string()) + (i.Resource == "" ? "" : " (" + i.Resource + ")" )],
