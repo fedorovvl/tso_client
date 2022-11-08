@@ -1,4 +1,4 @@
-addToolsMenuItem(loca.GetText("LAB", "Friends"), _exudFriendsMenuHandler);
+addToolsMenuItem(loca.GetText("LAB", "Friends") + " (Ctrl + F5)", _exudFriendsMenuHandler, 116, true);
 
 var _exudFriendsLang = {
 	'en-uk': {
@@ -10,41 +10,53 @@ var _exudFriendsLang = {
 		'online': 'Онлайн',
 		'since': 'Подружились ',
 		'term': 'Срок'
+	},
+	'pt-br': {
+		'online': 'Ativo',
+		'since': 'Amigos desde'
 	}
 };
 extendBaseLang(_exudFriendsLang, 'exudFriends');
 var _exudFriendsSortField = { 'key': 0, 'order': true }
-var _exudFriendsExclusiveFields = { 2: false, 5: false }
+var _exudFriendsExclusiveFields = { 2: false, 4: false }
+var _exudFriendsModalInitialized = false;
+var _exudFriendsModalIdxOnlineFilter = 2;
+var _exudFriendsModalIdxGuildFilter = 4;
+
 
 function _exudFriendsMenuHandler(event) {
-	// close all modals
-	$("div[role='dialog']:not(#udFriendsModal):visible").modal("hide");
-	// create modal
-	$('#udFriendsModal').remove();
-	createModalWindow('udFriendsModal', loca.GetText("LAB", "Friends"));
+	$("div[role='dialog']:not(#udFriendsModal):visible").modal("hide"); // close others modals
 	
-	$('#udFriendsModal .modal-title').html(getImageTag('Valentines2021SpecialistsBundle', '45px')+' '+loca.GetText("LAB", "Friends"));
-	
+	// reopening modal not needed to refresh all data. only if a new script layout was loaded
+	// so is faster and shows the last data views
+	if(!_exudFriendsModalInitialized || $('#udFriendsModal .modal-header .container-fluid').length > 0 )
+		$('#udFriendsModal').remove();
+try{	
 	if($('#udFriendsModal .modal-header .container-fluid').length == 0){
+		createModalWindow('udFriendsModal', loca.GetText("LAB", "Friends"));
+		$('#udFriendsModal .modal-title').html(getImageTag('Valentines2021SpecialistsBundle', '45px')+' '+loca.GetText("LAB", "Friends"));
+	
 		$('#udFriendsModal .modal-header').append('<br><div class="container-fluid">' + createTableRow([
-			[2, _exudcreateSortingField(loca.GetText("LAB", "UserName"))],
+			[3, _exudcreateSortingField(loca.GetText("LAB", "UserName"))],
 			[1, _exudcreateSortingField(loca.GetText("LAB", "GuildLevel"))],
-			[2, _exudcreateSortingField(loca.GetText("LAB", "ProductionStatus"), _exudFriendsGetImage(2, true))],
+			[2, _exudcreateSortingField(loca.GetText("LAB", "ProductionStatus"), _exudFriendsGetImage(_exudFriendsModalIdxOnlineFilter, true))],
 			[2, _exudcreateSortingField(getText('since', 'exudFriends'))],
-			[2, getText('term', 'exudFriends')],
-			[2, _exudcreateSortingField(loca.GetText("LAB", "Guild"), _exudFriendsGetImage(5, true))],
-			[1, loca.GetText("LAB", "Commands")]
+			[2, _exudcreateSortingField(loca.GetText("LAB", "Guild"), _exudFriendsGetImage(_exudFriendsModalIdxGuildFilter, true))],
+			[2, loca.GetText("LAB", "Commands")]
 		], true)  + '</div>');	
+
+		$('#udFriendsModal .modal-header img[id="_exudSortExcl"]').click(_exudFriendsSetIncludeImage);
+		$('#udFriendsModal .modal-header .row a').click(_exudFriendsChangeSortingField);
+
+		// fill modal data 
+		$('#udFriendsModalData').html('<div class="container-fluid"></div>');
+		_exudFriendsSortField['order'] = !_exudFriendsSortField['order'];  // trigger changes this value, so to make the previous one invert first
+		$('#udFriendsModal .modal-header .row div:nth-child('+(_exudFriendsSortField['key'] + 1)+') a').trigger( "click" );
+		_exudFriendsModalInitialized = true;
 	}
-				
-
-	$('#udFriendsModal .modal-header img[id="_exudSortExcl"]').click(_exudFriendsSetIncludeImage);
-	$('#udFriendsModal .modal-header .row a').click(_exudFriendsChangeSortingField);
-
-	// fill modal data 
-	$('#udFriendsModalData').html('<div class="container-fluid"></div>');
-	_exudFriendsSortField['order'] = !_exudFriendsSortField['order'];  // trigger changes this value, so to make the previous one invert first
-	$('#udFriendsModal .modal-header .row div:nth-child('+(_exudFriendsSortField['key'] + 1)+') a').trigger( "click" );
+}
+catch (efr) {}
+			
 	$('#udFriendsModal:not(:visible)').modal({ backdrop: "static" });
 }
 
@@ -98,21 +110,20 @@ function _exudFriendsGetData()
 			return "Nothing to do";
 	
 		_friends = _friends.filter(function(x) {
-			if (_exudFriendsExclusiveFields[5]  && x.onlineLast24 == undefined) return false;
-			if (!x.onlineStatus && _exudFriendsExclusiveFields[2] ) return false;
+			if (_exudFriendsExclusiveFields[_exudFriendsModalIdxGuildFilter]  && x.onlineLast24 == undefined) return false;
+			if (!x.onlineStatus && _exudFriendsExclusiveFields[_exudFriendsModalIdxOnlineFilter] ) return false;
 			return true;
 		});
 		_friends.sort(_exudFriendsCompare);
 	
 		_friends.forEach(function(item) {
 			out += createTableRow([
-				[2, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(item.username).prop('outerHTML')],
+				[3, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(item.username).prop('outerHTML')],
 				[1, item.playerLevel],
 				[2, (item.onlineStatus ? getText('online', 'exudFriends') : "")],
-				[2 , dtfex.format(new window.runtime.Date(item.friendSince))],
-				[2 , loca.FormatDuration(Date.now() - item.friendSince, 6)],
+				[2, '<div style="text-align:right">'+dtfex.format(new window.runtime.Date(item.friendSince))+ "<br/>" + loca.FormatDuration(Date.now() - item.friendSince , 6)+ '</div>'],
 				[2, (item.onlineLast24 != undefined ? loca.GetText("LAB", "YES") : "")],
-				[1, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(_exudFriendsCommandImage('icon_pathfinder.png', 'zone', item.id) + "&nbsp;" + _exudFriendsCommandImage('unitcapacity_positive.png', 'wishper', item.id)).prop('outerHTML')]
+				[2, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(_exudFriendsCommandImage('icon_pathfinder.png', 'zone', item.id) + "&nbsp;" + _exudFriendsCommandImage('unitcapacity_positive.png', 'wishper', item.id)+ "&nbsp;" + _exudFriendsCommandImage('emergency_repair_kit.png', 'trade', item.id)).prop('outerHTML')]
 			]);			
 		});
 	} catch (e) {
@@ -133,8 +144,17 @@ function _exudFriendsExecuteCommandAndExit(e)
 	try{
 		var cmd = $(this).attr('id').split('_');
 		var friend = globalFlash.gui.mFriendsList.GetFriendById(cmd[2]);
+		var CanTrade = true;//false;
 		if (friend == null)
+		{
 			friend = globalFlash.gui.mFriendsList.GetGuildMemberById(cmd[2])
+			//if (friend != null)
+			//	CanTrade = globalFlash.gui.mFriendsList.IsGuildMemberAllowedForTrade(friend);
+		}
+		else
+		{
+			//CanTrade = globalFlash.gui.mFriendsList.IsFriendAllowedForTrade(friend);
+		}
 		switch(cmd[1])
 		{
 			case 'zone':
@@ -143,11 +163,22 @@ function _exudFriendsExecuteCommandAndExit(e)
 			case 'wishper':
 				globalFlash.gui.mChatPanel.ActivatePrivateChat(friend.username);
 				break;
+			case "trade":
+				if (CanTrade)
+				{
+					globalFlash.gui.mTradingPanel.SetData(friend);
+					globalFlash.gui.mTradingPanel.Show();
+				}
+				else
+				{
+					alert("Can´t trade");
+				}
+			break;
 		}	
 		$('#udFriendsModal').modal('hide');
 	}
 	catch (err) {
-		alert("Something was wrong. retry!.")
+		alert("Something was wrong. retry!" + err.message)
 	}
 }
 
@@ -158,13 +189,13 @@ function _exudFriendsCompare(a, b)
 		case 1:
 			res = (a.playerLevel < b.playerLevel ? -1 : (a.playerLevel == b.playerLevel ? 0 : 1));
 		break;
-		case 2:
+		case _exudFriendsModalIdxOnlineFilter:
 			res = (a.onlineStatus ? -1 : (b.onlineStatus ? 1 : 0));
 		break;
 		case 3:
 			res =  (a.friendSince < b.friendSince ? -1 : (a.friendSince == b.friendSince ? 0 : 1));
 		break;
-		case 5:
+		case _exudFriendsModalIdxGuildFilter:
 			res =  (a.onlineLast24 != undefined ? -1 : (b.onlineLast24 != undefined ? 1 : 0));
 		break;
 		default:

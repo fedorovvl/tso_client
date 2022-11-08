@@ -122,9 +122,11 @@ const _exudGeneralsLang = {
 		"IsGuest": " (* = invitado) "
     }
 };
+var _exudGeneralsVersion = 0;
 var _exudGeneralsTemplates;
 var _exudGeneralsOpening = false;
 var _exudGeneralsSortField = { 'key': 0, 'order': false }
+var _exudGeneralsModalInitialized = false;
 
 addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
 
@@ -138,46 +140,33 @@ var _exudGeneralsSettings = {
 	'_exudGeneralsArmySorted' : false,
 }
 
-function _exudGeneralsGetLabel(id)
-{
-	if(!_exudGeneralsLang[gameLang] && !_exudGeneralsLang["en-uk"][id]) { return "RES not found : " + id; }
-	return _exudGeneralsLang[gameLang] && _exudGeneralsLang[gameLang][id] ? _exudGeneralsLang[gameLang][id] : _exudGeneralsLang["en-uk"][id];
-}
-
-function _createTopRowWithIcons(generalsIconsList) {
-    var output = '';
-    generalsIconsList.forEach(function(iconID){
-        output += '<a href="#" class="selectSpecificGeneralType" icon-id="{0}">{1}</a>'.format(iconID, getImageTag(iconID, '24px', '24px'));
-    });
-    return output;
-}
-
 
 function _exudGeneralsMenuHandler(event)
 {
-	_exudGeneralsTemplates = new SaveLoadTemplate('genspec', function(data) {
-		_exudMakeGeneralsTable(data);
-		if (_exudGeneralsSettings['_exudGeneralsSelectedFirst'])
-			_exudMakeGeneralsTable();
-	});
-	$('#udGeneralsStyle').remove();
-	if($('#udGeneralsStyle').length == 0)
-	{
-		$("head").append($("<style>", { 'id': 'udGeneralsStyle' }).text('.dropdown-toggle::after {display: inline-block;width: 0;height: 0;margin-left: .255em;vertical-align: .255em;content: ""; border-top: .3em solid;border-right: .3em solid transparent;  border-bottom: 0; border-left: .3em solid transparent;}#udGeneralsModal .modal-content{height: 90%;}.CellWithComment{position:relative;}#_exudGeneralsSkillTree{position:absolute; top: 1; left: 1; color: black; background: #B2A589; font-weight: bold; display:none; border : thick solid #000000 ; border-width: 2px; width:210px;}'));
-	}
-
-	_exudGeneralsOpening = true;
-	
-	//populate settings
-	$.extend(_exudGeneralsSettings, readSettings(null, 'usMKF_Generals'));
-	// close all modals
 	$( "div[role='dialog']:not(#udGeneralsModal):visible").modal("hide");
-	// create modal
-	$('#udGeneralsModal').remove();
-	createModalWindow('udGeneralsModal', loca.GetText("ACL", "MilitarySpecialists"));
-	
-	if($('#udGeneralsModal .modal-footer ._exudGeneralsLoadTemplateBtn').length == 0)
+	_exudGeneralsOpening = true;	
+	// reopening modal not needed to refresh all data. only if a new script layout was loaded
+	// so is faster and shows the last data views
+try {
+	if(!_exudGeneralsModalInitialized || $('#udGeneralsModal .modal-header .container-fluid').length > 0 )
 	{
+		$('#udGeneralsStyle').remove();
+		$('#udGeneralsModal').remove();
+
+		_exudGeneralsTemplates = new SaveLoadTemplate('genspec', function(data) {
+			_exudMakeGeneralsTable(data);
+			if (_exudGeneralsSettings['_exudGeneralsSelectedFirst'])
+				_exudMakeGeneralsTable();
+		});
+		if($('#udGeneralsStyle').length == 0)
+		{
+			$("head").append($("<style>", { 'id': 'udGeneralsStyle' }).text('.dropdown-toggle::after {display: inline-block;width: 0;height: 0;margin-left: .255em;vertical-align: .255em;content: ""; border-top: .3em solid;border-right: .3em solid transparent;  border-bottom: 0; border-left: .3em solid transparent;}#udGeneralsModal .modal-content{height: 90%;}.CellWithComment{position:relative;}#_exudGeneralsSkillTree{position:absolute; top: 1; left: 1; color: black; background: #B2A589; font-weight: bold; display:none; border : thick solid #000000 ; border-width: 2px; width:210px;}'));
+		}
+		
+		//populate settings
+		$.extend(_exudGeneralsSettings, readSettings(null, 'usMKF_Generals'));
+		createModalWindow('udGeneralsModal', loca.GetText("ACL", "MilitarySpecialists"));
+	
 		var groupSend = $('<div>', { 'class': 'btn-group' }).append([
 			$('<button>').attr({ 
 				"id": "_exudGeneralsSendGeneralsBtn",
@@ -241,20 +230,20 @@ function _exudGeneralsMenuHandler(event)
 		out += '<div id="topRowWithIcons" class="text-center" style="display: none;"></div>';
 
 		var massCheckbox = $('<input>', { 'type': 'checkbox', 'class': '_exudSelectAllGeneralsBtn', 'data-toggle': 'tooltip', 'data-placement': 'top', 'title': _exudGeneralsGetLabel('SelectAll') }).prop('outerHTML') + '&nbsp;&nbsp;';
-        if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone) {
-            out += createTableRow([
-                [7, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
-                [2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
-                [1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))],
-                [2, _exudGeneralsGetLabel("ColumnOwner")]
-            ], true) ;
-        } else {
-            out += createTableRow([
-                [9, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
-                [2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
-                [1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))]
-            ], true) ;
-        }
+		if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone) {
+		    out += createTableRow([
+			[7, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
+			[1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))],
+			[2, _exudGeneralsGetLabel("ColumnOwner")]
+		    ], true) ;
+		} else {
+		    out += createTableRow([
+			[9, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
+			[1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))]
+		    ], true) ;
+		}
 		out += '</div>';
 		
 		$('#udGeneralsModal .modal-header').append(out);
@@ -273,22 +262,40 @@ function _exudGeneralsMenuHandler(event)
 			showGameAlert(getText('command_sent'));
 		});
 
-        $('#topRowWithIcons').on('click', '.selectSpecificGeneralType', function(event) {
-            var iconId = $(event.target).parent().attr('icon-id'),
-                generals = $('#udGeneralsModalData input[type="checkbox"][icon-id="' + iconId +'"]');
-            if (generals.length > 0) {
-                var isSelected = generals.filter(':checked').length !== generals.length;
-                generals.each(function(i, item) {
-                    item.checked = isSelected;
-                });
-            }
-        });
+		$('#topRowWithIcons').on('click', '.selectSpecificGeneralType', function(event) {
+		    var iconId = $(event.target).parent().attr('icon-id'),
+			generals = $('#udGeneralsModalData input[type="checkbox"][icon-id="' + iconId +'"]');
+		    if (generals.length > 0) {
+			var isSelected = generals.filter(':checked').length !== generals.length;
+			generals.each(function(i, item) {
+			    item.checked = isSelected;
+			});
+		    }
+		});
+		_exudGetGeneralsData();
+		_exudGeneralsModalInitialized = true;
 	}
-
-	_exudGetGeneralsData();
-	$('#udGeneralsModal:not(:visible)').modal({backdrop: "static"});
+}
+catch (egen) {}	
+	$('#udGeneralsModal:not(:visible)').modal({backdrop: "static"});	
 	_exudGeneralsOpening = false;
 }
+
+
+function _exudGeneralsGetLabel(id)
+{
+	if(!_exudGeneralsLang[gameLang] && !_exudGeneralsLang["en-uk"][id]) { return "RES not found : " + id; }
+	return _exudGeneralsLang[gameLang] && _exudGeneralsLang[gameLang][id] ? _exudGeneralsLang[gameLang][id] : _exudGeneralsLang["en-uk"][id];
+}
+
+function _createTopRowWithIcons(generalsIconsList) {
+    var output = '';
+    generalsIconsList.forEach(function(iconID){
+        output += '<a href="#" class="selectSpecificGeneralType" icon-id="{0}">{1}</a>'.format(iconID, getImageTag(iconID, '24px', '24px'));
+    });
+    return output;
+}
+
 function _exudGeneralsCreateSortingField(name)
 {
 	var field = $('<a>', { 'style': 'cursor: pointer;text-decoration:none;color:#000;' }).html(name).prop('outerHTML');
