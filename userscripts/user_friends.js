@@ -11,6 +11,11 @@ var _exudFriendsLang = {
 		'since': 'Подружились ',
 		'term': 'Срок'
 	},
+	'pl-pl': {
+		'online': 'Online',
+		'since': 'Od kiedy',
+		'term': 'Jak długo'
+  },
 	'pt-br': {
 		'online': 'Ativo',
 		'since': 'Amigos desde'
