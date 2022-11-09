@@ -71,10 +71,11 @@ try{
 
 		// fill modal data 
 		$('#udFriendsModalData').html('<div class="container-fluid"></div>');
-		_exudFriendsSortField['order'] = !_exudFriendsSortField['order'];  // trigger changes this value, so to make the previous one invert first
-		$('#udFriendsModal .modal-header .row div:nth-child('+(_exudFriendsSortField['key'] + 1)+') a').trigger( "click" );
 		_exudFriendsModalInitialized = true;
 	}
+
+	_exudFriendsSortField['order'] = !_exudFriendsSortField['order'];  // trigger changes this value, so to make the previous one invert first
+	$('#udFriendsModal .modal-header .row div:nth-child('+(_exudFriendsSortField['key'] + 1)+') a').trigger( "click" );
 }
 catch (efr) {}
 			
@@ -155,7 +156,7 @@ function _exudFriendsGetData()
 
 function _exudFriendsCommandImage(img, type, id)
 {
-	var field =  $('<a>', {'id' : 'friends_'+type+'_' +id, 'style': 'cursor: pointer;text-decoration:none;color:#000;' }).html(getImageTag(img, 18, 18)).prop('outerHTML');
+	var field =  $('<a>', {'id' : 'friends_'+type+'_' +id, 'style': 'cursor: pointer;text-decoration:none;color:#000;' }).html(getImageTag(img, 24, 24)).prop('outerHTML');
 	return field;
 }
 
