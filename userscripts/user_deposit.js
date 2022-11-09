@@ -168,8 +168,12 @@ try{
 						if (timeEnd > 0)
 						{
 							var dtfex = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
-							dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
-							timeStr = dtfex.format(new window.runtime.Date(timeEnd));
+							if (gameLang.indexOf("en-") > 0)
+								dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
+							else
+								dtfex.setDateTimePattern("dd-MM HH:mm"); 
+							
+							timeStr = dtfex.format(new window.runtime.Date(timeEnd)); // time ticks of game is different
 							
 						}
 						var rcd = gEconomics.GetResourcesCreationDefinitionForBuilding(bld.GetBuildingName_string());
@@ -326,7 +330,10 @@ function _exudDepositViewerSetTimeStr(seconds, type)
 				return result = new Date(seconds * 1000).toISOString().slice(11, 19);
 			case 2:
 				var d =  result = new Date(new Date(Date.now()).getTime() + seconds*1000);
-				return (d.getMonth()+1) + "-" + d.getDate() + /*"-" + d.getFullYear() +*/ " " + d.toLocaleTimeString();
+				if (gameLang.indexOf("en-") > 0)
+					return (d.getMonth()+1) + "-" + d.getDate() + " " + d.toLocaleTimeString();
+				else
+					return d.getDate() + "-" + (d.getMonth()+1) + " " + d.toLocaleTimeString();
 		}
 	}
 	catch(e){

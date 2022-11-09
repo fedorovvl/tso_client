@@ -131,7 +131,10 @@ function _exudFriendsGetData()
 	try
 	{
 		var dtfex = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
-		dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
+		if (gameLang.indexOf("en-") > 0)
+			dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
+		else
+			dtfex.setDateTimePattern("dd-MM-yyyy HH:mm"); 
 
 		var _friends = globalFlash.gui.mFriendsList.GetFilteredFriends("", true); //dPlayerListItemVO[]
 		if (_friends == null || _friends.length == 0)
