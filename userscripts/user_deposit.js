@@ -1,4 +1,19 @@
 // ========== GUILD COMMAND
+var _exudDepositVieweLang = {
+	'en-uk': {
+		'TimeDepEnd': 'Time Dep/Cycle',
+		'BuffEnd': 'Buff End',
+		'Buff': 'Buff',
+		"Note": "*The exhaustion time is indicative, and may vary depending on the current cycle status and any buildings that can be added after having exhausted neighboring deposits."
+		},
+		"pt-br" : {
+		'TimeDepEnd': 'Esgota em/Ciclo',
+		'BuffEnd': 'Fim Cat.',
+		'Buff': 'Catalizador',
+		"Note" :  "*O tempo de esgotamento é indicativo, pode variar dependendo do estado do ciclo atual e de eventuais predios que podem intervir apos ter esgotado os depositos vizinhos."
+		}
+};
+extendBaseLang(_exudDepositVieweLang, 'exudDepositVieweLang');
 
 addToolsMenuItem(loca.GetText("LAB", "Trait_LovelyGeologist"), _exudDepositViewerMenuHandler);
 
@@ -33,10 +48,13 @@ try{
 			+ '</span>  <span>'+loca.GetText("SHG", "Deposits")
 			+' : <span id="dvDepositViewerTotal"></span></span></div><br/>' 
 			+createTableRow([
-				[8, loca.GetText("LAB", "Name")],
-				[2, loca.GetText("LAB", "amount")],
-				[2, loca.GetText("LAB", "Visit")]
+				[4, loca.GetText("LAB", "Name")],
+				[2, getText('TimeDepEnd', 'exudDepositVieweLang')],
+				[2, getText('BuffEnd', 'exudDepositVieweLang') ],
+				[3, loca.GetText("LAB", "amount") + "/" + getText('Buff', 'exudDepositVieweLang')],
+				[1, loca.GetText("LAB", "Visit")]
 			], true) 
+			+ '<span style="font-size:12px">'  + getText('Note', 'exudDepositVieweLang') + '</span>'
 			+ '</div>'
 			);	
 				
@@ -82,6 +100,8 @@ var OptionSelected = $('#udDepositViewerType option:selected').val();
 	if (_exudDepositViewerGetingData) return;
 
 try{
+	var gEconomics = swmmo.getDefinitionByName("ServerState::gEconomics");
+
 	_exudDepositViewerGetingData = true;
 	$('#dvDepositViewerResult').html("");
 	if (OptionSelected == "---") 
@@ -105,33 +125,33 @@ try{
 			});
 	}
 
+	var DepositsData = new Array();
 	if (OptionSelected != "DepositDepleted")
+	{
+		var dt_ot = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
+		dt_ot.setDateTimePattern("dd HH:mm:ss"); 
+
 		Deposits.forEach(function(item) {
 			try {			
-				if(item == null ||  (OptionSelected != "All" && item.GetName_string() != OptionSelected)) { return; }
+				var BuildingsData = new Array();
+				if (item == null ||  (OptionSelected != "All" && item.GetName_string() != OptionSelected)) { return; }
 				var gid1 = item.GetGrid();
-				IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
+				var IconMapDep = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
+				var TotRes = item.GetAmount();
 				
-				$('#dvDepositViewerResult').append(
-					createTableRow([
-						[8, loca.GetText("RES", item.GetName_string())],
-						[2, item.GetAmount()],
-						[2, IconMap]
-					], false) 
-				);				
-				document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {_exudDepositViewerGoTo(gid1);});
 				var BldDep = _exudDepositViewerFindMyBuildings(gid1);
-				//_debugClassesDebugMessage("Pushed : " + BldDep.length);
+				var ResourcesRemovedEverySecond = 0;
 				BldDep.forEach(function (bld) {
 					try {
+						var IconMapBld = "";
 						var bldGid = bld.GetGrid();
-						IconMap = "";
 						if (bldGid > 0 && bldGid != gid1)
-							IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudDVPOS_'+ bldGid+'"').replace('style="', 'style="cursor: pointer;')
+							IconMapBld = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudDVPOS_'+ bldGid+'"').replace('style="', 'style="cursor: pointer;')
 						timeEnd = 0;
 						timeStr = "";
 						buffName = "";
 						buff = bld.productionBuff;
+						isWorking = bld.IsProductionActive();
 						if (buff != null)
 						{
 							app = buff.GetApplicanceMode();	
@@ -139,8 +159,7 @@ try{
 							{									
 								timeEnd =  new window.runtime.Date(Date.now() + (buff.GetStartTime() + buff.GetBuffDefinition().getDuration(app)) - swmmo.application.mGameInterface.GetClientTime());
 								buffName = loca.GetText("RES", buff.GetBuffDefinition().GetName_string());
-							}
-							
+							}							
 						}
 						
 						if (timeEnd > 0)
@@ -150,30 +169,84 @@ try{
 							timeStr = dtfex.format(new window.runtime.Date(timeEnd));
 							
 						}
+						var rcd = gEconomics.GetResourcesCreationDefinitionForBuilding(bld.GetBuildingName_string());
+
+						var rcd_pck = 0; // infinite mines remove 0
+						if (rcd != null)
+							rcd_pck = rcd.amountRemoved; // resources removed base value
+						var Seconds = bld.CalculateWays()/1000;
+						var TotRemoved = bld.GetResourceInputFactor() * rcd_pck; // resources removed base * level * buffs
 						
-						$('#dvDepositViewerResult').append(
-							createTableRow([
-								[1, ""],
-								[3, loca.GetText("BUI", bld.GetBuildingName_string())],
-								[1, (bld.mBuffs_vector.length > 0 ? "Buffed" : "") ],
-								[2, timeStr],
-								[3, buffName],
-								[2, IconMap]
-							], false) 
-						);
-						//_debugClassesDebugMessage(loca.GetText("BUI", bld.GetBuildingName_string()) + ": bldGid=" + bldGid);
-						if (IconMap != "")
-							document.getElementById("exudDVPOS_" + bldGid).addEventListener("click",function() {_exudDepositViewerGoTo(bldGid);});
+						ResourcesRemovedEverySecond += (TotRemoved == 0 ? 0 : TotRemoved / Seconds);
+						BuildingsData.push({
+								"Name" : loca.GetText("BUI", bld.GetBuildingName_string()),
+								"Buffed" : (bld.mBuffs_vector.length > 0),
+								"BuffTime": timeStr,
+								"BuffName": buffName,
+								"OverallTime" : Seconds, // total seconds
+								"IconMap":  IconMapBld,
+								"Working": isWorking,
+								"GridPos" : bldGid,
+								"AmountRemoved" : TotRemoved 
+						});
+
 					}
-					catch (ex) {}
+					catch (ex) {
+						//alert(ex.message);
+					}
+				});
+				DepositsData.push({
+					"Name" : loca.GetText("RES", item.GetName_string()),
+					"TotRes" : TotRes,
+					"IconMap" : IconMapDep,
+					"GridPos" : gid1,
+					"BData" : BuildingsData,
+					"SecondsToDeplete" : (ResourcesRemovedEverySecond > 0 && TotRes > 0 ? (TotRes / ResourcesRemovedEverySecond) : 0)
 				});
 
 				++tot;
 			}
 			catch (e) {
+				//alert ("e :" + e.message);
 			}			
-		});	
-		
+		});		
+
+		// End data get start rendering
+		DepositsData.forEach(function(item) {
+			try{
+			
+				$('#dvDepositViewerResult').append(
+					createTableRow([
+						[4, item.Name],
+						[4, _exudDepositViewerSetTimeStr(item.SecondsToDeplete, 2)],
+						[3, item.TotRes],
+						[1, item.IconMap]
+					], false) 
+				);		
+				if (item.IconMap != "")			
+					document.getElementById("exudDVPOS_" + item.GridPos).addEventListener("click",function() {_exudDepositViewerGoTo(item.GridPos);});
+
+				item.BData.forEach(function(bld) {
+
+					$('#dvDepositViewerResult').append(
+						createTableRow([
+							[4, "&nbsp;&nbsp;&rarr;"+(bld.Working ? bld.Name : '<div style="color: red;">' + bld.Name + '</div>')],
+							[2, _exudDepositViewerSetTimeStr(bld.OverallTime, 1) + "(" + bld.AmountRemoved + ")"],
+							[2, bld.BuffTime],
+							[3, bld.BuffName],
+							[1, bld.IconMap]
+						], false) 
+					);
+					if (bld.IconMap != "")
+						document.getElementById("exudDVPOS_" + bld.GridPos).addEventListener("click",function() {_exudDepositViewerGoTo(bld.GridPos);});
+				}); // end buildingdata foreach
+			}
+			catch (eren) {
+			//	alert("eren: " + eren.message);
+			}
+		}); // end depositdata foreach		
+	}
+	
 	var Depleted = new Array();
 	swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mBuildingContainer.forEach(function(item) {
 		try {			
@@ -191,15 +264,17 @@ try{
 	Depleted.forEach(function(i) {
 		try {
 			var gid1 = i.Item.GetGrid();
-			IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
+			var IconMap = "";
+			if (gid1 > 0)
+				IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudDVPOS_'+ gid1+'"').replace('style="', 'style="cursor: pointer;')
 			$('#dvDepositViewerResult').append(
 				createTableRow([
-						[8,  loca.GetText("BUI", i.Item.GetBuildingName_string()) + (i.Resource == "" ? "" : " (" + i.Resource + ")" )],
-						[2, ""],
-						[2, IconMap]
+						[11,  loca.GetText("BUI", i.Item.GetBuildingName_string()) + (i.Resource == "" ? "" : " (" + i.Resource + ")" )],
+						[1, IconMap]
 					], false) 
 			);
-			document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {_exudDepositViewerGoTo(gid1);});
+			if (IconMap != "")
+				document.getElementById("exudDVPOS_" + gid1).addEventListener("click",function() {_exudDepositViewerGoTo(gid1);});
 			++tot;
 		}
 		catch (e) {
@@ -215,11 +290,33 @@ catch (egd) {
 _exudDepositViewerGetingData = false;	
 }
 
+// type : 1 = 00:00:00   2 = MM-dd-yyyy 00:00:00
+function _exudDepositViewerSetTimeStr(seconds, type) 
+{
+	try {
+		if (seconds < 1) return "";
+		switch(type)
+		{
+			case 1:
+				return result = new Date(seconds * 1000).toISOString().slice(11, 19);
+			case 2:
+				var d =  result = new Date(new Date(Date.now()).getTime() + seconds*1000);
+				return (d.getMonth()+1) + "-" + d.getDate() + "-" + d.getFullYear() + " " + d.toLocaleTimeString();
+		}
+	}
+	catch(e){
+		//alert("Derr: " + e.mssage);
+	}
+	return "";
+}
+
+
 function _exudDepositViewerFindMyBuildings(gidPos)
 {
 	var BuildingsDep = new Array();
 	swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mBuildingContainer.forEach(function(item) {
 		try {
+			// cResourceCreation 
 			if (item.GetResourceCreation().GetDepositBuildingGridPos() > 0)
 				if (item.GetResourceCreation().GetDepositBuildingGridPos() == gidPos)
 				{
