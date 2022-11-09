@@ -229,9 +229,12 @@ namespace client
                     };
                     string rchksum = post.Post(ref _cookies).Trim();
                     var json = new JavaScriptSerializer();
-                    gitFile data = json.Deserialize<gitFile>(rchksum);
-                    if (chksum != data.sha)
-                        needDownload = true;
+                    try
+                    {
+                        gitFile data = json.Deserialize<gitFile>(rchksum);
+                        if (chksum != data.sha)
+                            needDownload = true;
+                    } catch { needDownload = true; }
                 }
                 if (needDownload)
                 {

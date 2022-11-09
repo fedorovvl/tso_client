@@ -95,11 +95,12 @@ function buildingGetHTMLData()
 			[2, createSwitch('buiMassChange') + $('<div>', { 'style': 'position: absolute;left: 55px;top: 1px;' }).text(loca.GetText("LAB","Quests")).prop('outerHTML')]
 	], true);
 	$.each(buildingRecord, function(item) {
-		var bui = swmmo.application.mGameInterface.mCurrentPlayerZone.GetBuildingFromGridPosition(item);
+		var bui = buildingGetBui(item, 0);
+		buildingRecord[item].real_status = bui.IsProductionActive();
 		result += createTableRow([
 			[1, item],
 			[7, loca.GetText("BUI", buildingRecord[item].name), 'name'],
-			[2, loca.GetText("LAB", (bui.IsProductionActive() ? 'StatusWorking' : 'StatusStopped'))],
+			[2, loca.GetText("LAB", (buildingRecord[item].real_status ? 'StatusWorking' : 'StatusStopped'))],
 			[2, createSwitch(item, buildingRecord[item].status) + $('<button>', { 'class': 'close', 'value': item }).html('<span>&times;</span>').prop('outerHTML')]
 		]);
 	});
@@ -110,15 +111,25 @@ function buildingDoJob()
 {
 	var x = new TimedQueue(1000);
 	$('#buildingModalData input[id!="buiMassChange"]').each(function(i, item){
-		var bui = swmmo.application.mGameInterface.mCurrentPlayerZone.GetBuildingFromGridPosition(item.id);
-		if(bui.IsProductionActive() != item.checked) {
-			x.add(function() { bui.SetProductionActiveCommand(item.checked); });
+		if(buildingRecord[item.id].real_status != item.checked) {
+			x.add(function() { 
+				swmmo.application.mGameInterface.SendServerAction(107, item.checked ? 1 : 0, item.id, 0, null);
+			});
 		}
 	});
 	x.run();
 	$('#buildingModal').modal('hide');
 	showGameAlert(getText('command_sent'));
 
+}
+
+function buildingGetBui(grid, tries)
+{
+	if(tries > 5) 
+		return null;
+	try {
+		return swmmo.application.mGameInterface.mCurrentPlayerZone.GetBuildingFromGridPosition(grid);
+	} catch(e) { return buildingGetBui(grid, tries++); }
 }
 
 function buildingSelectedHandler(event){
