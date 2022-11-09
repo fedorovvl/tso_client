@@ -227,13 +227,14 @@ try{
 					document.getElementById("exudDVPOS_" + item.GridPos).addEventListener("click",function() {_exudDepositViewerGoTo(item.GridPos);});
 
 				item.BData.forEach(function(bld) {
+//							"&nbsp;&nbsp;&rarr;"+(bld.Working ? bld.Name : '<div style="color: red;">' + bld.Name + '</div>')],
 
 					$('#dvDepositViewerResult').append(
 						createTableRow([
-							[4, "&nbsp;&nbsp;&rarr;"+(bld.Working ? bld.Name : '<div style="color: red;">' + bld.Name + '</div>')],
-							[2, _exudDepositViewerSetTimeStr(bld.OverallTime, 1) + "(" + bld.AmountRemoved + ")"],
+							[4, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;' + (bld.Working?'':'color: red;')}).html('&nbsp;&rarr;' + bld.Name).prop('outerHTML')],
+							[2, _exudDepositViewerSetTimeStr(bld.OverallTime, 1) + " (" + bld.AmountRemoved + ")"],
 							[2, bld.BuffTime],
-							[3, bld.BuffName],
+							[3, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(bld.BuffName).prop('outerHTML')],
 							[1, bld.IconMap]
 						], false) 
 					);
