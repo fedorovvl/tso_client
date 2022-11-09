@@ -3,62 +3,62 @@
 const _exudGeneralsLang = {
 	"en-uk": {
 		"ByName": "Sort by Name",
-        "ByType": "Sort by Type",
-        "ShowGuest": "Show Guests",
-        "HideGuest": "Hide Guests",
-        "ShowUnselected": "Show Unselected",
-        "HideUnselected": "Hide Unselected",
-        "SelectAll": "Select All",
-        "Load": "Load",
-        "CommandSent": "Command sent",
-        "ColumnOwner": "Owner",
+		"ByType": "Sort by Type",
+		"ShowGuest": "Show Guests",
+		"HideGuest": "Hide Guests",
+		"ShowUnselected": "Show Unselected",
+		"HideUnselected": "Hide Unselected",
+		"SelectAll": "Select All",
+		"Load": "Load",
+		"CommandSent": "Command sent",
+		"ColumnOwner": "Owner",
 		"IsGuest": " (* guest) ",
 		"SelectedFirst": "Selected First",
 		"ExcludeStarMenu": "Exclude Star Menu",
 		"SkillTip": "Click on general icon to open the Skill Tree."
-    },
-    "pt-br": {
-        "ByName": "Classificar por nome",
-        "ByType": "Classificar por tipo",
-        "ShowGuest": "Todos",
-        "HideGuest": "Excluir outros jogadores",
-        "ShowUnselected": "Todos",
-        "HideUnselected": "Somente selecionados",
-        "SelectAll": "Selecionar todos",
-        "Load": "Carregar",
-        "ColumnOwner": "Proprietario",
+	    },
+	    "pt-br": {
+		"ByName": "Classificar por nome",
+		"ByType": "Classificar por tipo",
+		"ShowGuest": "Todos",
+		"HideGuest": "Excluir outros jogadores",
+		"ShowUnselected": "Todos",
+		"HideUnselected": "Somente selecionados",
+		"SelectAll": "Selecionar todos",
+		"Load": "Carregar",
+		"ColumnOwner": "Proprietario",
 		"IsGuest": " (* = convidado) ",
 		"SelectedFirst": "Selecionado primeiro",
 		"ExcludeStarMenu": "Excluir Menu Estrela",
 		"SkillTip" : "Clicar no icone do general para abrir a arvore das abilidades"
-   },
-    "pl-pl": {
-        "ByName": "Sortuj po nazwie",
-        "ByType": "Sortuj po typie",
-        "ShowGuest": "Pokaż gości",
-        "HideGuest": "Ukryj gości",
-        "ShowUnselected": "Pokaż niezaznaczonych",
-        "HideUnselected": "Ukryj niezaznaczonych",
-        "SelectAll": "Zaznacz wszystkich",
-        "Load": "Załaduj",
-        "CommandSent": "Generał wysłany",
-        "ColumnOwner": "Właściciel",
-        "IsGuest": " (* = gość) ",
-        "SelectedFirst": "Zaznaczeni na górze",
-        "ExcludeStarMenu": "Nie pokazuj tych z gwiazdy",
-        "SkillTip": "Kliknij na ikonie generała, aby zobaczyć drzewo umiejętności."
-    },
-    "ru-ru": {
+	   },
+	    "pl-pl": {
+		"ByName": "Sortuj po nazwie",
+		"ByType": "Sortuj po typie",
+		"ShowGuest": "Pokaż gości",
+		"HideGuest": "Ukryj gości",
+		"ShowUnselected": "Pokaż niezaznaczonych",
+		"HideUnselected": "Ukryj niezaznaczonych",
+		"SelectAll": "Zaznacz wszystkich",
+		"Load": "Załaduj",
+		"CommandSent": "Generał wysłany",
+		"ColumnOwner": "Właściciel",
+		"IsGuest": " (* = gość) ",
+		"SelectedFirst": "Zaznaczeni na górze",
+		"ExcludeStarMenu": "Nie pokazuj tych z gwiazdy",
+		"SkillTip": "Kliknij na ikonie generała, aby zobaczyć drzewo umiejętności."
+	    },
+	    "ru-ru": {
 		"ByName": "Сортировать по имени",
-        "ByType": "Сортировать по типу",
-        "ShowGuest": "Показать генералов гостя",
-        "HideGuest": "Спрятать генералов гостя",
-        "ShowUnselected": "Показать всех",
-        "HideUnselected": "Показать отмеченных",
-        "SelectAll": "Выбрать всех",
-        "Load": "Загрузить",
-        "CommandSent": "Отправить",
-        "ColumnOwner": "Владелец",
+		"ByType": "Сортировать по типу",
+		"ShowGuest": "Показать генералов гостя",
+		"HideGuest": "Спрятать генералов гостя",
+		"ShowUnselected": "Показать всех",
+		"HideUnselected": "Показать отмеченных",
+		"SelectAll": "Выбрать всех",
+		"Load": "Загрузить",
+		"CommandSent": "Отправить",
+		"ColumnOwner": "Владелец",
 		"IsGuest": " (* = гостевой) ",
 		"SkillTip": "Нажмите на иконку генерала чтобы открыть его дерево навыков",
 		"SelectedFirst": "Выбранные в начале",
@@ -66,59 +66,59 @@ const _exudGeneralsLang = {
     },
 	"fr-fr": {
 		"ByName": "Trier par Nom",
-        "ByType": "Trier par Type",
-        "ShowGuest": "Afficher Invité",
-        "HideGuest": "Masquer Invité",
-        "ShowUnselected": "Afficher Tout",
-        "HideUnselected": "Afficher Sélection",
-        "SelectAll": "Sélectionner Tout",
-        "Load": "Charger",
-        "CommandSent": "Envoyer",
-        "ColumnOwner": "Propriétaire",
+		"ByType": "Trier par Type",
+		"ShowGuest": "Afficher Invité",
+		"HideGuest": "Masquer Invité",
+		"ShowUnselected": "Afficher Tout",
+		"HideUnselected": "Afficher Sélection",
+		"SelectAll": "Sélectionner Tout",
+		"Load": "Charger",
+		"CommandSent": "Envoyer",
+		"ColumnOwner": "Propriétaire",
 		"IsGuest": " (* Invité) ",
 		"SelectedFirst": "Sélection en Premier",
 		 "ExcludeStarMenu": "Masquer les Généraux en Etoile",
 		 "SkillTip" : "Cliquer sur Général pour voir ses compétences."
-    },
-    "it-it": {
-        "ByName": "Ordina per nome",
-        "ByType": "Ordina per tipo",
-        "ShowGuest": "Di tutti",
-        "HideGuest": "Escludi altri giocatori",
-        "ShowUnselected": "Tutti",
-        "HideUnselected": "Solo selezionati",
-        "SelectAll": "Seleciona tutto",
-        "Load": "Apri",
-        "ColumnOwner": "Proprietario",
+	    },
+	    "it-it": {
+		"ByName": "Ordina per nome",
+		"ByType": "Ordina per tipo",
+		"ShowGuest": "Di tutti",
+		"HideGuest": "Escludi altri giocatori",
+		"ShowUnselected": "Tutti",
+		"HideUnselected": "Solo selezionati",
+		"SelectAll": "Seleciona tutto",
+		"Load": "Apri",
+		"ColumnOwner": "Proprietario",
 		"IsGuest": " (* = invitato) "
-    },
-    "es-es": {
-        "ByName": "Ordenar por nombre",
-        "ByType": "Ordenar por tipo",
-        "ShowGuest": "Ver generales de amigos",
-        "HideGuest": "Esconder generales de amigos",
-        "ShowUnselected": "Mostrar no seleccionados",
-        "HideUnselected": "Esconder no seleccionados",
-        "SelectAll": "Seleccionar todos",
-        "Load": "Cargar",
+	    },
+	    "es-es": {
+		"ByName": "Ordenar por nombre",
+		"ByType": "Ordenar por tipo",
+		"ShowGuest": "Ver generales de amigos",
+		"HideGuest": "Esconder generales de amigos",
+		"ShowUnselected": "Mostrar no seleccionados",
+		"HideUnselected": "Esconder no seleccionados",
+		"SelectAll": "Seleccionar todos",
+		"Load": "Cargar",
 		"CommandSent": "Comando enviado",
-        "ColumnOwner": "Propietario",
+		"ColumnOwner": "Propietario",
 		"IsGuest": " (* = invitado) ",
 		"SelectedFirst": "Mostrar seleccionados primero",
 		"ExcludeStarMenu": "No mostrar generales en estrella",
 		"SkillTip" : "Haz click en el icono del general para ver su árbol de habilidades."
-    },
-    "es-mx": {
-        "ByName": "Ordenar: Nombre",
-        "ByType": "Ordenar: Tipo",
-        "ShowGuest": "Ver generales de amigos",
-        "HideGuest": "Ver solo los míos",
-        "ShowUnselected": "Todos",
-        "HideUnselected": "Seleccionados",
-        "SelectAll": "Seleccionar todos",
-        "Load": "Cargar",
+	    },
+	    "es-mx": {
+		"ByName": "Ordenar: Nombre",
+		"ByType": "Ordenar: Tipo",
+		"ShowGuest": "Ver generales de amigos",
+		"HideGuest": "Ver solo los míos",
+		"ShowUnselected": "Todos",
+		"HideUnselected": "Seleccionados",
+		"SelectAll": "Seleccionar todos",
+		"Load": "Cargar",
 		"CommandSent": "Comando enviado",
-        "ColumnOwner": "Propietario",
+		"ColumnOwner": "Propietario",
 		"IsGuest": " (* = invitado) "
     }
 };
@@ -160,7 +160,7 @@ try {
 		});
 		if($('#udGeneralsStyle').length == 0)
 		{
-			$("head").append($("<style>", { 'id': 'udGeneralsStyle' }).text('.dropdown-toggle::after {display: inline-block;width: 0;height: 0;margin-left: .255em;vertical-align: .255em;content: ""; border-top: .3em solid;border-right: .3em solid transparent;  border-bottom: 0; border-left: .3em solid transparent;}#udGeneralsModal .modal-content{height: 90%;}.CellWithComment{position:relative;}#_exudGeneralsSkillTree{position:absolute; top: 1; left: 1; color: black; background: #B2A589; font-weight: bold; display:none; border : thick solid #000000 ; border-width: 2px; width:210px;}'));
+			$("head").append($("<style>", { 'id': 'udGeneralsStyle' }).text('.dropdown-toggle::after {display: inline-block;width: 0;height: 0;margin-left: .255em;vertical-align: .255em;content: ""; border-top: .3em solid;border-right: .3em solid transparent;  border-bottom: 0; border-left: .3em solid transparent;}#udGeneralsModal .modal-content{height: 90%;}.CellWithComment{position:relative;}#_exudGeneralsSkillTree{position:absolute; top: 1; left: 1; color: black; background: #B2A589; font-weight: bold; display:none; border : thick solid #000000 ; border-width: 2px; width:210px;} div .row:hover {background-color: #A65329;}'));
 		}
 		
 		//populate settings
@@ -314,20 +314,20 @@ function _exudGeneralsChangeSortingField(e)
 			switch (selfSubIndex)
 			{
 				case 0:
-						_exudGeneralsSettings['_exudGeneralsSelectedFirst'] = !_exudGeneralsSettings['_exudGeneralsSelectedFirst'];
+					_exudGeneralsSettings['_exudGeneralsSelectedFirst'] = !_exudGeneralsSettings['_exudGeneralsSelectedFirst'];
 					break;
 				case 1 :
-						if (++_exudGeneralsSettings['_exudGeneralsSortType'] == 2)
-							_exudGeneralsSettings['_exudGeneralsSortType'] = 0;
+					if (++_exudGeneralsSettings['_exudGeneralsSortType'] == 2)
+						_exudGeneralsSettings['_exudGeneralsSortType'] = 0;
 					break;	
 			}
 			break;
 		case 1 :
-					_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'] = !_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'];
-				break;	
+			_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'] = !_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'];
+			break;	
 		case 2 :
-					_exudGeneralsSettings['_exudGeneralsArmySorted'] = !_exudGeneralsSettings['_exudGeneralsArmySorted'];
-				break;	
+			_exudGeneralsSettings['_exudGeneralsArmySorted'] = !_exudGeneralsSettings['_exudGeneralsArmySorted'];
+			break;	
 	}
 
 	_exudGeneralsSortField['key'] = selfIndex;
@@ -450,26 +450,26 @@ function _exudMakeGeneralsTable(templateData)
 
 	try {
 		var selectedGenerals = !templateData ? _exudGeneralsGetChecked() : templateData,
-            myGens = 0,
-            uniqueIconIDs = [],
-            checkbox;
+		    myGens = 0,
+		    uniqueIconIDs = [],
+		    checkbox;
 
 		_exudGetSpecialists().forEach(function(item){
 			try {
 				var isSelected = selectedGenerals.indexOf(item.UID) >= 0;
 				if (
-                    (_exudGeneralsSettings['_exudGeneralsHideGuest'] && !item.Owner) ||
-                    (_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'] && (item.GridPosition < 1) && !isSelected) ||
-                    (_exudGeneralsSettings['_exudGeneralsHideUnselected'] && !isSelected)
-                ) {
+				    (_exudGeneralsSettings['_exudGeneralsHideGuest'] && !item.Owner) ||
+				    (_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'] && (item.GridPosition < 1) && !isSelected) ||
+				    (_exudGeneralsSettings['_exudGeneralsHideUnselected'] && !isSelected)
+				) {
 				    return;
-                }
+				}
 				if (item.Owner) {
 				    ++myGens;
-                }
-                if (uniqueIconIDs.indexOf(item.IconID) < 0) {
-                    uniqueIconIDs.push(item.IconID);
-                }
+				}
+				if (uniqueIconIDs.indexOf(item.IconID) < 0) {
+				    uniqueIconIDs.push(item.IconID);
+				}
 				var tooltip = loca.GetText("HIL", "Help_window_skilltrees_0");
 				var Icon =  item.Icon.replace('<img','<img id="exudSTIMG'+item.UID+'"').replace('style="', 'style="cursor: pointer;');
 				var IconMap = "";
@@ -507,7 +507,7 @@ function _exudMakeGeneralsTable(templateData)
 		_exudGetGeneralsTitle(myGens);
 	}
 	catch (e) {
-			alert(e.message);
+		alert(e.message);
 	}
 	$('#_exudGeneralsDivTable').html(out);
 	$('#topRowWithIcons').html('').hide();

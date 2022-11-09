@@ -35,6 +35,14 @@ function _exudDepositViewerMenuHandler(event) {
 		$('#DepositViewerModal').remove();
 try{
 	if($('#DepositViewerModal .modal-header .container-fluid').length == 0){
+		$('#udDepositViewerStyle').remove();
+	
+		if($('#udDepositViewerStyle').length == 0)
+		{
+			$("head").append($("<style>", { 'id': 'udDepositViewerStyle' }).text('div .row:hover {background-color: #A65329;}'));
+		}
+		
+		
 		const selectOptions = [ "---", "DepositDepleted"]; // remove All because too heavy
 
 		createModalWindow('DepositViewerModal', 'Deposit Viewer');
@@ -233,6 +241,7 @@ try{
 							[3, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(bld.BuffName).prop('outerHTML')],
 							[1, bld.IconMap]
 						], false) 
+						
 					);
 					if (bld.IconMap != "")
 						document.getElementById("exudDVPOS_" + bld.GridPos).addEventListener("click",function() {_exudDepositViewerGoTo(bld.GridPos);});
