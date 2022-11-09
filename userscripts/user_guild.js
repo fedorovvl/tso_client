@@ -11,6 +11,13 @@ function _exudGuildMenuHandler(event) {
 	createModalWindow('GuildModal', 'Guild Memebrs List');
 	if($('#GuildModal .modal-footer ._exudCSVexportBtn').length == 0)
 	{
+		$('#udGuildStyle').remove();
+		if($('#udGuildStyle').length == 0)
+		{
+			$("head").append($("<style>", { 'id': 'udGuildStyle' }).text('div .row:hover {background-color: #A65329;}'));
+		}
+
+
 		$("#GuildModal .modal-footer").prepend(
 			$('<button>').attr({ "id": "_exudCSVexportBtn", "class": "btn btn-primary pull-left _exudCSVexportBtn" }).text("Export CSV")
 		);

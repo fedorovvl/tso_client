@@ -38,6 +38,12 @@ function _exudFriendsMenuHandler(event) {
 		$('#udFriendsModal').remove();
 try{	
 	if($('#udFriendsModal .modal-header .container-fluid').length == 0){
+		$('#udFriendsStyle').remove();
+		if($('#udFriendsStyle').length == 0)
+		{
+			$("head").append($("<style>", { 'id': 'udFriendsStyle' }).text('div .row:hover {background-color: #A65329;}'));
+		}
+		
 		createModalWindow('udFriendsModal', loca.GetText("LAB", "Friends"));
 		$('#udFriendsModal .modal-title').html(getImageTag('Valentines2021SpecialistsBundle', '45px')+' '+loca.GetText("LAB", "Friends"));
 	
@@ -125,7 +131,10 @@ function _exudFriendsGetData()
 	try
 	{
 		var dtfex = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
-		dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
+		if (gameLang.indexOf("en-") > 0)
+			dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
+		else
+			dtfex.setDateTimePattern("dd-MM-yyyy HH:mm"); 
 
 		var _friends = globalFlash.gui.mFriendsList.GetFilteredFriends("", true); //dPlayerListItemVO[]
 		if (_friends == null || _friends.length == 0)

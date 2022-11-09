@@ -54,13 +54,13 @@ const _exudspecDutyLang = {
 		"HideShowGuest" : "Todos/Solo míos"
 	},
 	"pl-pl": {
-        "menuItemName": "Specjaliści",
-        "menuTitle": "Specjaliści w użyciu",
-        "ColumnEstimated": "Do końca",
-        "ColumnArrival": "Zakończenie",
-        "NoData": "Brak danych",
-        "YOU": "Ty",
-        "HideShowGuest" : "Pokaż/Ukryj gości"
+		"menuItemName": "Specjaliści",
+		"menuTitle": "Specjaliści w użyciu",
+		"ColumnEstimated": "Do końca",
+		"ColumnArrival": "Zakończenie",
+		"NoData": "Brak danych",
+		"YOU": "Ty",
+		"HideShowGuest" : "Pokaż/Ukryj gości"
 	}
 };
 var _exudSpecDutyHideGuest = false;
@@ -80,6 +80,11 @@ function specDutyTime(event) {
 			
 	if($('#dutyModal .modal-footer .dutyExplorersBtn').length == 0)
 	{
+		$('#uddutyStyle').remove();
+		if($('#uddutyStyle').length == 0)
+		{
+			$("head").append($("<style>", { 'id': 'uddutyStyle' }).text('div .row:hover {background-color: #A65329;}'));
+		}
 		$("#dutyModal .modal-footer").prepend([
 			$('<button>').attr({ "id": "dutyExplorersBtn", "class": "btn btn-primary pull-left dutyExplorersBtn" }).text(loca.GetText("SPE", "Explorer")),
 			$('<button>').attr({ "id": "dutyGeologistBtn", "class": "btn btn-primary pull-left dutyGeologistBtn" }).text(loca.GetText("SPE", "Geologist")),

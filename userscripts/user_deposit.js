@@ -35,6 +35,14 @@ function _exudDepositViewerMenuHandler(event) {
 		$('#DepositViewerModal').remove();
 try{
 	if($('#DepositViewerModal .modal-header .container-fluid').length == 0){
+		$('#udDepositViewerStyle').remove();
+	
+		if($('#udDepositViewerStyle').length == 0)
+		{
+			$("head").append($("<style>", { 'id': 'udDepositViewerStyle' }).text('div .row:hover {background-color: #A65329;}'));
+		}
+		
+		
 		const selectOptions = [ "---", "DepositDepleted"]; // remove All because too heavy
 
 		createModalWindow('DepositViewerModal', 'Deposit Viewer');
@@ -160,8 +168,12 @@ try{
 						if (timeEnd > 0)
 						{
 							var dtfex = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
-							dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
-							timeStr = dtfex.format(new window.runtime.Date(timeEnd));
+							if (gameLang.indexOf("en-") > 0)
+								dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
+							else
+								dtfex.setDateTimePattern("dd-MM HH:mm"); 
+							
+							timeStr = dtfex.format(new window.runtime.Date(timeEnd)); // time ticks of game is different
 							
 						}
 						var rcd = gEconomics.GetResourcesCreationDefinitionForBuilding(bld.GetBuildingName_string());
@@ -191,6 +203,7 @@ try{
 						//alert(ex.message);
 					}
 				});
+				BuildingsData.sort(_exudDepositViewerBuildingsDataSort);
 				DepositsData.push({
 					"Name" : loca.GetText("RES", item.GetName_string()),
 					"TotRes" : TotRes,
@@ -205,18 +218,20 @@ try{
 			catch (e) {
 		}			
 		});		
-
+		
+		DepositsData.sort(_exudDepositViewerDepositDataSort);
 		// End data get start rendering
 		DepositsData.forEach(function(item) {
 			try{
 			
-				$('#dvDepositViewerResult').append(
+				$('#dvDepositViewerResult').append('<div style="color: yellow;">' +
 					createTableRow([
 						[4, item.Name],
 						[4, _exudDepositViewerSetTimeStr(item.SecondsToDeplete, 2)],
 						[3, item.TotRes],
 						[1, item.IconMap]
 					], false) 
+					+'</div>'
 				);		
 				if (item.IconMap != "")			
 					document.getElementById("exudDVPOS_" + item.GridPos).addEventListener("click",function() {_exudDepositViewerGoTo(item.GridPos);});
@@ -230,6 +245,7 @@ try{
 							[3, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(bld.BuffName).prop('outerHTML')],
 							[1, bld.IconMap]
 						], false) 
+						
 					);
 					if (bld.IconMap != "")
 						document.getElementById("exudDVPOS_" + bld.GridPos).addEventListener("click",function() {_exudDepositViewerGoTo(bld.GridPos);});
@@ -283,7 +299,26 @@ catch (egd) {
 }
 _exudDepositViewerGetingData = false;	
 }
-
+function _exudDepositViewerDepositDataSort(a, b)
+{
+	try{
+		if (a.SecondsToDeplete < b.SecondsToDeplete) return -1;
+		if (a.SecondsToDeplete > b.SecondsToDeplete) return 1;
+	}
+	catch (e) {
+	}
+	return 0;
+}
+function _exudDepositViewerBuildingsDataSort(a, b)
+{
+	try{
+		if (a.OverallTime < b.OverallTime) return -1;
+		if (a.OverallTime > b.OverallTime) return 1;
+	}
+	catch (e) {
+	}
+	return 0;
+}
 // type : 1 = 00:00:00   2 = MM-dd-yyyy 00:00:00
 function _exudDepositViewerSetTimeStr(seconds, type) 
 {
@@ -295,7 +330,10 @@ function _exudDepositViewerSetTimeStr(seconds, type)
 				return result = new Date(seconds * 1000).toISOString().slice(11, 19);
 			case 2:
 				var d =  result = new Date(new Date(Date.now()).getTime() + seconds*1000);
-				return (d.getMonth()+1) + "-" + d.getDate() + /*"-" + d.getFullYear() +*/ " " + d.toLocaleTimeString();
+				if (gameLang.indexOf("en-") > 0)
+					return (d.getMonth()+1) + "-" + d.getDate() + " " + d.toLocaleTimeString();
+				else
+					return d.getDate() + "-" + (d.getMonth()+1) + " " + d.toLocaleTimeString();
 		}
 	}
 	catch(e){
