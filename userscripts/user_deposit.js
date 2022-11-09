@@ -4,37 +4,38 @@ var _exudDepositVieweLang = {
 		'TimeDepEnd': 'Time Dep/Cycle',
 		'BuffEnd': 'Buff End',
 		'Buff': 'Buff',
-		"Note": "*The exhaustion time is indicative, and may vary depending on the current cycle status and any buildings that can be added after having exhausted neighboring deposits."
+		"Note": "*The exhaustion time is indicative, and may vary depending on the current cycle status and any buildings that can be added after having exhausted neighboring deposits.Sometimes the data may not be up to date. Run the refresh command first. (F2)"
 		},
-		"pt-br" : {
+	"pt-br" : {
 		'TimeDepEnd': 'Esgota em/Ciclo',
 		'BuffEnd': 'Fim Cat.',
 		'Buff': 'Catalizador',
-		"Note" :  "*O tempo de esgotamento é indicativo, pode variar dependendo do estado do ciclo atual e de eventuais predios que podem intervir apos ter esgotado os depositos vizinhos."
+		"Note" :  "*O tempo de esgotamento é indicativo, pode variar dependendo do estado do ciclo atual e de eventuais predios que podem intervir apos ter esgotado os depositos vizinhos.As vezes os dados podem nao estar atualizados. Execute o comando de atualizar antes. (F2)"
+		},
+	'fr-fr': {
+		'TimeDepEnd': 'Temps Dép/Cycle',
+		'BuffEnd': 'Fortifiant Terminé',
+		'Buff': 'Fortifiant',
+		"Note": "*La date de fin est indicative, et peut varier en fonction du cycle actuel et des buildings qui peuvent être rajoutés après avoir épuisé le(s) dépots voisins. Parfois les informations ne sont pas à jour. Faites une Mise à Jour (F2)."
 		}
 };
-extendBaseLang(_exudDepositVieweLang, 'exudDepositVieweLang');
 
-addToolsMenuItem(loca.GetText("LAB", "Trait_LovelyGeologist"), _exudDepositViewerMenuHandler);
-
-const _exudDepositViewerAssetsNames = [ "Corn",  "Fish",	"IronOre",	"Coal",	"Stone",
-					"Marble", "Granite", "Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
+const _exudDepositViewerAssetsNames = [ "Corn", "Fish", "IronOre", "Coal", "Stone", "Marble", "Granite",
+					"Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
 					"HalloweenResource"
 					];
 
+extendBaseLang(_exudDepositVieweLang, 'exudDepositVieweLang');
+addToolsMenuItem(loca.GetText("LAB", "Trait_LovelyGeologist"), _exudDepositViewerMenuHandler);
 var _exudDepositViewerModalInitialized = false;
 
 function _exudDepositViewerMenuHandler(event) {
-	//_debugClassesDebugMessage("_exudDepositViewerMenuHandler");
-	//_debugClassesDebugMessage("_exudDepositViewerModalVersion : " + _exudDepositViewerModalVersion);
-	//_debugClassesDebugMessage("_exudDepositViewerModalInitialized : " + _exudDepositViewerModalInitialized);
 	$("div[role='dialog']:not(#DepositViewerModal):visible").modal("hide");
 	if(!_exudDepositViewerModalInitialized)
 		$('#DepositViewerModal').remove();
 try{
 	if($('#DepositViewerModal .modal-header .container-fluid').length == 0){
 		const selectOptions = [ "---", "DepositDepleted"]; // remove All because too heavy
-		//_debugClassesDebugMessage("_exudDepositViewerMenuHandler creating");
 
 		createModalWindow('DepositViewerModal', 'Deposit Viewer');
 		select = $('<select>', { id: 'udDepositViewerType' });	
@@ -78,8 +79,6 @@ try{
 	}
 	else
 		_exudDepositViewerGetData();
-		//_debugClassesDebugMessage("_exudDepositViewerMenuHandler exiting");
-
 }
 catch (edep) {}
 	
@@ -94,9 +93,8 @@ function _exudDepositViewerMakeModal() {
 
 var _exudDepositViewerGetingData = false;
 function _exudDepositViewerGetData() {
-	//_debugClassesDebugMessage("_exudDepositViewer get data");
 
-var OptionSelected = $('#udDepositViewerType option:selected').val();
+	var OptionSelected = $('#udDepositViewerType option:selected').val();
 	if (_exudDepositViewerGetingData) return;
 
 try{
@@ -128,9 +126,6 @@ try{
 	var DepositsData = new Array();
 	if (OptionSelected != "DepositDepleted")
 	{
-		var dt_ot = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
-		dt_ot.setDateTimePattern("dd HH:mm:ss"); 
-
 		Deposits.forEach(function(item) {
 			try {			
 				var BuildingsData = new Array();
@@ -177,7 +172,8 @@ try{
 						var Seconds = bld.CalculateWays()/1000;
 						var TotRemoved = bld.GetResourceInputFactor() * rcd_pck; // resources removed base * level * buffs
 						
-						ResourcesRemovedEverySecond += (TotRemoved == 0 ? 0 : TotRemoved / Seconds);
+						if (isWorking)
+							ResourcesRemovedEverySecond += (TotRemoved == 0 ? 0 : TotRemoved / Seconds);
 						BuildingsData.push({
 								"Name" : loca.GetText("BUI", bld.GetBuildingName_string()),
 								"Buffed" : (bld.mBuffs_vector.length > 0),
@@ -207,8 +203,7 @@ try{
 				++tot;
 			}
 			catch (e) {
-				//alert ("e :" + e.message);
-			}			
+		}			
 		});		
 
 		// End data get start rendering
@@ -227,8 +222,6 @@ try{
 					document.getElementById("exudDVPOS_" + item.GridPos).addEventListener("click",function() {_exudDepositViewerGoTo(item.GridPos);});
 
 				item.BData.forEach(function(bld) {
-//							"&nbsp;&nbsp;&rarr;"+(bld.Working ? bld.Name : '<div style="color: red;">' + bld.Name + '</div>')],
-
 					$('#dvDepositViewerResult').append(
 						createTableRow([
 							[4, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;' + (bld.Working?'':'color: red;')}).html('&nbsp;&rarr;' + bld.Name).prop('outerHTML')],
@@ -302,11 +295,10 @@ function _exudDepositViewerSetTimeStr(seconds, type)
 				return result = new Date(seconds * 1000).toISOString().slice(11, 19);
 			case 2:
 				var d =  result = new Date(new Date(Date.now()).getTime() + seconds*1000);
-				return (d.getMonth()+1) + "-" + d.getDate() + "-" + d.getFullYear() + " " + d.toLocaleTimeString();
+				return (d.getMonth()+1) + "-" + d.getDate() + /*"-" + d.getFullYear() +*/ " " + d.toLocaleTimeString();
 		}
 	}
 	catch(e){
-		//alert("Derr: " + e.mssage);
 	}
 	return "";
 }
@@ -317,11 +309,9 @@ function _exudDepositViewerFindMyBuildings(gidPos)
 	var BuildingsDep = new Array();
 	swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mBuildingContainer.forEach(function(item) {
 		try {
-			// cResourceCreation 
 			if (item.GetResourceCreation().GetDepositBuildingGridPos() > 0)
 				if (item.GetResourceCreation().GetDepositBuildingGridPos() == gidPos)
 				{
-					//_debugClassesDebugMessage("Push : " + item.GetBuildingName_string() + " = " + gidPos);
 					BuildingsDep.push(item);
 				}
 		}
@@ -349,12 +339,9 @@ function _exudDepositViewerFindOriginalResource(building_name)
 function _exudDepositViewerGoTo(g)
 {
 	try{
-	$('#DepositViewerModal').modal('hide');
-	swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
-	//_debugClassesDebugMessage("_exudDepositViewer go and hide");
-
+		$('#DepositViewerModal').modal('hide');
+		swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
 	}
 	catch (e) {
-		alert(e.message);
 	}
 }
