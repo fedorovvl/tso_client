@@ -191,6 +191,7 @@ try{
 						//alert(ex.message);
 					}
 				});
+				BuildingsData.sort(_exudDepositViewerBuildingsDataSort);
 				DepositsData.push({
 					"Name" : loca.GetText("RES", item.GetName_string()),
 					"TotRes" : TotRes,
@@ -205,18 +206,20 @@ try{
 			catch (e) {
 		}			
 		});		
-
+		
+		DepositsData.sort(_exudDepositViewerDepositDataSort);
 		// End data get start rendering
 		DepositsData.forEach(function(item) {
 			try{
 			
-				$('#dvDepositViewerResult').append(
+				$('#dvDepositViewerResult').append('<div style="color: yellow;">' +
 					createTableRow([
 						[4, item.Name],
 						[4, _exudDepositViewerSetTimeStr(item.SecondsToDeplete, 2)],
 						[3, item.TotRes],
 						[1, item.IconMap]
 					], false) 
+					+'</div>'
 				);		
 				if (item.IconMap != "")			
 					document.getElementById("exudDVPOS_" + item.GridPos).addEventListener("click",function() {_exudDepositViewerGoTo(item.GridPos);});
@@ -283,7 +286,26 @@ catch (egd) {
 }
 _exudDepositViewerGetingData = false;	
 }
-
+function _exudDepositViewerDepositDataSort(a, b)
+{
+	try{
+		if (a.SecondsToDeplete < b.SecondsToDeplete) return -1;
+		if (a.SecondsToDeplete > b.SecondsToDeplete) return 1;
+	}
+	catch (e) {
+	}
+	return 0;
+}
+function _exudDepositViewerBuildingsDataSort(a, b)
+{
+	try{
+		if (a.OverallTime < b.OverallTime) return -1;
+		if (a.OverallTime > b.OverallTime) return 1;
+	}
+	catch (e) {
+	}
+	return 0;
+}
 // type : 1 = 00:00:00   2 = MM-dd-yyyy 00:00:00
 function _exudDepositViewerSetTimeStr(seconds, type) 
 {
