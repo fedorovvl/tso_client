@@ -21,7 +21,7 @@ var _exudFriendsLang = {
 		'since': 'Amigos desde'
 	},
 	'de-de': {
-		'since': 'Freun seit ',
+		'since': 'Freun_d seit ',
 		'term': 'Länge'
 	}
 };
