@@ -16,8 +16,8 @@ const _exudGeneralsLang = {
 		"SelectedFirst": "Selected First",
 		"ExcludeStarMenu": "Exclude Star Menu",
 		"SkillTip": "Click on general icon to open the Skill Tree."
-	    },
-	    "pt-br": {
+	},
+	"pt-br": {
 		"ByName": "Classificar por nome",
 		"ByType": "Classificar por tipo",
 		"ShowGuest": "Todos",
@@ -31,8 +31,8 @@ const _exudGeneralsLang = {
 		"SelectedFirst": "Selecionado primeiro",
 		"ExcludeStarMenu": "Excluir Menu Estrela",
 		"SkillTip" : "Clicar no icone do general para abrir a arvore das abilidades"
-	   },
-	    "pl-pl": {
+	},
+	"pl-pl": {
 		"ByName": "Sortuj po nazwie",
 		"ByType": "Sortuj po typie",
 		"ShowGuest": "Pokaż gości",
@@ -47,8 +47,8 @@ const _exudGeneralsLang = {
 		"SelectedFirst": "Zaznaczeni na górze",
 		"ExcludeStarMenu": "Nie pokazuj tych z gwiazdy",
 		"SkillTip": "Kliknij na ikonie generała, aby zobaczyć drzewo umiejętności."
-	    },
-	    "ru-ru": {
+	},
+	"ru-ru": {
 		"ByName": "Сортировать по имени",
 		"ByType": "Сортировать по типу",
 		"ShowGuest": "Показать генералов гостя",
@@ -79,8 +79,8 @@ const _exudGeneralsLang = {
 		"SelectedFirst": "Sélection en Premier",
 		 "ExcludeStarMenu": "Masquer les Généraux en Etoile",
 		 "SkillTip" : "Cliquer sur Général pour voir ses compétences."
-	    },
-	    "it-it": {
+	},
+	"it-it": {
 		"ByName": "Ordina per nome",
 		"ByType": "Ordina per tipo",
 		"ShowGuest": "Di tutti",
@@ -91,8 +91,8 @@ const _exudGeneralsLang = {
 		"Load": "Apri",
 		"ColumnOwner": "Proprietario",
 		"IsGuest": " (* = invitato) "
-	    },
-	    "es-es": {
+	},
+	"es-es": {
 		"ByName": "Ordenar por nombre",
 		"ByType": "Ordenar por tipo",
 		"ShowGuest": "Ver generales de amigos",
@@ -107,8 +107,8 @@ const _exudGeneralsLang = {
 		"SelectedFirst": "Mostrar seleccionados primero",
 		"ExcludeStarMenu": "No mostrar generales en estrella",
 		"SkillTip" : "Haz click en el icono del general para ver su árbol de habilidades."
-	    },
-	    "es-mx": {
+	},
+	"es-mx": {
 		"ByName": "Ordenar: Nombre",
 		"ByType": "Ordenar: Tipo",
 		"ShowGuest": "Ver generales de amigos",
@@ -120,7 +120,23 @@ const _exudGeneralsLang = {
 		"CommandSent": "Comando enviado",
 		"ColumnOwner": "Propietario",
 		"IsGuest": " (* = invitado) "
-    }
+    },
+	"de-de": {
+		"ByName": "Name sortieren",
+		"ByType": "Type sortieren",
+		"ShowGuest": "Gäste zeigen",
+		"HideGuest": "Gäste verbergen",
+		"ShowUnselected": "Unmarkierte zeigen",
+		"HideUnselected": "Unmarkierte verbergen",
+		"SelectAll": "Alles auswählen",
+		"Load": "Laden",
+		"CommandSent": "Befehl gesendet",
+		"ColumnOwner": "Besitzer",
+		"IsGuest": " (* Gast) ",
+		"SelectedFirst": "erst auswählen",
+		"ExcludeStarMenu": "Sternemenü verbergen",
+		"SkillTip": "Klicke auf den General um den Skill zu sehen."
+	}
 };
 var _exudGeneralsVersion = 0;
 var _exudGeneralsTemplates;

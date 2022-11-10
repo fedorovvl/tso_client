@@ -15,10 +15,14 @@ var _exudFriendsLang = {
 		'online': 'Online',
 		'since': 'Od kiedy',
 		'term': 'Jak długo'
-  },
+    },
 	'pt-br': {
 		'online': 'Ativo',
 		'since': 'Amigos desde'
+	},
+	'de-de': {
+		'since': 'Freun seit ',
+		'term': 'Länge'
 	}
 };
 extendBaseLang(_exudFriendsLang, 'exudFriends');

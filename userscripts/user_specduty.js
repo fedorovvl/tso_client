@@ -18,13 +18,13 @@ const _exudspecDutyLang = {
 		"HideShowGuest" : "Todos/Apenas meus"
 	},
 	"fr-fr": {
-        	"menuItemName": "Tâches des Spécialistes"  ,
-        	"menuTitle": "Temps d'exécution des Spécialistes"  ,
-        	"ColumnEstimated": "Estimé"  ,
-        	"ColumnArrival": "Arrivée"  ,
-        	"NoData": "Pas d'information !",
-        	"YOU": "Vous",
-        	"HideShowGuest" : "Masquer/Afficher Invité(s)"
+		"menuItemName": "Tâches des Spécialistes"  ,
+		"menuTitle": "Temps d'exécution des Spécialistes"  ,
+		"ColumnEstimated": "Estimé"  ,
+		"ColumnArrival": "Arrivée"  ,
+		"NoData": "Pas d'information !",
+		"YOU": "Vous",
+		"HideShowGuest" : "Masquer/Afficher Invité(s)"
 	},
 	"it-it": {
 		"menuItemName": "Azioni in corso"  ,
@@ -61,6 +61,15 @@ const _exudspecDutyLang = {
 		"NoData": "Brak danych",
 		"YOU": "Ty",
 		"HideShowGuest" : "Pokaż/Ukryj gości"
+	},
+	"de-de": {
+		"menuItemName": "Reisezeit" ,
+		"menuTitle": "Einsatzzeit" ,
+		"ColumnEstimated": "Geschätzt" ,
+		"ColumnArrival": "Ankunft" ,
+		"NoData": "Nichts gefunden!" ,
+		"YOU": "Ich",
+		"HideShowGuest" : "Gast ein/aus"
 	}
 };
 var _exudSpecDutyHideGuest = false;

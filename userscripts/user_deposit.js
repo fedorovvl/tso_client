@@ -17,7 +17,12 @@ var _exudDepositVieweLang = {
 		'BuffEnd': 'Fortifiant Terminé',
 		'Buff': 'Fortifiant',
 		"Note": "*La date de fin est indicative, et peut varier en fonction du cycle actuel et des buildings qui peuvent être rajoutés après avoir épuisé le(s) dépots voisins. Parfois les informations ne sont pas à jour. Faites une Mise à Jour (F2)."
-		}
+		},
+	'de-de': {
+		'TimeDepEnd': 'Zyklus',
+		'BuffEnd': 'Buff Ende',
+		"Note": "*Die Zeiten bis zum Abbau der Vorkommen sind Schätzwerte und können, je nachdem wie weit die Entfernung zum Lager ist, variieren. Bitte zuerst F2 drücken!"
+	}
 };
 
 const _exudDepositViewerAssetsNames = [ "Corn", "Fish", "IronOre", "Coal", "Stone", "Marble", "Granite",
