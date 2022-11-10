@@ -67,7 +67,7 @@ try{
 				return;
 			}
 			$('#udFriendsModalData .container-fluid .row').each(function(i, item){ 
-				if($(item.firstChild.firstChild).text().indexOf(val) == -1) {
+				if($(item.firstChild.firstChild).text().toUpperCase().indexOf(val.toUpperCase()) == -1) {
 					$(item).hide();
 				} else {
 					$(item).show();
@@ -130,6 +130,7 @@ function _exudFriendsGetData()
 	var out = "";
 	try
 	{
+		var global = swmmo.getDefinitionByName("global")
 		var dtfex = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
 		if (gameLang.indexOf("en-") > 0)
 			dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
@@ -146,15 +147,23 @@ function _exudFriendsGetData()
 			return true;
 		});
 		_friends.sort(_exudFriendsCompare);
+		var MinFriendsTime = global.tradeFriendDelay * 1000;
 	
 		_friends.forEach(function(item) {
+			var FriendsTime = Date.now() - item.friendSince;
+			//_debugClassesDebugMessage("FriendsTime : " + FriendsTime);
+			var CanTrade = (FriendsTime > MinFriendsTime);
+
 			out += createTableRow([
 				[3, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(item.username).prop('outerHTML')],
 				[1, item.playerLevel],
 				[2, (item.onlineStatus ? getText('online', 'exudFriends') : "")],
 				[2, '<div style="text-align:right">'+dtfex.format(new window.runtime.Date(item.friendSince))+ "<br/>" + loca.FormatDuration(Date.now() - item.friendSince , 6)+ '</div>'],
 				[2, (item.onlineLast24 != undefined ? loca.GetText("LAB", "YES") : "")],
-				[2, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(_exudFriendsCommandImage('icon_pathfinder.png', 'zone', item.id) + "&nbsp;" + _exudFriendsCommandImage('unitcapacity_positive.png', 'wishper', item.id)+ "&nbsp;" + _exudFriendsCommandImage('emergency_repair_kit.png', 'trade', item.id)).prop('outerHTML')]
+				[2, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(_exudFriendsCommandImage('icon_pathfinder.png', 'zone', item.id) 
+					+ "&nbsp;" + _exudFriendsCommandImage('unitcapacity_positive.png', 'wishper', item.id)
+					+ "&nbsp;" +  (CanTrade ? _exudFriendsCommandImage('emergency_repair_kit.png', 'trade', item.id) : "")
+					).prop('outerHTML')]
 			]);			
 		});
 	} catch (e) {
@@ -175,17 +184,8 @@ function _exudFriendsExecuteCommandAndExit(e)
 	try{
 		var cmd = $(this).attr('id').split('_');
 		var friend = globalFlash.gui.mFriendsList.GetFriendById(cmd[2]);
-		var CanTrade = true;//false;
 		if (friend == null)
-		{
 			friend = globalFlash.gui.mFriendsList.GetGuildMemberById(cmd[2])
-			//if (friend != null)
-			//	CanTrade = globalFlash.gui.mFriendsList.IsGuildMemberAllowedForTrade(friend);
-		}
-		else
-		{
-			//CanTrade = globalFlash.gui.mFriendsList.IsFriendAllowedForTrade(friend);
-		}
 		switch(cmd[1])
 		{
 			case 'zone':
@@ -195,16 +195,9 @@ function _exudFriendsExecuteCommandAndExit(e)
 				globalFlash.gui.mChatPanel.ActivatePrivateChat(friend.username);
 				break;
 			case "trade":
-				if (CanTrade)
-				{
-					globalFlash.gui.mTradingPanel.SetData(friend);
-					globalFlash.gui.mTradingPanel.Show();
-				}
-				else
-				{
-					alert("Can´t trade");
-				}
-			break;
+				globalFlash.gui.mTradingPanel.SetData(friend);
+				globalFlash.gui.mTradingPanel.Show();
+				break;
 		}	
 		$('#udFriendsModal').modal('hide');
 	}
@@ -212,6 +205,7 @@ function _exudFriendsExecuteCommandAndExit(e)
 		alert("Something was wrong. retry!" + err.message)
 	}
 }
+
 
 function _exudFriendsCompare(a, b)
 {
