@@ -22,6 +22,18 @@ var _exudDepositVieweLang = {
 		'TimeDepEnd': 'Zyklus',
 		'BuffEnd': 'Buff Ende',
 		"Note": "*Die Zeiten bis zum Abbau der Vorkommen sind Schätzwerte und können, je nachdem wie weit die Entfernung zum Lager ist, variieren. Bitte zuerst F2 drücken!"
+		},
+	'es-es': {
+		'TimeDepEnd': 'Agotación/Ciclo',
+		'BuffEnd': 'Fin del Pote.',
+		'Buff': 'Potenciador',
+		"Note": "*La hora de agotación es aproximada, variará dependiendo del estado del ciclo en curso y/o cualquier otro edificio que intervenga en el mismo depósito una vez haya agotado el más cercano. Los datos pueden estar desactualizados. Refresca con (F2)."
+		},
+	'es-mx': {
+		'TimeDepEnd': 'Agotación/Ciclo',
+		'BuffEnd': 'Fin del Pote.',
+		'Buff': 'Potenciador',
+		"Note": "*La hora de agotación es aproximada, y variará dependiendo del estado del ciclo en curso y/o cualquier otro edificio que intervenga en el mismo depósito una vez haya agotado el más cercano. Los datos pueden estar desactualizados. Refresca con (F2)."
 	}
 };
 
