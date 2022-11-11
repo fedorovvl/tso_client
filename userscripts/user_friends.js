@@ -27,10 +27,6 @@ var _exudFriendsLang = {
 	'es-es': {
 		'online': 'Activo',
 		'since': 'Amigos desde'
-	},
-	'es-mx': {
-		'online': 'Activo',
-		'since': 'Amigos desde'
 	}
 };
 extendBaseLang(_exudFriendsLang, 'exudFriends');
