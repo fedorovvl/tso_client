@@ -28,12 +28,6 @@ var _exudDepositVieweLang = {
 		'BuffEnd': 'Fin del Pote.',
 		'Buff': 'Potenciador',
 		"Note": "*La hora de agotación es aproximada, variará dependiendo del estado del ciclo en curso y/o cualquier otro edificio que intervenga en el mismo depósito una vez haya agotado el más cercano. Los datos pueden estar desactualizados. Refresca con (F2)."
-		},
-	'es-mx': {
-		'TimeDepEnd': 'Agotación/Ciclo',
-		'BuffEnd': 'Fin del Pote.',
-		'Buff': 'Potenciador',
-		"Note": "*La hora de agotación es aproximada, y variará dependiendo del estado del ciclo en curso y/o cualquier otro edificio que intervenga en el mismo depósito una vez haya agotado el más cercano. Los datos pueden estar desactualizados. Refresca con (F2)."
 	}
 };
 
