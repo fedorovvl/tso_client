@@ -36,6 +36,10 @@ var _exudFriendsModalInitialized = false;
 var _exudFriendsModalIdxOnlineFilter = 2;
 var _exudFriendsModalIdxGuildFilter = 4;
 
+var _exudFriendsSettings = {
+	'_exudFriendsFavorite' : []
+}
+
 
 function _exudFriendsMenuHandler(event) {
 	$("div[role='dialog']:not(#udFriendsModal):visible").modal("hide"); // close others modals
@@ -47,6 +51,8 @@ function _exudFriendsMenuHandler(event) {
 try{	
 	if($('#udFriendsModal .modal-header .container-fluid').length == 0){
 		$('#udFriendsStyle').remove();
+		$.extend(_exudFriendsSettings, readSettings(null, 'usMKF_Friends'));
+		
 		if($('#udFriendsStyle').length == 0)
 		{
 			$("head").append($("<style>", { 'id': 'udFriendsStyle' }).text('div .row:hover {background-color: #A65329;}'));
@@ -95,6 +101,17 @@ catch (efr) {}
 			
 	$('#udFriendsModal:not(:visible)').modal({ backdrop: "static" });
 }
+function _exudFriendsSaveSettings()
+{
+
+	try
+	{
+		storeSettings(_exudFriendsSettings, 'usMKF_Friends');
+	} catch (e) {
+		alert(e.message);
+	}
+}
+
 
 function _exudcreateSortingField(name, exclusive)
 {
@@ -150,6 +167,7 @@ function _exudFriendsGetData()
 			return "Nothing to do";
 	
 		_friends = _friends.filter(function(x) {
+			if (_exudFriendsIsFavorite(x.id)) return true;
 			if (_exudFriendsExclusiveFields[_exudFriendsModalIdxGuildFilter]  && x.onlineLast24 == undefined) return false;
 			if (!x.onlineStatus && _exudFriendsExclusiveFields[_exudFriendsModalIdxOnlineFilter] ) return false;
 			return true;
@@ -163,7 +181,8 @@ function _exudFriendsGetData()
 			var CanTrade = (FriendsTime > MinFriendsTime);
 
 			out += createTableRow([
-				[3, $('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(item.username).prop('outerHTML')],
+				[3,	_exudFriendsCommandImage(_exudFriendsIsFavorite(item.id) ? 'Fast_Learner.png' : "have_a_treat_icon.png", "favorite", item.id) +
+					$('<span>', {'style' : 'white-space: nowrap;overflow: hidden;text-overflow: ellipsis;'}).html(item.username).prop('outerHTML')],
 				[1, item.playerLevel],
 				[2, (item.onlineStatus ? getText('online', 'exudFriends') : "")],
 				[2, '<div style="text-align:right">'+dtfex.format(new window.runtime.Date(item.friendSince))+ "<br/>" + loca.FormatDuration(Date.now() - item.friendSince , 6)+ '</div>'],
@@ -178,6 +197,11 @@ function _exudFriendsGetData()
 		return _exudFriendsGetData();
 	}
 	return out;
+}
+
+function _exudFriendsIsFavorite(id)
+{
+	return (_exudFriendsSettings._exudFriendsFavorite.indexOf(id.toString()) > -1);
 }
 
 function _exudFriendsCommandImage(img, type, id)
@@ -206,6 +230,14 @@ function _exudFriendsExecuteCommandAndExit(e)
 				globalFlash.gui.mTradingPanel.SetData(friend);
 				globalFlash.gui.mTradingPanel.Show();
 				break;
+			case "favorite": // this command not exit
+				if (!_exudFriendsIsFavorite(cmd[2]))
+					_exudFriendsSettings._exudFriendsFavorite.push( cmd[2].toString() );
+				else
+					_exudFriendsRemoveFavorite( cmd[2] );
+				_exudFriendsSaveSettings();
+				_exudFriendsRefresh();
+				return;
 		}	
 		$('#udFriendsModal').modal('hide');
 	}
@@ -213,11 +245,25 @@ function _exudFriendsExecuteCommandAndExit(e)
 		alert("Something was wrong. retry!" + err.message)
 	}
 }
-
+function _exudFriendsRemoveFavorite(id)
+{
+	try{
+		const index = _exudFriendsSettings._exudFriendsFavorite.indexOf(id.toString());
+		if (index > -1) 
+		  _exudFriendsSettings._exudFriendsFavorite.splice(index, 1); // 2nd parameter means remove one item only
+		}
+	catch (e) {
+	}
+}
 
 function _exudFriendsCompare(a, b)
 {
 	var res;
+	var isaf = _exudFriendsIsFavorite(a.id);
+	var isbf = _exudFriendsIsFavorite(b.id);
+	if (isaf && !isbf)	return -1;
+	if (isbf && !isaf)	return 1;
+	
 	switch(_exudFriendsSortField['key']) {
 		case 1:
 			res = (a.playerLevel < b.playerLevel ? -1 : (a.playerLevel == b.playerLevel ? 0 : 1));
