@@ -81,7 +81,7 @@ try{
 				return;
 			}
 			$('#udFriendsModalData .container-fluid .row').each(function(i, item){ 
-				if($(item.firstChild.firstChild).text().toUpperCase().indexOf(val.toUpperCase()) == -1) {
+				if($(item.firstChild.childNodes[1]).text().toUpperCase().indexOf(val.toUpperCase()) == -1) {
 					$(item).hide();
 				} else {
 					$(item).show();
