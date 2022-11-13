@@ -169,6 +169,9 @@ try {
 		$('#udGeneralsStyle').remove();
 		$('#udGeneralsModal').remove();
 
+		$.extend(_exudGeneralsSettings, readSettings(null, 'usMKF_Generals'));
+		createModalWindow('udGeneralsModal', loca.GetText("ACL", "MilitarySpecialists"));
+		
 		_exudGeneralsTemplates = new SaveLoadTemplate('genspec', function(data) {
 			_exudMakeGeneralsTable(data);
 			if (_exudGeneralsSettings['_exudGeneralsSelectedFirst'])
@@ -180,8 +183,6 @@ try {
 		}
 		
 		//populate settings
-		$.extend(_exudGeneralsSettings, readSettings(null, 'usMKF_Generals'));
-		createModalWindow('udGeneralsModal', loca.GetText("ACL", "MilitarySpecialists"));
 	
 		var groupSend = $('<div>', { 'class': 'btn-group' }).append([
 			$('<button>').attr({ 
