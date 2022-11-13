@@ -37,8 +37,8 @@ function createSpecMenu()
 	specMenu.addItem(createMenuItem(loca.GetText("SPE", "Explorer") + " (F3)", function() { specSharedHandler(1); }));
 	specMenu.addItem(createMenuItem(loca.GetText("SPE", "Geologist") + " (F4)", function() { specSharedHandler(2); }));
 	addMenuItem(loca.GetText("LAB", "Specialists"), specMenu);
-	addKeybBind(menuExplorersHandler, 114);
-	addKeybBind(menuGeologistsHandler, 115);
+	addKeybBind(function(){ specSharedHandler(1); }, 114);
+	addKeybBind(function() { specSharedHandler(2); }, 115);
 }
 
 function specSharedHandler(type)

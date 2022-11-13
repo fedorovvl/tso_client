@@ -61,6 +61,7 @@
 				settings.load();
 				reloadScripts(null); 
 			}, 1000);
+			if(isDebug) { $('head').append($("<script>").attr({ "src": "AIRIntrospector.js", "type": "text/javascript"})); }
 		  }, 2000);
 		}
 		function combineSameLang(e){return 0==e.indexOf("en")?"en-uk":0==e.indexOf("es")?"es-es":e}
