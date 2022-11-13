@@ -1,18 +1,17 @@
 createProdMenu();
 
-var buildingSelectedTracker = new window.runtime.ClientBuff();
-buildingSelectedTracker.addEventListener("buffApply", buildingSelectedHandler);
-var buildingRecordEnabled = false;
-var buildingRecord;
-var buildingTemplates;
+var buildingSelectedTracker = game.getTracker('bui', buildingSelectedHandler),
+	buildingRecordEnabled = false,
+	buildingRecord,
+	buildingTemplates;
 
 
 function menuBuildingHandler(event)
 {
 	$("div[role='dialog']:not(#buildingModal):visible").modal("hide");
 	createModalWindow('buildingModal', getImageTag('BattleBuffDestroy_TMC_GateKit', '45px') + ' '+loca.GetText("LAB", "Production"));
-	if(swmmo.application.mGameInterface.isOnHomzone() == false) {
-		showGameAlert(getText('not_home'));
+	if(game.gi.isOnHomzone() == false) {
+		game.showAlert(getText('not_home'));
 		return;
 	}
 	if($('#buildingModal .buildingSubmit').length == 0)
@@ -73,14 +72,14 @@ function menuBuildingHandler(event)
 	});
 	$( "#buildingStartRecording" ).click(function(){
 		$('#buildingModal').modal('hide');
-		showGameAlert(getText('buff_rec_start'));
-		swmmo.application.mGameInterface.channels.BUILDING.addPropertyObserver("buildingSelected", buildingSelectedTracker);
+		game.showAlert(getText('buff_rec_start'));
+		game.gi.channels.BUILDING.addPropertyObserver("buildingSelected", buildingSelectedTracker);
 		buildingRecordEnabled = true;
 	});
 	$( "#buildingStopRecording" ).click(function(){
 		buildingRecordEnabled = false;
-		showGameAlert(getText('buff_rec_stop'));
-		swmmo.application.mGameInterface.channels.BUILDING.removePropertyObserver("buildingSelected", buildingSelectedTracker);
+		game.showAlert(getText('buff_rec_stop'));
+		game.gi.channels.BUILDING.removePropertyObserver("buildingSelected", buildingSelectedTracker);
 		menuBuildingHandler(null);
 	});
 	$('#buildingModal:not(:visible)').modal({backdrop: "static"});
@@ -113,13 +112,13 @@ function buildingDoJob()
 	$('#buildingModalData input[id!="buiMassChange"]').each(function(i, item){
 		if(buildingRecord[item.id].real_status != item.checked) {
 			x.add(function() { 
-				swmmo.application.mGameInterface.SendServerAction(107, item.checked ? 1 : 0, item.id, 0, null);
+				game.gi.SendServerAction(107, item.checked ? 1 : 0, item.id, 0, null);
 			});
 		}
 	});
 	x.run();
 	$('#buildingModal').modal('hide');
-	showGameAlert(getText('command_sent'));
+	game.showAlert(getText('command_sent'));
 
 }
 
@@ -128,8 +127,10 @@ function buildingGetBui(grid, tries)
 	if(tries > 5) 
 		return null;
 	try {
-		return swmmo.application.mGameInterface.mCurrentPlayerZone.GetBuildingFromGridPosition(grid);
-	} catch(e) { return buildingGetBui(grid, tries++); }
+		return game.zone.GetBuildingFromGridPosition(grid);
+	} catch(e) { 
+		return buildingGetBui(grid, ++tries);
+	}
 }
 
 function buildingSelectedHandler(event){
@@ -145,15 +146,9 @@ function buildingSelectedHandler(event){
 function createProdMenu()
 {
 	prodMenu = new air.NativeMenu();
-	buffsItem = new air.NativeMenuItem(loca.GetText("LAB", "Buffs") + " (F5)");
-	buffsItem.addEventListener(air.Event.SELECT, menuBuffsHandler);
-	buiItem = new air.NativeMenuItem(loca.GetText("LAB", "Production") + " (F7)");
-	buiItem.addEventListener(air.Event.SELECT, menuBuildingHandler);
-	prodItem = new air.NativeMenuItem(getText('prod_timed') + " (F8)");
-	prodItem.addEventListener(air.Event.SELECT, TimedMenuHandler);
-	prodMenu.addItem(buffsItem);
-	prodMenu.addItem(buiItem);
-	prodMenu.addItem(prodItem);
+	prodMenu.addItem(createMenuItem(loca.GetText("LAB", "Buffs") + " (F5)", menuBuffsHandler));
+	prodMenu.addItem(createMenuItem(loca.GetText("LAB", "Production") + " (F7)", menuBuildingHandler));
+	prodMenu.addItem(createMenuItem(getText('prod_timed') + " (F8)", TimedMenuHandler));
 	addMenuItem(loca.GetText("LAB", "Buildings"), prodMenu);
 	addKeybBind(menuBuffsHandler, 116);
 	addKeybBind(menuBuildingHandler, 118);

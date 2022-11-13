@@ -1,15 +1,14 @@
 var aucConfig = {};
 var currentAuc;
-var aucShopItem = swmmo.getDefinitionByName("ShopSystem::cShopItem");
-var aucResponderDef = swmmo.getDefinitionByName("ServerState::ResponderSimple");
-var aucResponder = new aucResponderDef(aucResultResponseHandler, aucFailResponseHandler);
-var aucUnlockResponder = new aucResponderDef(aucUnlockResultResponseHandler, aucFailResponseHandler);
-var aucLoaderDef = swmmo.getDefinitionByName("nLib::TSOURLLoader");
-var resources = swmmo.application.mGameInterface.mCurrentPlayerZone.GetResources(swmmo.application.mGameInterface.mCurrentPlayer);
-var aucLoader = new aucLoaderDef();
+var aucShopItem = game.def("ShopSystem::cShopItem");
+var aucResponder = game.createResponder(aucResultResponseHandler, aucFailResponseHandler);
+var aucUnlockResponder = game.createResponder(aucUnlockResultResponseHandler, aucFailResponseHandler);
+var resources = game.getResources();
+var aucLoader = game.def("nLib::TSOURLLoader", true);
 var bidPacket = null;
 aucLoader.addEventListener(air.Event.COMPLETE, aucCompleteURLHandler);
 aucLoader.loadFile("black_market_auction_config.xml");
+
 window.runtime.flash.net.registerClassAlias(
 	"defaultGame.Communication.VO.BlackMarketAuction.dBlackMarketAuctionStateVO", 
 	window.runtime.Communication.VO.BlackMarketAuction.dBlackMarketAuctionStateVO
@@ -44,7 +43,7 @@ function menuAuctionHandler(event)
 	$('#aucModal .aucPlace').attr('disabled', true);
 	$('#aucModal .aucUnlock').hide();
 	out = '<div class="container-fluid">';
-	if(!swmmo.application.mGameInterface.mHomePlayer.mBlackMarketUnlocked)
+	if(!game.player.mBlackMarketUnlocked)
 	{
 		out = '<p class="text-center">{0} 10000 {1}'.format(loca.GetText("LAB", 'BlackMarketAuctionUnlockCost'), getImageTag("Coin"));
 		out += '<p class="text-center">' + loca.GetText("LAB", 'BlackMarketAuctionUnlock') + '</p>';
@@ -86,7 +85,7 @@ function menuAuctionHandler(event)
 
 function aucCheckPlayer()
 {
-	return swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerName_string() == currentAuc.playerName;
+	return game.player.GetPlayerName_string() == currentAuc.playerName;
 }
 
 function getCurrentAuc()
@@ -124,14 +123,14 @@ function aucResultResponseHandler(event, data)
 }
 function aucUnlockResultResponseHandler(event, data)
 {
-	swmmo.application.mGameInterface.mHomePlayer.mBlackMarketUnlocked = true;
+	game.player.mBlackMarketUnlocked = true;
 	resources.AddResource("Coin", -10000, 14, null);
 	menuAuctionHandler(null);
 }
 
 function aucReloadData()
 {
-	swmmo.application.mGameInterface.SendServerActionSimple(15000, null, aucResponder);
+	game.gi.SendServerActionSimple(15000, null, aucResponder);
 	$('#aucModal .aucReload').attr("disabled", true);
 	setTimeout(function() { $('#aucModal .aucReload').removeAttr("disabled"); }, 10000);
 }
@@ -141,13 +140,13 @@ function auxPlaceBet()
 	bidPacket = new window.runtime.Communication.VO.BlackMarketAuction.dBlackMarketAuctionBidVO()
 	bidPacket.auctionId = currentAuc.auctionId;
 	bidPacket.biddingCount = currentAuc.biddingCount;
-	swmmo.application.mGameInterface.mClientMessages.SendMessagetoServer(15001, swmmo.application.mGameInterface.mCurrentViewedZoneID, bidPacket, aucResponder);
+	game.gi.mClientMessages.SendMessagetoServer(15001, game.gi.mCurrentViewedZoneID, bidPacket, aucResponder);
 	$('#aucModal .aucPlace').attr("disabled", true);
 	setTimeout(function() { $('#aucModal .aucPlace').removeAttr("disabled"); }, 10000);
 }
 
 function aucUnlock()
 {
-	swmmo.application.mGameInterface.mClientMessages.SendMessagetoServer(15002, swmmo.application.mGameInterface.mCurrentViewedZoneID, null, aucUnlockResponder);
+	game.gi.mClientMessages.SendMessagetoServer(15002, game.gi.mCurrentViewedZoneID, null, aucUnlockResponder);
 	$('#aucModal .aucUnlock').attr("disabled", true);
 }
