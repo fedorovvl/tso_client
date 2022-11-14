@@ -436,6 +436,7 @@ namespace client
                     tsoUrl.Set("window", cmd["window"]);
                 if (debug)
                     tsoUrl.Set("debug", "true");
+                tsoUrl.Set("version", appversion);
                 string tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString().Replace("bb=https", "bb=http").Replace(":443", ""), Servers._servers[_region].domain);
                 XmlDocument Doc = new XmlDocument();
                 XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);

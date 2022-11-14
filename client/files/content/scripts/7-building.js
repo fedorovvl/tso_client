@@ -1,4 +1,4 @@
-createProdMenu();
+//createProdMenu();
 
 var buildingSelectedTracker = game.getTracker('bui', buildingSelectedHandler),
 	buildingRecordEnabled = false,

@@ -1,9 +1,5 @@
 var child;
 
-if(isDebug) {
-	addMenuItem("CustomCode", menuCustomHandler);
-	addMenuItem("SaveHTML", menuSaveHandler);
-}
 function menuCustomHandler(event)
 {
 	try{

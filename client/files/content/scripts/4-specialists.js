@@ -29,18 +29,6 @@ var explorerDropSpec = [
   ]}
 ];
 
-createSpecMenu();
-
-function createSpecMenu()
-{
-	specMenu = new air.NativeMenu();
-	specMenu.addItem(createMenuItem(loca.GetText("SPE", "Explorer") + " (F3)", function() { specSharedHandler(1); }));
-	specMenu.addItem(createMenuItem(loca.GetText("SPE", "Geologist") + " (F4)", function() { specSharedHandler(2); }));
-	addMenuItem(loca.GetText("LAB", "Specialists"), specMenu);
-	addKeybBind(function(){ specSharedHandler(1); }, 114);
-	addKeybBind(function() { specSharedHandler(2); }, 115);
-}
-
 function specSharedHandler(type)
 {
 	$( "div[role='dialog']:not(#specModal):visible").modal("hide");
@@ -52,7 +40,6 @@ function specSharedHandler(type)
 	}
 	$('#specModal .specSaveTemplate').length == 0 && createSpecWindow();
 	specTemplates.setModule(type == 1 ? 'expl' : 'geo');
-	game.chatMessage(specTemplates.module);
 	const playerLevel = game.player.GetPlayerLevel();
     var out = '<div class="container-fluid">', isThereAnySpec = false;
 	game.getSpecialists().sort(0).forEach(function(item){
@@ -67,7 +54,7 @@ function specSharedHandler(type)
 		out += createTableRow([
 			[4, getImageTag(item.getIconID(), '8%') + item.getName(false), 'name'],
 			[3, '&nbsp;'],
-			[5, type == 1 ? createExplorerDropdown(item.GetUniqueID(), skills[39], skills[40]) : createGeologistDropdown(item.GetUniqueID(), playerLevel, false)]
+			[5, type == 1 ? createExplorerDropdown(item.GetUniqueID(), skills[39], skills[40], false, true) : createGeologistDropdown(item.GetUniqueID(), playerLevel, false, true)]
 		]);
 	});
 	if(!isThereAnySpec) {
@@ -76,6 +63,9 @@ function specSharedHandler(type)
 	}
 	$("#specModal .massSend").html(type == 2 ? createGeologistDropdown(1, 1, true) : createExplorerDropdown(null, true, true, true));
 	$("#specModalData").html(out + '</div>');
+	$('#specModalData select').each(function(i, select){
+		updateSpecTimeRow(select, $(select).val(), $(select).val());
+	});
 	$('#specModalData select').change(multiSelectSpec);
 	$("#specModal #specMassChange").change(massChangeSpecDropdown);
 	$('#specModalData .container-fluid').selectable({
@@ -95,17 +85,16 @@ function specSharedHandler(type)
 
 function createSpecWindow()
 {
-	game.chatMessage("create spec");
 	specTemplates = new SaveLoadTemplate('spec', function(data) {
 		$('#specModalData select').val(0);
-		$.each(data, function(spec, val) { $('#' + spec).val(val); });
+		$.each(data, function(spec, val) { $('#' + spec.replace('expl-','')).val(val); });
 		$('#specModalData select').each(function(i, select){
 			updateSpecTimeRow(select, $(select).val(), $(select).val());
 		});
 	});
 	const headerRow = createTableRow([
 			[4, loca.GetText("LAB","Name")],
-			[3, '<label class="switch"><input type="checkbox" id="specTimeType"><span class="slider round"></span></label><div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getText('spec_time_normal'))],
+			[3, utils.createSwitch('specTimeType', mainSettings.specDefTimeType)+'<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(mainSettings.specDefTimeType ? getText('spec_time_arrival') : getText('spec_time_normal'))],
 			[5, '', 'massSend']
 		], true);
 	$("#specModal .modal-header").append([$('<br/>'), $('<div>', {'class': 'container-fluid'}).html(headerRow)]);
@@ -129,17 +118,17 @@ function createSpecWindow()
 	$('#specModal .specSend').click(sendSpec);
 }
 
-function createGeologistDropdown(id, level, mass)
+function createGeologistDropdown(id, level, mass, def)
 {
 	select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
 	$.each(geoDropSpec, function(i, item){
 		if(level >= item.req || mass)
-			select.append($('<option>', { value: item.val }).text(item.text));
+			select.append($('<option>', { value: item.val, selected: def && mainSettings.geoDefTask == item.val ? 'selected' : false }).text(item.text));
 	});
 	return select.prop("outerHTML");
 }
 
-function createExplorerDropdown(id, art, bean, mass)
+function createExplorerDropdown(id, art, bean, mass, def)
 {
 	select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
 	select.append($('<option>', { value: '0' }).text(loca.GetText("LAB", "Cancel")));
@@ -148,7 +137,7 @@ function createExplorerDropdown(id, art, bean, mass)
 		var group = $('<optgroup>', { label: optgroup.label });
 		$.each(optgroup.data, function(n, item){
 			if(mass || (item.req[0] && art) || (item.req[1] && bean) || (!item.req[0] && !item.req[1] && playerLevel >= item.req[2]))
-				group.append($('<option>', { value: item.val }).text(item.text));
+				group.append($('<option>', { value: item.val, selected: def && mainSettings.explDefTask == item.val ? 'selected' : false }).text(item.text));
 		});
 		select.append(group);
 	});
