@@ -3,12 +3,15 @@ var Menu = function(type){
 		return [
 			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), items: [ 
 				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: mainSettingsHandler },
-				{ label: loca.GetText("LAB", "Filter"), onSelect: menuFilterHandler, items: [
-						{ label: "none" }, { label: "snownowater" }, { label: "snowlight" },
-						{ label: "snow" }, { label: "oven" }, { label: "doomsday" },
-						{ label: "night" }, { label: "desert" }, { label: "tropical" },
-						{ label: "blackandwhite" }, { label: "spooky" }, { label: "snow_medium" },
-						{ label: "tundra" }, { label: "darkershadow" }, { label: "magicsepia" }
+				{ label: loca.GetText("LAB", "Filter"), items: [
+						{ label: "none", onSelect: menuFilterHandler }, { label: "snownowater", onSelect: menuFilterHandler }, 
+						{ label: "snowlight", onSelect: menuFilterHandler }, { label: "snow", onSelect: menuFilterHandler },
+						{ label: "oven", onSelect: menuFilterHandler }, { label: "doomsday", onSelect: menuFilterHandler },
+						{ label: "night", onSelect: menuFilterHandler }, { label: "desert", onSelect: menuFilterHandler }, 
+						{ label: "tropical", onSelect: menuFilterHandler },	{ label: "blackandwhite", onSelect: menuFilterHandler },
+						{ label: "spooky", onSelect: menuFilterHandler }, { label: "snow_medium", onSelect: menuFilterHandler },
+						{ label: "tundra", onSelect: menuFilterHandler }, { label: "darkershadow", onSelect: menuFilterHandler },
+						{ label: "magicsepia", onSelect: menuFilterHandler }
 				]}, 
 				{ label: loca.GetText("LAB", "Update") + ' ', keyEquivalent: 'F2', keyCode: 113, defaultKeyEquivalentModifiers: false, onSelect: menuZoneRefreshHandler}
 			]},

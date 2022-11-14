@@ -25,6 +25,7 @@ function scriptsManagerWindow()
 	}
 	out += managerGetData();
 	$("#managerModalData").html(out);
+	$('#managerModalData [data-toggle="tooltip"]').tooltip({container: 'body'});
 	$("#managerModalData input[type=checkbox]").change(function(){
 		var checkboxes = '';
 		$("#managerModalData input[type=checkbox]").each(function(i, item) { checkboxes += + item.checked; });
@@ -51,7 +52,7 @@ function managerGetData()
 			[2,name],
 			[2,getScriptField(info[name])],
 			[2,info[name].author],
-			[3,'<span data-tooltip="'+info[name].longDesc+'">'+info[name].shortDesc+'</span>'],
+			[3, '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>'.format(info[name].longDesc, info[name].shortDesc)],
 			[2,st == 'ok' ? st : getText('manager_mismatch')],
 			[1,'<input type="checkbox" id="'+name+'" '+(currentScripts[name] ? 'checked' : '')+'>']
 		]);
