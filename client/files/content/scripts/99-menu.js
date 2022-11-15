@@ -2,7 +2,6 @@ var Menu = function(type){
 	this.groupedMenu = function() {
 		return [
 			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), items: [ 
-				{ label: 'v' + version, keyEquivalent: 'F1', defaultKeyEquivalentModifiers: false, enabled: false },
 				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: mainSettingsHandler },
 				{ label: loca.GetText("LAB", "Filter"), items: [
 						{ label: "none", onSelect: menuFilterHandler }, { label: "snownowater", onSelect: menuFilterHandler }, 
@@ -14,18 +13,18 @@ var Menu = function(type){
 						{ label: "tundra", onSelect: menuFilterHandler }, { label: "darkershadow", onSelect: menuFilterHandler },
 						{ label: "magicsepia", onSelect: menuFilterHandler }
 				]}, 
-				{ label: loca.GetText("LAB", "Update") + ' ', keyEquivalent: 'F2', keyCode: 113, defaultKeyEquivalentModifiers: false, onSelect: menuZoneRefreshHandler}
+				{ label: loca.GetText("LAB", "Update") + ' (F2)', keyCode: 113, onSelect: menuZoneRefreshHandler}
 			]},
 			{ label: loca.GetText("LAB", "Specialists"), items: [ 
-				{ label: loca.GetText("SPE", "Explorer") + ' ', keyEquivalent: 'F3', keyCode: 114, defaultKeyEquivalentModifiers: false, onSelect: function() { specSharedHandler(1); } }, 
-				{ label: loca.GetText("SPE", "Geologist") + ' ', keyEquivalent: 'F4', keyCode: 115, defaultKeyEquivalentModifiers: false, onSelect: function() { specSharedHandler(2); } }
+				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', keyCode: 114, onSelect: function() { specSharedHandler(1); } }, 
+				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', keyCode: 115, onSelect: function() { specSharedHandler(2); } }
 			]},
 			{ label: loca.GetText("LAB", "Buildings"), items: [
-				{ label: loca.GetText("LAB", "Buffs") + ' ', keyEquivalent: 'F5', keyCode: 116, defaultKeyEquivalentModifiers: false, onSelect: menuBuffsHandler }, 
-				{ label: loca.GetText("LAB", "Production") + ' ', keyEquivalent: 'F7', keyCode: 118, defaultKeyEquivalentModifiers: false, onSelect: menuBuildingHandler },
-				{ label: getText('prod_timed') + ' ', keyEquivalent: 'F8', keyCode: 119, defaultKeyEquivalentModifiers: false, onSelect: TimedMenuHandler }
+				{ label: loca.GetText("LAB", "Buffs") + ' (F5)', keyCode: 116, onSelect: menuBuffsHandler }, 
+				{ label: loca.GetText("LAB", "Production") + ' (F7)', keyCode: 118, onSelect: menuBuildingHandler },
+				{ label: getText('prod_timed') + ' (F8)', keyCode: 119, onSelect: TimedMenuHandler }
 			]},
-			{ label: loca.GetText("LAB", "BlackMarketAuction") + ' ', defaultKeyEquivalentModifiers: false, keyEquivalent: 'F6', keyCode: 117, onSelect: menuAuctionHandler },
+			{ label: loca.GetText("LAB", "BlackMarketAuction") + ' (F6)', keyCode: 117, onSelect: menuAuctionHandler },
 			{ label: loca.GetText("RES", "Tool"), name: 'Tools', items: [ 
 				{label: loca.GetText("LAB", "Update"), onSelect: reloadScripts }, 
 				{label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: scriptsManager },
@@ -46,6 +45,8 @@ Menu.prototype = {
 			menu.push({ label: "CustomCode", onSelect: menuCustomHandler });
 			menu.push({ label: "SaveHTML", onSelect: menuSaveHandler });
 		}
+		menu.push({type: 'separator' });
+		menu.push({ label: 'v' + version, enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;
 		this.buildKeybinds(menu);
