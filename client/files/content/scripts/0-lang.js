@@ -294,7 +294,19 @@ const baseTranslation = {
 		'prod_timed': 'Crono Producción',
 		'prod_queuesize': 'Tamaño en cola',
 		'prod_welcome': '¡Bienvenido al gestor de Producción!',
-		'prod_welcome_block': '<p>Puedes grabar edificios y luego detenerlos o iniciarlos en masa. Presiona el botón "Iniciar grabación" y selecciona tus edificios. Después de eso, regresa y presiona "Detener grabación". Verás una lista de edificios con el estado actual. Guárdalo como plantilla y la próxima vez simplemente cargue la plantilla y presiona Enviar.</p>'
+		'prod_welcome_block': '<p>Puedes grabar edificios y luego detenerlos o iniciarlos en masa. Presiona el botón "Iniciar grabación" y selecciona tus edificios. Después de eso, regresa y presiona "Detener grabación". Verás una lista de edificios con el estado actual. Guárdalo como plantilla y la próxima vez simplemente cargue la plantilla y presiona Enviar.</p>',
+		'menustyle_grouped': 'Agrupado',
+		'menustyle_linear': 'Lineal',
+		'menustyle_desc': 'Estilo del menú',
+		'deffilter_desc': 'Filtro de juego predeterminado',
+		'dateformat_desc': 'Formato de fechas',
+		'geotemplates_desc': 'Plantillas de Geólogo: ',
+		'expltemplates_desc': 'Plantillas de Explorador: ',
+		'bufftemplates_desc': 'Plantillas de Potenciadores: ',
+		'buitemplates_desc': 'Plantillas de Edificios: ',
+		'geodeftask_desc': 'Tarea predeterminada de Geólogos',
+		'expldeftask_desc': 'Tarea predeterminada de Exploradores',
+		'spectimetype_desc': 'Tipo de cálculo de tiempo predeterminado'
 	},
 	"pl-pl": {
 		"btn_submit":"Wyślij",
