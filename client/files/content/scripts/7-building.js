@@ -1,5 +1,3 @@
-//createProdMenu();
-
 var buildingSelectedTracker = game.getTracker('bui', buildingSelectedHandler),
 	buildingRecordEnabled = false,
 	buildingRecord,
@@ -141,16 +139,4 @@ function buildingSelectedHandler(event){
 	if(className != "GUI.GAME::cBuildingInfoPanel") { return; }
 	if(buildingRecord == null) { buildingRecord = {}; }
 	buildingRecord[building.GetGrid()] = { 'status': !building.IsProductionActive(), 'name': building.GetBuildingName_string() };
-}
-
-function createProdMenu()
-{
-	prodMenu = new air.NativeMenu();
-	prodMenu.addItem(createMenuItem(loca.GetText("LAB", "Buffs") + " (F5)", menuBuffsHandler));
-	prodMenu.addItem(createMenuItem(loca.GetText("LAB", "Production") + " (F7)", menuBuildingHandler));
-	prodMenu.addItem(createMenuItem(getText('prod_timed') + " (F8)", TimedMenuHandler));
-	addMenuItem(loca.GetText("LAB", "Buildings"), prodMenu);
-	addKeybBind(menuBuffsHandler, 116);
-	addKeybBind(menuBuildingHandler, 118);
-	addKeybBind(TimedMenuHandler, 119);
 }

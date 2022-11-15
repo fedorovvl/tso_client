@@ -6,6 +6,7 @@ var mainSettings = {
 	defFilter: 'none',
 	dtfFormat: "MM-dd HH:mm"
 };
+var child;
 
 function reloadScripts(event)
 {
@@ -43,7 +44,7 @@ function debug(obj)
 
 function mainSettingsHandler(event)
 {
-	var w = new Modal('mainSettings', 'Main Settings');
+	var w = new Modal('mainSettings', utils.getImageTag('icon_dice.png', '45px') + ' '+loca.GetText("LAB", "ToggleOptionsPanel"));
 	var getDefFolder = function(id){
 		return $('<span>', { 'class': id }).html(mainSettings[id] ? mainSettings[id] : air.File.documentsDirectory.nativePath).prop('outerHTML');
 	};
@@ -69,39 +70,39 @@ function mainSettingsHandler(event)
 	w.size = '';
 	w.create();
 	var html = '<div class="container-fluid" style="user-select: all;">';
-	html += utils.createTableRow([[6, "setting"], [6, "value"]], true);
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
 	menuStyleSelector = $('<select>', { 'class': 'form-control menuStyle' });
 	menuStyleSelector.append([
-		$('<option>', { 'value': 'grouped' }).text("grouped"),
-		$('<option>', { 'value': 'linear' }).text("linear"),		
+		$('<option>', { 'value': 'grouped' }).text(getText('menustyle_grouped')),
+		$('<option>', { 'value': 'linear' }).text(getText('menustyle_linear')),		
 	]);
-	html += utils.createTableRow([[6, "Menu style"], [6, menuStyleSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[6, "Default filter"], [6, createFilterDrop()]]);
-	html += utils.createTableRow([[6, "Datetime format"], [6, createDateFormatterDrop()]]);
-	html += utils.createTableRow([[9, "Geo folder: " + getDefFolder('geolastDir')], [3, $('<button>', { 
+	html += utils.createTableRow([[6, getText('menustyle_desc')], [6, menuStyleSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('deffilter_desc')], [6, createFilterDrop()]]);
+	html += utils.createTableRow([[6, getText('dateformat_desc')], [6, createDateFormatterDrop()]]);
+	html += utils.createTableRow([[9, getText('geotemplates_desc') + getDefFolder('geolastDir')], [3, $('<button>', { 
 		'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
 		'class': 'btn form-control',
 		'id': 'geolastDir'
-	}).text('select')]]);
-	html += utils.createTableRow([[9, "Explorer folder: " + getDefFolder('expllastDir')], [3, $('<button>', { 
+	}).text(loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, getText('expltemplates_desc') + getDefFolder('expllastDir')], [3, $('<button>', { 
 		'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
 		'class': 'btn form-control',
 		'id': 'expllastDir'
-	}).text('select')]]);
-	html += utils.createTableRow([[9, "Buffs folder: " + getDefFolder('bufflastDir')], [3, $('<button>', { 
+	}).text(loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, getText('bufftemplates_desc') + getDefFolder('bufflastDir')], [3, $('<button>', { 
 		'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
 		'class': 'btn form-control',
 		'id': 'bufflastDir'
-	}).text('select')]]);
-	html += utils.createTableRow([[9, "Building folder: " + getDefFolder('builastDir')], [3, $('<button>', { 
+	}).text(loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, getText('buitemplates_desc') + getDefFolder('builastDir')], [3, $('<button>', { 
 		'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
 		'class': 'btn form-control',
 		'id': 'builastDir'
-	}).text('select')]]);
-	html += utils.createTableRow([[6, "Geo default task"], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
-	html += utils.createTableRow([[6, "Explorer default task"], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
+	}).text(loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[6, getText('geodeftask_desc')], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
+	html += utils.createTableRow([[6, getText('expldeftask_desc')], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
 	html += utils.createTableRow([
-		[6, "Spec default time type"], 
+		[6, getText('spectimetype_desc')], 
 		[6, createSwitch('specDefTimeType', mainSettings.specDefTimeType) + '<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getDefTimeType())]
 	]);
 	w.Body().html(html + '<div>');
@@ -156,8 +157,31 @@ function menuZoneRefreshHandler(event)
 	showGameAlert(getText('command_sent'));
 }
 
+function menuCustomHandler(event)
+{
+	try{
+		if(child) {	$( child ).remove(); }
+		file = new air.File("file:///" + air.File.applicationDirectory.resolvePath("custom.js").nativePath);
+		var fileStream = new air.FileStream();
+		fileStream.open(file, air.FileMode.WRITE);
+		fileStream.writeMultiByte("(function () { try {" + prompt("Code") + "} catch (err) { alert(err);} })();", "utf-8");
+		fileStream.close();
+		var script = document.createElement("script");
+		script.setAttribute("src", "custom.js?" + Date.now());
+		script.setAttribute("type", "text/javascript");
+		script.setAttribute("id", "custom"+ (Math.random() + 1).toString(36).substring(7));
+		child = document.body.appendChild(script);
+	} catch (e) { alert(e); }
+}
+
+function menuSaveHandler(event)
+{
+	file = air.File.documentsDirectory.resolvePath("swmmo.html");
+	file.save($('html').prop('outerHTML'));
+}
+
 //backward compatibility
-function createModalWindow(id, title) {	new Modal(id, title, false).create(); }
+function createModalWindow(id, title, drop) {	new Modal(id, title, drop||false).create(); }
 function createSettingsWindow(id, savefunc, size) {	new Modal(id, '').settings(savefunc, size); }
 function showAlert(message, sameLayer, level) {	game.showAlert(message); }
 function showGameAlert(message){ game.showAlert(message); }

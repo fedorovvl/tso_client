@@ -2,6 +2,7 @@ var Menu = function(type){
 	this.groupedMenu = function() {
 		return [
 			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), items: [ 
+				{ label: 'v' + version, keyEquivalent: 'F1', defaultKeyEquivalentModifiers: false, enabled: false },
 				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: mainSettingsHandler },
 				{ label: loca.GetText("LAB", "Filter"), items: [
 						{ label: "none", onSelect: menuFilterHandler }, { label: "snownowater", onSelect: menuFilterHandler }, 
@@ -45,7 +46,6 @@ Menu.prototype = {
 			menu.push({ label: "CustomCode", onSelect: menuCustomHandler });
 			menu.push({ label: "SaveHTML", onSelect: menuSaveHandler });
 		}
-		menu.push({ label: 'v' + version, enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;
 		this.buildKeybinds(menu);

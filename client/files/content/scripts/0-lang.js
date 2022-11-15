@@ -53,7 +53,19 @@ const baseTranslation = {
 		'prod_timed': 'Timed production',
 		'prod_queuesize': 'Queue size',
 		'prod_welcome': 'Welcome to production manager!',
-		'prod_welcome_block': '<p>You can record buildings and then mass stop or start them. Press "Start recording" button and select your buildings. After that come back and press "Stop recording". You will see list of buildings with current status. Save it as a template and next time just load template and press Submit.</p>'
+		'prod_welcome_block': '<p>You can record buildings and then mass stop or start them. Press "Start recording" button and select your buildings. After that come back and press "Stop recording". You will see list of buildings with current status. Save it as a template and next time just load template and press Submit.</p>',
+		'menustyle_grouped': 'Grouped',
+		'menustyle_linear': 'Linear',
+		'menustyle_desc': 'Menu style',
+		'deffilter_desc': 'Default filter',
+		'dateformat_desc': 'Datetime format',
+		'geotemplates_desc': 'Geologists templates: ',
+		'expltemplates_desc': 'Explorers templates: ',
+		'bufftemplates_desc': 'Buffs templates: ',
+		'buitemplates_desc': 'Buildings templates: ',
+		'geodeftask_desc': 'Geologists default task',
+		'expldeftask_desc': 'Explorers default task',
+		'spectimetype_desc': 'Default time calculation type'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -107,7 +119,19 @@ const baseTranslation = {
 		'prod_timed': 'Очереди производства',
 		'prod_queuesize': 'Размер очереди',
 		'prod_welcome': 'Добро пожаловать в менеджер производства!',
-		'prod_welcome_block': '<p>Вы можете записать нужные здания, чтобы потом массово запускать либо останавливать их. Нажмите "Начать запись" и выделяйте свои здания кликая на них. После окончания вернитесь сюда и нажмите кнопку "Остановить запись". Вы увидите список зданий и их статус. Сохраните его как шаблон. В следующий раз загрузите шаблон, проверьте список и нажмите "Отправить".</p>'
+		'prod_welcome_block': '<p>Вы можете записать нужные здания, чтобы потом массово запускать либо останавливать их. Нажмите "Начать запись" и выделяйте свои здания кликая на них. После окончания вернитесь сюда и нажмите кнопку "Остановить запись". Вы увидите список зданий и их статус. Сохраните его как шаблон. В следующий раз загрузите шаблон, проверьте список и нажмите "Отправить".</p>',
+		'menustyle_grouped': 'Сгруппированное',
+		'menustyle_linear': 'Линейное',
+		'menustyle_desc': 'Стиль меню',
+		'deffilter_desc': 'Фильтр зоны по умолчанию',
+		'dateformat_desc': 'Формат даты/времени',
+		'geotemplates_desc': 'Шаблоны геологов: ',
+		'expltemplates_desc': 'Шаблоны разведчиков: ',
+		'bufftemplates_desc': 'Шаблоны бафов: ',
+		'buitemplates_desc': 'Шаблоны зданий: ',
+		'geodeftask_desc': 'Задача геологов по умолчанию',
+		'expldeftask_desc': 'Задача разведчиков по умолчанию',
+		'spectimetype_desc': 'Тип расчета времени по умолчанию'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',

@@ -17,7 +17,6 @@ window.runtime.flash.net.registerClassAlias(
 	"defaultGame.Communication.VO.BlackMarketAuction.dBlackMarketAuctionBidVO", 
 	window.runtime.Communication.VO.BlackMarketAuction.dBlackMarketAuctionBidVO
 );
-//addMenuItem(loca.GetText("LAB", "BlackMarketAuction") + " (F6)", menuAuctionHandler, 117);
 
 function aucCompleteURLHandler(event)
 {
