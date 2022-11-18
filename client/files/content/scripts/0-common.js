@@ -6,7 +6,6 @@ var mainSettings = {
 	defFilter: 'none',
 	dtfFormat: "MM-dd HH:mm"
 };
-var child;
 
 function reloadScripts(event)
 {
@@ -67,6 +66,13 @@ function mainSettingsHandler(event)
 		}
 		return select.prop('outerHTML');
 	}
+	var createButton = function(id, text) {
+		return $('<button>', { 
+			'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
+			'class': 'btn form-control',
+			'id': id
+		}).text(text)
+	}
 	w.size = '';
 	w.create();
 	var html = '<div class="container-fluid" style="user-select: all;">';
@@ -79,26 +85,10 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('menustyle_desc')], [6, menuStyleSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('deffilter_desc')], [6, createFilterDrop()]]);
 	html += utils.createTableRow([[6, getText('dateformat_desc')], [6, createDateFormatterDrop()]]);
-	html += utils.createTableRow([[9, getText('geotemplates_desc') + getDefFolder('geolastDir')], [3, $('<button>', { 
-		'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
-		'class': 'btn form-control',
-		'id': 'geolastDir'
-	}).text(loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, getText('expltemplates_desc') + getDefFolder('expllastDir')], [3, $('<button>', { 
-		'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
-		'class': 'btn form-control',
-		'id': 'expllastDir'
-	}).text(loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, getText('bufftemplates_desc') + getDefFolder('bufflastDir')], [3, $('<button>', { 
-		'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
-		'class': 'btn form-control',
-		'id': 'bufflastDir'
-	}).text(loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, getText('buitemplates_desc') + getDefFolder('builastDir')], [3, $('<button>', { 
-		'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
-		'class': 'btn form-control',
-		'id': 'builastDir'
-	}).text(loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, getText('geotemplates_desc') + getDefFolder('geolastDir')], [3, createButton('geolastDir', loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, getText('expltemplates_desc') + getDefFolder('expllastDir')], [3, createButton('expllastDir', loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, getText('bufftemplates_desc') + getDefFolder('bufflastDir')], [3, createButton('bufflastDir', loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, getText('buitemplates_desc') + getDefFolder('builastDir')], [3, createButton('builastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[6, getText('geodeftask_desc')], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
 	html += utils.createTableRow([[6, getText('expldeftask_desc')], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
 	html += utils.createTableRow([
@@ -159,19 +149,18 @@ function menuZoneRefreshHandler(event)
 
 function menuCustomHandler(event)
 {
-	try{
-		if(child) {	$( child ).remove(); }
+	try
+	{
+		$('script[id="custom"]').remove();
 		file = new air.File("file:///" + air.File.applicationDirectory.resolvePath("custom.js").nativePath);
 		var fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.WRITE);
 		fileStream.writeMultiByte("(function () { try {" + prompt("Code") + "} catch (err) { alert(err);} })();", "utf-8");
 		fileStream.close();
-		var script = document.createElement("script");
-		script.setAttribute("src", "custom.js?" + Date.now());
-		script.setAttribute("type", "text/javascript");
-		script.setAttribute("id", "custom"+ (Math.random() + 1).toString(36).substring(7));
-		child = document.body.appendChild(script);
-	} catch (e) { alert(e); }
+		$('head').append($("<script>").attr({ "src": "custom.js?" + new Date().getTime(), "id": "custom", "type": "text/javascript"}));
+	} catch (e) { 
+		alert(e);
+	}
 }
 
 function menuSaveHandler(event)
