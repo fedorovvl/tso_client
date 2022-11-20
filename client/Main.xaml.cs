@@ -33,6 +33,7 @@ namespace client
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
         public static int http_timeout = 20000;
+        public static bool is64 = System.Environment.Is64BitOperatingSystem;
         private int _regionUid;
         public static Arguments cmd;
         private string _langLogin;
@@ -170,6 +171,7 @@ namespace client
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
+            
             using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
             {
                 // ensure that scripts dir always fresh
@@ -182,6 +184,12 @@ namespace client
                             fi.Delete();
                     }
                 }
+                if (!debug)
+                    unzip.ExtractToDirectory(ClientDirectory);
+            }
+            byte[] runtime = is64 ? Properties.Resources.runtime_x64 : Properties.Resources.runtime_x86;
+            using (var unzip = new Unzip(new MemoryStream(runtime)))
+            {
                 if (!debug)
                     unzip.ExtractToDirectory(ClientDirectory);
             }

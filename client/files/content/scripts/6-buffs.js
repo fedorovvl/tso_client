@@ -61,7 +61,7 @@ function menuBuffsHandler(event)
 		buffRecordFiltered = buffRecordFiltered.filter(function(e) { return e.buiGrid != grid; });
 		buffRecord['data'] = buffRecord['data'].filter(function(e) { return e.buiGrid != grid; });
 		$(e.currentTarget).closest('.row').remove();
-		if(buffRecordFiltered.length == 0) { buffRecord = null; }
+		if(buffRecord['data'].length == 0) { buffRecord = null; }
 		menuBuffsHandler(null);
 	});
 	$( "#startRecording" ).click(function(){
