@@ -39,5 +39,12 @@
       "longDesc":"Show info about your deposits",
       "author":"MkFera",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
+   },
+   "user_showmyloot.js":{
+      "name":"Show My Loot",
+      "shortDesc":"Loot stats service",
+      "longDesc":"Upload adventure loot info to service Show My Loot on tsomaps.com",
+      "author":"SirriS",
+	  "url": "https://tsomaps.com/loots/"
    }
 }
