@@ -171,7 +171,6 @@ namespace client
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
-            
             using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
             {
                 // ensure that scripts dir always fresh
@@ -184,12 +183,6 @@ namespace client
                             fi.Delete();
                     }
                 }
-                if (!debug)
-                    unzip.ExtractToDirectory(ClientDirectory);
-            }
-            byte[] runtime = is64 ? Properties.Resources.runtime_x64 : Properties.Resources.runtime_x86;
-            using (var unzip = new Unzip(new MemoryStream(runtime)))
-            {
                 if (!debug)
                     unzip.ExtractToDirectory(ClientDirectory);
             }
