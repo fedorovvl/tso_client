@@ -106,6 +106,8 @@ function aucFailResponseHandler(event, data)
 function aucResultResponseHandler(event, data)
 {
 	currentAuc = data.data;
+	if(currentAuc.auctionId == "")
+		currentAuc = null;
 	if(bidPacket) {
 		try
 		{
@@ -136,7 +138,7 @@ function aucReloadData()
 
 function auxPlaceBet()
 {
-	bidPacket = new window.runtime.Communication.VO.BlackMarketAuction.dBlackMarketAuctionBidVO()
+	bidPacket = new window.runtime.Communication.VO.BlackMarketAuction.dBlackMarketAuctionBidVO();
 	bidPacket.auctionId = currentAuc.auctionId;
 	bidPacket.biddingCount = currentAuc.biddingCount;
 	game.gi.mClientMessages.SendMessagetoServer(15001, game.gi.mCurrentViewedZoneID, bidPacket, aucResponder);
