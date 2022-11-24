@@ -2,24 +2,7 @@
 addToolsMenuItem("Show my loot", smlMenuHandler);
 var smlRewards = [];
 var smlTracker = game.getTracker('sml', smlApliedHandler);
-var smlZoneLoadTracker = game.getTracker('smlzone', smlZoneLoadHandler);
-
-setTimeout(function() {
-	try
-	{
-		game.gi.channels.ZONE.addPropertyObserver("ZONE_REFRESHED_CLIENT", smlZoneLoadTracker);
-		game.player.addPropertyObserver("lootedResource", smlTracker);
-		game.chatMessage("PropertyObserver registered", 'sml');
-	} catch(e) {
-		game.chatMessage("PropertyObserver Error " + e, 'sml');
-	}
-}, 3000);
-
-function smlZoneLoadHandler(event)
-{
-	game.player.addPropertyObserver("lootedResource", smlTracker);
-	game.chatMessage("PropertyObserver re-registered", 'sml');
-}
+game.gi.channels.ZONE.addPropertyObserver("lootedResource", smlTracker);
 
 function smlMenuHandler(event)
 {
