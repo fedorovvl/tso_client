@@ -6,6 +6,7 @@ setTimeout(function() {
 	{
 		var smlTracker = game.getTracker('sml', smlApliedHandler);
 		game.player.addPropertyObserver("lootedResource", smlTracker);
+		game.chatMessage("PropertyObserver registered", 'sml');
 	} catch(e) {
 		game.chatMessage("PropertyObserver Error " + e, 'sml');
 	}
