@@ -44,8 +44,19 @@ function scriptsManagerWindow()
 function managerGetData()
 {
 	currentScripts = getCurrentScripts();
-	out = createTableRow([[2,"Filename"],[2,"ScriptName"],[2,"Author"],[3,"Description"],[2,"Status"],[1,"Installed"]], true);
+	out = createTableRow(
+		[
+			[2,"Filename"],
+			[2,"ScriptName"],
+			[2,"Author"],
+			[3,"Description"],
+			[2,"Status"],
+			[1,"Installed"]
+		],
+		true
+	);
 	info = (info == 'error') ? {} : info;
+	
 	for(name in info) {
 		st = checkSize(info[name].size, currentScripts[name]);
 		out += createTableRow([
@@ -60,6 +71,7 @@ function managerGetData()
 		currentCheckboxes += (currentScripts[name] ? '1' : '0');
 		delete currentScripts[name];
 	}
+	
 	for(item in currentScripts) {
 		out += createTableRow([
 			[2,item],
@@ -119,7 +131,9 @@ function getCurrentScripts()
 {
 	scripts = {};
 	air.File.applicationDirectory.resolvePath("userscripts").getDirectoryListing().forEach(function(item) {
-		if(item.name != "99-example.js") { scripts[item.name] = item.size; }
+		if(item.name !== "99-example.js" && item.name.match(/\.js$/i) !== null) {
+			scripts[item.name] = item.size;
+		}
 	});
 	return scripts;
 }
