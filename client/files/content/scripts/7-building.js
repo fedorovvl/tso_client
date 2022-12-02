@@ -93,6 +93,15 @@ function buildingGetHTMLData()
 	], true);
 	$.each(buildingRecord, function(item) {
 		var bui = buildingGetBui(item, 0);
+		if(bui == null) {
+			result += createTableRow([
+				[1, item],
+				[7, loca.GetText("BUI", buildingRecord[item].name), 'name'],
+				[4, getText('buff_not_exist')],
+			]);
+			delete buildingRecord[item];
+			return;
+		}
 		buildingRecord[item].real_status = bui.IsProductionActive();
 		result += createTableRow([
 			[1, item],
