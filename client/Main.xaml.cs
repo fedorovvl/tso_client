@@ -75,7 +75,7 @@ namespace client
             "--config - set config file",
             "--login - set login",
             "--password - set password",
-            "--collect - autoconfirm ubicolleck check",
+            "--collect - autoconfirm ubicollect check",
             "--autologin - allows to start client with login/password from setting.dat",
             "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro] - changes the game interface language.",
             "--window [fullscreen|maximized] - initital game window size",
@@ -393,7 +393,7 @@ namespace client
             }
             if (!string.IsNullOrEmpty(error_msg))
             {
-                
+
                 error.Text = error_msg;
                 return;
             }
@@ -460,7 +460,7 @@ namespace client
         {
             (sender as TextBox).Visibility = System.Windows.Visibility.Collapsed;
             password.Focus();
-            
+
         }
 
         private void password_LostFocus(object sender, RoutedEventArgs e)

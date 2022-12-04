@@ -1,32 +1,32 @@
 var Menu = function(type){
 	this.groupedMenu = function() {
 		return [
-			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), items: [ 
+			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), items: [
 				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: mainSettingsHandler },
 				{ label: loca.GetText("LAB", "Filter"), items: [
-						{ label: "none", onSelect: menuFilterHandler }, { label: "snownowater", onSelect: menuFilterHandler }, 
+						{ label: "none", onSelect: menuFilterHandler }, { label: "snownowater", onSelect: menuFilterHandler },
 						{ label: "snowlight", onSelect: menuFilterHandler }, { label: "snow", onSelect: menuFilterHandler },
 						{ label: "oven", onSelect: menuFilterHandler }, { label: "doomsday", onSelect: menuFilterHandler },
-						{ label: "night", onSelect: menuFilterHandler }, { label: "desert", onSelect: menuFilterHandler }, 
+						{ label: "night", onSelect: menuFilterHandler }, { label: "desert", onSelect: menuFilterHandler },
 						{ label: "tropical", onSelect: menuFilterHandler },	{ label: "blackandwhite", onSelect: menuFilterHandler },
 						{ label: "spooky", onSelect: menuFilterHandler }, { label: "snow_medium", onSelect: menuFilterHandler },
 						{ label: "tundra", onSelect: menuFilterHandler }, { label: "darkershadow", onSelect: menuFilterHandler },
 						{ label: "magicsepia", onSelect: menuFilterHandler }
-				]}, 
+				]},
 				{ label: loca.GetText("LAB", "Update") + ' (F2)', keyCode: 113, onSelect: menuZoneRefreshHandler}
 			]},
-			{ label: loca.GetText("LAB", "Specialists"), items: [ 
-				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', keyCode: 114, onSelect: function() { specSharedHandler(1); } }, 
+			{ label: loca.GetText("LAB", "Specialists"), items: [
+				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', keyCode: 114, onSelect: function() { specSharedHandler(1); } },
 				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', keyCode: 115, onSelect: function() { specSharedHandler(2); } }
 			]},
 			{ label: loca.GetText("LAB", "Buildings"), items: [
-				{ label: loca.GetText("LAB", "Buffs") + ' (F5)', keyCode: 116, onSelect: menuBuffsHandler }, 
+				{ label: loca.GetText("LAB", "Buffs") + ' (F5)', keyCode: 116, onSelect: menuBuffsHandler },
 				{ label: loca.GetText("LAB", "Production") + ' (F7)', keyCode: 118, onSelect: menuBuildingHandler },
 				{ label: getText('prod_timed') + ' (F8)', keyCode: 119, onSelect: TimedMenuHandler }
 			]},
 			{ label: loca.GetText("LAB", "BlackMarketAuction") + ' (F6)', keyCode: 117, onSelect: menuAuctionHandler },
-			{ label: loca.GetText("RES", "Tool"), name: 'Tools', items: [ 
-				{label: loca.GetText("LAB", "Update"), onSelect: reloadScripts }, 
+			{ label: loca.GetText("RES", "Tool"), name: 'Tools', items: [
+				{label: loca.GetText("LAB", "Update"), onSelect: reloadScripts },
 				{label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: scriptsManager },
 				{type: 'separator' }
 			]}
@@ -87,7 +87,7 @@ Menu.prototype = {
 		$('script[id="user"]').remove();
 		var toolsMenu = this.nativeMenu.getItemByName("Tools").submenu;
 		while(toolsMenu.numItems > 3) { toolsMenu.removeItemAt(3); }
-		for(i in this.keybindings) { 
+		for(i in this.keybindings) {
 			this.keybindings[i].isUser&&delete this.keybindings[i];
 		}
 	}
@@ -95,4 +95,3 @@ Menu.prototype = {
 menu = new Menu(mainSettings.menuStyle);
 menu.show();
 reloadScripts(null);
-
