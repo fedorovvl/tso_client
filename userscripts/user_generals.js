@@ -138,11 +138,11 @@ const _exudGeneralsLang = {
 		"SkillTip": "Klicke auf den General um den Skill zu sehen."
 	}
 };
-var _exudGeneralsVersion = 0;
 var _exudGeneralsTemplates;
 var _exudGeneralsOpening = false;
 var _exudGeneralsSortField = { 'key': 0, 'order': false }
 var _exudGeneralsModalInitialized = false;
+const playerId = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
 
 addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
 
@@ -211,7 +211,7 @@ try {
 		$('#udGeneralsModal ._exudGeneralsLoadTemplateBtn').click(function() { _exudGeneralsTemplates.load(); });
 
 		$('#udGeneralsModal ._exudGeneralsSaveTemplateBtn').click(function(){
-			var dataToSave = new Array();
+			var dataToSave = [];
 			$('#udGeneralsModalData input[type="checkbox"]').each(function(i, item) {
 				if(item.checked) {
 					dataToSave.push(item.id);
@@ -226,8 +226,8 @@ try {
 		var out = '<div class="container-fluid">';
 		try
 		{
-			var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
-			var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
+			var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance(),
+				currentViewedZoneId = swmmo.application.mGameInterface.mCurrentViewedZoneID;
 			$("#udGeneralsModal .dropdown-menu").html($('<li>').html($('<a>', {'href': '#', 'value': '98'}).text(loca.GetText("LAB", "StarMenu"))));
 
 			if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone){
@@ -235,8 +235,8 @@ try {
 			}
 
 			AdvManager.getAdventures().forEach(function(item){
-				if (item.zoneID != swmmo.application.mGameInterface.mCurrentViewedZoneID) {
-					$("#udGeneralsModal .dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': item.zoneID}).text((item.ownerPlayerID != PlayerID ? '*' : '') + loca.GetText("ADN", item.adventureName))));
+				if (item.zoneID !== currentViewedZoneId) {
+					$("#udGeneralsModal .dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': item.zoneID}).text((item.ownerPlayerID !== playerId ? '*' : '') + loca.GetText("ADN", item.adventureName))));
 				}
 			});
 			
@@ -413,39 +413,23 @@ function _exudGeneralsOptions()
 	});
 }
 
-function _exudGeneralsOptionsCreateSettings()
-{
+function _getSettingsRow(switchName, switchValue, labelId) {
+	return [
+		'<div style="float: clear">',
+		'<div style="float: left;">' + createSwitch(switchName, switchValue) + '</div>',
+		'<div>&nbsp;&nbsp;' + _exudGeneralsGetLabel(labelId) + '</div>',
+		'</div><br/>'
+	].join('');
+}
+
+function _exudGeneralsOptionsCreateSettings() {
 	var out = '';
-	try{
-		out += '<div style="float: clear"><div style="float: left;">';
-		out += createSwitch("_exudChangeGeneralSortFloatBtn", (_exudGeneralsSettings['_exudGeneralsSortType']==1));
-		out += '</div>';
-		out += '<div>&nbsp;&nbsp;'+_exudGeneralsGetLabel("ByName") +'</div>';
-		out += '</div><br/>';
-
-		out += '<div style="float: clear"><div style="float: left">';
-		out += createSwitch("_exudHideGuestGeneralsFloatBtn", _exudGeneralsSettings['_exudGeneralsHideGuest']);
-		out += '</div>';
-		out += '<div >&nbsp;&nbsp;'+_exudGeneralsGetLabel("HideGuest") +'</div>';
-		out += '</div><br/>';
-
-		out += '<div style="float: clear"><div style="float: left;">';
-		out += createSwitch("_exudHideUnselectedGeneralsFloatBtn", (_exudGeneralsSettings['_exudGeneralsHideUnselected']));
-		out += '</div>';
-		out += '<div >&nbsp;&nbsp;'+_exudGeneralsGetLabel("HideUnselected") +'</div>';
-		out += '</div><br/>';
-
-		out += '<div style="float: clear"><div style="float: left ">';
-		out += createSwitch("_exudGeneralsExcludeStarMenuFloatBtn", (_exudGeneralsSettings['_exudGeneralsExcludeStarMenu']));
-		out += '</div>';
-		out += '<div>&nbsp;&nbsp;'+_exudGeneralsGetLabel("ExcludeStarMenu") +'</div>';
-		out += '</div><br/>';
-
-		out += '<div style="float: clear"><div style="float: left ">';
-		out += createSwitch("_exudGeneralsSelectedFirstBtn", (_exudGeneralsSettings['_exudGeneralsSelectedFirst']));
-		out += '</div>';
-		out += '<div>&nbsp;&nbsp;'+_exudGeneralsGetLabel("SelectedFirst") +'</div>';
-		out += '</div><br/>';
+	try {
+		out += _getSettingsRow('_exudChangeGeneralSortFloatBtn', _exudGeneralsSettings['_exudGeneralsSortType'] === 1, "ByName");
+		out += _getSettingsRow('_exudHideGuestGeneralsFloatBtn', _exudGeneralsSettings['_exudGeneralsHideGuest'], "HideGuest");
+		out += _getSettingsRow('_exudHideUnselectedGeneralsFloatBtn', _exudGeneralsSettings['_exudGeneralsHideUnselected'], "HideUnselected");
+		out += _getSettingsRow('_exudGeneralsExcludeStarMenuFloatBtn', _exudGeneralsSettings['_exudGeneralsExcludeStarMenu'], "ExcludeStarMenu");
+		out += _getSettingsRow('_exudGeneralsSelectedFirstBtn', _exudGeneralsSettings['_exudGeneralsSelectedFirst'], "SelectedFirst");
 	} catch (e) { alert(e.message); }
 	return out;
 }
@@ -546,11 +530,10 @@ function _exudGeneralsGoToMap(e)
 function _exudGeneralsOpenSkillTree(e)
 {
 	try {
-		var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
 		var Spec = _exudGeneralsFindByID(e.target.id.replace("exudSTIMG",""));
 		if (Spec != null)
 		{
-			var General = _exudGeneralsGetGeneralStruct(Spec, PlayerID);
+			var General = _exudGeneralsGetGeneralStruct(Spec, playerId);
 			if (General == null) return;
 			$("#_exudGeneralsSkillTree").css({left : 250 ,  top : 10, position:'absolute'});
 			$("#_exudGeneralsSkillTree").show()
@@ -689,11 +672,10 @@ function _exudGetSpecialists()
 	try
 	{
 		var SPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
-		var PlayerID = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
 		swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 			if (!SPECIALIST_TYPE.IsGeneral(item.GetType()))
 				return;
-			var General = _exudGeneralsGetGeneralStruct(item, PlayerID);
+			var General = _exudGeneralsGetGeneralStruct(item, playerId);
 			if (General != null)
 				listS.push(General);
 		});
@@ -704,30 +686,31 @@ function _exudGetSpecialists()
 	return listS;
 }
 
-function _exudGeneralsGetGeneralStruct(item, PlayerID)
-{
-	try{
-		i_pid = -1;
-		i_pid = item.getPlayerID();
+function _exudGeneralsGetGeneralStruct(item, playerID) {
+	try {
+		const itemPlayerId = item.getPlayerID(),
+			isOwner = playerID === itemPlayerId,
+			iconId = item.getIconID(),
+			army = item.GetArmy();
 		return {
-			"UID" : item.GetUniqueID().toKeyString(),
-			"BaseType" : item.GetBaseType(),
-			"HasElites" : item.GetArmy().HasEliteUnits(),
-			"HasUnits" : item.HasUnits(),
-			"Name" : item.getName(false).replace('<b>', '').replace('</b>',''),
-			"PlayerID" : i_pid,
-			"Type" : item.GetType(),
-			"XP" : item.GetXP(),
-			"Travelling" : item.isTravellingAway(),
+			"BaseType": item.GetBaseType(),
+			"GridPosition": item.GetGarrisonGridIdx(),
+			"HasElites": army.HasEliteUnits(),
+			"HasUnits": item.HasUnits(),
+			"Icon": getImageTag(iconId, '24px', '24px'),
+			"IconID": iconId,
 			"InUse": item.IsInUse(),
-			"Owner" : (PlayerID == i_pid),
-			"IsGeneral" : true,
-			"TotalArmy" : item.GetArmy().GetUnitsCount(),
-			"Icon" : getImageTag(item.getIconID(), '24px', '24px'),
-			"IconID": item.getIconID(),
-			"PlayerName" : (i_pid > 0 && i_pid != PlayerID ? swmmo.application.mGameInterface.GetPlayerName_string(i_pid) : null),
-			"GridPosition" : item.GetGarrisonGridIdx() ,
-			"Skills" : _exudGeneralsGetSkills(item)
+			"IsGeneral": true,
+			"Name": item.getName(false).replace('<b>', '').replace('</b>',''),
+			"Owner": isOwner,
+			"PlayerID": itemPlayerId,
+			"PlayerName": (itemPlayerId > 0 && !isOwner ? swmmo.application.mGameInterface.GetPlayerName_string(itemPlayerId) : null),
+			"Skills": _exudGeneralsGetSkills(item),
+			"Travelling": item.isTravellingAway(),
+			"Type": item.GetType(),
+			"TotalArmy": army.GetUnitsCount(),
+			"UID": item.GetUniqueID().toKeyString(),
+			"XP": item.GetXP()
 		};
 	} catch (e){}
 	return null;
