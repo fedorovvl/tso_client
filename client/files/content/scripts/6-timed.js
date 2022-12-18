@@ -12,12 +12,12 @@ function TimedMenuHandler(event)
 			game.showAlert(getText('not_home'));
 			return;
 		}
-		out = '<div class="container-fluid">';
+		let out = '<div class="container-fluid">';
 		out += createTableRow([
-				[4, loca.GetText("LAB", "Name")],
-				[2, getText('prod_queuesize')],
-				[3, getText('prod_estimate')],
-				[3, getText('prod_finish')]
+			[4, loca.GetText("LAB", "Name")],
+			[2, getText('prod_queuesize')],
+			[3, getText('prod_estimate')],
+			[3, getText('prod_finish')]
 		], true);
 		if(timedtypes.length == 0) {
 			timedbuildings.forEach(function(item){
@@ -34,7 +34,7 @@ function TimedMenuHandler(event)
 				out += getCultureInfo();
 				return;
 			}
-			var estimate = calcTotalTime();
+			const estimate = calcTotalTime();
 			out += createTableRow([
 				[4, $('<span>', { 'id': timedbuilding.GetGrid() }).hide().prop('outerHTML') + loca.GetText("BUI", timedbuilding.GetBuildingName_string())],
 				[2, timedqueue.mTimedProductions_vector.length],

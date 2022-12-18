@@ -19,8 +19,8 @@ function reloadScripts(event)
 	
 function getText(id, module)
 {
-	searchPath = !module ? baseTranslation[gameLang] : baseTranslation[module][gameLang];
-	backupPath = !module ? baseTranslation["en-uk"] : baseTranslation[module]["en-uk"];
+	let searchPath = !module ? baseTranslation[gameLang] : baseTranslation[module][gameLang],
+		backupPath = !module ? baseTranslation["en-uk"] : baseTranslation[module]["en-uk"];
 	searchPath = typeof searchPath == "undefined" ? {} : searchPath;
 	backupPath = typeof backupPath == "undefined" ? {} : backupPath;
 	if(!searchPath[id] && !backupPath[id]) { return "RES not found : " + id; }
@@ -29,7 +29,7 @@ function getText(id, module)
 
 function extendBaseLang(data, module)
 {
-	extend_data = { };
+	let extend_data = { };
 	if(module) {
 		extend_data[module] = data;
 	} else {
@@ -79,7 +79,7 @@ function mainSettingsHandler(event)
 	w.create();
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
-	menuStyleSelector = $('<select>', { 'class': 'form-control menuStyle' });
+	let menuStyleSelector = $('<select>', { 'class': 'form-control menuStyle' });
 	menuStyleSelector.append([
 		$('<option>', { 'value': 'grouped' }).text(getText('menustyle_grouped')),
 		$('<option>', { 'value': 'linear' }).text(getText('menustyle_linear')),		
@@ -168,7 +168,7 @@ function menuCustomHandler(event)
 	try
 	{
 		$('script[id="custom"]').remove();
-		file = new air.File("file:///" + air.File.applicationDirectory.resolvePath("custom.js").nativePath);
+		let file = new air.File("file:///" + air.File.applicationDirectory.resolvePath("custom.js").nativePath);
 		var fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.WRITE);
 		fileStream.writeMultiByte("(function () { try {" + prompt("Code") + "} catch (err) { alert(err);} })();", "utf-8");
@@ -181,7 +181,7 @@ function menuCustomHandler(event)
 
 function menuSaveHandler(event)
 {
-	file = air.File.documentsDirectory.resolvePath("swmmo.html");
+	let file = air.File.documentsDirectory.resolvePath("swmmo.html");
 	file.save($('html').prop('outerHTML'));
 }
 

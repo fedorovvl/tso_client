@@ -38,7 +38,7 @@ function menuBuildingHandler(event)
 		$('#buildingModal .buildingLoadTemplate').click(function() { buildingTemplates.load(); });
 	}
 	$('.buildingSubmit, .buildingReset, .buildingSaveTemplate').attr('disabled', 'true');
-	out = '<div class="container-fluid">';
+	let out = '<div class="container-fluid">';
 	if(!buildingRecordEnabled && buildingRecord == null) {
 		out += '<strong>{0}</strong></p>{1}{2}'.format(
 			getText('prod_welcome'),
@@ -86,10 +86,10 @@ function menuBuildingHandler(event)
 function buildingGetHTMLData()
 {
 	var result = createTableRow([
-			[1, "#"],
-			[7, loca.GetText("LAB","Name")],
-			[2, loca.GetText("LAB","ProductionStatus")],
-			[2, createSwitch('buiMassChange') + $('<div>', { 'style': 'position: absolute;left: 55px;top: 1px;' }).text(loca.GetText("LAB","Quests")).prop('outerHTML')]
+		[1, "#"],
+		[7, loca.GetText("LAB","Name")],
+		[2, loca.GetText("LAB","ProductionStatus")],
+		[2, createSwitch('buiMassChange') + $('<div>', { 'style': 'position: absolute;left: 55px;top: 1px;' }).text(loca.GetText("LAB","Quests")).prop('outerHTML')]
 	], true);
 	$.each(buildingRecord, function(item) {
 		var bui = buildingGetBui(item, 0);
@@ -115,15 +115,15 @@ function buildingGetHTMLData()
 
 function buildingDoJob()
 {
-	var x = new TimedQueue(1000);
+	var queue = new TimedQueue(1000);
 	$('#buildingModalData input[id!="buiMassChange"]').each(function(i, item){
 		if(buildingRecord[item.id].real_status != item.checked) {
-			x.add(function() { 
+			queue.add(function() {
 				game.gi.SendServerAction(107, item.checked ? 1 : 0, item.id, 0, null);
 			});
 		}
 	});
-	x.run();
+	queue.run();
 	$('#buildingModal').modal('hide');
 	game.showAlert(getText('command_sent'));
 

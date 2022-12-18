@@ -1,5 +1,5 @@
 var specTemplates;
-var geoDropSpec = [
+const geoDropSpec = [
 	{ 'val': '0', 'text': loca.GetText("LAB", "Cancel"), 'req': 0 },
 	{ 'val': '0,0', 'text': loca.GetText("TOT", "FindDepositStone"), 'req': 0 },
 	{ 'val': '0,1', 'text': loca.GetText("TOT", "FindDepositBronzeOre"), 'req': 9 },
@@ -11,7 +11,7 @@ var geoDropSpec = [
 	{ 'val': '0,7', 'text': loca.GetText("TOT", "FindDepositAlloyOre"), 'req': 61 },
 	{ 'val': '0,8', 'text': loca.GetText("TOT", "FindDepositSalpeter"), 'req': 62 }
 ];
-var explorerDropSpec = [
+const explorerDropSpec = [
   { 'label': loca.GetText("LAB", "FindTreasure"), 'data': [
 	  { 'val': '1,0', 'text': loca.GetText("LAB", "FindTreasureShort"), 'req': [0,0,0] },
 	  { 'val': '1,1', 'text': loca.GetText("LAB", "FindTreasureMedium"), 'req': [0,0,0] },
@@ -91,7 +91,7 @@ function specSharedHandler(type)
 
 function createSpecWindow()
 {
-	specTemplates = new SaveLoadTemplate('spec', function(data) {
+	let specTemplates = new SaveLoadTemplate('spec', function(data) {
 		$('#specModalData select').val(0);
 		$.each(data, function(spec, val) { $('#' + spec.replace('expl-','')).val(val); });
 		$('#specModalData select').each(function(i, select){
@@ -126,7 +126,7 @@ function createSpecWindow()
 
 function createGeologistDropdown(id, level, mass, def)
 {
-	select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
+	let select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
 	$.each(geoDropSpec, function(i, item){
 		if(level >= item.req || mass)
 			select.append($('<option>', { value: item.val, selected: def && mainSettings.geoDefTask == item.val ? 'selected' : false }).text(item.text));
@@ -136,9 +136,9 @@ function createGeologistDropdown(id, level, mass, def)
 
 function createExplorerDropdown(id, art, bean, mass, def)
 {
-	select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
-	select.append($('<option>', { value: '0' }).text(loca.GetText("LAB", "Cancel")));
+	let select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
 	const playerLevel = game.player.GetPlayerLevel();
+	select.append($('<option>', { value: '0' }).text(loca.GetText("LAB", "Cancel")));
 	$.each(explorerDropSpec, function(i, optgroup){
 		var group = $('<optgroup>', { label: optgroup.label });
 		$.each(optgroup.data, function(n, item){
@@ -163,9 +163,8 @@ function updateSpecTimeRow(select, val, selected)
 
 function multiSelectSpec()
 {
-	selected = $(event.target).val();
-	multiselect = $(event.target.parentNode.parentNode.childNodes[0]).hasClass("ui-selected"); 
-	if(multiselect) {
+	const selected = $(event.target).val();
+	if($(event.target.parentNode.parentNode.childNodes[0]).hasClass("ui-selected")) {
 		$('#specModalData div .ui-selected:parent').each(function(i, item) {
 			$(item.parentNode).find('select').each(function(i, select) {
 				$(select).val(selected);
@@ -179,7 +178,7 @@ function multiSelectSpec()
 }
 function massChangeSpecDropdown()
 {
-	selected = $( "#specMassChange" ).val();
+	const selected = $( "#specMassChange" ).val();
 	$('#specModalData select').each(function(i, select){
 		$(select).val(selected);
 		if($(select).val() == undefined)
@@ -190,12 +189,12 @@ function massChangeSpecDropdown()
 
 function getTaskDurationText(spec_id, task_id)
 {
-	cat_id = task_id.split(",");
-	spec_id = spec_id.split("_");
-	task = getTaskInfo(cat_id[0], cat_id[1]);
-	uniqueID = game.def("Communication.VO::dUniqueID").Create(spec_id[0], spec_id[1]);
-	spec = game.zone.getSpecialist(swmmo.application.mGameInterface.mCurrentViewedZoneID, uniqueID);
-	calculatedTime = task.duration;
+	const cat_id = task_id.split(","),
+		specialist_id = spec_id.split("_"),
+		task = getTaskInfo(cat_id[0], cat_id[1]),
+		spec = game.zone.getSpecialist(swmmo.application.mGameInterface.mCurrentViewedZoneID, game.def("Communication.VO::dUniqueID").Create(specialist_id[0], specialist_id[1]));
+	let calculatedTime = task.duration,
+		vectorIndex;
 	spec.getSkillTree().getItems_vector().concat(spec.skills.getItems_vector()).forEach(function(skill) {
 		vectorIndex = skill.getLevel() - 1;
 		if(vectorIndex == -1) { return; }
@@ -211,32 +210,33 @@ function getTaskDurationText(spec_id, task_id)
 
 function getTaskInfo(taskId, subTaskId)
 {
-	task = swmmo.getDefinitionByName("global").specialistTaskDefinitions_vector[taskId];
+	const task = swmmo.getDefinitionByName("global").specialistTaskDefinitions_vector[taskId];
 	return { taskName: task.taskName_string, subTaskName: task.subtasks_vector[subTaskId].taskType_string, duration: task.subtasks_vector[subTaskId].duration };
 }
 
 function sendSpec()
 {
-	specToSend = {};
+	let specToSend = {};
 	$('#specModalData select option:selected[value!="0"]').each(function(i, select){
 		specToSend[$(select).closest('select').prop('id')] = select.value;
 	});
-	if(Object.keys(specToSend).length == 0){ return; }
-	var x = new TimedQueue(1000);
-	$.each(specToSend, function(spec, val) {
-		x.add(function(){ sendSpecPacket(spec, val); });
-	});
-	x.run();
-	$('#specModal').modal('hide');
-	game.showAlert(getText('command_sent'));
+	if(Object.keys(specToSend).length > 0){
+		var queue = new TimedQueue(1000);
+		$.each(specToSend, function(spec, val) {
+			queue.add(function(){ sendSpecPacket(spec, val); });
+		});
+		queue.run();
+		$('#specModal').modal('hide');
+		game.showAlert(getText('command_sent'));
+	}
 }
 
 function sendSpecPacket(uniqueId, task)
 {
-	try{
-		specTask = game.def("Communication.VO::dStartSpecialistTaskVO", true)
-		uniqueIdArr = uniqueId.split("_");
-		taskArr = task.split(",");
+	try {
+		let specTask = game.def("Communication.VO::dStartSpecialistTaskVO", true);
+		const uniqueIdArr = uniqueId.split("_"),
+			taskArr = task.split(",");
 		specTask.subTaskID = taskArr[1];
 		specTask.paramString = "";
 		specTask.uniqueID = game.def("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
