@@ -4,6 +4,7 @@ var buffEventTracker = game.getTracker('buff', buffApliedHandler),
 	buffRecord, buffRecordFiltered,
 	buffSourceRecord = false,
 	buffsAvailable = {},
+	buffInProgress = false,
 	buffTemplates, buffVector;
 
 function menuBuffsHandler(event)
@@ -33,7 +34,7 @@ function menuBuffsHandler(event)
 	}
 
 	$('.buffSubmit, .buffReset, .buffSaveTemplate').attr('disabled', 'true');
-	let out = '<div class="container-fluid">';
+	out = '<div class="container-fluid">';
 	if(!buffRecordEnabled && buffRecord == null) {
 		out += '<strong>{0}</strong></p>{1}{2}'.format(
 			getText('buff_welcome'),
@@ -56,7 +57,7 @@ function menuBuffsHandler(event)
 	out += '</div>';
 	$("#buffModalData").html(out);
 	$("#buffModalData .close").click(function(e) { 
-		const grid = $(e.currentTarget).val();
+		grid = $(e.currentTarget).val();
 		buffRecordFiltered = buffRecordFiltered.filter(function(e) { return e.buiGrid != grid; });
 		buffRecord['data'] = buffRecord['data'].filter(function(e) { return e.buiGrid != grid; });
 		$(e.currentTarget).closest('.row').remove();
@@ -84,24 +85,22 @@ function getBuffsAvailableHTML()
 	$.each(buffRecordFiltered, function(i, item) {
 		buffNeeded[item.buffName] = (buffNeeded[item.buffName]||0) + 1;
 	});
-	if(Object.keys(buffNeeded).length > 0){
-		let result = '<br><p>{0}</p>'.format(getText('buff_used'));
-		result += createTableRow([
+	if(Object.keys(buffNeeded).length == 0){ return '';	}
+	result = '<br><p>{0}</p>'.format(getText('buff_used'));
+	result += createTableRow([
 			[8, loca.GetText("LAB", 'Buff')],
 			[2, loca.GetText("LAB", 'Requires')],
 			[2, loca.GetText("LAB", 'Available')]
-		], true);
-		for ( buffName in buffNeeded ) {
-			count = getBuffAvailableCount(buffName);
-			result += createTableRow([
-				[8, loca.GetText("RES", buffName)],
-				[2, buffNeeded[buffName]],
-				[2, count, count >= buffNeeded[buffName] ? "buffReady" : "buffNotReady"]
-			]);
-		}
-		return result;
+	], true);
+	for ( buffName in buffNeeded ) {
+		count = getBuffAvailableCount(buffName);
+		result += createTableRow([
+			[8, loca.GetText("RES", buffName)],
+			[2, buffNeeded[buffName]],
+			[2, count, count >= buffNeeded[buffName] ? "buffReady" : "buffNotReady"]
+		]);
 	}
-	return '';
+	return result;
 }
 
 function getBuffAvailableCount(buffName)
@@ -120,18 +119,17 @@ function getBuffAvailableCount(buffName)
 
 function getBuffHTML()
 {
-	let result = '<p>{0} {1}</p>'.format(getText('buff_zoneowner'), buffRecord["zoneUser"]),
-		isZoneRight = true,
-		status;
+	result = '<p>{0} {1}</p>'.format(getText('buff_zoneowner'), buffRecord["zoneUser"]);
+	isZoneRight = true;
 	if(buffRecord["zoneId"] != game.gi.mCurrentViewedZoneID) {
 		result += '<p><strong>' + getText('buff_not_your_zone') + '</strong></p>';
 		isZoneRight = false;
 	}
 	result += createTableRow([
-		[1, '#'],
-		[4, loca.GetText("LAB", 'Name')],
-		[5, loca.GetText("LAB", 'Buff')],
-		[2, loca.GetText("LAB", 'ProductionStatus')]
+			[1, '#'],
+			[4, loca.GetText("LAB", 'Name')],
+			[5, loca.GetText("LAB", 'Buff')],
+			[2, loca.GetText("LAB", 'ProductionStatus')]
 	], true);
 	buffRecordFiltered = [];
 	$.each(buffRecord['data'], function(index, data) { 
@@ -160,7 +158,7 @@ function buffApliedHandler(event){
 		return; 
 	}
 	if(buffRecord == null) { 
-		let zoneUser = game.player.GetPlayerName_string();
+		zoneUser = game.player.GetPlayerName_string();
 		if(game.gi.isOnHomzone() == false) {
 			try{
 				zoneUser = globalFlash.gui.mFriendsList.GetFriendById(swmmo.application.mGameInterface.mCurrentViewedZoneID).username;
@@ -192,7 +190,7 @@ function checkBuffType(type)
 function getBuffStatus(data, zoneStatus)
 {
 	if(!zoneStatus) { return 'buff_wrong_zone'; }
-	const bui = game.zone.GetBuildingFromGridPosition(data['buiGrid']);
+	bui = game.zone.GetBuildingFromGridPosition(data['buiGrid']);
 	if(bui == null) { return 'buff_not_exist'; }
 	if(bui.GetBuildingName_string() != data['buiName']) { return 'buff_wrong_name'; }
 	if(bui.productionBuff != null && checkBuffType(bui.productionBuff.GetBuffDefinition().GetName_string())) { return 'buff_buffed'; }
@@ -201,14 +199,14 @@ function getBuffStatus(data, zoneStatus)
 
 function buffDoJob()
 {
-	var queue = new TimedQueue(1000);
+	var x = new TimedQueue(1000);
 	$.each(buffRecordFiltered, function(i, item) {
 		if(buffsAvailable[item.buffName].count > 0) {
 			buffsAvailable[item.buffName].count -= 1;
-			queue.add(function(){ sendBuffPacket(buffsAvailable[item.buffName].id, item.buiGrid); });
+			x.add(function(){ sendBuffPacket(buffsAvailable[item.buffName].id, item.buiGrid); });
 		}
 	});
-	queue.run();
+	x.run();
 	$('#buffModal').modal('hide');
 	game.showAlert(getText('command_sent'));
 }
@@ -216,8 +214,8 @@ function buffDoJob()
 function sendBuffPacket(buffId, grid)
 {
 	try{
-		const uniqueIdArr = buffId.split("_"),
-			uniqueID = game.def("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
+		uniqueIdArr = buffId.split("_");
+		uniqueID = game.def("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
 		game.gi.SendServerAction(61, 0, grid, 0, uniqueID);
 	} catch (ex) {
 		alert(ex);

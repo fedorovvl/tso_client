@@ -120,10 +120,10 @@ function managerReinstall() {
 
     for (var item in missMatch) {
         $.get("https://raw.githubusercontent.com/fedorovvl/tso_client/master/userscripts/" + item, function (data) {
-            const fileName = this.url.replace(/^.*[\\\/]/, '');
+            fileName = this.url.replace(/^.*[\\\/]/, '');
             out += '<p>Reinstall ' + fileName + '</p>';
             $("#managerModalData").html('<div class="container-fluid">' + out + '</div>');
-            let file = new air.File(air.File.applicationDirectory.resolvePath("userscripts/" + fileName).nativePath);
+            file = new air.File(air.File.applicationDirectory.resolvePath("userscripts/" + fileName).nativePath);
             var fileStream = new air.FileStream();
             fileStream.open(file, air.FileMode.WRITE);
             fileStream.writeUTFBytes(data);
@@ -184,7 +184,7 @@ function managerProceed() {
     }
 
     var out = '';
-    for (let item in result) {
+    for (item in result) {
 
         if (result[item] === false) {
             // Remove scripts
