@@ -31,37 +31,43 @@ var explorerDropSpec = [
 
 function specSharedHandler(type)
 {
+	const isExplorer = type === 1,
+		isGeologist = type === 2;
 	$( "div[role='dialog']:not(#specModal):visible").modal("hide");
 	createModalWindow('specModal', '');
-	$("#specModal .modal-title").html("{0} {1}".format(getImageTag(type == 2 ? 'icon_geologist.png' : 'icon_explorer.png'), loca.GetText("SPE", type == 2 ? "Geologist" : "Explorer")));
+	$("#specModal .modal-title").html("{0} {1}".format(
+		getImageTag(isGeologist ? 'icon_geologist.png' : 'icon_explorer.png'),
+		loca.GetText("SPE", isGeologist ? "Geologist" : "Explorer"))
+	);
 	if(game.gi.isOnHomzone() == false) {
 		game.showAlert(getText('not_home'));
 		return;
 	}
 	$('#specModal .specSaveTemplate').length == 0 && createSpecWindow();
-	specTemplates.setModule(type == 1 ? 'expl' : 'geo');
+	specTemplates.setModule(isExplorer ? 'expl' : 'geo');
 	const playerLevel = game.player.GetPlayerLevel();
-    var out = '<div class="container-fluid">', isThereAnySpec = false;
+    var out = '<div class="container-fluid">', isThereAnySpec = false, specialistsUniqueId;
 	game.getSpecialists().sort(0).forEach(function(item){
 		if (item.GetTask() != null || item.GetBaseType() != type) { return; }
+		specialistsUniqueId = item.GetUniqueID();
 		isThereAnySpec = true;
-		if(type == 1) {
+		if(isExplorer) {
 			var skills = [];
 			item.getSkillTree().getItems_vector().forEach(function(skill){
-				skills[skill.getId()] = skill.getLevel() > 0 ? true : false;
+				skills[skill.getId()] = skill.getLevel() > 0;
 			});
 		}
 		out += createTableRow([
 			[4, getImageTag(item.getIconID(), '8%') + item.getName(false), 'name'],
 			[3, '&nbsp;'],
-			[5, type == 1 ? createExplorerDropdown(item.GetUniqueID(), skills[39], skills[40], false, true) : createGeologistDropdown(item.GetUniqueID(), playerLevel, false, true)]
+			[5, isExplorer ? createExplorerDropdown(specialistsUniqueId, skills[39], skills[40], false, true) : createGeologistDropdown(specialistsUniqueId, playerLevel, false, true)]
 		]);
 	});
 	if(!isThereAnySpec) {
-		game.showAlert(getText(type == 0 ? 'no_free_geo' : 'no_free_expl'));
+		game.showAlert(getText(isGeologist ? 'no_free_geo' : 'no_free_expl'));
 		return;
 	}
-	$("#specModal .massSend").html(type == 2 ? createGeologistDropdown(1, 1, true) : createExplorerDropdown(null, true, true, true));
+	$("#specModal .massSend").html(isGeologist ? createGeologistDropdown(1, 1, true) : createExplorerDropdown(null, true, true, true));
 	$("#specModalData").html(out + '</div>');
 	$('#specModalData select').each(function(i, select){
 		updateSpecTimeRow(select, $(select).val(), $(select).val());
