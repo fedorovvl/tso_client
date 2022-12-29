@@ -28,6 +28,12 @@ var _exudDepositVieweLang = {
 		'BuffEnd': 'Fin del Pote.',
 		'Buff': 'Potenciador',
 		"Note": "*La hora de agotación es aproximada, variará dependiendo del estado del ciclo en curso y/o cualquier otro edificio que intervenga en el mismo depósito una vez haya agotado el más cercano. Los datos pueden estar desactualizados. Refresca con (F2)."
+	},
+	"pl-pl": {
+		"TimeDepEnd": "Czas produkcji/Cykl",
+		"BuffEnd": "Koniec premii",
+		"Buff": "Premia",
+		"Note": "*Czas wyczerpania jest orientacyjny i zależy od aktualnego cyklu i budynków będących w otoczeniu złoża. Czasami dane nie są aktualne, należy wówczas odświeżyć dane (F2)"
 	}
 };
 
