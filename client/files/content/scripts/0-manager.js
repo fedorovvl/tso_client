@@ -70,7 +70,7 @@ function managerGetData() {
 
     info = (info === 'error') ? {} : info;
 
-    for (name in info) {
+    for (var name in info) {
         var st = checkSize(info[name].size, currentScripts[name]);
         out += createTableRow([
             [2, name],
@@ -116,7 +116,8 @@ function managerGetData() {
 }
 
 function managerReinstall() {
-    var out = '';
+    var out = '',
+        file, fileName, fileStream;
 
     for (var item in missMatch) {
         $.get("https://raw.githubusercontent.com/fedorovvl/tso_client/master/userscripts/" + item, function (data) {
@@ -124,7 +125,7 @@ function managerReinstall() {
             out += '<p>Reinstall ' + fileName + '</p>';
             $("#managerModalData").html('<div class="container-fluid">' + out + '</div>');
             file = new air.File(air.File.applicationDirectory.resolvePath("userscripts/" + fileName).nativePath);
-            var fileStream = new air.FileStream();
+            fileStream = new air.FileStream();
             fileStream.open(file, air.FileMode.WRITE);
             fileStream.writeUTFBytes(data);
             fileStream.close();
@@ -151,7 +152,7 @@ function checkSize(a, b) {
 }
 
 function getCurrentScripts() {
-    scripts = {};
+    var scripts = {};
 
     air.File.applicationDirectory.resolvePath("userscripts").getDirectoryListing().forEach(function (item) {
         if (item.name !== "99-example.js" && item.name.match(/\.js$/i) !== null) {
@@ -171,20 +172,21 @@ function managerProceed() {
         checkboxes[item.id] = +item.checked;
     });
 
-    for (item in installed) {
-        if (!checkboxes[item] && installed[item]) {
-            result[item] = false;
+    for (var installedItem in installed) {
+        if (!checkboxes[installedItem] && installed[installedItem]) {
+            result[installedItem] = false;
         }
     }
 
-    for (item in checkboxes) {
-        if (checkboxes[item] && !installed[item]) {
-            result[item] = true;
+    for (var checkboxItem in checkboxes) {
+        if (checkboxes[checkboxItem] && !installed[checkboxItem]) {
+            result[checkboxItem] = true;
         }
     }
 
-    var out = '';
-    for (item in result) {
+    var out = '',
+        file, fileName, fileStream;
+    for (var item in result) {
 
         if (result[item] === false) {
             // Remove scripts
@@ -199,7 +201,7 @@ function managerProceed() {
                 out += '<p>Install ' + fileName + '</p>';
                 $("#managerModalData").html('<div class="container-fluid">' + out + '</divp>');
                 file = new air.File(air.File.applicationDirectory.resolvePath("userscripts/" + fileName).nativePath);
-                var fileStream = new air.FileStream();
+                fileStream = new air.FileStream();
                 fileStream.open(file, air.FileMode.WRITE);
                 fileStream.writeUTFBytes(data);
                 fileStream.close();

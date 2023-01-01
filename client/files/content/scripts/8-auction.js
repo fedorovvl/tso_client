@@ -28,7 +28,7 @@ function menuAuctionHandler(event)
 {
 	$( "div[role='dialog']:not(#aucModal):visible").modal("hide");
 	createModalWindow('aucModal', getImageTag('icon_logistics.png') + ' '+loca.GetText("LAB", "BlackMarketAuction"));
-	if($('#aucModal .aucPlace').length == 0)
+	if($('#aucModal .aucPlace').length === 0)
 	{
 		$("#aucModal .modal-footer").prepend([
 			$('<button>').attr({ "class": "btn btn-success aucPlace" }).text(getText('auc_do_bid')),
@@ -41,7 +41,7 @@ function menuAuctionHandler(event)
 	}
 	$('#aucModal .aucPlace').attr('disabled', true);
 	$('#aucModal .aucUnlock').hide();
-	out = '<div class="container-fluid">';
+	var out = '<div class="container-fluid">';
 	if(!game.player.mBlackMarketUnlocked)
 	{
 		out = '<p class="text-center">{0} 10000 {1}'.format(loca.GetText("LAB", 'BlackMarketAuctionUnlockCost'), getImageTag("Coin"));
@@ -58,7 +58,7 @@ function menuAuctionHandler(event)
 		out = '<p>{0} {1}</p>'.format(getText('auc_current'), currentAuc.auctionId);
 		out += '<p>'+loca.GetText("LAB", 'BlackMarketAuctionBidder')+' ' + currentAuc.playerName + '</p>';
 		out += '<p>{0} {1}</p>'.format(getText('auc_bidding_count'), currentAuc.biddingCount);
-		endTime = currentAuc.endTime - new Date().getTime();
+		var endTime = currentAuc.endTime - new Date().getTime();
 		out += '<p>{0} {1}</p>'.format(getText('auc_endtime'), endTime > 0 ? loca.FormatDuration(endTime) : getText('auc_ended'));
 		out += '<p><br></p>';
 		var aucItem = aucShopItem.GetShopItem(aucDefinition.Content.Item.shopItemId.v);
@@ -89,7 +89,7 @@ function aucCheckPlayer()
 
 function getCurrentAuc()
 {
-	for(i = 0; i < aucConfig.BlackMarketConfig.BlackMarketAuctions.BlackMarketAuction.length; i++) {
+	for(var i = 0; i < aucConfig.BlackMarketConfig.BlackMarketAuctions.BlackMarketAuction.length; i++) {
 		if(aucConfig.BlackMarketConfig.BlackMarketAuctions.BlackMarketAuction[i].id.v == currentAuc.auctionId) {
 			return aucConfig.BlackMarketConfig.BlackMarketAuctions.BlackMarketAuction[i];
 		}

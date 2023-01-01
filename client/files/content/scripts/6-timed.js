@@ -12,14 +12,14 @@ function TimedMenuHandler(event)
 			game.showAlert(getText('not_home'));
 			return;
 		}
-		out = '<div class="container-fluid">';
+		var out = '<div class="container-fluid">';
 		out += createTableRow([
 				[4, loca.GetText("LAB", "Name")],
 				[2, getText('prod_queuesize')],
 				[3, getText('prod_estimate')],
 				[3, getText('prod_finish')]
 		], true);
-		if(timedtypes.length == 0) {
+		if(timedtypes.length === 0) {
 			timedbuildings.forEach(function(item){
 				if(item.productionQueue == null) { return; }
 				if(timedtypes.indexOf(item.productionType) == -1) { timedtypes.push(item.productionType); }

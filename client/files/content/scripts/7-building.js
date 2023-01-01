@@ -12,7 +12,7 @@ function menuBuildingHandler(event)
 		game.showAlert(getText('not_home'));
 		return;
 	}
-	if($('#buildingModal .buildingSubmit').length == 0)
+	if($('#buildingModal .buildingSubmit').length === 0)
 	{
 		buildingTemplates = new SaveLoadTemplate('bui', function(data) {
 			buildingRecord = data;
@@ -38,7 +38,7 @@ function menuBuildingHandler(event)
 		$('#buildingModal .buildingLoadTemplate').click(function() { buildingTemplates.load(); });
 	}
 	$('.buildingSubmit, .buildingReset, .buildingSaveTemplate').attr('disabled', 'true');
-	out = '<div class="container-fluid">';
+	var out = '<div class="container-fluid">';
 	if(!buildingRecordEnabled && buildingRecord == null) {
 		out += '<strong>{0}</strong></p>{1}{2}'.format(
 			getText('prod_welcome'),
@@ -63,7 +63,7 @@ function menuBuildingHandler(event)
 		});
 	});
 	$("#buildingModalData .close").click(function(e) { 
-		grid = $(e.currentTarget).val();
+		var grid = $(e.currentTarget).val();
 		delete buildingRecord[grid];
 		$(e.currentTarget).closest('.row').remove();
 		menuBuildingHandler(null);
