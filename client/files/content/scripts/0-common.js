@@ -19,8 +19,8 @@ function reloadScripts(event)
 	
 function getText(id, module)
 {
-	searchPath = !module ? baseTranslation[gameLang] : baseTranslation[module][gameLang];
-	backupPath = !module ? baseTranslation["en-uk"] : baseTranslation[module]["en-uk"];
+	var searchPath = !module ? baseTranslation[gameLang] : baseTranslation[module][gameLang],
+		backupPath = !module ? baseTranslation["en-uk"] : baseTranslation[module]["en-uk"];
 	searchPath = typeof searchPath == "undefined" ? {} : searchPath;
 	backupPath = typeof backupPath == "undefined" ? {} : backupPath;
 	if(!searchPath[id] && !backupPath[id]) { return "RES not found : " + id; }
@@ -29,7 +29,7 @@ function getText(id, module)
 
 function extendBaseLang(data, module)
 {
-	extend_data = { };
+	var extend_data = {};
 	if(module) {
 		extend_data[module] = data;
 	} else {
@@ -55,7 +55,7 @@ function mainSettingsHandler(event)
 	var createFilterDrop = function(){
 		const filters = ["none","snownowater","snowlight","snow","oven","doomsday","night","desert","tropical","blackandwhite","spooky","snow_medium","tundra","darkershadow","magicsepia"];
 		var select = $('<select>', { 'class': 'form-control defFilter' });
-		for(i in filters) {
+		for(var i in filters) {
 			select.append($('<option>', { value: filters[i] }).text(filters[i]));
 		}
 		return select.prop('outerHTML');
@@ -63,7 +63,7 @@ function mainSettingsHandler(event)
 	var createDateFormatterDrop = function(){
 		const formats = ['M-d H:m','d-M H:m','MM-dd HH:mm','dd-MM-yyyy hh:mm','yyyy-MM-dd HH:mm'];
 		var select = $('<select>', { 'class': 'form-control dtfFormat' });
-		for(i in formats) {
+		for(var i in formats) {
 			select.append($('<option>', { value: formats[i] }).text(formats[i]));
 		}
 		return select.prop('outerHTML');
@@ -79,7 +79,7 @@ function mainSettingsHandler(event)
 	w.create();
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
-	menuStyleSelector = $('<select>', { 'class': 'form-control menuStyle' });
+	var menuStyleSelector = $('<select>', { 'class': 'form-control menuStyle' });
 	menuStyleSelector.append([
 		$('<option>', { 'value': 'grouped' }).text(getText('menustyle_grouped')),
 		$('<option>', { 'value': 'linear' }).text(getText('menustyle_linear')),		
@@ -168,8 +168,8 @@ function menuCustomHandler(event)
 	try
 	{
 		$('script[id="custom"]').remove();
-		file = new air.File("file:///" + air.File.applicationDirectory.resolvePath("custom.js").nativePath);
-		var fileStream = new air.FileStream();
+		var file = new air.File("file:///" + air.File.applicationDirectory.resolvePath("custom.js").nativePath),
+			fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.WRITE);
 		fileStream.writeMultiByte("(function () { try {" + prompt("Code") + "} catch (err) { alert(err);} })();", "utf-8");
 		fileStream.close();
@@ -181,7 +181,7 @@ function menuCustomHandler(event)
 
 function menuSaveHandler(event)
 {
-	file = air.File.documentsDirectory.resolvePath("swmmo.html");
+	var file = air.File.documentsDirectory.resolvePath("swmmo.html");
 	file.save($('html').prop('outerHTML'));
 }
 

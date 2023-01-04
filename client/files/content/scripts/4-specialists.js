@@ -43,7 +43,7 @@ function specSharedHandler(type)
 		game.showAlert(getText('not_home'));
 		return;
 	}
-	$('#specModal .specSaveTemplate').length == 0 && createSpecWindow();
+	$('#specModal .specSaveTemplate').length === 0 && createSpecWindow();
 	specTemplates.setModule(isExplorer ? 'expl' : 'geo');
 	const playerLevel = game.player.GetPlayerLevel();
     var out = '<div class="container-fluid">', isThereAnySpec = false, specialistsUniqueId;
@@ -116,7 +116,7 @@ function createSpecWindow()
 		$('<button>').attr({ "class": "btn btn-primary pull-left specLoadTemplate" }).text(getText('load_template')),
 	]);
 	$('#specModal .specSaveTemplate').click(function(){
-		dataToSave = {};
+		var dataToSave = {};
 		$('#specModalData select').map(function() { dataToSave[$(this).attr('id')] = $(this).val(); });
 		specTemplates.save(dataToSave);
 	});
@@ -126,7 +126,7 @@ function createSpecWindow()
 
 function createGeologistDropdown(id, level, mass, def)
 {
-	select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
+	var select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
 	$.each(geoDropSpec, function(i, item){
 		if(level >= item.req || mass)
 			select.append($('<option>', { value: item.val, selected: def && mainSettings.geoDefTask == item.val ? 'selected' : false }).text(item.text));
@@ -136,7 +136,7 @@ function createGeologistDropdown(id, level, mass, def)
 
 function createExplorerDropdown(id, art, bean, mass, def)
 {
-	select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
+	var select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
 	select.append($('<option>', { value: '0' }).text(loca.GetText("LAB", "Cancel")));
 	const playerLevel = game.player.GetPlayerLevel();
 	$.each(explorerDropSpec, function(i, optgroup){
@@ -163,8 +163,8 @@ function updateSpecTimeRow(select, val, selected)
 
 function multiSelectSpec()
 {
-	selected = $(event.target).val();
-	multiselect = $(event.target.parentNode.parentNode.childNodes[0]).hasClass("ui-selected"); 
+	var selected = $(event.target).val(),
+		multiselect = $(event.target.parentNode.parentNode.childNodes[0]).hasClass("ui-selected");
 	if(multiselect) {
 		$('#specModalData div .ui-selected:parent').each(function(i, item) {
 			$(item.parentNode).find('select').each(function(i, select) {
@@ -179,7 +179,7 @@ function multiSelectSpec()
 }
 function massChangeSpecDropdown()
 {
-	selected = $( "#specMassChange" ).val();
+	var selected = $( "#specMassChange" ).val();
 	$('#specModalData select').each(function(i, select){
 		$(select).val(selected);
 		if($(select).val() == undefined)
@@ -190,17 +190,18 @@ function massChangeSpecDropdown()
 
 function getTaskDurationText(spec_id, task_id)
 {
-	cat_id = task_id.split(",");
+	var cat_id = task_id.split(","),
+		task = getTaskInfo(cat_id[0], cat_id[1]);
 	spec_id = spec_id.split("_");
-	task = getTaskInfo(cat_id[0], cat_id[1]);
-	uniqueID = game.def("Communication.VO::dUniqueID").Create(spec_id[0], spec_id[1]);
-	spec = game.zone.getSpecialist(swmmo.application.mGameInterface.mCurrentViewedZoneID, uniqueID);
-	calculatedTime = task.duration;
+	var uniqueID = game.def("Communication.VO::dUniqueID").Create(spec_id[0], spec_id[1]),
+		spec = game.zone.getSpecialist(swmmo.application.mGameInterface.mCurrentViewedZoneID, uniqueID),
+		calculatedTime = task.duration,
+		vectorIndex;
 	spec.getSkillTree().getItems_vector().concat(spec.skills.getItems_vector()).forEach(function(skill) {
 		vectorIndex = skill.getLevel() - 1;
 		if(vectorIndex == -1) { return; }
 		skill.getDefinition().level_vector[vectorIndex].forEach(function(skillDef) {
-			if ((((skillDef.type_string.length == 0) || (skillDef.type_string == task.taskName + task.subTaskName)) && (skillDef.modifier_string.toLowerCase() == "searchtime"))) {
+			if ((((skillDef.type_string.length === 0) || (skillDef.type_string == task.taskName + task.subTaskName)) && (skillDef.modifier_string.toLowerCase() == "searchtime"))) {
 				calculatedTime = (skillDef.value != 0) ? skillDef.value : ((calculatedTime * skillDef.multiplier) + skillDef.adder);
 			}
 		});
@@ -211,32 +212,33 @@ function getTaskDurationText(spec_id, task_id)
 
 function getTaskInfo(taskId, subTaskId)
 {
-	task = swmmo.getDefinitionByName("global").specialistTaskDefinitions_vector[taskId];
+	var task = swmmo.getDefinitionByName("global").specialistTaskDefinitions_vector[taskId];
 	return { taskName: task.taskName_string, subTaskName: task.subtasks_vector[subTaskId].taskType_string, duration: task.subtasks_vector[subTaskId].duration };
 }
 
 function sendSpec()
 {
-	specToSend = {};
+	var specToSend = {};
 	$('#specModalData select option:selected[value!="0"]').each(function(i, select){
 		specToSend[$(select).closest('select').prop('id')] = select.value;
 	});
-	if(Object.keys(specToSend).length == 0){ return; }
-	var x = new TimedQueue(1000);
-	$.each(specToSend, function(spec, val) {
-		x.add(function(){ sendSpecPacket(spec, val); });
-	});
-	x.run();
-	$('#specModal').modal('hide');
-	game.showAlert(getText('command_sent'));
+	if(Object.keys(specToSend).length > 0){
+		var queue = new TimedQueue(1000);
+		$.each(specToSend, function(spec, val) {
+			queue.add(function(){ sendSpecPacket(spec, val); });
+		});
+		queue.run();
+		$('#specModal').modal('hide');
+		game.showAlert(getText('command_sent'));
+	}
 }
 
 function sendSpecPacket(uniqueId, task)
 {
 	try{
-		specTask = game.def("Communication.VO::dStartSpecialistTaskVO", true)
-		uniqueIdArr = uniqueId.split("_");
-		taskArr = task.split(",");
+		var specTask = game.def("Communication.VO::dStartSpecialistTaskVO", true),
+			uniqueIdArr = uniqueId.split("_"),
+			taskArr = task.split(",");
 		specTask.subTaskID = taskArr[1];
 		specTask.paramString = "";
 		specTask.uniqueID = game.def("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);

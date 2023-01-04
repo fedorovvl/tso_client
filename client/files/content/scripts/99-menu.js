@@ -32,7 +32,7 @@ var Menu = function(type){
 			]}
 		];
 	};
-	this.linearMenu = function(){var e=[],r=this.groupedMenu();for(i in r)if(r[i].items&&"Tools"!=r[i].name)for(n in r[i].items)e.push(r[i].items[n]);else e.push(r[i]);return e};
+	this.linearMenu = function(){var e=[],r=this.groupedMenu();for(var i in r)if(r[i].items&&"Tools"!=r[i].name)for(var n in r[i].items)e.push(r[i].items[n]);else e.push(r[i]);return e};
 	this.type = type;
 	this.nativeMenu = null;
 	this.keybindings = {};
@@ -52,7 +52,7 @@ Menu.prototype = {
 		this.buildKeybinds(menu);
 	},
 	buildKeybinds: function(menu){
-		for(i in menu) {
+		for(var i in menu) {
 			if(menu[i].items) {
 				this.buildKeybinds(menu[i].items);
 				continue;
@@ -62,7 +62,7 @@ Menu.prototype = {
 		}
 	},
 	addKeybBind: function(fn, key, ctrl, isUser) {
-		keyComb = key.toString() + (ctrl ? ctrl : false).toString();
+		var keyComb = key.toString() + (ctrl ? ctrl : false).toString();
 		if (this.keybindings[keyComb]) {
 			  alert(keyComb + " already binded");
 			  return;
@@ -87,7 +87,7 @@ Menu.prototype = {
 		$('script[id="user"]').remove();
 		var toolsMenu = this.nativeMenu.getItemByName("Tools").submenu;
 		while(toolsMenu.numItems > 3) { toolsMenu.removeItemAt(3); }
-		for(i in this.keybindings) {
+		for(var i in this.keybindings) {
 			this.keybindings[i].isUser&&delete this.keybindings[i];
 		}
 	}

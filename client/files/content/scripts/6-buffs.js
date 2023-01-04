@@ -16,7 +16,7 @@ function menuBuffsHandler(event)
 		buffSourceRecord = false;
 		menuBuffsHandler(null);
 	});
-	if($('#buffModal .buffSaveTemplate').length == 0)
+	if($('#buffModal .buffSaveTemplate').length === 0)
 	{
 		$("#buffModal .modal-footer").prepend([
 			$('<button>').attr({ "class": "btn btn-warning buffReset" }).text(getText('btn_reset')),
@@ -34,7 +34,7 @@ function menuBuffsHandler(event)
 	}
 
 	$('.buffSubmit, .buffReset, .buffSaveTemplate').attr('disabled', 'true');
-	out = '<div class="container-fluid">';
+	var out = '<div class="container-fluid">';
 	if(!buffRecordEnabled && buffRecord == null) {
 		out += '<strong>{0}</strong></p>{1}{2}'.format(
 			getText('buff_welcome'),
@@ -57,11 +57,11 @@ function menuBuffsHandler(event)
 	out += '</div>';
 	$("#buffModalData").html(out);
 	$("#buffModalData .close").click(function(e) { 
-		grid = $(e.currentTarget).val();
+		var grid = $(e.currentTarget).val();
 		buffRecordFiltered = buffRecordFiltered.filter(function(e) { return e.buiGrid != grid; });
 		buffRecord['data'] = buffRecord['data'].filter(function(e) { return e.buiGrid != grid; });
 		$(e.currentTarget).closest('.row').remove();
-		if(buffRecord['data'].length == 0) { buffRecord = null; }
+		if(buffRecord['data'].length === 0) { buffRecord = null; }
 		menuBuffsHandler(null);
 	});
 	$( "#startRecording" ).click(function(){
@@ -85,22 +85,25 @@ function getBuffsAvailableHTML()
 	$.each(buffRecordFiltered, function(i, item) {
 		buffNeeded[item.buffName] = (buffNeeded[item.buffName]||0) + 1;
 	});
-	if(Object.keys(buffNeeded).length == 0){ return '';	}
-	result = '<br><p>{0}</p>'.format(getText('buff_used'));
-	result += createTableRow([
+	if(Object.keys(buffNeeded).length > 0){
+		var result = '<br><p>{0}</p>'.format(getText('buff_used'));
+		result += createTableRow([
 			[8, loca.GetText("LAB", 'Buff')],
 			[2, loca.GetText("LAB", 'Requires')],
 			[2, loca.GetText("LAB", 'Available')]
-	], true);
-	for ( buffName in buffNeeded ) {
-		count = getBuffAvailableCount(buffName);
-		result += createTableRow([
-			[8, loca.GetText("RES", buffName)],
-			[2, buffNeeded[buffName]],
-			[2, count, count >= buffNeeded[buffName] ? "buffReady" : "buffNotReady"]
-		]);
+		], true);
+		var count;
+		for (var buffName in buffNeeded) {
+			count = getBuffAvailableCount(buffName);
+			result += createTableRow([
+				[8, loca.GetText("RES", buffName)],
+				[2, buffNeeded[buffName]],
+				[2, count, count >= buffNeeded[buffName] ? "buffReady" : "buffNotReady"]
+			]);
+		}
+		return result;
 	}
-	return result;
+	return '';
 }
 
 function getBuffAvailableCount(buffName)
@@ -119,8 +122,8 @@ function getBuffAvailableCount(buffName)
 
 function getBuffHTML()
 {
-	result = '<p>{0} {1}</p>'.format(getText('buff_zoneowner'), buffRecord["zoneUser"]);
-	isZoneRight = true;
+	var result = '<p>{0} {1}</p>'.format(getText('buff_zoneowner'), buffRecord["zoneUser"]),
+		isZoneRight = true;
 	if(buffRecord["zoneId"] != game.gi.mCurrentViewedZoneID) {
 		result += '<p><strong>' + getText('buff_not_your_zone') + '</strong></p>';
 		isZoneRight = false;
@@ -132,6 +135,7 @@ function getBuffHTML()
 			[2, loca.GetText("LAB", 'ProductionStatus')]
 	], true);
 	buffRecordFiltered = [];
+	var status;
 	$.each(buffRecord['data'], function(index, data) { 
 		status = getBuffStatus(data, isZoneRight);
 		// too dirty
@@ -158,7 +162,7 @@ function buffApliedHandler(event){
 		return; 
 	}
 	if(buffRecord == null) { 
-		zoneUser = game.player.GetPlayerName_string();
+		var zoneUser = game.player.GetPlayerName_string();
 		if(game.gi.isOnHomzone() == false) {
 			try{
 				zoneUser = globalFlash.gui.mFriendsList.GetFriendById(swmmo.application.mGameInterface.mCurrentViewedZoneID).username;
@@ -190,7 +194,7 @@ function checkBuffType(type)
 function getBuffStatus(data, zoneStatus)
 {
 	if(!zoneStatus) { return 'buff_wrong_zone'; }
-	bui = game.zone.GetBuildingFromGridPosition(data['buiGrid']);
+	var bui = game.zone.GetBuildingFromGridPosition(data['buiGrid']);
 	if(bui == null) { return 'buff_not_exist'; }
 	if(bui.GetBuildingName_string() != data['buiName']) { return 'buff_wrong_name'; }
 	if(bui.productionBuff != null && checkBuffType(bui.productionBuff.GetBuffDefinition().GetName_string())) { return 'buff_buffed'; }
@@ -214,8 +218,8 @@ function buffDoJob()
 function sendBuffPacket(buffId, grid)
 {
 	try{
-		uniqueIdArr = buffId.split("_");
-		uniqueID = game.def("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
+		var uniqueIdArr = buffId.split("_"),
+			uniqueID = game.def("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
 		game.gi.SendServerAction(61, 0, grid, 0, uniqueID);
 	} catch (ex) {
 		alert(ex);
