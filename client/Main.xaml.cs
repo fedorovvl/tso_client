@@ -35,6 +35,8 @@ namespace client
         public static int http_timeout = 20000;
         public static bool is64 = System.Environment.Is64BitOperatingSystem;
         private int _regionUid;
+        public static string fast_nickname = string.Empty;
+        public static string fast_tsoarg = string.Empty;
         public static Arguments cmd;
         private string _langLogin;
         private string _langPass;
@@ -43,7 +45,7 @@ namespace client
         private string _langRemember;
         public string appversion
         {
-            get { return "1.5.4.1"; }
+            get { return "1.5.4.2"; }
         }
         public string langLogin
         {
@@ -74,6 +76,7 @@ namespace client
         string[] args_help = new string[] {
             "--config - set config file",
             "--login - set login",
+            "--fastlogin - use saved client boot arg",
             "--password - set password",
             "--collect - autoconfirm ubicollect check",
             "--autologin - allows to start client with login/password from setting.dat",
@@ -248,6 +251,13 @@ namespace client
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { butt_Click_1(null, null); }));
                 }
+                if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(fast_nickname))
+                {
+                    Dispatcher.BeginInvoke(new ThreadStart(delegate
+                    {
+                        run_tso(fast_tsoarg, fast_nickname);
+                    }));
+                }
                 return;
             } catch (Exception e)
             {
@@ -319,6 +329,11 @@ namespace client
                 {
                     if (settings.Length > 5)
                     {
+                        if(settings[3].Trim() != "0")
+                        {
+                            fast_nickname = settings[3].Trim();
+                            fast_tsoarg = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(settings[4].Trim()));
+                        }
                         _regionUid = string.IsNullOrEmpty(settings[5]) ? 16 : int.Parse(settings[5].Trim());
                         region_list.SelectedIndex = _regionUid;
                         _region = (region_list.SelectedItem as ComboBoxItem).Tag.ToString();
@@ -398,8 +413,6 @@ namespace client
                 return;
             }
             error.Text = string.Empty;
-            byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", swf_upsteam.IsChecked == true ? 1 : 0, "0", "0", _regionUid));
-            File.WriteAllBytes(setting_file, ProtectedData.Protect(saveData, additionalEntropy, DataProtectionScope.LocalMachine));
             this.Visibility = System.Windows.Visibility.Hidden;
             bool collections = (cmd["collect"] != null) ? true : false;
             if (!auto && Process.GetProcessesByName("UbiCollect").Length > 0 && !collections)
@@ -437,23 +450,30 @@ namespace client
                     tsoUrl.Set("window", cmd["window"]);
                 if (debug)
                     tsoUrl.Set("debug", "true");
-                tsoUrl.Set("version", appversion);
+                //tsoUrl.Set("version", appversion);
                 string tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString().Replace("bb=https", "bb=http").Replace(":443", ""), Servers._servers[_region].domain);
-                XmlDocument Doc = new XmlDocument();
-                XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
-                ns.AddNamespace("adobe", "http://ns.adobe.com/air/application/15.0");
-                Doc.Load(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
-                Doc.SelectSingleNode("/adobe:application/adobe:id", ns).InnerText = "TSO-" + RandomString;
-                Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + log.nickName;
-                Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
-                System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), tsoArg);
-                try
-                {
-                    App.Current.Shutdown(1);
-                }
-                catch { }
+                byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", swf_upsteam.IsChecked == true ? 1 : 0, log.nickName, Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(tsoArg)), _regionUid));
+                File.WriteAllBytes(setting_file, ProtectedData.Protect(saveData, additionalEntropy, DataProtectionScope.LocalMachine));
+                run_tso(tsoArg, log.nickName);
             }
             this.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        private void run_tso(string argString, string nickname)
+        {
+            XmlDocument Doc = new XmlDocument();
+            XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
+            ns.AddNamespace("adobe", "http://ns.adobe.com/air/application/15.0");
+            Doc.Load(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
+            Doc.SelectSingleNode("/adobe:application/adobe:id", ns).InnerText = "TSO-" + RandomString;
+            Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + nickname;
+            Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
+            System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}", argString, appversion));
+            try
+            {
+                App.Current.Shutdown(1);
+            }
+            catch { }
         }
 
         private void pwd_PreviewMouseDown(object sender, MouseButtonEventArgs e)
