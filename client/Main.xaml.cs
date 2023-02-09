@@ -30,6 +30,7 @@ namespace client
         public static string lang = string.Empty;
         public static bool auto = false;
         public static bool upstream_swf = false;
+        public static string[] upstream_data = null;
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
         public static int http_timeout = 20000;
@@ -209,6 +210,7 @@ namespace client
             try
             {
                 PostSubmitter post;
+                var json = new JavaScriptSerializer();
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
                 string chksum = string.Empty;
                 bool needDownload = false;
@@ -223,6 +225,22 @@ namespace client
                     }
                 } else
                     needDownload = true;
+                if (upstream_data == null)
+                {
+                    post = new PostSubmitter
+                    {
+                        Url = "https://raw.githubusercontent.com/fedorovvl/tso_client/master/upstream.json",
+                        Type = PostSubmitter.PostTypeEnum.Get
+                    };
+                    string upstream_json = post.Post(ref _cookies).Trim();
+                    try
+                    {
+                        upstream_data = json.Deserialize<string[]>(upstream_json);
+                    }
+                    catch { }
+                }
+                upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
+                Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
                 string swf_filename = !upstream_swf ? "client.swf" : "client_upstream.swf";
                 if (!string.IsNullOrEmpty(chksum))
                 {
@@ -232,7 +250,6 @@ namespace client
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string rchksum = post.Post(ref _cookies).Trim();
-                    var json = new JavaScriptSerializer();
                     try
                     {
                         gitFile data = json.Deserialize<gitFile>(rchksum);
@@ -324,7 +341,7 @@ namespace client
                 {
                     settings[2] = Convert.ToInt16(bool.Parse(settings[2])).ToString();
                 }
-                swf_upsteam.IsChecked = upstream_swf = Convert.ToBoolean(Convert.ToInt16(settings[2]));
+                //swf_upsteam.IsChecked = upstream_swf = Convert.ToBoolean(Convert.ToInt16(settings[2]));
                 try
                 {
                     if (settings.Length > 5)
@@ -520,6 +537,9 @@ namespace client
             langRun = Servers.getTrans("run");
             langExit = Servers.getTrans("exit");
             langRemember = Servers.getTrans("remember");
+            bool new_upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
+            if(upstream_swf != new_upstream_swf)
+                new Thread(checkVersion) { IsBackground = true }.Start();
         }
 
         private void openTsoFolder_Click(object sender, RoutedEventArgs e)
