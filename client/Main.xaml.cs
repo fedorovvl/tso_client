@@ -76,6 +76,7 @@ namespace client
         public event PropertyChangedEventHandler PropertyChanged;
         string[] args_help = new string[] {
             "--config - set config file",
+            "--clientconfig - set client config file",
             "--login - set login",
             "--fastlogin - use saved client boot arg",
             "--password - set password",
@@ -467,7 +468,8 @@ namespace client
                     tsoUrl.Set("window", cmd["window"]);
                 if (debug)
                     tsoUrl.Set("debug", "true");
-                //tsoUrl.Set("version", appversion);
+                if (cmd["clientconfig"] != null)
+                    tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim());
                 string tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString().Replace("bb=https", "bb=http").Replace(":443", ""), Servers._servers[_region].domain);
                 byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", swf_upsteam.IsChecked == true ? 1 : 0, log.nickName, Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(tsoArg)), _regionUid));
                 File.WriteAllBytes(setting_file, ProtectedData.Protect(saveData, additionalEntropy, DataProtectionScope.LocalMachine));

@@ -10,7 +10,7 @@
 	<script type="text/javascript" src="jquery-ui.min.js"></script>
 	<script type="text/javascript"> 
 		var swmmo,loca,assets,globalFlash,gameLang,loadInterval,game,menu,utils,version = null,
-			dtf=new window.runtime.flash.globalization.DateTimeFormatter("en-US"),settings,isDebug=!1;
+			dtf=new window.runtime.flash.globalization.DateTimeFormatter("en-US"),settings,settingsFile="settings.json",isDebug=!1;
 
 		window.onload = function(){ 
 		   var loader = new air.Loader(); 
@@ -33,6 +33,7 @@
 			if(p["window"] && p["window"] == "maximized") { window.nativeWindow.maximize(); }
 			if(p["debug"]) { isDebug = true; }
 			if(p["version"]) { version = p["version"]; }
+			if(p["clientconfig"]) { settingsFile = p["clientconfig"]; }
 		  });
 		  loadInterval = setInterval(function(){ 
 			if(!swmmo.getDefinitionByName("globalFlash").gui.GetDefaultGuiElementsLoaded()) { return; }
