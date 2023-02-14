@@ -61,9 +61,10 @@ function managerGetData() {
             [2, 'Filename'],
             [3, 'Title'],
             [2, 'Author'],
-            [3, 'Description'],
+            [2, 'Description'],
             [1, 'Status'],
-            [1, 'Installed']
+            [1, 'Installed'],
+            [1, 'Enabled']
         ],
         true
     );
@@ -76,9 +77,10 @@ function managerGetData() {
             [2, name],
             [3, getScriptField(info[name])],
             [2, info[name].author],
-            [3, '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>'.format(info[name].longDesc, info[name].shortDesc)],
+            [2, '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>'.format(info[name].longDesc, info[name].shortDesc)],
             [1, st === 'ok' ? st : getText('manager_mismatch')],
-            [1, '<input type="checkbox" id="' + name + '" ' + (currentScripts[name] ? 'checked' : '') + ' />']
+            [1, '<input type="checkbox" id="' + name + '" ' + (currentScripts[name] ? 'checked' : '') + ' />'],
+            [1, '<input type="checkbox" id="en_' + name + '" ' + (enabledScripts[name] || enabledScripts[name] == undefined ? 'checked' : '') + ' />']
         ]);
         if (st !== 'ok') {
             missMatch[name] = true;
@@ -94,19 +96,21 @@ function managerGetData() {
                 [2, item],
                 [3, getScriptField(scriptInfo)],
                 [2, scriptInfo.author],
-                [3, '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>'.format(scriptInfo.description, scriptInfo.title)],
+                [2, '<span data-toggle="tooltip" data-placement="top" title="{0}">{1}</span>'.format(scriptInfo.description, scriptInfo.title)],
                 [1, 'custom'],
-                [1, '<input type="checkbox" id="' + item + '" checked />']
+                [1, '<input type="checkbox" id="' + item + '" checked />'],
+	            [1, '<input type="checkbox" id="en_' + item + '" ' + (enabledScripts[item] || enabledScripts[item] == undefined ? 'checked' : '') + ' />']
             ]);
         } else {
             out += createTableRow([
                 [2, item],
                 [3, 'Do you'],
                 [2, 'trust'],
-                [3, 'this'],
+                [2, 'this'],
                 [1, 'file?'],
-                [1, '<input type="checkbox" id="' + item + '" checked />']
-            ]);
+                [1, '<input type="checkbox" id="' + item + '" checked />'],
+				[1, '<input type="checkbox" id="en_' + item + '" ' + (enabledScripts[item] || enabledScripts[item] == undefined ? 'checked' : '') + ' />']
+           ]);
         }
 
         currentCheckboxes += '1';
@@ -169,7 +173,11 @@ function managerProceed() {
     var result = {};
 
     $("#managerModalData input[type=checkbox]").each(function (i, item) {
-        checkboxes[item.id] = +item.checked;
+		if(item.id.match(/^en_/i) === null) {
+			checkboxes[item.id] = +item.checked;
+		} else {
+			enabledScripts[item.id.replace("en_", "")] = +item.checked;
+		}
     });
 
     for (var installedItem in installed) {
@@ -219,6 +227,7 @@ function managerProceed() {
 }
 
 function finishProceed() {
+	settings.store(enabledScripts, "scripts");
     reloadScripts(null);
     setTimeout(scriptsManagerWindow, 1000);
 }
