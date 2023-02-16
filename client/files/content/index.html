@@ -33,7 +33,7 @@
 			if(p["window"] && p["window"] == "maximized") { window.nativeWindow.maximize(); }
 			if(p["debug"]) { isDebug = true; }
 			if(p["version"]) { version = p["version"]; }
-			if(p["clientconfig"]) { settingsFile = p["clientconfig"]; }
+			if(p["clientconfig"]) { settingsFile = unescape(p["clientconfig"]); }
 		  });
 		  loadInterval = setInterval(function(){ 
 			if(!swmmo.getDefinitionByName("globalFlash").gui.GetDefaultGuiElementsLoaded()) { return; }
