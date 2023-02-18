@@ -142,7 +142,7 @@ namespace client
         {
             get
             {
-                return System.IO.Path.Combine(System.IO.Path.GetTempPath(), "tso_portable");
+                return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tso_portable");
             }
         }
         private const string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
