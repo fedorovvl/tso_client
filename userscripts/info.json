@@ -40,6 +40,13 @@
       "author":"MkFera",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
    },
+   "user_buildlist.js":{
+      "name":"Building List and Monitoring",
+      "shortDesc":"List of buildings ans monitoring updates",
+      "longDesc":"list of buildings with the possibility to select and keep under observation some buildings that are being updated",
+      "author":"MkFera",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
+},
    "user_showmyloot.js":{
       "name":"Show My Loot",
       "shortDesc":"Loot stats service",

@@ -347,10 +347,12 @@ function _exudDepositViewerSetTimeStr(seconds, type)
 				return result = new Date(seconds * 1000).toISOString().slice(11, 19);
 			case 2:
 				var d =  result = new Date(new Date(Date.now()).getTime() + seconds*1000);
+				var _m = ("00" + (d.getMonth()+1).toString()).slice(-2);
+				var _d = ("00" + d.getDate().toString()).slice(-2);
 				if (gameLang.indexOf("en-") > 0)
-					return (d.getMonth()+1) + "-" + d.getDate() + " " + d.toLocaleTimeString();
+					return _m + "-" + _d + " " + d.toLocaleTimeString();
 				else
-					return d.getDate() + "-" + (d.getMonth()+1) + " " + d.toLocaleTimeString();
+					return _d + "-" +_m + " " + d.toLocaleTimeString();
 		}
 	}
 	catch(e){
