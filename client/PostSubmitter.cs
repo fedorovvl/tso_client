@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading;
 using System.Web;
 using System.Security.Authentication;
+using Org.BouncyCastle.Crypto.Tls;
+using System.Net.Sockets;
+using System.Collections.Generic;
+using Org.BouncyCastle.Security;
 
 namespace client
 {
@@ -27,8 +31,6 @@ namespace client
         private string _mUrl = string.Empty;
         private NameValueCollection _mValues = new NameValueCollection();
         private NameValueCollection _hValues = new NameValueCollection();
-        public const SslProtocols _Tls12 = (SslProtocols)0x00000C00;
-        public const SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
         private PostTypeEnum _mType = PostTypeEnum.Get;
         private int attempts = 0;
         private string contentType = "application/x-www-form-urlencoded";
@@ -98,7 +100,7 @@ namespace client
             get { return _mType; }
             set { _mType = value; }
         }
-
+        public bool useBC = false;
         /// <summary>
         ///   Posts the supplied data to specified url.
         /// </summary>
@@ -127,7 +129,91 @@ namespace client
         }
 
         public CookieCollection Cookies { get; set; }
+        private string PostDataBC(string url,
+                        string postData)
+        {
+            string _host = new Uri(url).Host;
+            string _path = new Uri(url).AbsolutePath;
+            string _method = (_mType == PostTypeEnum.Post) ? "POST" : "GET";
+            using (var client = new TcpClient(_host, 443))
+            {
+                var sr = new SecureRandom();
+                var protocol = new TlsClientProtocol(client.GetStream(), sr);
+                protocol.Connect(new MyTlsClient());
 
+                using (var stream = protocol.Stream)
+                {
+                    var hdr = new StringBuilder();
+                    hdr.AppendLine(string.Format("{0} {1} HTTP/1.1", _method, _path));
+                    hdr.AppendLine("Host: " + _host);
+                    hdr.AppendLine("Content-Type: " + contentType);
+                    if (Cookies.Count > 0)
+                    {
+                        List<string> cList = new List<string>();
+                        for (int i = 0; i < Cookies.Count; i++)
+                        {
+                            cList.Add(Cookies[i].ToString());
+                        }
+                        hdr.AppendLine("Cookie: " + string.Join("; ", cList.ToArray()));
+                    }
+                    hdr.AppendLine("Connection: close");
+                    var bytes = new UTF8Encoding().GetBytes(postData);
+                    if (_mType == PostTypeEnum.Post)
+                    {
+                        hdr.AppendLine("Content-Length: " + bytes.Length);
+                    }
+                    hdr.AppendLine();
+                    var dataToSend = Encoding.ASCII.GetBytes(hdr.ToString());
+                    stream.Write(dataToSend, 0, dataToSend.Length);
+                    if (Main.debug)
+                    {
+                        File.AppendAllText("debug.txt", "bc request send ok " + url + "\r\n");
+                        File.AppendAllText("debug.txt", "bc request data " + hdr.ToString() + "\r\n");
+                    }
+                    if (_mType == PostTypeEnum.Post)
+                    {
+                        stream.Write(bytes, 0, bytes.Length);
+                    }
+                    int totalRead = 0;
+                    string response = "";
+
+                    byte[] buff = new byte[1000];
+                    do
+                    {
+                        totalRead = stream.Read(buff, 0, buff.Length);
+                        response += Encoding.ASCII.GetString(buff, 0, totalRead);
+                    } while (totalRead != 0);
+                    string[] data = response.Split(new string[] { "\r\n\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string header in data[0].Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        string[] header_entry = header.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries);
+                        if (header_entry[0] == "Set-Cookie")
+                        {
+                            var values = header_entry[1].Split(new string[] { "; ", "=" }, StringSplitOptions.RemoveEmptyEntries);
+                            bool isMatch = false;
+                            for (var ii = 0; ii < Cookies.Count; ii++)
+                            {
+                                if (Cookies[ii].Name == values[0])
+                                {
+                                    Cookies[ii].Value = values[1];
+                                    isMatch = true;
+                                }
+                            }
+
+                            if (false == isMatch)
+                            {
+                                Cookies.Add(new Cookie(values[0], values[1]));
+                            }
+                        }
+                    }
+                    if (Main.debug)
+                        File.AppendAllText("debug.txt", "bc response data " + data[1] + "\r\n");
+
+                    return data[1];
+                }
+            }
+            return string.Empty;
+        }
         /// <summary>
         ///   Posts data to a specified url. Note that this assumes that you have already url encoded the post data.
         /// </summary>
@@ -137,7 +223,7 @@ namespace client
         private string PostData(string url,
                                 string postData)
         {
-
+            if (useBC) { return PostDataBC(url, postData); }
             if (Main.debug)
                 File.AppendAllText("debug.txt", "begin request " + url + "\r\n");
             var result = string.Empty;
@@ -336,5 +422,21 @@ namespace client
                 }
             }
         }
+    }
+    class MyTlsClient : DefaultTlsClient
+    {
+        public override TlsAuthentication GetAuthentication()
+        {
+            return new MyTlsAuthentication();
+        }
+        //public override int[] GetCipherSuites() => new[] { CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 };
+        public override void NotifySecureRenegotiation(bool secureRenegotiation) { }
+
+    }
+    class MyTlsAuthentication : TlsAuthentication
+    {
+        public TlsCredentials GetClientCredentials(CertificateRequest certificateRequest) { return null; }
+
+        public void NotifyServerCertificate(Certificate serverCertificate) { }
     }
 }

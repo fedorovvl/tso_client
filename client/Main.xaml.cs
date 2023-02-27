@@ -118,6 +118,16 @@ namespace client
                     return assembly;
                 }
             }
+            if (args.Name.Contains("BouncyCastle"))
+            {
+                Assembly assembly = null;
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("client.BouncyCastle.Crypto.dll"))
+                {
+                    byte[] buffer = new BinaryReader(stream).ReadBytes((int)stream.Length);
+                    assembly = Assembly.Load(buffer);
+                    return assembly;
+                }
+            }
             return null;
         }
         private void Main_Loaded(object sender, RoutedEventArgs e)
@@ -176,6 +186,7 @@ namespace client
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
+            
             using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
             {
                 // ensure that scripts dir always fresh

@@ -64,6 +64,10 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <Private>False</Private>
     </Reference>
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>.\BouncyCastle.Crypto.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -180,6 +184,9 @@
   <ItemGroup>
     <Resource Include="files\ButtonIconThrowAway.png" />
     <Resource Include="files\StarMenuTabIconMisc.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BouncyCastle.Crypto.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
