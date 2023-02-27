@@ -266,7 +266,7 @@
                 </ControlTemplate>
             </CheckBox.Template>
         </CheckBox>
-        <CheckBox Width="24" Height="25" Margin="38,244,194,131.8" ToolTip="Upstream SWF" Name="swf_upsteam" IsChecked="False" Click="swf_upsteam_Click">
+        <CheckBox IsEnabled="False" Width="24" ToolTipService.ShowOnDisabled="True" Height="25" Margin="38,244,194,131.8" ToolTip="Use upstream SWF" Name="swf_upsteam" IsChecked="False" Click="swf_upsteam_Click">
             <CheckBox.Template>
                 <ControlTemplate TargetType="CheckBox">
                     <StackPanel Orientation="Horizontal">

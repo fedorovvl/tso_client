@@ -30,10 +30,14 @@ namespace client
         public static string lang = string.Empty;
         public static bool auto = false;
         public static bool upstream_swf = false;
+        public static string[] upstream_data = null;
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
         public static int http_timeout = 20000;
+        public static bool is64 = System.Environment.Is64BitOperatingSystem;
         private int _regionUid;
+        public static string fast_nickname = string.Empty;
+        public static string fast_tsoarg = string.Empty;
         public static Arguments cmd;
         private string _langLogin;
         private string _langPass;
@@ -42,7 +46,7 @@ namespace client
         private string _langRemember;
         public string appversion
         {
-            get { return "1.5.3.0"; }
+            get { return "1.5.4.2"; }
         }
         public string langLogin
         {
@@ -72,9 +76,11 @@ namespace client
         public event PropertyChangedEventHandler PropertyChanged;
         string[] args_help = new string[] {
             "--config - set config file",
+            "--clientconfig - set client config file",
             "--login - set login",
+            "--fastlogin - use saved client boot arg",
             "--password - set password",
-            "--collect - autoconfirm ubicolleck check",
+            "--collect - autoconfirm ubicollect check",
             "--autologin - allows to start client with login/password from setting.dat",
             "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro] - changes the game interface language.",
             "--window [fullscreen|maximized] - initital game window size",
@@ -136,7 +142,7 @@ namespace client
         {
             get
             {
-                return System.IO.Path.Combine(System.IO.Path.GetTempPath(), "tso_portable");
+                return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tso_portable");
             }
         }
         private const string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -205,6 +211,7 @@ namespace client
             try
             {
                 PostSubmitter post;
+                var json = new JavaScriptSerializer();
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("checking"); }));
                 string chksum = string.Empty;
                 bool needDownload = false;
@@ -219,6 +226,22 @@ namespace client
                     }
                 } else
                     needDownload = true;
+                if (upstream_data == null)
+                {
+                    post = new PostSubmitter
+                    {
+                        Url = "https://raw.githubusercontent.com/fedorovvl/tso_client/master/upstream.json",
+                        Type = PostSubmitter.PostTypeEnum.Get
+                    };
+                    string upstream_json = post.Post(ref _cookies).Trim();
+                    try
+                    {
+                        upstream_data = json.Deserialize<string[]>(upstream_json);
+                    }
+                    catch { }
+                }
+                upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
+                Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
                 string swf_filename = !upstream_swf ? "client.swf" : "client_upstream.swf";
                 if (!string.IsNullOrEmpty(chksum))
                 {
@@ -228,7 +251,6 @@ namespace client
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string rchksum = post.Post(ref _cookies).Trim();
-                    var json = new JavaScriptSerializer();
                     try
                     {
                         gitFile data = json.Deserialize<gitFile>(rchksum);
@@ -246,6 +268,13 @@ namespace client
                 if (cmd["autologin"] != null)
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { butt_Click_1(null, null); }));
+                }
+                if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(fast_nickname))
+                {
+                    Dispatcher.BeginInvoke(new ThreadStart(delegate
+                    {
+                        run_tso(fast_tsoarg, fast_nickname);
+                    }));
                 }
                 return;
             } catch (Exception e)
@@ -313,11 +342,16 @@ namespace client
                 {
                     settings[2] = Convert.ToInt16(bool.Parse(settings[2])).ToString();
                 }
-                swf_upsteam.IsChecked = upstream_swf = Convert.ToBoolean(Convert.ToInt16(settings[2]));
+                //swf_upsteam.IsChecked = upstream_swf = Convert.ToBoolean(Convert.ToInt16(settings[2]));
                 try
                 {
                     if (settings.Length > 5)
                     {
+                        if(settings[3].Trim() != "0")
+                        {
+                            fast_nickname = settings[3].Trim();
+                            fast_tsoarg = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(settings[4].Trim()));
+                        }
                         _regionUid = string.IsNullOrEmpty(settings[5]) ? 16 : int.Parse(settings[5].Trim());
                         region_list.SelectedIndex = _regionUid;
                         _region = (region_list.SelectedItem as ComboBoxItem).Tag.ToString();
@@ -392,13 +426,11 @@ namespace client
             }
             if (!string.IsNullOrEmpty(error_msg))
             {
-                
+
                 error.Text = error_msg;
                 return;
             }
             error.Text = string.Empty;
-            byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", swf_upsteam.IsChecked == true ? 1 : 0, "0", "0", _regionUid));
-            File.WriteAllBytes(setting_file, ProtectedData.Protect(saveData, additionalEntropy, DataProtectionScope.LocalMachine));
             this.Visibility = System.Windows.Visibility.Hidden;
             bool collections = (cmd["collect"] != null) ? true : false;
             if (!auto && Process.GetProcessesByName("UbiCollect").Length > 0 && !collections)
@@ -436,29 +468,38 @@ namespace client
                     tsoUrl.Set("window", cmd["window"]);
                 if (debug)
                     tsoUrl.Set("debug", "true");
+                if (cmd["clientconfig"] != null)
+                    tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim() == "NICKNAME" ? string.Format("{0}.json", log.nickName) : cmd["clientconfig"].Trim());
                 string tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString().Replace("bb=https", "bb=http").Replace(":443", ""), Servers._servers[_region].domain);
-                XmlDocument Doc = new XmlDocument();
-                XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
-                ns.AddNamespace("adobe", "http://ns.adobe.com/air/application/15.0");
-                Doc.Load(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
-                Doc.SelectSingleNode("/adobe:application/adobe:id", ns).InnerText = "TSO-" + RandomString;
-                Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + log.nickName;
-                Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
-                System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), tsoArg);
-                try
-                {
-                    App.Current.Shutdown(1);
-                }
-                catch { }
+                byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", swf_upsteam.IsChecked == true ? 1 : 0, log.nickName, Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(tsoArg)), _regionUid));
+                File.WriteAllBytes(setting_file, ProtectedData.Protect(saveData, additionalEntropy, DataProtectionScope.LocalMachine));
+                run_tso(tsoArg, log.nickName);
             }
             this.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        private void run_tso(string argString, string nickname)
+        {
+            XmlDocument Doc = new XmlDocument();
+            XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
+            ns.AddNamespace("adobe", "http://ns.adobe.com/air/application/15.0");
+            Doc.Load(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
+            Doc.SelectSingleNode("/adobe:application/adobe:id", ns).InnerText = "TSO-" + RandomString;
+            Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + nickname;
+            Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
+            System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}", argString, appversion));
+            try
+            {
+                App.Current.Shutdown(1);
+            }
+            catch { }
         }
 
         private void pwd_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             (sender as TextBox).Visibility = System.Windows.Visibility.Collapsed;
             password.Focus();
-            
+
         }
 
         private void password_LostFocus(object sender, RoutedEventArgs e)
@@ -498,6 +539,9 @@ namespace client
             langRun = Servers.getTrans("run");
             langExit = Servers.getTrans("exit");
             langRemember = Servers.getTrans("remember");
+            bool new_upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
+            if(upstream_swf != new_upstream_swf)
+                new Thread(checkVersion) { IsBackground = true }.Start();
         }
 
         private void openTsoFolder_Click(object sender, RoutedEventArgs e)

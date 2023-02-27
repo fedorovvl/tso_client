@@ -1,1 +1,78 @@
-<html> <head>     <title>The Settlers Online</title> 	<script type="text/javascript" src="AIRAliases.js"></script><!-- AIR -->    <link rel="stylesheet" href="bootstrap.min.css">    <script  type="text/javascript" src="jquery.min.js"></script>    <script type="application/x-shockwave-flash" src="library.swf"></script>    <script  type="text/javascript" src="bootstrap.min.js"></script>	<script type="text/javascript" src="jquery-ui.min.js"></script>	<script type="text/javascript"> 		var swmmo, loca, assets, globalFlash, alertItem, gameLang, b64encoder, loadInterval;		var dtf = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 		var keyboardKeys = {};		var settings = {};		var userKeyboardKeys = {};		var isDebug = false;		window.onload = function(){ 		   window.nativeWindow.menu = new air.NativeMenu();		   dtf.setDateTimePattern("MM-dd HH:mm"); 		   var loader = new air.Loader(); 		   loader.contentLoaderInfo.addEventListener(air.Event.COMPLETE, loadCompleteHandler)		   loader.load(new air.URLRequest("client.swf"));		   window.nativeWindow.stage.getChildAt(0).paintsDefaultBackground=false;		} 		function loadCompleteHandler(event)		{		  swmmo = event.target.content;		  window.nativeWindow.stage.addChild( swmmo ); 		  window.nativeWindow.stage.addEventListener(air.Event.RESIZE, function(event) {			swmmo.setActualSize(window.nativeWindow.stage.stageWidth, window.nativeWindow.stage.stageHeight);		  });		  window.nativeWindow.addEventListener("displayStateChange", function(event) {			swmmo.setActualSize(window.nativeWindow.stage.stageWidth, window.nativeWindow.stage.stageHeight);		  });		  window.nativeWindow.stage.addEventListener(window.runtime.flash.events.KeyboardEvent.KEY_DOWN, function(event) {			  keyComb = event.keyCode.toString() + event.ctrlKey.toString();			  if(keyboardKeys[keyComb]) { keyboardKeys[keyComb].fn(null); }				  if(userKeyboardKeys[keyComb]) { userKeyboardKeys[keyComb].fn(null); }			  });		  air.NativeApplication.nativeApplication.addEventListener("invoke", function(event) {			var p={};			event.arguments[0].replace(/[?&]+([^=&]+)=([^&]*)/gi, function(s,k,v){p[k]=v})			if(p["window"] && p["window"] == "fullscreen") { window.nativeWindow.stage.displayState = "fullScreenInteractive"; }			if(p["window"] && p["window"] == "maximized") { window.nativeWindow.maximize(); }			if(p["debug"]) { isDebug = true; }		  });		  loadInterval = setInterval(function(){ 			if(!swmmo.getDefinitionByName("globalFlash").gui.GetDefaultGuiElementsLoaded()) { return; }			loca = swmmo.getDefinitionByName("GUI.Loca::cLocaManager").GetInstance();			assets = swmmo.getDefinitionByName("GUI.Assets::gAssetManager");			globalFlash = swmmo.getDefinitionByName("globalFlash");			alertItem = swmmo.getDefinitionByName("GUI.Components.ItemRenderer::AvatarMessageItemRenderer");			var b64def = swmmo.getDefinitionByName("mx.utils::Base64Encoder");			gameLang = combineSameLang(loca.getSelectedLanguage());			b64encoder = new b64def();			b64encoder.insertNewLines = false;			document.title += ' (' + swmmo.getDefinitionByName("global").gameworld + ')';			document.title += ' - ' + swmmo.application.mGameInterface.mHomePlayer.GetPlayerName_string();			clearInterval(loadInterval);			air.File.applicationDirectory.resolvePath("scripts").getDirectoryListing().forEach(function(item) {				$('head').append($("<script>").attr({ "src": "scripts/" + item.name, "type": "text/javascript"}));			});			setTimeout(function() { systemLoadSettings(); reloadScripts(null); }, 1000);		  }, 2000);		}		function combineSameLang(lang) { return lang.indexOf('en') == 0 ? 'en-uk' : (lang.indexOf('es') == 0 ? 'es-es' : lang);	}			</script></head> <body style="background-color:transparent;">	<div class="container">	  <!-- Modal -->	  <div class="modal fade" id="dummyModal" role="dialog">		<div class="modal-dialog modal-lg">		  <div class="modal-content">			<div class="modal-header">			  <h4 class="modal-title"></h4>			</div>			<div class="modal-body"></div>			<div class="modal-footer">			  <button type="button" class="btn btn-danger btnClose" data-dismiss="modal">Close</button>			</div>		  </div>		</div>	  </div>	</div></body> </html>
+<html> 
+<head> 
+    <title>The Settlers Online</title> 
+    <link rel="stylesheet" href="bootstrap.min.css">
+	<script type="text/javascript" src="AIRAliases.js"></script><!-- AIR -->
+	<script type="text/javascript" src="AIRMenuBuilder.js"></script><!-- AIR -->
+    <script  type="text/javascript" src="jquery.min.js"></script>
+    <script type="application/x-shockwave-flash" src="library.swf"></script>
+    <script  type="text/javascript" src="bootstrap.min.js"></script>
+	<script type="text/javascript" src="jquery-ui.min.js"></script>
+	<script type="text/javascript"> 
+		var swmmo,loca,assets,globalFlash,gameLang,loadInterval,game,menu,utils,version = null,
+			dtf=new window.runtime.flash.globalization.DateTimeFormatter("en-US"),settings,settingsFile="settings.json",isDebug=!1;
+
+		window.onload = function(){ 
+		   var loader = new air.Loader(); 
+		   loader.contentLoaderInfo.addEventListener(air.Event.COMPLETE, loadCompleteHandler)
+		   loader.load(new air.URLRequest("client.swf"));
+		   window.nativeWindow.stage.getChildAt(0).paintsDefaultBackground=false;
+		} 
+
+		function loadCompleteHandler(event)
+		{
+		  swmmo = event.target.content;
+		  window.nativeWindow.stage.addChild( swmmo ); 
+		  window.nativeWindow.stage.addEventListener(air.Event.RESIZE, onResize);
+		  window.nativeWindow.addEventListener("displayStateChange", onResize);
+		  window.nativeWindow.stage.addEventListener(window.runtime.flash.events.KeyboardEvent.KEY_DOWN, function(event) { try{ menu.checkKeybind(event); } catch(e){} });
+		  air.NativeApplication.nativeApplication.addEventListener("invoke", function(event) {
+			var p={};
+			event.arguments[0].replace(/[?&]+([^=&]+)=([^&]*)/gi, function(s,k,v){p[k]=v})
+			if(p["window"] && p["window"] == "fullscreen") { window.nativeWindow.stage.displayState = "fullScreenInteractive"; }
+			if(p["window"] && p["window"] == "maximized") { window.nativeWindow.maximize(); }
+			if(p["debug"]) { isDebug = true; }
+			if(p["version"]) { version = p["version"]; }
+			if(p["clientconfig"]) { settingsFile = unescape(p["clientconfig"]); }
+		  });
+		  loadInterval = setInterval(function(){ 
+			if(!swmmo.getDefinitionByName("globalFlash").gui.GetDefaultGuiElementsLoaded()) { return; }
+			loca = swmmo.getDefinitionByName("GUI.Loca::cLocaManager").GetInstance();
+			assets = swmmo.getDefinitionByName("GUI.Assets::gAssetManager");
+			globalFlash = swmmo.getDefinitionByName("globalFlash");
+			alertItem = swmmo.getDefinitionByName("GUI.Components.ItemRenderer::AvatarMessageItemRenderer");
+			gameLang = combineSameLang(loca.getSelectedLanguage());
+			document.title += ' (' + swmmo.getDefinitionByName("global").gameworld + ')';
+			document.title += ' - ' + swmmo.application.mGameInterface.mHomePlayer.GetPlayerName_string();
+			game = new Game(swmmo.application.mGameInterface); 
+			clearInterval(loadInterval);
+			air.File.applicationDirectory.resolvePath("scripts").getDirectoryListing().forEach(function(item) {
+				$('head').append($("<script>").attr({ "src": "scripts/" + item.name, "type": "text/javascript"}));
+			});
+			if(isDebug) { $('head').append($("<script>").attr({ "src": "AIRIntrospector.js", "type": "text/javascript"})); }
+		  }, 2000);
+		}
+		function combineSameLang(e){return 0==e.indexOf("en")?"en-uk":0==e.indexOf("es")?"es-es":e}
+		function onResize(event) { swmmo.setActualSize(window.nativeWindow.stage.stageWidth, window.nativeWindow.stage.stageHeight); }
+		var Game=function(e){this.gi=e,this.player=e.mCurrentPlayer,this.zone=e.mCurrentPlayerZone,this.quests=e.mNewQuestManager,this.trackers={},this.questCallbacks=e.mQuestClientCallbacks};Game.prototype={def:function(e,t){var n=swmmo.getDefinitionByName(e);return t?new n:n},chatMessage:function(e,t){t=t||"main",globalFlash.gui.mChatPanel.PutMessageToChannelWithoutServer("news",new window.runtime.Date,"Client [{0}]".format(t),e,!1,!1)},getBuildings:function(e){if((e=e||1)>5)return null;try{return this.zone.mStreetDataMap.GetBuildings_vector()}catch(t){return this.getBuildings(++e)}},getSpecialists:function(e){if((e=e||1)>5)return null;try{return this.zone.GetSpecialists_vector()}catch(t){return this.getSpecialists(++e)}},getBuffs:function(e){if((e=e||1)>5)return null;try{return this.player.getAvailableBuffs_vector()}catch(t){return this.getBuffs(++e)}},getResources:function(e){if((e=e||1)>5)return null;try{return this.zone.GetResources(this.player)}catch(t){return this.getResources(++e)}},createResponder:function(e,t){return new(this.def("ServerState::ResponderSimple"))(e,t)},showAlert:function(e){var t=this.def("GUI.Components.ItemRenderer::AvatarMessageItemRenderer",!0);swmmo.getDefinitionByName("globalFlash").gui.mAvatarMessageList.mClientMessages.addChild(t),t.headlineLabel.text="Client",t.messageBody.text=e,t.image.source=assets.GetBitmap("1-Up.png")},getTracker:function(r,e){return this.trackers[r]||(this.trackers[r]=new window.runtime.ClientBuff,this.trackers[r].addEventListener("buffApply",e)),this.trackers[r]}};
+	</script>
+</head> 
+<body style="background-color:transparent;">
+	<div class="container">
+	  <!-- Modal -->
+	  <div class="modal fade" id="dummyModal" role="dialog">
+		<div class="modal-dialog modal-lg">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <h4 class="modal-title"></h4>
+			</div>
+			<div class="modal-body"></div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-danger btnClose" data-dismiss="modal">Close</button>
+			</div>
+		  </div>
+		</div>
+	  </div>
+	</div>
+</body> 
+</html>

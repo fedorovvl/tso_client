@@ -92,6 +92,11 @@
     </ApplicationDefinition>
     <Compile Include="Arguments.cs" />
     <Compile Include="Crypt.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Servers.cs" />
     <Compile Include="login.xaml.cs">
       <DependentUpon>login.xaml</DependentUpon>
@@ -119,11 +124,6 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
@@ -131,12 +131,13 @@
     </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="files\content.zip" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -163,7 +164,6 @@
   <ItemGroup>
     <Resource Include="files\back.png" />
     <Resource Include="files\checked.png" />
-    <None Include="files\content.zip" />
     <Resource Include="files\icon.ico" />
     <Resource Include="files\input.png" />
     <Resource Include="files\unchecked.png" />
@@ -183,10 +183,14 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>tar -c -a -f ..\..\files/content.zip -C ..\..\files\content *</PreBuildEvent>
+    <PreBuildEvent>tar -c -a -f ..\..\files/content.zip -C ..\..\files\content *
+tar -c -a -f ..\..\files/runtime_x64.zip -C ..\..\files\runtime_x64 *
+tar -c -a -f ..\..\files/runtime_x86.zip -C ..\..\files\runtime_x86 *</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>del /F ..\..\files\content.zip</PostBuildEvent>
+    <PostBuildEvent>del /F ..\..\files\content.zip
+del /F ..\..\files\runtime_x64.zip
+del /F ..\..\files\runtime_x86.zip</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
