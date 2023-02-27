@@ -30,6 +30,7 @@ namespace client
         public static string lang = string.Empty;
         public static bool auto = false;
         public static bool upstream_swf = false;
+        public static bool isLoaded = false;
         public static string[] upstream_data = null;
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
@@ -100,36 +101,12 @@ namespace client
             if (cmd["lang"] != null && Servers._langs.ContainsKey(cmd["lang"]))
                 lang = Servers._langs[cmd["lang"]];
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             System.Net.ServicePointManager.Expect100Continue = false;
             InitializeComponent();
             this.DataContext = this;
             Loaded += Main_Loaded;
         }
-        Assembly AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            if (args.Name.Contains("AutoUpdater"))
-            {
-                Assembly assembly = null;
-                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("client.AutoUpdater.NET.dll"))
-                {
-                    byte[] buffer = new BinaryReader(stream).ReadBytes((int)stream.Length);
-                    assembly = Assembly.Load(buffer);
-                    return assembly;
-                }
-            }
-            if (args.Name.Contains("BouncyCastle"))
-            {
-                Assembly assembly = null;
-                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("client.BouncyCastle.Crypto.dll"))
-                {
-                    byte[] buffer = new BinaryReader(stream).ReadBytes((int)stream.Length);
-                    assembly = Assembly.Load(buffer);
-                    return assembly;
-                }
-            }
-            return null;
-        }
+
         private void Main_Loaded(object sender, RoutedEventArgs e)
         {
             if (cmd["config"] != null && File.Exists(cmd["config"]))
@@ -145,6 +122,7 @@ namespace client
                 password.Password = cmd["password"];
                 pwd.Visibility = System.Windows.Visibility.Collapsed;
             }
+            isLoaded = true;
             new Thread(checkVersion) { IsBackground = true }.Start();
         }
 
@@ -550,7 +528,8 @@ namespace client
             langRun = Servers.getTrans("run");
             langExit = Servers.getTrans("exit");
             langRemember = Servers.getTrans("remember");
-            new Thread(checkVersion) { IsBackground = true }.Start();
+            if(isLoaded)
+                new Thread(checkVersion) { IsBackground = true }.Start();
         }
 
         private void openTsoFolder_Click(object sender, RoutedEventArgs e)
