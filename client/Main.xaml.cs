@@ -46,7 +46,7 @@ namespace client
         private string _langRemember;
         public string appversion
         {
-            get { return "1.5.4.3"; }
+            get { return "1.5.4.4"; }
         }
         public string langLogin
         {
@@ -253,7 +253,7 @@ namespace client
                 }
                 upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
-                string swf_filename = !upstream_swf ? "client.swf" : "client_upstream.swf";
+                string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
                 if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
@@ -550,9 +550,7 @@ namespace client
             langRun = Servers.getTrans("run");
             langExit = Servers.getTrans("exit");
             langRemember = Servers.getTrans("remember");
-            bool new_upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
-            if(upstream_swf != new_upstream_swf)
-                new Thread(checkVersion) { IsBackground = true }.Start();
+            new Thread(checkVersion) { IsBackground = true }.Start();
         }
 
         private void openTsoFolder_Click(object sender, RoutedEventArgs e)
