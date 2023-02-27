@@ -368,7 +368,11 @@ function _exudBuildingMonitorStartTimed()
 		{
 		}
 		if (terminated > 0)
+		{
 			showGameAlert(getText('ReadyMsg', 'exudUserBuildingListLang').format(terminated));	
+			var SM = swmmo.getDefinitionByName("Sound::cSoundManager").getInstance();
+			SM.playEffect("MountainDestruction");
+		}
 	}	
 	_exudBuildingMonitorTimeOut = setTimeout(_exudBuildingMonitorStartTimed, _exudBuildingMonitorSettings.Minutes*60000);
 }
@@ -416,6 +420,7 @@ function _exudUserBuildingMonitorMessage(Text)
 {
 	try{
 		globalFlash.gui.mChatPanel.PutMessageToChannelWithoutServer("news", new window.runtime.Date(),getText('Monitor', 'exudUserBuildingListLang'),Text,false,false);
+
 	}
 	catch (e) {
 		
