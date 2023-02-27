@@ -4,13 +4,23 @@ var _exudUserBuildingListLang = {
 		'UserBuildingList': 'Building List',
 		'Monitor' : 'Building Monitor',
 		'Monitoring' : 'Monitoring',
-		'Upgrading' : 'Upgrading'
+		'Upgrading' : 'Upgrading',
+		'Notify' : 'Enable  notification',
+		'Minutes' : 'Minutes',
+		"Stop": "Stop",
+		"Start": "Start",
+		"ReadyMsg" : "Building monitor : {0} building ready!"
 		},
 	"pt-br" : {
 		'UserBuildingList': 'Lista Predios',
 		'Monitor' : 'Edificios monitorados',
 		'Monitoring' : 'Observando',
-		'Upgrading' : 'Melhorando'
+		'Upgrading' : 'Melhorando',
+		'Notify' : 'Habilitar notificação',
+		'Minutes' : 'Minutos',
+		"Stop": "Parar",
+		"Start": "Ativar",
+		"ReadyMsg" : "Observador : {0} edificios prontos !"
 		}
 	};
 
@@ -24,9 +34,19 @@ var _exudUserBuildingMonitorModalInitialized = false;
 var _exudUserBuildingListBuildings = new Array();
 
 var _exudBuildingMonitorSettings = {
-	'BM' : new Array()
+	'BM' : new Array(),
+	'Notify' : false,
+	'Minutes' : 5
 };
 $.extend(_exudBuildingMonitorSettings, readSettings(null, 'exusMonitorBuilding'));
+
+var _exudBuildingMonitorTimeOut = null;
+
+if ((_exudBuildingMonitorTimeOut == null || _exudBuildingMonitorTimeOut == undefined) && (_exudBuildingMonitorSettings.Notify))
+{
+	_exudBuildingMonitorTimeOut = null;
+	setTimeout(_exudUserBuildingMonitorStart, 30000);
+}
 
 function _exudBuildingMonitorSaveSettings()
 {
@@ -44,7 +64,12 @@ function _exudBuildingMonitorIsMonitoring(gid)
 }
 
 function _exudUserBuildingListMenuHandler(event) {
-	
+		if (!(swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() == swmmo.application.mGameInterface.mCurrentViewedZoneID))
+		{
+			showGameAlert("Not in home zone ");	
+			return;
+		}
+
 	$("div[role='dialog']:not(#UserBuildingListModal):visible").modal("hide");
 	
 	if(!_exudUserBuildingListModalInitialized)
@@ -174,7 +199,7 @@ function _exudUserBuildingListUpdateView()
 	});
 	$("#udUserBuildingListTotal").html("Tot: " + tot);
 	$('#UserBuildingListModalData').html('<div class="container-fluid">{0}</div>'.format(out));
-	$('#UserBuildingListModalData img[id^="exudSSPOS_"]').click(_exudUserBuildingListGoTo);
+	$('#UserBuildingListModalData img[id^="exudSSPOS_"]').click(_exudUserBuildingListGoTo1);
 	$('#UserBuildingListModalData input[id^="_exudBL_"]').click(_exudUserBuildingToggleMonitor);
 }
 
@@ -198,6 +223,18 @@ function _exudUserBuildingListGoTo(e)
 	swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(gid);
 	game.gi.SelectBuilding(bui);
 }
+function _exudUserBuildingListGoTo1(e)
+{
+	_exudUserBuildingListGoTo(e);
+	$('#UserBuildingListModal').modal('hide');
+}
+function _exudUserBuildingListGoTo2(e)
+{
+	_exudUserBuildingListGoTo(e);
+	$('#UserBuildingMonitorModal').modal('hide');
+}
+
+
 function _exudUserBuildingToggleMonitor(e)
 {
 	try{
@@ -218,6 +255,12 @@ function _exudUserBuildingToggleMonitor(e)
 }
 
 function _exudUserBuildingMonitorMenuHandler(event) {
+		if (!(swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() == swmmo.application.mGameInterface.mCurrentViewedZoneID))
+		{
+			showGameAlert("Not in home zone ");	
+			return;
+		}
+
 	$("div[role='dialog']:not(#UserBuildingMonitorModal):visible").modal("hide");
 	
 	if(!_exudUserBuildingMonitorModalInitialized)
@@ -226,7 +269,7 @@ function _exudUserBuildingMonitorMenuHandler(event) {
 try{
 		if($('#UserBuildingMonitorModal .modal-header .container-fluid').length == 0){
 			$('#udUserBuildingMonitorStyle').remove();
-		
+
 			if($('#udUserBuildingMonitorStyle').length == 0)
 				$("head").append($("<style>", { 'id': 'udUserBuildingMonitorStyle' }).text('div .row:hover {background-color: #A65329;}'));
 			
@@ -234,6 +277,12 @@ try{
 						
 			$('#UserBuildingMonitorModal .modal-header').append(
 				'<div class="container-fluid">' 
+				+ '<div>'
+				+ '<span style="height:30px;float:left;vertical-align: middle;"><input type="checkbox" id="_exudUserBuildingMonitorNotifyCheck" {0}/> {1}<br/>'.format((_exudBuildingMonitorSettings.Notify ? ' checked' : ''),  getText('Notify', 'exudUserBuildingListLang')) + '</span>'
+				+ '<span style="height:30px;float:left;vertical-align: middle;">&nbsp;/&nbsp;' + getText('Minutes', 'exudUserBuildingListLang') + ' (2-10)  <input type="text" style="color:black;width:40px;vertical-align: bottom" id="_exudUserBuildingMonitorTime" value="'+_exudBuildingMonitorSettings.Minutes+'"/></span>'
+				+ "&nbsp;&nbsp;&nbsp;" + $('<button>').attr({ "class": "btn btn-sm _exudUserBuildingMonitorAtivarPararBtn" }).text((_exudBuildingMonitorTimeOut != null ? getText('Stop', 'exudUserBuildingListLang') : getText('Start', 'exudUserBuildingListLang'))).prop("outerHTML") + ' '
+				+ '</div><br/>'
+				+ '<div style="clear:both">'
 				+ createTableRow([
 						[1, getText('Monitoring', 'exudUserBuildingListLang')],
 						[6, loca.GetText("LAB", "Name")],
@@ -243,18 +292,87 @@ try{
 						[1, loca.GetText("LAB", "Visit")]
 					], true)
 				+ "</div>"
+				+ "</div>"
 			);
 
+			$('#UserBuildingMonitorModal ._exudUserBuildingMonitorAtivarPararBtn').click(function() {
+				_exudUserBuildingMonitorStart();
+				$('#UserBuildingMonitorModal').modal('hide');
+			});
+			$('#_exudUserBuildingMonitorNotifyCheck').change(function(){
+				_exudBuildingMonitorSettings.Notify = !_exudBuildingMonitorSettings.Notify;
+				_exudBuildingMonitorSaveSettings();
+			});
+			$('#_exudUserBuildingMonitorTime').change(function(){
+				_exudBuildingMonitorSettings.Minutes = $( "#_exudUserBuildingMonitorTime" ).val();
+				_exudBuildingMonitorSaveSettings();
+			});
 			_exudUserBuildingMonitorModalInitialized = true;
+		}
+		else
+		{
+			$('#UserBuildingMonitorModal ._exudUserBuildingMonitorAtivarPararBtn').text(_exudBuildingMonitorTimeOut != null ? getText('Stop', 'exudUserBuildingListLang') : getText('Start', 'exudUserBuildingListLang'));
 		}
 
 	}
 	catch (e) {}
 	
-			_exudUserBuildingMonitorRefresh();
+	_exudUserBuildingMonitorRefresh();
 	
 	$('#UserBuildingMonitorModal:not(:visible)').modal({ backdrop: "static" });
 }
+function _exudUserBuildingMonitorStart()
+{
+	if (_exudBuildingMonitorTimeOut != null)
+	{
+		clearTimeout(_exudBuildingMonitorTimeOut);
+		_exudBuildingMonitorTimeOut = null;
+		_exudUserBuildingMonitorMessage("Observer stopped");
+	}
+	else		
+	{
+		if (_exudBuildingMonitorTimeOut != null)
+		{
+			try {
+				clearTimeout(_exudBuildingMonitorTimeOut);
+				_exudBuildingMonitorTimeOut = null;
+			} catch (e) {
+				
+			}
+		}
+
+		_exudBuildingMonitorTimeOut = setTimeout(_exudBuildingMonitorStartTimed, 10000);	
+		_exudUserBuildingMonitorMessage("Observer started");
+		
+	}
+}
+function _exudBuildingMonitorStartTimed()
+{	
+	_exudBuildingMonitorTimeOut = null;
+	if (swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() == swmmo.application.mGameInterface.mCurrentViewedZoneID)
+	{
+		var terminated = 0;
+		try{
+			_exudBuildingMonitorSettings.BM.forEach(function(item) {
+				var bld = game.zone.mStreetDataMap.GetBuildingByGridPos(item);
+				var isUpgrading = "";
+				try{
+					if (!bld.IsUpgradeInProgress()) 
+						++terminated;
+				}
+				catch (ee)
+				{
+				}
+			});
+		} catch (e)
+		{
+		}
+		if (terminated > 0)
+			showGameAlert(getText('ReadyMsg', 'exudUserBuildingListLang').format(terminated));	
+	}	
+	_exudBuildingMonitorTimeOut = setTimeout(_exudBuildingMonitorStartTimed, _exudBuildingMonitorSettings.Minutes*60000);
+}
+
 function _exudUserBuildingMonitorRefresh()
 {
 	var out = "";
@@ -291,6 +409,15 @@ function _exudUserBuildingMonitorRefresh()
 	});
 	$('#UserBuildingMonitorModalData').html('<div class="container-fluid">{0}</div>'.format(out));
 	$('#UserBuildingMonitorModalData input[id^="_exudBM_"]').click(_exudUserBuildingToggleMonitor);
-	$('#UserBuildingMonitorModalData img[id^="exudBMPOS_"]').click(_exudUserBuildingListGoTo);
+	$('#UserBuildingMonitorModalData img[id^="exudBMPOS_"]').click(_exudUserBuildingListGoTo2);
 }
 
+function _exudUserBuildingMonitorMessage(Text)
+{
+	try{
+		globalFlash.gui.mChatPanel.PutMessageToChannelWithoutServer("news", new window.runtime.Date(),getText('Monitor', 'exudUserBuildingListLang'),Text,false,false);
+	}
+	catch (e) {
+		
+	}
+}
