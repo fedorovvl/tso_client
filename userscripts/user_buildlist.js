@@ -13,7 +13,8 @@ var _exudUserBuildingListLang = {
 		"ToolTipNotify" : "Mark to receive notification",
 		"DebuffedMsg" : "Building monitor : {0} building debuffed!",
 		"UpgradeSound" : "Upgrade Sound",
-		"DebuffSound" : "Debuffed Sound"
+		"DebuffSound" : "Debuffed Sound",
+		"PlayMute" : "Plays even when mute"
 		},
 	"pt-br" : {
 		'UserBuildingList': 'Lista Predios',
@@ -28,7 +29,8 @@ var _exudUserBuildingListLang = {
 		"ToolTipNotify" : "Selecionar para receber a notificação",
 		"DebuffedMsg" : "Observador : {0} edificios sem catalisador !",
 		"UpgradeSound" : "Som melhora",
-		"DebuffSound" : "Som catalização"
+		"DebuffSound" : "Som catalização",
+		"PlayMute" : "Toca mesmo quando mudo"
 		}
 	};
 
@@ -65,7 +67,8 @@ var _exudBuildingMonitorSettings = {
 	'NotifyUpgrade' : new Array(),
 	'NotifyBuffed' : new Array(),
 	'UpgradeSound' : 'CGJackpot',
-	'BuffSound' : 'MountainDestruction'
+	'BuffSound' : 'MountainDestruction',
+	'PlayMute' : false
 };
 $.extend(_exudBuildingMonitorSettings, readSettings(null, 'exusMonitorBuilding'));
 
@@ -368,6 +371,7 @@ try{
 				'<div class="container-fluid">' 
 				+ '<div>'
 				+ '<span style="height:30px;float:left;vertical-align: middle;"><input type="checkbox" id="_exudUserBuildingMonitorNotifyCheck" {0}/> {1}<br/>'.format((_exudBuildingMonitorSettings.Notify ? ' checked' : ''),  getText('Notify', 'exudUserBuildingListLang')) + '</span>'
+				+ '<span style="height:30px;float:left;vertical-align: middle;">&nbsp;/&nbsp;<input type="checkbox" id="_exudUserBuildingMonitorPlayCheck" {0}/> {1}<br/>'.format((_exudBuildingMonitorSettings.PlayMute ? ' checked' : ''),  getText('PlayMute', 'exudUserBuildingListLang')) + '</span>'
 				+ '<span style="height:30px;float:left;vertical-align: middle;">&nbsp;/&nbsp;' + getText('Minutes', 'exudUserBuildingListLang') + ' (2-10)  <input type="text" style="color:black;width:40px;vertical-align: bottom" id="_exudUserBuildingMonitorTime" value="'+_exudBuildingMonitorSettings.Minutes+'"/></span>'
 				+ "&nbsp;&nbsp;&nbsp;" + $('<button>').attr({ "class": "btn btn-sm _exudUserBuildingMonitorAtivarPararBtn" }).text((_exudBuildingMonitorTimeOut != null ? getText('Stop', 'exudUserBuildingListLang') : getText('Start', 'exudUserBuildingListLang'))).prop("outerHTML") + ' '
 				+ "<br/>" + getText('UpgradeSound', 'exudUserBuildingListLang') + "&nbsp;&nbsp;" + selectUS.prop("outerHTML") + "&nbsp;&nbsp;"
@@ -389,13 +393,18 @@ try{
 			$('#_exudUserBuildingMonitorSelectUS').val(_exudBuildingMonitorSettings.UpgradeSound);
 			$('#_exudUserBuildingMonitorSelectBS').val(_exudBuildingMonitorSettings.BuffSound);
 
-
+			$('#_exudUserBuildingMonitorPlayCheck').change(function(){
+				_exudBuildingMonitorSettings.PlayMute = !_exudBuildingMonitorSettings.PlayMute;
+				_exudBuildingMonitorSaveSettings();
+			});
 			$('#_exudUserBuildingMonitorSelectUS').change(function(){
 				_exudBuildingMonitorSettings.UpgradeSound = $( "#_exudUserBuildingMonitorSelectUS" ).val();
+				_exudUserBuildingMonitorPlaySound(_exudBuildingMonitorSettings.UpgradeSound);
 				_exudBuildingMonitorSaveSettings();
 			});
 			$('#_exudUserBuildingMonitorSelectBS').change(function(){
 				_exudBuildingMonitorSettings.BuffSound = $( "#_exudUserBuildingMonitorSelectBS" ).val();
+				_exudUserBuildingMonitorPlaySound(_exudBuildingMonitorSettings.BuffSound);
 				_exudBuildingMonitorSaveSettings();
 			});
 
@@ -571,10 +580,24 @@ function _exudUserBuildingMonitorMessage(Text)
 }
 function _exudUserBuildingMonitorPlaySound(sound)
 {
-	var SM = swmmo.getDefinitionByName("Sound::cSoundManager").getInstance();
-	var item = sound.split("_");
-	if (item.length == 1)
-		SM.playEffect(item[0]);
-	else
-		SM.playEffect(item[0], item[1]);
+	try{
+		var SM = swmmo.getDefinitionByName("Sound::cSoundManager").getInstance();
+		var item = sound.split("_");
+		var muted = (SM.isEffectsMuted() && _exudBuildingMonitorSettings.PlayMute);
+
+		if(muted)  
+		{
+			SM.toggleEffects();
+			SM.setEffectsVolume(1);
+		}
+		if (item.length == 1)
+			SM.playEffect(item[0]);
+		else
+			SM.playEffect(item[0], item[1]);
+		
+		if(muted)  SM.toggleEffects();
+	}
+	catch (e)
+	{
+	}
 }
