@@ -27,6 +27,7 @@ namespace client
         public static bool debug = false;
         public static string version = string.Empty;
         public static string setting_file = "settings.dat";
+        public static string tso_folder = "tso_portable";
         public static string lang = string.Empty;
         public static bool auto = false;
         public static bool upstream_swf = false;
@@ -47,7 +48,7 @@ namespace client
         private string _langRemember;
         public string appversion
         {
-            get { return "1.5.4.4"; }
+            get { return "1.5.4.5"; }
         }
         public string langLogin
         {
@@ -87,6 +88,7 @@ namespace client
             "--window [fullscreen|maximized] - initital game window size",
             "--skip - allows to skip update checking of client.swf",
             "--http_timeout - set http requests timeout",
+            "--tsofolder - set different tso folder name",
             "--debug - creates a debug.txt file with an error report in case of failure"
         };
 
@@ -114,6 +116,8 @@ namespace client
             ReadSettings();
             if (cmd["debug"] != null)
                 debug = true;
+            if (cmd["tsofolder"] != null)
+                tso_folder = cmd["tsofolder"].Trim();
             if (cmd["http_timeout"] != null && IsNumeric(cmd["http_timeout"]))
                 http_timeout = int.Parse(cmd["http_timeout"]);
             if (cmd["login"] != null && cmd["password"] != null)
@@ -130,7 +134,7 @@ namespace client
         {
             get
             {
-                return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tso_portable");
+                return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), tso_folder);
             }
         }
         private const string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
