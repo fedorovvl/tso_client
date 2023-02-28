@@ -35,7 +35,7 @@ function specHideGetData(w)
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [3, "UniqueID"], [3, loca.GetText("LAB", "GuildOnlineLast24")]], true);
 	game.zone.GetSpecialists_vector().sort(0).forEach(function(item){
-		var isValid = item.GetBaseType() == specHideSelectedType || (specHideSelectedType == 3 && specHideSPECIALIST_TYPE.IsGeneral(item.GetType()));
+		var isValid = item.GetBaseType() == specHideSelectedType || (specHideSelectedType == 3 && specHideSPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()));
 		if(!isValid) { return; }
 		html += utils.createTableRow([
 			[6, getImageTag(item.getIconID(), '24px', '24px') + ' ' + item.getName(false)], 
