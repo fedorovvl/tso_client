@@ -9,7 +9,9 @@ var _exudUserBuildingListLang = {
 		'Minutes' : 'Minutes',
 		"Stop": "Stop",
 		"Start": "Start",
-		"ReadyMsg" : "Building monitor : {0} building ready!"
+		"ReadyMsg" : "Building monitor : {0} building ready!",
+		"ToolTipNotify" : "Mark to receive notification",
+		"DebuffedMsg" : "Building monitor : {0} building debuffed!"
 		},
 	"pt-br" : {
 		'UserBuildingList': 'Lista Predios',
@@ -20,7 +22,9 @@ var _exudUserBuildingListLang = {
 		'Minutes' : 'Minutos',
 		"Stop": "Parar",
 		"Start": "Ativar",
-		"ReadyMsg" : "Observador : {0} edificios prontos !"
+		"ReadyMsg" : "Observador : {0} edificios prontos !",
+		"ToolTipNotify" : "Selecionar para receber a notificação",
+		"DebuffedMsg" : "Observador : {0} edificios sem catalisador !"
 		}
 	};
 
@@ -36,7 +40,9 @@ var _exudUserBuildingListBuildings = new Array();
 var _exudBuildingMonitorSettings = {
 	'BM' : new Array(),
 	'Notify' : false,
-	'Minutes' : 5
+	'Minutes' : 5,
+	'NotifyUpgrade' : new Array(),
+	'NotifyBuffed' : new Array()
 };
 $.extend(_exudBuildingMonitorSettings, readSettings(null, 'exusMonitorBuilding'));
 
@@ -62,7 +68,14 @@ function _exudBuildingMonitorIsMonitoring(gid)
 {
 	return (_exudBuildingMonitorSettings.BM.indexOf(""+gid) >= 0);
 }
-
+function _exudBuildingMonitorHasNotifyUpgrade(gid)
+{
+	return (_exudBuildingMonitorSettings.NotifyUpgrade.indexOf(""+gid) >= 0);
+}
+function _exudBuildingMonitorHasNotifyBuffed(gid)
+{
+	return (_exudBuildingMonitorSettings.NotifyBuffed.indexOf(""+gid) >= 0);
+}
 function _exudUserBuildingListMenuHandler(event) {
 		if (!(swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() == swmmo.application.mGameInterface.mCurrentViewedZoneID))
 		{
@@ -245,7 +258,11 @@ function _exudUserBuildingToggleMonitor(e)
 	if (btn.checked)
 		_exudBuildingMonitorSettings.BM.push(gid);
 	else
+	{
 		_exudBuildingMonitorSettings.BM.splice( $.inArray(gid, _exudBuildingMonitorSettings.BM), 1 );
+		_exudBuildingMonitorSettings.NotifyUpgrade.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyUpgrade), 1 );
+		_exudBuildingMonitorSettings.NotifyBuffed.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyBuffed), 1 );
+	}
 	
 	_exudBuildingMonitorSaveSettings();
 	}
@@ -253,7 +270,48 @@ function _exudUserBuildingToggleMonitor(e)
 	{
 	}
 }
-
+function _exudUserBuildingToggleMonitorNotifyUpgrade(e)
+{
+	try{
+	var btn = e.target;
+	var gid = btn.id.replace("_exudBMU_","");
+		if (_exudBuildingMonitorIsMonitoring(gid))
+		{
+			if (btn.checked)
+				_exudBuildingMonitorSettings.NotifyUpgrade.push(gid);
+			else
+				_exudBuildingMonitorSettings.NotifyUpgrade.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyUpgrade), 1 );
+			
+			_exudBuildingMonitorSaveSettings();
+		}
+		else
+			btn.checked = false;
+	}
+	catch (e)
+	{
+	}
+}
+function _exudUserBuildingToggleMonitorNotifyBuffed(e)
+{
+	try{
+	var btn = e.target;
+	var gid = btn.id.replace("_exudBMB_","");
+		if (_exudBuildingMonitorIsMonitoring(gid))
+		{
+			if (btn.checked)
+				_exudBuildingMonitorSettings.NotifyBuffed.push(gid);
+			else
+				_exudBuildingMonitorSettings.NotifyBuffed.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyBuffed), 1 );
+			
+			_exudBuildingMonitorSaveSettings();
+		}
+		else
+			btn.checked = false;
+	}
+	catch (e)
+	{
+	}
+}
 function _exudUserBuildingMonitorMenuHandler(event) {
 		if (!(swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() == swmmo.application.mGameInterface.mCurrentViewedZoneID))
 		{
@@ -305,6 +363,10 @@ try{
 			});
 			$('#_exudUserBuildingMonitorTime').change(function(){
 				_exudBuildingMonitorSettings.Minutes = $( "#_exudUserBuildingMonitorTime" ).val();
+				if (_exudBuildingMonitorSettings.Minutes<2)
+					_exudBuildingMonitorSettings.Minutes=2;
+				if(_exudBuildingMonitorSettings.Minutes>10)
+					_exudBuildingMonitorSettings.Minutes=10;
 				_exudBuildingMonitorSaveSettings();
 			});
 			_exudUserBuildingMonitorModalInitialized = true;
@@ -352,10 +414,10 @@ function _exudBuildingMonitorStartTimed()
 	if (swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() == swmmo.application.mGameInterface.mCurrentViewedZoneID)
 	{
 		var terminated = 0;
+		var unbuffed = 0;
 		try{
-			_exudBuildingMonitorSettings.BM.forEach(function(item) {
+			_exudBuildingMonitorSettings.NotifyUpgrade.forEach(function(item) {
 				var bld = game.zone.mStreetDataMap.GetBuildingByGridPos(item);
-				var isUpgrading = "";
 				try{
 					if (!bld.IsUpgradeInProgress()) 
 						++terminated;
@@ -364,17 +426,38 @@ function _exudBuildingMonitorStartTimed()
 				{
 				}
 			});
+			_exudBuildingMonitorSettings.NotifyBuffed.forEach(function(item) {
+				var bld = game.zone.mStreetDataMap.GetBuildingByGridPos(item);
+				try{
+					if (bld.productionBuff==null) 
+						++unbuffed;
+				}
+				catch (ee)
+				{
+				}
+			});
 		} catch (e)
 		{
 		}
-		if (terminated > 0)
+		if (terminated> 0)
 		{
 			showGameAlert(getText('ReadyMsg', 'exudUserBuildingListLang').format(terminated));	
-			var SM = swmmo.getDefinitionByName("Sound::cSoundManager").getInstance();
-			SM.playEffect("MountainDestruction");
+			_exudUserBuildingMonitorPlaySound("CGJackpot");
+		}
+		if (unbuffed> 0)
+		{
+			showGameAlert(getText('DebuffedMsg', 'exudUserBuildingListLang').format(unbuffed));	
+			_exudUserBuildingMonitorPlaySound("MountainDestruction");
 		}
 	}	
-	_exudBuildingMonitorTimeOut = setTimeout(_exudBuildingMonitorStartTimed, _exudBuildingMonitorSettings.Minutes*60000);
+	if (_exudBuildingMonitorSettings.Notify)
+		_exudBuildingMonitorTimeOut = setTimeout(_exudBuildingMonitorStartTimed, _exudBuildingMonitorSettings.Minutes*60000);
+}
+
+function _exudUserBuildingMonitorPlaySound(sound)
+{
+	var SM = swmmo.getDefinitionByName("Sound::cSoundManager").getInstance();
+	SM.playEffect(sound);
 }
 
 function _exudUserBuildingMonitorRefresh()
@@ -383,12 +466,26 @@ function _exudUserBuildingMonitorRefresh()
 	_exudBuildingMonitorSettings.BM.forEach(function(item) {
 		try{
 		var bld = game.zone.mStreetDataMap.GetBuildingByGridPos(item);
-		isSelected = _exudBuildingMonitorIsMonitoring(item);
+		isSelected = true;
+		hasNotifyUpgrade = _exudBuildingMonitorHasNotifyUpgrade(item);
+		hasNotifyBuffed = _exudBuildingMonitorHasNotifyBuffed(item);
 		
 		checkbox = '<input type="checkbox" id="_exudBM_{0}" {1}/>'.format(
 					item,
 					isSelected ? ' checked' : ''
 				);
+		checkboxU = '<input type="checkbox" id="_exudBMU_{0}" data-placement="top" data-toggle="tooltip" {1} title="{2}"/>'.format(
+					item,
+					hasNotifyUpgrade ? ' checked' : '',
+					getText('ToolTipNotify', 'exudUserBuildingListLang')
+				);
+
+		checkboxB = '<input type="checkbox" id="_exudBMB_{0}" data-placement="top" data-toggle="tooltip" {1} title="{2}"/>'.format(
+					item,
+					hasNotifyBuffed ? ' checked' : '',
+					getText('ToolTipNotify', 'exudUserBuildingListLang')
+				);
+				
 		var isUpgrading = "";
 		try{
 			if (bld.IsUpgradeInProgress()) isUpgrading = bld.mBuildingUpgradeProgress + "%";
@@ -400,8 +497,8 @@ function _exudUserBuildingMonitorRefresh()
 		out += createTableRow([
 				[1, (item > 0 ?checkbox: "")],
 				[6, _exudUserBuildingListGetName(bld.GetBuildingName_string())],
-				[1, isUpgrading],
-				[2, (bld.productionBuff == null ? loca.GetText("LAB", 'NO') : loca.GetText("LAB", 'YES'))],
+				[1, checkboxU + "&nbsp;" + isUpgrading],
+				[2, checkboxB + "&nbsp;" + (bld.productionBuff == null ? loca.GetText("LAB", 'NO') : loca.GetText("LAB", 'YES'))],
 				[1, bld.GetUIUpgradeLevel()],
 				[1, (item > 0 ? IconMap : "")]
 			], false);
@@ -412,8 +509,11 @@ function _exudUserBuildingMonitorRefresh()
 		}
 	});
 	$('#UserBuildingMonitorModalData').html('<div class="container-fluid">{0}</div>'.format(out));
+	$('[data-toggle="tooltip"]').tooltip({container: 'body'});
 	$('#UserBuildingMonitorModalData input[id^="_exudBM_"]').click(_exudUserBuildingToggleMonitor);
 	$('#UserBuildingMonitorModalData img[id^="exudBMPOS_"]').click(_exudUserBuildingListGoTo2);
+	$('#UserBuildingMonitorModalData input[id^="_exudBMU_"]').click(_exudUserBuildingToggleMonitorNotifyUpgrade);
+	$('#UserBuildingMonitorModalData input[id^="_exudBMB_"]').click(_exudUserBuildingToggleMonitorNotifyBuffed);
 }
 
 function _exudUserBuildingMonitorMessage(Text)
