@@ -11,7 +11,9 @@ var _exudUserBuildingListLang = {
 		"Start": "Start",
 		"ReadyMsg" : "Building monitor : {0} building ready!",
 		"ToolTipNotify" : "Mark to receive notification",
-		"DebuffedMsg" : "Building monitor : {0} building debuffed!"
+		"DebuffedMsg" : "Building monitor : {0} building debuffed!",
+		"UpgradeSound" : "Upgrade Sound",
+		"DebuffSound" : "Debuffed Sound"
 		},
 	"pt-br" : {
 		'UserBuildingList': 'Lista Predios',
@@ -24,11 +26,30 @@ var _exudUserBuildingListLang = {
 		"Start": "Ativar",
 		"ReadyMsg" : "Observador : {0} edificios prontos !",
 		"ToolTipNotify" : "Selecionar para receber a notificação",
-		"DebuffedMsg" : "Observador : {0} edificios sem catalisador !"
+		"DebuffedMsg" : "Observador : {0} edificios sem catalisador !",
+		"UpgradeSound" : "Som melhora",
+		"DebuffSound" : "Som catalização"
 		}
 	};
 
+const _exudUserBuildingListSounds = [ "BuildingPlace", "BuildingDestroy", "BuildingUpgrade", "MenuClose", "ButtonClick", "BuffPlace", "GeneralAttack",
+					"ChatWhisper", "BuildingReady", "CGGemClick", "CGJackpot", "CGStartRoll" ,
+					"CGShortCount", "CGCountClick", "MountainDestruction", "MenuOpen", "MenuOpenStar", "GeneralBattleStart",
+					"GeneralWin","GeneralLose","GeneralMove","GeneralRetreat","BuildingSelect","GeologistStart","GeologistFail",
+					"GeologistSuccess","Message","MessageMail","QuestComplete","QuestNew","QuestOpenLog","DepositDepleted","ExplorerStart",
+					"ExplorerFail","ExplorerSuccess","ServerLost","PayitemPurchase","BuffProduced","UnitProduced","SelectBuilding","GeologistStart_DiligentGeologist",
+					"GeologistStart_GoldheartedGeologist","GeologistFail_GoldheartedGeologist","GeologistFail_DiligentGeologist",
+					"GeologistSuccess_GoldheartedGeologist","GeologistSuccess_DiligentGeologist",
+					"ExplorerStart_IntrepidExplorer","ExplorerStart_CorageousExplorer","ExplorerStart_LovelyExplorer","ExplorerStart_PrincessZoeExplorer","ExplorerStart_MotherlyExplorer",
+					"ExplorerStart_BenevolentExplorer","ExplorerStart_Soccer2019Explorer","ExplorerStart_EmphaticExplorer","ExplorerStart_BewitchingExplorer","ExplorerStart_KeenerExplorer",
+					"ExplorerFail_IntrepidExplorer","ExplorerFail_CorageousExplorer","ExplorerFail_LovelyExplorer","ExplorerFail_PrincessZoeExplorer","ExplorerFail_MotherlyExplorer",
+					"ExplorerFail_BenevolentExplorer","ExplorerFail_Soccer2019Explorer","ExplorerFail_EmphaticExplorer","ExplorerFail_BewitchingExplorer","ExplorerFail_KeenerExplorer",
+					"ExplorerSuccess_IntrepidExplorer","ExplorerSuccess_CorageousExplorer","ExplorerSuccess_LovelyExplorer","ExplorerSuccess_PrincessZoeExplorer","ExplorerSuccess_MotherlyExplorer",
+					"ExplorerSuccess_BenevolentExplorer","ExplorerSuccess_Soccer2019Explorer","ExplorerSuccess_EmphaticExplorer","ExplorerSuccess_BewitchingExplorer","ExplorerSuccess_KeenerExplorer",
+					"SelectBuilding_statueRabbid"
+					];
 
+_exudUserBuildingListSounds.sort();		
 extendBaseLang(_exudUserBuildingListLang, 'exudUserBuildingListLang');
 addToolsMenuItem(getText('UserBuildingList', 'exudUserBuildingListLang') , _exudUserBuildingListMenuHandler);
 addToolsMenuItem(getText('Monitor', 'exudUserBuildingListLang') , _exudUserBuildingMonitorMenuHandler);
@@ -42,7 +63,9 @@ var _exudBuildingMonitorSettings = {
 	'Notify' : false,
 	'Minutes' : 5,
 	'NotifyUpgrade' : new Array(),
-	'NotifyBuffed' : new Array()
+	'NotifyBuffed' : new Array(),
+	'UpgradeSound' : 'CGJackpot',
+	'BuffSound' : 'MountainDestruction'
 };
 $.extend(_exudBuildingMonitorSettings, readSettings(null, 'exusMonitorBuilding'));
 
@@ -331,7 +354,15 @@ try{
 			if($('#udUserBuildingMonitorStyle').length == 0)
 				$("head").append($("<style>", { 'id': 'udUserBuildingMonitorStyle' }).text('div .row:hover {background-color: #A65329;}'));
 			
-			createModalWindow('UserBuildingMonitorModal', getText('Monitoring', 'exudUserBuildingListLang'));	
+			createModalWindow('UserBuildingMonitorModal', getText('Monitoring', 'exudUserBuildingListLang'));
+			
+			selectUS = $('<select>', { id: '_exudUserBuildingMonitorSelectUS' });	
+			selectBS = $('<select>', { id: '_exudUserBuildingMonitorSelectBS' });	
+
+			_exudUserBuildingListSounds.forEach(function(item) {
+				selectUS.append($('<option>', { value: item }).text(item)).prop("outerHTML");
+				selectBS.append($('<option>', { value: item }).text(item)).prop("outerHTML");
+			});
 						
 			$('#UserBuildingMonitorModal .modal-header').append(
 				'<div class="container-fluid">' 
@@ -339,6 +370,8 @@ try{
 				+ '<span style="height:30px;float:left;vertical-align: middle;"><input type="checkbox" id="_exudUserBuildingMonitorNotifyCheck" {0}/> {1}<br/>'.format((_exudBuildingMonitorSettings.Notify ? ' checked' : ''),  getText('Notify', 'exudUserBuildingListLang')) + '</span>'
 				+ '<span style="height:30px;float:left;vertical-align: middle;">&nbsp;/&nbsp;' + getText('Minutes', 'exudUserBuildingListLang') + ' (2-10)  <input type="text" style="color:black;width:40px;vertical-align: bottom" id="_exudUserBuildingMonitorTime" value="'+_exudBuildingMonitorSettings.Minutes+'"/></span>'
 				+ "&nbsp;&nbsp;&nbsp;" + $('<button>').attr({ "class": "btn btn-sm _exudUserBuildingMonitorAtivarPararBtn" }).text((_exudBuildingMonitorTimeOut != null ? getText('Stop', 'exudUserBuildingListLang') : getText('Start', 'exudUserBuildingListLang'))).prop("outerHTML") + ' '
+				+ "<br/>" + getText('UpgradeSound', 'exudUserBuildingListLang') + "&nbsp;&nbsp;" + selectUS.prop("outerHTML") + "&nbsp;&nbsp;"
+				+ getText('DebuffSound', 'exudUserBuildingListLang') + "&nbsp;&nbsp;"+ selectBS.prop("outerHTML") 
 				+ '</div><br/>'
 				+ '<div style="clear:both">'
 				+ createTableRow([
@@ -352,6 +385,19 @@ try{
 				+ "</div>"
 				+ "</div>"
 			);
+			
+			$('#_exudUserBuildingMonitorSelectUS').val(_exudBuildingMonitorSettings.UpgradeSound);
+			$('#_exudUserBuildingMonitorSelectBS').val(_exudBuildingMonitorSettings.BuffSound);
+
+
+			$('#_exudUserBuildingMonitorSelectUS').change(function(){
+				_exudBuildingMonitorSettings.UpgradeSound = $( "#_exudUserBuildingMonitorSelectUS" ).val();
+				_exudBuildingMonitorSaveSettings();
+			});
+			$('#_exudUserBuildingMonitorSelectBS').change(function(){
+				_exudBuildingMonitorSettings.BuffSound = $( "#_exudUserBuildingMonitorSelectBS" ).val();
+				_exudBuildingMonitorSaveSettings();
+			});
 
 			$('#UserBuildingMonitorModal ._exudUserBuildingMonitorAtivarPararBtn').click(function() {
 				_exudUserBuildingMonitorStart();
@@ -442,23 +488,20 @@ function _exudBuildingMonitorStartTimed()
 		if (terminated> 0)
 		{
 			showGameAlert(getText('ReadyMsg', 'exudUserBuildingListLang').format(terminated));	
-			_exudUserBuildingMonitorPlaySound("CGJackpot");
+			_exudUserBuildingMonitorMessage(getText('ReadyMsg', 'exudUserBuildingListLang').format(terminated));	
+			_exudUserBuildingMonitorPlaySound(_exudBuildingMonitorSettings.UpgradeSound);
 		}
 		if (unbuffed> 0)
 		{
 			showGameAlert(getText('DebuffedMsg', 'exudUserBuildingListLang').format(unbuffed));	
-			_exudUserBuildingMonitorPlaySound("MountainDestruction");
+			_exudUserBuildingMonitorMessage(getText('DebuffedMsg', 'exudUserBuildingListLang').format(unbuffed));
+			_exudUserBuildingMonitorPlaySound(_exudBuildingMonitorSettings.BuffSound);
 		}
 	}	
 	if (_exudBuildingMonitorSettings.Notify)
 		_exudBuildingMonitorTimeOut = setTimeout(_exudBuildingMonitorStartTimed, _exudBuildingMonitorSettings.Minutes*60000);
 }
 
-function _exudUserBuildingMonitorPlaySound(sound)
-{
-	var SM = swmmo.getDefinitionByName("Sound::cSoundManager").getInstance();
-	SM.playEffect(sound);
-}
 
 function _exudUserBuildingMonitorRefresh()
 {
@@ -525,4 +568,13 @@ function _exudUserBuildingMonitorMessage(Text)
 	catch (e) {
 		
 	}
+}
+function _exudUserBuildingMonitorPlaySound(sound)
+{
+	var SM = swmmo.getDefinitionByName("Sound::cSoundManager").getInstance();
+	var item = sound.split("_");
+	if (item.length == 1)
+		SM.playEffect(item[0]);
+	else
+		SM.playEffect(item[0], item[1]);
 }
