@@ -46,7 +46,14 @@
       "longDesc":"list of buildings with the possibility to select and keep under observation some buildings that are being updated",
       "author":"MkFera",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
-},
+   },
+   "user_spechide.js":{
+      "name":"HideSpec",
+      "shortDesc":"Hiding specialists from StarMenu",
+      "longDesc":"Simply hididing generals, geologists or explorers from StarMenu",
+      "author":"SirriS",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
+   },
    "user_showmyloot.js":{
       "name":"Show My Loot",
       "shortDesc":"Loot stats service",
