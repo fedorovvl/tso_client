@@ -38,9 +38,6 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=x86 ${{env.SOLUTION_FILE_PATH}}
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
-  
     - uses: actions/upload-artifact@v3
       with:
        name: client
