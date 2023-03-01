@@ -94,6 +94,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('expltemplates_desc') + getDefFolder('expllastDir')], [3, createButton('expllastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('bufftemplates_desc') + getDefFolder('bufflastDir')], [3, createButton('bufflastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('buitemplates_desc') + getDefFolder('builastDir')], [3, createButton('builastDir', loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, getText('armytemplates_desc') + getDefFolder('armylastDir')], [3, createButton('armylastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[6, getText('geodeftask_desc')], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
 	html += utils.createTableRow([[6, getText('expldeftask_desc')], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
 	html += utils.createTableRow([
@@ -186,6 +187,16 @@ function menuSaveHandler(event)
 {
 	var file = air.File.documentsDirectory.resolvePath("swmmo.html");
 	file.save($('html').prop('outerHTML'));
+}
+
+function openWikiHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki"));
+}
+
+function openDiscordHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://discord.gg/9G5X7VhA"));
 }
 
 //backward compatibility

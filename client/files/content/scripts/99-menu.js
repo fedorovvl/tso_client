@@ -17,7 +17,8 @@ var Menu = function(type){
 			]},
 			{ label: loca.GetText("LAB", "Specialists"), items: [
 				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', keyCode: 114, onSelect: function() { specSharedHandler(1); } },
-				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', keyCode: 115, onSelect: function() { specSharedHandler(2); } }
+				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', keyCode: 115, onSelect: function() { specSharedHandler(2); } },
+				{ label: loca.GetText("LAB", "Army") + ' (F9)', keyCode: 120, onSelect: armyMenuHandler }
 			]},
 			{ label: loca.GetText("LAB", "Buildings"), items: [
 				{ label: loca.GetText("LAB", "Buffs") + ' (F5)', keyCode: 116, onSelect: menuBuffsHandler },
@@ -46,6 +47,10 @@ Menu.prototype = {
 			menu.push({ label: "SaveHTML", onSelect: menuSaveHandler });
 		}
 		menu.push({type: 'separator' });
+		menu.push({ label: loca.GetText("LAB", "ChatHelp"), items: [
+			{ label: "Wiki", onSelect: openWikiHandler },
+			{ label: "Discord", onSelect: openDiscordHandler },
+		]});
 		menu.push({ label: 'v' + version, enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;

@@ -63,6 +63,7 @@ const baseTranslation = {
 		'expltemplates_desc': 'Explorers templates: ',
 		'bufftemplates_desc': 'Buffs templates: ',
 		'buitemplates_desc': 'Buildings templates: ',
+		'armytemplates_desc': 'Army templates: ',
 		'geodeftask_desc': 'Geologists default task',
 		'expldeftask_desc': 'Explorers default task',
 		'spectimetype_desc': 'Default time calculation type'
@@ -129,6 +130,7 @@ const baseTranslation = {
 		'expltemplates_desc': 'Шаблоны разведчиков: ',
 		'bufftemplates_desc': 'Шаблоны бафов: ',
 		'buitemplates_desc': 'Шаблоны зданий: ',
+		'armytemplates_desc': 'Шаблоны армии: ',
 		'geodeftask_desc': 'Задача геологов по умолчанию',
 		'expldeftask_desc': 'Задача разведчиков по умолчанию',
 		'spectimetype_desc': 'Тип расчета времени по умолчанию'
