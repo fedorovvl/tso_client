@@ -111,8 +111,8 @@ namespace client
 
         private void Main_Loaded(object sender, RoutedEventArgs e)
         {
-            if (cmd["config"] != null && File.Exists(cmd["config"]))
-                setting_file = cmd["config"];
+            if (cmd["config"] != null)
+                setting_file = cmd["config"].Trim();
             ReadSettings();
             if (cmd["debug"] != null)
                 debug = true;
@@ -198,6 +198,13 @@ namespace client
                 if (cmd["autologin"] != null)
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { butt_Click_1(null, null); }));
+                }
+                if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(fast_nickname))
+                {
+                    Dispatcher.BeginInvoke(new ThreadStart(delegate
+                    {
+                        run_tso(fast_tsoarg, fast_nickname);
+                    }));
                 }
                 return;
             }
