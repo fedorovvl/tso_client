@@ -166,8 +166,9 @@ function armySendGeneralToStar(spec)
 	}
 }
 
-function armyLoadGenerals()
+function armyLoadGenerals(direct)
 {
+	direct = direct || false;
 	var queue = new TimedQueue(1000);
 	$.each(armyPacket, function(item) { 
 		var dRaiseArmyVO = new dRaiseArmyVODef();
@@ -183,15 +184,19 @@ function armyLoadGenerals()
 			dRaiseArmyVO.unitSquads.addItem(dResourceVO);
 		});
 		queue.add(function(){ 
-			armyWindow.withBody('.close[value="'+item+'"]').closest("div.row div:first-child").addClass("buffReady");
+			if(!direct) {
+				armyWindow.withBody('.close[value="'+item+'"]').closest("div.row div:first-child").addClass("buffReady");
+			}
 			game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
 		});
 	});
-	queue.add(function(){ 
-		armyWindow.withFooter("button").prop('disabled',false);
-		armyGetData();
-	});
-	armyWindow.withFooter("button").prop('disabled',true);
+	if(!direct) {
+		queue.add(function(){ 
+			armyWindow.withFooter("button").prop('disabled',false);
+			armyGetData();
+		});
+		armyWindow.withFooter("button").prop('disabled',true);
+	}
 	queue.run();
 	
 }
