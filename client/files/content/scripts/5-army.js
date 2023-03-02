@@ -26,7 +26,11 @@ function armyMenuHandler(event)
 {
 	armyTemplates = new SaveLoadTemplate('army', function(data) {
 		armyPacket = data;
-		armyLoadData();
+		try{
+			armyLoadData();
+		} catch(e) {
+			game.chatMessage("Error loading " + e, 'army');
+		}
 	});
 	armyWindow = new Modal('armyWindow', utils.getImageTag('icon_general.png', '45px') + ' ' + loca.GetText("LAB","Army"));
 	armyWindow.create();
@@ -56,7 +60,10 @@ function armyMenuHandler(event)
 				var uniqueID = item.id.split(".")
 				var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
 				var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
-				if(!spec.HasUnits()) { return; }
+				if(!spec.HasUnits()) { 
+					$(item).closest('.row').remove();
+					return;
+				}
 				queue.add(function(){ 
 					try {
 						armyMilitarySystem.SendRaiseArmyToServer(game.gi, spec, null);
@@ -173,6 +180,7 @@ function armyLoadGenerals()
 			dRaiseArmyVO.unitSquads.addItem(dResourceVO);
 		});
 		queue.add(function(){ 
+			armyWindow.withBody('.close[value="'+item+'"]').closest("div.row div:first-child").addClass("buffReady");
 			game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
 		});
 	});
@@ -200,6 +208,14 @@ function armyLoadData()
 		var uniqueID = item.split(".")
 		var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
 		var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
+		if(spec == null) {
+			out += utils.createTableRow([
+				[4, '<button type="button" class="close" value="'+item+'"><span>&times;</span></button>&nbsp;' + armyPacket[item]["name"]], 
+				[7, 'spec is null'],
+				[1, 'FAIL', "buffNotReady"]]);
+			canSubmit = false
+			return;
+		}
 		var info = '';
 		$.each(armyPacket[item], function(res) {
 			if(res == "name") { return; }
