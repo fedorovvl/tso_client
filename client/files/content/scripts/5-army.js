@@ -77,6 +77,7 @@ function armyMenuHandler(event)
 				armyWindow.withFooter("button").prop('disabled',true);
 				queue.add(function(){ updateFreeArmyInfo(); });
 				queue.add(function(){ armyWindow.withFooter("button").prop('disabled',false); });
+				queue.add(function(){ armyGetData(); });
 				queue.run();
 			}
 		}),
