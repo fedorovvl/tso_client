@@ -213,7 +213,7 @@ function armyLoadData()
 		var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
 		if(spec == null) {
 			out += utils.createTableRow([
-				[4, '<button type="button" class="close" value="'+item+'"><span>&times;</span></button>&nbsp;' + armyPacket[item]["name"]], 
+				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + armyPacket[item]["name"]], 
 				[7, 'spec is null'],
 				[1, 'FAIL', "buffNotReady"]]);
 			canSubmit = false
@@ -226,7 +226,7 @@ function armyLoadData()
 		});
 		var gStatus = spec.GetGarrison() != null && spec.GetTask() == null;
 		out += utils.createTableRow([
-			[4, '<button type="button" class="close" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(spec.getIconID(), '24px', '24px') + ' ' + spec.getName(false)], 
+			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(spec.getIconID(), '24px', '24px') + ' ' + spec.getName(false)], 
 			[7, info],
 			[1, gStatus ? 'OK' : 'FAIL', gStatus ? "buffReady" : "buffNotReady"]]);
 		if(spec.GetGarrison() == null || spec.GetTask() != null) { canSubmit = false; }
