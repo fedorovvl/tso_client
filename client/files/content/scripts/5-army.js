@@ -56,9 +56,14 @@ function armyMenuHandler(event)
 				var uniqueID = item.id.split(".")
 				var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
 				var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
+				if(!spec.HasUnits()) { return; }
 				queue.add(function(){ 
-					armyMilitarySystem.SendRaiseArmyToServer(game.gi, spec, null);
-					$(item).closest('.row').remove();
+					try {
+						armyMilitarySystem.SendRaiseArmyToServer(game.gi, spec, null);
+						$(item).closest('.row').remove();
+					} catch(e) { 
+						game.chatMessage("Error unloading " + e, 'army');
+					}
 				});
 			});
 			if(queue.len() > 0) {
@@ -242,7 +247,7 @@ function armyGetData()
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[4, $('<input>', { 'type': 'checkbox', 'class': 'toggleSelect' }).prop('outerHTML') + '&nbsp;&nbsp;' + loca.GetText("LAB", "Name")], [7, getText('armyCurrentArmy')], [1, '#']], true);
 	game.zone.GetSpecialists_vector().sort(0).forEach(function(item){
-		if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType())) { return; }
+		if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
 		if(item == null || item.GetTask() != null || item.GetGarrisonGridIdx() < 0) { return; }
 		var info = '';
 		armyInfo[item.GetUniqueID().toKeyString()] = armyInfo[item.GetUniqueID().toKeyString()] || {};
