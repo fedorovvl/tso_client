@@ -204,7 +204,7 @@ function armyLoadData()
 	updateFreeArmyInfo();
 	var canSubmit = true;
 	armyWindow.withFooter(".armyUnload, .armySendGeneralsBtn").hide();
-	armyWindow.withFooter(".armyReset").show();
+	armyWindow.withFooter(".armyReset, .armySubmit").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [7, getText('armyNewArmy')], [1, loca.GetText("LAB", "ProductionStatus")]], true);
 	$.each(armyPacket, function(item) { 
