@@ -66,7 +66,11 @@ const baseTranslation = {
 		'armytemplates_desc': 'Army templates: ',
 		'geodeftask_desc': 'Geologists default task',
 		'expldeftask_desc': 'Explorers default task',
-		'spectimetype_desc': 'Default time calculation type'
+		'spectimetype_desc': 'Default time calculation type',
+		'armyCurrentArmy': 'Current army',
+		'armyNewArmy': 'New army to load',
+		'armyUnload': 'Unload selected',
+		'armyLoad': 'Load army'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -133,7 +137,11 @@ const baseTranslation = {
 		'armytemplates_desc': 'Шаблоны армии: ',
 		'geodeftask_desc': 'Задача геологов по умолчанию',
 		'expldeftask_desc': 'Задача разведчиков по умолчанию',
-		'spectimetype_desc': 'Тип расчета времени по умолчанию'
+		'spectimetype_desc': 'Тип расчета времени по умолчанию',
+		'armyCurrentArmy': 'Текущие войска',
+		'armyNewArmy': 'Новые войска для загрузки',
+		'armyUnload': 'Выгрузить выбранных',
+		'armyLoad': 'Загрузить войска'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
