@@ -269,7 +269,7 @@ function armyGetData()
 	html += utils.createTableRow([[4, $('<input>', { 'type': 'checkbox', 'class': 'toggleSelect' }).prop('outerHTML') + '&nbsp;&nbsp;' + loca.GetText("LAB", "Name")], [7, getText('armyCurrentArmy')], [1, '#']], true);
 	game.zone.GetSpecialists_vector().sort(0).forEach(function(item){
 		if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
-		if(item == null || item.GetTask() != null || item.GetGarrisonGridIdx() < 0) { return; }
+		if(item == null || item.GetTask() != null) { return; }
 		var info = '';
 		armyInfo[item.GetUniqueID().toKeyString()] = armyInfo[item.GetUniqueID().toKeyString()] || {};
 		item.GetArmy().GetSquadsCollection_vector().forEach(function(squad){
@@ -280,7 +280,7 @@ function armyGetData()
 		html += utils.createTableRow([
 			[4, '<input type="checkbox" id="' + item.GetUniqueID().toKeyString() + '" ' + (armyPacket[item.GetUniqueID().toKeyString()] ? "checked" : "") + ' />&nbsp;&nbsp;' + getImageTag(item.getIconID(), '24px', '24px') + ' ' + item.getName(false)], 
 			[7, info],
-			[1, $(getImageTag("accuracy.png", '24px', '24px')).css("cursor", "pointer").attr("id", "specOpen")]]);
+			[1, (item.GetGarrisonGridIdx() > 0 ? $(getImageTag("accuracy.png", '24px', '24px')).css("cursor", "pointer").attr("id", "specOpen") : 'star')]]);
 		return true;
 	});
 	armyWindow.Body().html(html + '<div>');
