@@ -285,7 +285,7 @@ function armyGetData()
 		html += utils.createTableRow([
 			[4, '<input type="checkbox" id="' + item.GetUniqueID().toKeyString() + '" ' + (armyPacket[item.GetUniqueID().toKeyString()] ? "checked" : "") + ' />&nbsp;&nbsp;' + getImageTag(item.getIconID(), '24px', '24px') + ' ' + item.getName(false)], 
 			[7, info],
-			[1, (item.GetGarrisonGridIdx() > 0 ? $(getImageTag("accuracy.png", '24px', '24px')).css("cursor", "pointer").attr("id", "specOpen") : 'star')]]);
+			[1, (item.GetGarrisonGridIdx() > 0 ? $(getImageTag("accuracy.png", '24px', '24px')).css("cursor", "pointer").attr("id", "specOpen") : getImageTag("Star", '24px', '24px'))]]);
 		return true;
 	});
 	armyWindow.Body().html(html + '<div>');
