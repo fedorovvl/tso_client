@@ -110,7 +110,7 @@ function armyMenuHandler(event)
 		}
 		AdvManager.getAdventures().forEach(function(item){
 			if (item.zoneID !== game.gi.mCurrentViewedZoneID) {
-				armyWindow.withFooter(".dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': item.zoneID}).text((item.ownerPlayerID !== playerId ? '*' : '') + loca.GetText("ADN", item.adventureName))));
+				armyWindow.withFooter(".dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': item.zoneID}).text((item.ownerPlayerID !== game.player.GetPlayerId() ? '*' : '') + loca.GetText("ADN", item.adventureName))));
 			}
 		});
 		armyWindow.withFooter(".dropdown-menu a").click(armyGeneralsSend);
