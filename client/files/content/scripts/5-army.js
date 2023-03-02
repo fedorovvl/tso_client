@@ -172,8 +172,8 @@ function armyLoadGenerals()
 		});
 	});
 	queue.add(function(){ 
-		game.showAlert(getText('command_sent'));
-		armyWindow.hide();
+		armyWindow.withFooter("button").prop('disabled',false);
+		armyGetData();
 	});
 	armyWindow.withFooter("button").prop('disabled',true);
 	queue.run();
@@ -252,7 +252,7 @@ function armyGetData()
 		});
 		armyInfo[item.GetUniqueID().toKeyString()]["name"] = item.getName(false);
 		html += utils.createTableRow([
-			[4, '<input type="checkbox" id="' + item.GetUniqueID().toKeyString() + '" />&nbsp;&nbsp;' + getImageTag(item.getIconID(), '24px', '24px') + ' ' + item.getName(false)], 
+			[4, '<input type="checkbox" id="' + item.GetUniqueID().toKeyString() + '" ' + (armyPacket[item.GetUniqueID().toKeyString()] ? "checked" : "") + ' />&nbsp;&nbsp;' + getImageTag(item.getIconID(), '24px', '24px') + ' ' + item.getName(false)], 
 			[7, info],
 			[1, $(getImageTag("accuracy.png", '24px', '24px')).css("cursor", "pointer").attr("id", "specOpen")]]);
 		return true;
