@@ -53,53 +53,55 @@ function armyMenuHandler(event)
 			'class': 'dropdown-menu'
 		})
 	]);
-	armyWindow.Footer().prepend([
-		$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
-			var queue = new TimedQueue(1000);
-			armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
-				var uniqueID = item.id.split(".")
-				var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
-				var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
-				if(!spec.HasUnits()) { 
-					$(item).closest('.row').remove();
-					return;
-				}
-				queue.add(function(){ 
-					try {
-						armyMilitarySystem.SendRaiseArmyToServer(game.gi, spec, null);
+	if(armyWindow.withFooter(".armyUnload").length == 0) {
+		armyWindow.Footer().prepend([
+			$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
+				var queue = new TimedQueue(1000);
+				armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
+					var uniqueID = item.id.split(".")
+					var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
+					var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
+					if(!spec.HasUnits()) { 
 						$(item).closest('.row').remove();
-					} catch(e) { 
-						game.chatMessage("Error unloading " + e, 'army');
+						return;
 					}
+					queue.add(function(){ 
+						try {
+							armyMilitarySystem.SendRaiseArmyToServer(game.gi, spec, null);
+							$(item).closest('.row').remove();
+						} catch(e) { 
+							game.chatMessage("Error unloading " + e, 'army');
+						}
+					});
 				});
-			});
-			if(queue.len() > 0) {
-				armyWindow.withFooter("button").prop('disabled',true);
-				queue.add(function(){ updateFreeArmyInfo(); });
-				queue.add(function(){ armyWindow.withFooter("button").prop('disabled',false); });
-				queue.add(function(){ armyGetData(); });
-				queue.run();
-			}
-		}),
-		$('<button>').attr({ "class": "btn btn-warning armyReset" }).text(getText('btn_reset')).click(function() {
-			armyPacket = {};
-			armyWindow.withFooter(".armySubmit, .armyReset").hide();
-			armyWindow.withFooter(".armySaveTemplate, .armyLoadTemplate, .armyUnload, .armySendGeneralsBtn").show();
-			armyGetData();
-		}),
-		$('<button>').attr({ "class": "btn btn-success armySubmit" }).text(getText('armyLoad')).click(armyLoadGenerals),
-		$('<span>').html('&nbsp;'),
-		groupSend,
-		$('<button>').attr({ "class": "btn btn-primary pull-left armySaveTemplate" }).text(getText('save_template')).click(function(){ 
-			var savePacket = {};
-			armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
-				savePacket[item.id] = armyInfo[item.id];
-			});
-			if(Object.keys(savePacket).length > 0) { armyTemplates.save(savePacket); return; }
-			if(Object.keys(armyPacket).length > 0) { armyTemplates.save(armyPacket); }
-		}),
-		$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { armyTemplates.load(); })
-	]);
+				if(queue.len() > 0) {
+					armyWindow.withFooter("button").prop('disabled',true);
+					queue.add(function(){ updateFreeArmyInfo(); });
+					queue.add(function(){ armyWindow.withFooter("button").prop('disabled',false); });
+					queue.add(function(){ armyGetData(); });
+					queue.run();
+				}
+			}),
+			$('<button>').attr({ "class": "btn btn-warning armyReset" }).text(getText('btn_reset')).click(function() {
+				armyPacket = {};
+				armyWindow.withFooter(".armySubmit, .armyReset").hide();
+				armyWindow.withFooter(".armySaveTemplate, .armyLoadTemplate, .armyUnload, .armySendGeneralsBtn").show();
+				armyGetData();
+			}),
+			$('<button>').attr({ "class": "btn btn-success armySubmit" }).text(getText('armyLoad')).click(armyLoadGenerals),
+			$('<span>').html('&nbsp;'),
+			groupSend,
+			$('<button>').attr({ "class": "btn btn-primary pull-left armySaveTemplate" }).text(getText('save_template')).click(function(){ 
+				var savePacket = {};
+				armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
+					savePacket[item.id] = armyInfo[item.id];
+				});
+				if(Object.keys(savePacket).length > 0) { armyTemplates.save(savePacket); return; }
+				if(Object.keys(armyPacket).length > 0) { armyTemplates.save(armyPacket); }
+			}),
+			$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { armyTemplates.load(); })
+		]);
+	}
 	try {
 		var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
 		armyWindow.withFooter(".dropdown-menu").html($('<li>').html($('<a>', {'href': '#', 'value': '98'}).text(loca.GetText("LAB", "StarMenu"))));
