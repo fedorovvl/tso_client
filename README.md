@@ -3,7 +3,7 @@
 ![GitHub issues](https://img.shields.io/github/issues/fedorovvl/tso_client)
 ![GitHub all releases](https://img.shields.io/github/downloads/fedorovvl/tso_client/total)
 ![GitHub Repo stars](https://img.shields.io/github/stars/fedorovvl/tso_client?style=social)
-[![Nightly](https://img.shields.io/badge/-nightly%20build-1)](https://nightly.link/fedorovvl/tso_client/workflows/msbuild/master/client.zip)
+[![Nightly](https://img.shields.io/badge/-latest%20build-1)](https://nightly.link/fedorovvl/tso_client/workflows/msbuild/master/client.zip)
 
 The Settlers Online Windows portable client
 
