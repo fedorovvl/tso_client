@@ -217,9 +217,9 @@ function armyLoadGenerals(direct)
 		queue.add(function(){ 
 			if(!direct) {
 				armyWindow.withBody('.close[value="'+item+'"]').closest("div.row div:first-child").addClass("buffReady");
+				armyUpdateProgress(Math.round(Math.round(100 * counter / total) / 10) * 10 / 10);
 			}
 			game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
-			armyUpdateProgress(Math.round(Math.round(100 * counter / total) / 10) * 10 / 10);
 			counter++;
 		});
 		
