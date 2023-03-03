@@ -10,6 +10,19 @@ var armyInfo = {};
 var armyFreeInfo = {};
 var armyWindow;
 var armyTemplates;
+var armyProgress = [
+	'',
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar1"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar2"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar3"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar3"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar4"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar4"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar5"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar6"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar7"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar7"))().bitmapData)
+];
 
 function updateFreeArmyInfo()
 {
@@ -20,6 +33,17 @@ function updateFreeArmyInfo()
 	});
 	freeArmy += '</center>';
 	armyWindow.withHeader("").parent().find("#army").html(freeArmy + '</div>');
+}
+
+function armyUpdateProgress(num)
+{
+	if(num == -1) {
+		armyWindow.withFooter(".span12").html("");
+		return;
+	}
+	if(armyProgress[num]) {
+		armyWindow.withFooter(".span12").html(armyProgress[num]);
+	}
 }
 
 function armyMenuHandler(event)
@@ -55,19 +79,25 @@ function armyMenuHandler(event)
 	]);
 	if(armyWindow.withFooter(".armyUnload").length == 0) {
 		armyWindow.Footer().prepend([
+			$('<div>').attr({ "class": "span12 text-center" }),
 			$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
 				var queue = new TimedQueue(1000);
+				var counter = 1, total = armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').length;
+				armyUpdateProgress(-1);
 				armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
 					var uniqueID = item.id.split(".")
 					var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
 					var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
 					if(!spec.HasUnits()) { 
 						$(item).closest('.row').remove();
+						total--;
 						return;
 					}
 					queue.add(function(){ 
 						try {
 							armyMilitarySystem.SendRaiseArmyToServer(game.gi, spec, null);
+							armyUpdateProgress(Math.round(Math.round((100 * counter) / total) / 10) * 10 / 10);
+							counter++;
 							$(item).closest('.row').remove();
 						} catch(e) { 
 							game.chatMessage("Error unloading " + e, 'army');
@@ -77,7 +107,7 @@ function armyMenuHandler(event)
 				if(queue.len() > 0) {
 					armyWindow.withFooter("button").prop('disabled',true);
 					queue.add(function(){ updateFreeArmyInfo(); });
-					queue.add(function(){ armyWindow.withFooter("button").prop('disabled',false); });
+					queue.add(function(){ armyUpdateProgress(-1); armyWindow.withFooter("button").prop('disabled',false); });
 					queue.add(function(){ armyGetData(); });
 					queue.run();
 				}
@@ -170,6 +200,7 @@ function armyLoadGenerals(direct)
 {
 	direct = typeof direct === "boolean" ? direct : false;
 	var queue = new TimedQueue(1000);
+	var counter = 1, total = Object.keys(armyPacket).length;
 	$.each(armyPacket, function(item) { 
 		var dRaiseArmyVO = new dRaiseArmyVODef();
 		var uniqueID = item.split(".")
@@ -188,7 +219,11 @@ function armyLoadGenerals(direct)
 				armyWindow.withBody('.close[value="'+item+'"]').closest("div.row div:first-child").addClass("buffReady");
 			}
 			game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
+			armyUpdateProgress(Math.round(Math.round(100 * counter / total) / 10) * 10 / 10);
+			counter++;
 		});
+		
+		
 	});
 	if(!direct) {
 		queue.add(function(){ 
@@ -268,6 +303,7 @@ function armyLoadData()
 function armyGetData()
 {
 	armyInfo = {};
+	armyUpdateProgress(-1);
 	armyWindow.withFooter(".armyUnload, .armySendGeneralsBtn").show();
 	armyWindow.withFooter(".armyReset, .armySubmit").hide();
 	var html = '<div class="container-fluid" style="user-select: all;">';
