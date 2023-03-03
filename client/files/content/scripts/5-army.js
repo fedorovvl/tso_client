@@ -168,7 +168,7 @@ function armySendGeneralToStar(spec)
 
 function armyLoadGenerals(direct)
 {
-	direct = direct || false;
+	direct = typeof direct === "boolean" ? direct : false;
 	var queue = new TimedQueue(1000);
 	$.each(armyPacket, function(item) { 
 		var dRaiseArmyVO = new dRaiseArmyVODef();
@@ -276,14 +276,15 @@ function armyGetData()
 		if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
 		if(item == null || item.GetTask() != null) { return; }
 		var info = '';
-		armyInfo[item.GetUniqueID().toKeyString()] = armyInfo[item.GetUniqueID().toKeyString()] || {};
+		var uniqId = item.GetUniqueID().toKeyString();
+		armyInfo[uniqId] = armyInfo[uniqId] || {};
 		item.GetArmy().GetSquadsCollection_vector().forEach(function(squad){
-			armyInfo[item.GetUniqueID().toKeyString()][squad.GetType()] = squad.GetAmount();
+			armyInfo[uniqId][squad.GetType()] = squad.GetAmount();
 			info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
 		});
-		armyInfo[item.GetUniqueID().toKeyString()]["name"] = item.getName(false);
+		armyInfo[uniqId]["name"] = item.getName(false);
 		html += utils.createTableRow([
-			[4, '<input type="checkbox" id="' + item.GetUniqueID().toKeyString() + '" ' + (armyPacket[item.GetUniqueID().toKeyString()] ? "checked" : "") + ' />&nbsp;&nbsp;' + getImageTag(item.getIconID(), '24px', '24px') + ' ' + item.getName(false)], 
+			[4, '<input type="checkbox" id="' + uniqId + '" ' + (armyPacket[uniqId] ? "checked" : "") + ' />&nbsp;&nbsp;' + getImageTag(item.getIconID(), '24px', '24px') + ' ' + armyInfo[uniqId]["name"]], 
 			[7, info],
 			[1, (item.GetGarrisonGridIdx() > 0 ? $(getImageTag("accuracy.png", '24px', '24px')).css("cursor", "pointer").attr("id", "specOpen") : getImageTag("Star", '24px', '24px'))]]);
 		return true;
