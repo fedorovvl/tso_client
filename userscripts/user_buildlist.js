@@ -14,7 +14,9 @@ var _exudUserBuildingListLang = {
 		"DebuffedMsg" : "Building monitor : {0} building debuffed!",
 		"UpgradeSound" : "Upgrade Sound",
 		"DebuffSound" : "Debuffed Sound",
-		"PlayMute" : "Plays even when mute"
+		"PlayMute" : "Plays even when mute",
+		"ClearMonitor" : "Clear selected",
+		"AutofitUpgrading" : "Mark Upgrading"
 		},
 	"pt-br" : {
 		'UserBuildingList': 'Lista Predios',
@@ -30,7 +32,9 @@ var _exudUserBuildingListLang = {
 		"DebuffedMsg" : "Observador : {0} edificios sem catalisador !",
 		"UpgradeSound" : "Som melhora",
 		"DebuffSound" : "Som catalização",
-		"PlayMute" : "Toca mesmo quando mudo"
+		"PlayMute" : "Toca mesmo quando mudo",
+		"ClearMonitor" : "Limpar selecionados",
+		"AutofitUpgrading" : "Marcar em melhora"
 		}
 	};
 
@@ -92,15 +96,15 @@ function _exudBuildingMonitorSaveSettings()
 }
 function _exudBuildingMonitorIsMonitoring(gid)
 {
-	return (_exudBuildingMonitorSettings.BM.indexOf(""+gid) >= 0);
+	return (_exudBuildingMonitorSettings.BM.indexOf(parseInt(gid)) >= 0);
 }
 function _exudBuildingMonitorHasNotifyUpgrade(gid)
 {
-	return (_exudBuildingMonitorSettings.NotifyUpgrade.indexOf(""+gid) >= 0);
+	return (_exudBuildingMonitorSettings.NotifyUpgrade.indexOf(parseInt(gid)) >= 0);
 }
 function _exudBuildingMonitorHasNotifyBuffed(gid)
 {
-	return (_exudBuildingMonitorSettings.NotifyBuffed.indexOf(""+gid) >= 0);
+	return (_exudBuildingMonitorSettings.NotifyBuffed.indexOf(parseInt(gid)) >= 0);
 }
 function _exudUserBuildingListMenuHandler(event) {
 		if (!(swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() == swmmo.application.mGameInterface.mCurrentViewedZoneID))
@@ -129,13 +133,15 @@ function _exudUserBuildingListMenuHandler(event) {
 			$('#UserBuildingListModal .modal-header').append(
 				'<div class="container-fluid">' 
 				+ select.prop("outerHTML") 
-				+ $('<button>').attr({"id": "exudUserBuildingListRefresh","class": "btn btn-success"}).text(loca.GetText("LAB", "Update")).prop("outerHTML") 
+				+ "&nbsp;&nbsp;" + $('<button>').attr({"id": "exudUserBuildingListRefresh","class": "btn btn-success"}).text(loca.GetText("LAB", "Update")).prop("outerHTML") 
+				+ "&nbsp;&nbsp;" + $('<button>').attr({"id": "exudUserBuildingListClear","class": "btn btn-success"}).text(getText('ClearMonitor', 'exudUserBuildingListLang')).prop("outerHTML") 
+				+ "&nbsp;&nbsp;" + $('<button>').attr({"id": "exudUserBuildingListAutofit","class": "btn btn-success"}).text(getText('AutofitUpgrading', 'exudUserBuildingListLang')).prop("outerHTML") 
 				+ "<div id='udUserBuildingListTotal'> Tot :</div>"
 				+ createTableRow([
 						[1, getText('Monitoring', 'exudUserBuildingListLang')],
-						[6, loca.GetText("LAB", "Name")],
+						[5, loca.GetText("LAB", "Name")],
 						[1, getText('Upgrading', 'exudUserBuildingListLang')],
-						[2, loca.GetText("LAB", 'Buff')],
+						[3, loca.GetText("LAB", 'Buff')],
 						[1, loca.GetText("LAB", "Level")],
 						[1, loca.GetText("LAB", "Visit")]
 					], true)
@@ -143,6 +149,17 @@ function _exudUserBuildingListMenuHandler(event) {
 			);
 			$('#exudUserBuildingListSelect').change(function() {_exudUserBuildingListUpdateView();});
 			$('#exudUserBuildingListRefresh').click(function() {_exudUserBuildingListRefresh();});
+			
+			$('#exudUserBuildingListClear').click(function() {
+				_exudUserBuildingListClear();
+				showGameAlert("List cleared !");
+				_exudUserBuildingListRefresh();
+			});
+			
+			$('#exudUserBuildingListAutofit').click(function() {
+				_exudUserBuildingListAutofit();
+				showGameAlert("List created !");
+				});
 
 			_exudUserBuildingListModalInitialized = true;
 		}
@@ -152,6 +169,44 @@ function _exudUserBuildingListMenuHandler(event) {
 	catch (e) {}
 	
 	$('#UserBuildingListModal:not(:visible)').modal({ backdrop: "static" });
+}
+
+function _exudUserBuildingListClear()
+{
+	try {
+		_exudBuildingMonitorSettings.BM = [];
+		_exudBuildingMonitorSettings.NotifyUpgrade = [];
+		// Not remove buffing notification. only upgrading
+		_exudBuildingMonitorSettings.BM = _exudBuildingMonitorSettings.NotifyBuffed.slice();
+	}
+	catch (e)
+	{
+		alert(e.message);
+	}
+	_exudBuildingMonitorSaveSettings();
+}
+function _exudUserBuildingListAutofit()
+{
+	
+	// Remove bulding notification
+	_exudUserBuildingListClear();
+	// check all building , if upgrading , add it to monitor
+	swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mBuildingContainer.forEach(function(bld) {
+		try{
+			if (bld.IsUpgradeInProgress())
+			{
+				var g = parseInt(bld.GetGrid());
+				if (!_exudBuildingMonitorIsMonitoring(g))
+					_exudBuildingMonitorSettings.BM.push(g);
+				_exudBuildingMonitorSettings.NotifyUpgrade.push(g);
+			}
+		}
+		catch (e)
+		{
+		}
+	});
+	_exudBuildingMonitorSaveSettings();
+	_exudUserBuildingListRefresh();	
 }
 
 function _exudUserBuildingListRefresh() {
@@ -179,6 +234,7 @@ function _exudUserBuildingListGetData() {
 					catch (ee)
 					{
 					}
+					var buffInfo = _exudBuildingListGetEndBuffTime(bld);
 					_exudUserBuildingListBuildings.push(
 						{
 							"Building" : bld,
@@ -186,7 +242,8 @@ function _exudUserBuildingListGetData() {
 							"IconMap" : IconMapBld,
 							"Level" : bld.GetUIUpgradeLevel(),
 							"GridPos" : bld.GetGrid(),
-							"Buffed" : (bld.productionBuff == null ? 0 : 1),
+							"Buffed" : (buffInfo == '' ? 0 : 1),
+							"BuffEnd" : buffInfo,
 							"Upg" : isUpgrading
 						}
 					);
@@ -211,6 +268,38 @@ function _exudUserBuildingListGetData() {
 	catch (e) {}			
 }
 
+function _exudBuildingListGetEndBuffTime(bld)
+{
+	var BuffData = '';
+	 try{
+		buff = bld.productionBuff;
+		if (buff != null)
+		{
+			if (buff.IsActive(swmmo.application.mGameInterface.GetClientTime()))
+			{		
+				app = buff.GetApplicanceMode();			
+				timeEnd =  new window.runtime.Date(Date.now() + (buff.GetStartTime() + buff.GetBuffDefinition().getDuration(app)) - swmmo.application.mGameInterface.GetClientTime());
+
+				if (timeEnd > 0)	
+				{
+					var dtfex = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
+					if (gameLang.indexOf("en-") > 0)
+						dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
+					else
+						dtfex.setDateTimePattern("dd-MM HH:mm"); 
+					
+					BuffData = dtfex.format(new window.runtime.Date(timeEnd));
+					
+				}	
+			}							
+		}
+	 }
+	 catch (e) {
+	 }
+	
+	return BuffData;
+}
+
 function _exudUserBuildingListUpdateView()
 {
 	var out = "";
@@ -227,9 +316,9 @@ function _exudUserBuildingListUpdateView()
 					);
 			out += createTableRow([
 					[1, (bld.GridPos > 0 ?checkbox: "")],
-					[6, bld.Name],
+					[5, bld.Name],
 					[1, bld.Upg],
-					[2, (bld.Buffed  == 1 ? loca.GetText("LAB", 'YES') : loca.GetText("LAB", 'NO'))],
+					[3, (bld.Buffed  == 1 ? bld.BuffEnd : loca.GetText("LAB", 'NO'))],
 					[1, bld.Level],
 					[1, (bld.GridPos > 0 ? bld.IconMap : "")]
 				], false);				
@@ -279,7 +368,7 @@ function _exudUserBuildingToggleMonitor(e)
 	try{
 	var btn = e.target;
 	var gid = btn.id.replace("_exudBL_","");
-	gid = gid.replace("_exudBM_","");
+	gid = parseInt(gid.replace("_exudBM_",""));
 	
 	if (btn.checked)
 		_exudBuildingMonitorSettings.BM.push(gid);
@@ -300,7 +389,7 @@ function _exudUserBuildingToggleMonitorNotifyUpgrade(e)
 {
 	try{
 	var btn = e.target;
-	var gid = btn.id.replace("_exudBMU_","");
+	var gid = parseInt(btn.id.replace("_exudBMU_",""));
 		if (_exudBuildingMonitorIsMonitoring(gid))
 		{
 			if (btn.checked)
@@ -321,7 +410,7 @@ function _exudUserBuildingToggleMonitorNotifyBuffed(e)
 {
 	try{
 	var btn = e.target;
-	var gid = btn.id.replace("_exudBMB_","");
+	var gid = parseInt(btn.id.replace("_exudBMB_",""));
 		if (_exudBuildingMonitorIsMonitoring(gid))
 		{
 			if (btn.checked)
@@ -380,9 +469,9 @@ try{
 				+ '<div style="clear:both">'
 				+ createTableRow([
 						[1, getText('Monitoring', 'exudUserBuildingListLang')],
-						[6, loca.GetText("LAB", "Name")],
+						[5, loca.GetText("LAB", "Name")],
 						[1, getText('Upgrading', 'exudUserBuildingListLang')],
-						[2, loca.GetText("LAB", 'Buff')],
+						[3, loca.GetText("LAB", 'Buff')],
 						[1, loca.GetText("LAB", "Level")],
 						[1, loca.GetText("LAB", "Visit")]
 					], true)
@@ -546,11 +635,12 @@ function _exudUserBuildingMonitorRefresh()
 		{
 		}
 		var IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudBMPOS_'+ item+'"').replace('style="', 'style="cursor: pointer;')
+		var buffInfo = _exudBuildingListGetEndBuffTime(bld)
 		out += createTableRow([
 				[1, (item > 0 ?checkbox: "")],
-				[6, _exudUserBuildingListGetName(bld.GetBuildingName_string())],
+				[5, _exudUserBuildingListGetName(bld.GetBuildingName_string())],
 				[1, checkboxU + "&nbsp;" + isUpgrading],
-				[2, checkboxB + "&nbsp;" + (bld.productionBuff == null ? loca.GetText("LAB", 'NO') : loca.GetText("LAB", 'YES'))],
+				[3, checkboxB + "&nbsp;" + (buffInfo == '' ? loca.GetText("LAB", 'NO') : buffInfo )],
 				[1, bld.GetUIUpgradeLevel()],
 				[1, (item > 0 ? IconMap : "")]
 			], false);
