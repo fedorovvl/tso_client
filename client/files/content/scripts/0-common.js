@@ -189,6 +189,16 @@ function menuSaveHandler(event)
 	file.save($('html').prop('outerHTML'));
 }
 
+function menuDebugHandler(event)
+{
+	if(typeof air.Introspector=='undefined') {
+		$('head').append($("<script>").attr({ "src": "AIRIntrospector.js", "type": "text/javascript"}));
+		setTimeout(function(){ air.Introspector.toggleWindow(); }, 2000);
+	} else {
+		air.Introspector.toggleWindow();
+	}
+}
+
 function openWikiHandler(event)
 {
 	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki"));

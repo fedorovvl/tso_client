@@ -13,7 +13,8 @@ var Menu = function(type){
 						{ label: "tundra", onSelect: menuFilterHandler }, { label: "darkershadow", onSelect: menuFilterHandler },
 						{ label: "magicsepia", onSelect: menuFilterHandler }
 				]},
-				{ label: loca.GetText("LAB", "Update") + ' (F2)', keyCode: 113, onSelect: menuZoneRefreshHandler}
+				{ label: loca.GetText("LAB", "Update") + ' (F2)', keyCode: 113, onSelect: menuZoneRefreshHandler},
+				{ label: 'Debug window', onSelect: menuDebugHandler}
 			]},
 			{ label: loca.GetText("LAB", "Specialists"), items: [
 				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', keyCode: 114, onSelect: function() { specSharedHandler(1); } },
