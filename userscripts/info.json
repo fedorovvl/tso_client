@@ -53,5 +53,12 @@
       "longDesc":"Upload adventure loot info to service Show My Loot on tsomaps.com",
       "author":"SirriS",
 	  "url": "https://tsomaps.com/loots/"
+   },
+   "user_adventures_shortcut.js":{
+      "name":"Adventures",
+      "shortDesc":"Army shortcuts",
+      "longDesc":"Shortcuts to saved army models",
+      "author":"MkFera&SirriS",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
    }
 }
