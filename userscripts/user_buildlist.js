@@ -53,7 +53,24 @@ var _exudUserBuildingListLang = {
 		"PlayMute" : "Incluso si está silenciado el juego",
 		"ClearMonitor" : "Limpiar lista",
 		"AutofitUpgrading" : "Marcar subiendo de nivel"
-		}
+		},
+	'fr-fr': {
+		'UserBuildingList': 'Liste bâtiments',
+		'Monitor' : 'Surveillance bâtiments',
+		'Monitoring' : 'Surveillance',
+		'Upgrading' : 'Amélioration',
+		'Notify' : 'Autoriser les notifications',
+		'Minutes' : 'Minutes',
+		"Stop": "Arrêt",
+		"Start": "Départ",
+		"ReadyMsg" : "Surveillance bâtiments : {0} bâtiments prêts!",
+		"ToolTipNotify" : "Marquer pour recevoir une notification",
+		"DebuffedMsg" : "Surveillance bâtiments : {0} Sans fortifiants!",
+		"UpgradeSound" : "Son sur amélioration",
+		"DebuffSound" : "Son sur arrêt fortifiant",
+		"PlayMute" : "Joue même en mode muet"
+		},
+	};
 	};
 
 const _exudUserBuildingListSounds = [ "BuildingPlace", "BuildingDestroy", "BuildingUpgrade", "MenuClose", "ButtonClick", "BuffPlace", "GeneralAttack",
