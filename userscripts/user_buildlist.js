@@ -35,6 +35,40 @@ var _exudUserBuildingListLang = {
 		"PlayMute" : "Toca mesmo quando mudo",
 		"ClearMonitor" : "Limpar selecionados",
 		"AutofitUpgrading" : "Marcar em melhora"
+		},
+	"es-es" : {
+		'UserBuildingList': 'Lista de edificios',
+		'Monitor' : 'Monitor de edificios',
+		'Monitoring' : 'Observador',
+		'Upgrading' : 'Subiendo de nivel',
+		'Notify' : 'Notificación con sonido',
+		'Minutes' : 'Minutos',
+		"Stop": "Parar",
+		"Start": "Activar",
+		"ReadyMsg" : "Observador: ¡{0} edificio(s) listos!",
+		"ToolTipNotify" : "Selecciona para recibir una notificación",
+		"DebuffedMsg" : "Observador: ¡{0} edificio(s) sin potenciar!",
+		"UpgradeSound" : "Sonido Mejora",
+		"DebuffSound" : "Sonido Sin potenciar",
+		"PlayMute" : "Incluso si está silenciado el juego",
+		"ClearMonitor" : "Limpiar lista",
+		"AutofitUpgrading" : "Marcar subiendo de nivel"
+		},
+	'fr-fr': {
+		'UserBuildingList': 'List bâtiments',
+		'Monitor' : 'Surveillance des bâtiments',
+		'Monitoring' : 'Surveillance',
+		'Upgrading' : 'Amélioration',
+		'Notify' : 'Autoriser les notifications',
+		'Minutes' : 'Minutes',
+		"Stop": "Arrêt",
+		"Start": "Départ",
+		"ReadyMsg" : "Surveillance bâtiments : {0} bâtiments prêts!",
+		"ToolTipNotify" : "Marquer pour recevoir une notification",
+		"DebuffedMsg" : "Surveillance bâtiments : {0} Sans fortifiants!",
+		"UpgradeSound" : "Son amélioration",
+		"DebuffSound" : "Son arrêt fortifiant",
+		"PlayMute" : "Joue même en mode muet"
 		}
 	};
 
