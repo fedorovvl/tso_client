@@ -80,7 +80,7 @@ namespace client
             "--config - set config file",
             "--clientconfig - set client config file",
             "--login - set login",
-            "--fastlogin - use saved client boot arg",
+            "--fastlogin - use saved token and client boot arg. Read wiki carefully before use it!",
             "--password - set password",
             "--collect - autoconfirm ubicollect check",
             "--autologin - allows to start client with login/password from setting.dat",
