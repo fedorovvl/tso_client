@@ -196,7 +196,7 @@ function openWikiHandler(event)
 
 function openDiscordHandler(event)
 {
-	air.navigateToURL(new air.URLRequest("https://discord.gg/jQZnNAXg99"));
+	air.navigateToURL(new air.URLRequest("https://discord.gg/u4XPGGWXzE"));
 }
 function openDiscordFRHandler(event)
 {
@@ -204,7 +204,7 @@ function openDiscordFRHandler(event)
 }
 function openDiscordENHandler(event)
 {
-	air.navigateToURL(new air.URLRequest("https://discord.gg/HPCB9qdu"));
+	air.navigateToURL(new air.URLRequest("https://discord.gg/jQZnNAXg99"));
 }
 function openDiscordDEHandler(event)
 {
