@@ -44,6 +44,21 @@ var _exudUserAdventureLang = {
 		'Menuname' : 'Приключения',
 		'Command' : 'Команда',
 		'CannotSet' : 'Не все условия выполнены для загрузки армии. Проверьте в ручную в окне армии (F9)'
+		},
+	'fr-fr': {
+		'Options': 'Options',
+		'Add' : 'Ajouter',
+		'Remove' : 'Enlever',
+		'Title' : 'Aventure manager ',
+		'Filename' : 'nom de fichier',
+		'AddError' : 'la description est vide!',
+		'AddItem' : 'Ajouter une macri',
+		'AutoFree': 'Toujours les unités libres',
+		'NoUnitsOnBoard' : 'Armées vidées',
+		'UnitReady' : 'Armées prêtes',
+		'Menuname' : 'Aventures',
+		'Command' : 'Commande',
+		'CannotSet' : 'Il y a eu un problème, impossible de charger l'armée. Veuillez vérifier dans Spécialistes/Armée (F9)'
 		}
 	};
 	extendBaseLang(_exudUserAdventureLang, 'exudUserAdventureLang');
