@@ -250,7 +250,11 @@ const baseTranslation = {
 		'prod_timed': 'Production Chronométrée',
 		'prod_queuesize': 'Taille de la file',
 		'prod_welcome': 'Bienvenue dans le Gestionnaire de l’état de production !',
-        'prod_welcome_block': "<p>Vous pouvez enregistrer l’état de production des bâtiments puis les arrêter ou les démarrer en masse. Cliquer sur le bouton 'Début de l'enregistrement' et sélectionnez vos bâtiments. Après cela, revenez ici et cliquer sur 'Arrêter l'Enregistrement'. Vous verrez la liste des bâtiments avec l'état actuel. Enregistrer cette liste comme Modèle et la fois suivante, cliquer simplement sur 'Charger Modèle' puis 'Soumettre'.</p>"
+        'prod_welcome_block': "<p>Vous pouvez enregistrer l’état de production des bâtiments puis les arrêter ou les démarrer en masse. Cliquer sur le bouton 'Début de l'enregistrement' et sélectionnez vos bâtiments. Après cela, revenez ici et cliquer sur 'Arrêter l'Enregistrement'. Vous verrez la liste des bâtiments avec l'état actuel. Enregistrer cette liste comme Modèle et la fois suivante, cliquer simplement sur 'Charger Modèle' puis 'Soumettre'.</p>",
+		'armyCurrentArmy': 'Armée actuelle',
+		'armyNewArmy': 'Nouvelle armée à charger',
+		'armyUnload': 'Enlever les sélections',
+		'armyLoad': 'Charger une armée'
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
