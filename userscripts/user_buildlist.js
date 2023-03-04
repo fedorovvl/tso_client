@@ -55,9 +55,9 @@ var _exudUserBuildingListLang = {
 		"AutofitUpgrading" : "Marcar subiendo de nivel"
 		},
 	'fr-fr': {
-		'UserBuildingList': 'List bâtiments',
+		'UserBuildingList': 'Liste bâtiments',
 		'Monitor' : 'Surveillance des bâtiments',
-		'Monitoring' : 'Surveillance',
+		'Monitoring' : 'Suivi',
 		'Upgrading' : 'Amélioration',
 		'Notify' : 'Autoriser les notifications',
 		'Minutes' : 'Minutes',
@@ -68,7 +68,9 @@ var _exudUserBuildingListLang = {
 		"DebuffedMsg" : "Surveillance bâtiments : {0} Sans fortifiants!",
 		"UpgradeSound" : "Son amélioration",
 		"DebuffSound" : "Son arrêt fortifiant",
-		"PlayMute" : "Joue même en mode muet"
+		"PlayMute" : "Joue même en mode muet",
+		"ClearMonitor" : "Raz sélection",
+		"AutofitUpgrading" : "Auto suivi amélioration"
 		}
 	};
 
@@ -173,8 +175,8 @@ function _exudUserBuildingListMenuHandler(event) {
 				+ "<div id='udUserBuildingListTotal'> Tot :</div>"
 				+ createTableRow([
 						[1, getText('Monitoring', 'exudUserBuildingListLang')],
-						[5, loca.GetText("LAB", "Name")],
-						[1, getText('Upgrading', 'exudUserBuildingListLang')],
+						[4, loca.GetText("LAB", "Name")],
+						[2, getText('Upgrading', 'exudUserBuildingListLang')],
 						[3, loca.GetText("LAB", 'Buff')],
 						[1, loca.GetText("LAB", "Level")],
 						[1, loca.GetText("LAB", "Visit")]
@@ -350,8 +352,8 @@ function _exudUserBuildingListUpdateView()
 					);
 			out += createTableRow([
 					[1, (bld.GridPos > 0 ?checkbox: "")],
-					[5, bld.Name],
-					[1, bld.Upg],
+					[4, bld.Name],
+					[2, bld.Upg],
 					[3, (bld.Buffed  == 1 ? bld.BuffEnd : loca.GetText("LAB", 'NO'))],
 					[1, bld.Level],
 					[1, (bld.GridPos > 0 ? bld.IconMap : "")]
@@ -503,8 +505,8 @@ try{
 				+ '<div style="clear:both">'
 				+ createTableRow([
 						[1, getText('Monitoring', 'exudUserBuildingListLang')],
-						[5, loca.GetText("LAB", "Name")],
-						[1, getText('Upgrading', 'exudUserBuildingListLang')],
+						[4, loca.GetText("LAB", "Name")],
+						[2, getText('Upgrading', 'exudUserBuildingListLang')],
 						[3, loca.GetText("LAB", 'Buff')],
 						[1, loca.GetText("LAB", "Level")],
 						[1, loca.GetText("LAB", "Visit")]
@@ -672,8 +674,8 @@ function _exudUserBuildingMonitorRefresh()
 		var buffInfo = _exudBuildingListGetEndBuffTime(bld)
 		out += createTableRow([
 				[1, (item > 0 ?checkbox: "")],
-				[5, _exudUserBuildingListGetName(bld.GetBuildingName_string())],
-				[1, checkboxU + "&nbsp;" + isUpgrading],
+				[4, _exudUserBuildingListGetName(bld.GetBuildingName_string())],
+				[2, checkboxU + "&nbsp;" + isUpgrading],
 				[3, checkboxB + "&nbsp;" + (buffInfo == '' ? loca.GetText("LAB", 'NO') : buffInfo )],
 				[1, bld.GetUIUpgradeLevel()],
 				[1, (item > 0 ? IconMap : "")]
