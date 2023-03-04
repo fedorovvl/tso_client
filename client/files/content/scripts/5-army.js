@@ -41,7 +41,7 @@ function updateFreeArmyInfo()
 {
 	var freeArmy = '<br><div class="container-fluid"><center>';
 	armyFreeInfo = {};
-	game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().forEach(function(item){
+	game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().sort(0).forEach(function(item){
 		freeArmy += utils.getImageTag(item.GetType(), '20px') + ' ' + item.GetAmount() + '&nbsp;';
 		armyFreeInfo[item.GetType()] = item.GetAmount();
 	});
@@ -333,7 +333,7 @@ function armyGetData()
 		var info = '';
 		var uniqId = item.GetUniqueID().toKeyString();
 		armyInfo[uniqId] = armyInfo[uniqId] || {};
-		item.GetArmy().GetSquadsCollection_vector().forEach(function(squad){
+		item.GetArmy().GetSquadsCollection_vector().sort(0).forEach(function(squad){
 			armyInfo[uniqId][squad.GetType()] = squad.GetAmount();
 			info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
 		});
