@@ -53,6 +53,22 @@ var _exudUserBuildingListLang = {
 		"PlayMute" : "Incluso si está silenciado el juego",
 		"ClearMonitor" : "Limpiar lista",
 		"AutofitUpgrading" : "Marcar subiendo de nivel"
+		},
+	'fr-fr': {
+		'UserBuildingList': 'List bâtiments',
+		'Monitor' : 'Surveillance des bâtiments',
+		'Monitoring' : 'Surveillance',
+		'Upgrading' : 'Amélioration',
+		'Notify' : 'Autoriser les notifications',
+		'Minutes' : 'Minutes',
+		"Stop": "Arrêt",
+		"Start": "Départ",
+		"ReadyMsg" : "Surveillance bâtiments : {0} bâtiments prêts!",
+		"ToolTipNotify" : "Marquer pour recevoir une notification",
+		"DebuffedMsg" : "Surveillance bâtiments : {0} Sans fortifiants!",
+		"UpgradeSound" : "Son amélioration",
+		"DebuffSound" : "Son arrêt fortifiant",
+		"PlayMute" : "Joue même en mode muet"
 		}
 	};
 
