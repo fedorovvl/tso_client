@@ -53,6 +53,9 @@ Menu.prototype = {
 			{ label: "Discord (RU)", onSelect: openDiscordHandler },
 			{ label: "Discord (EN)", onSelect: openDiscordENHandler },
 			{ label: "Discord (DE)", onSelect: openDiscordDEHandler },
+			{ type: 'separator' },
+			{ label: "Donate (Ko-fi)", onSelect: openDonateHandler },
+			{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler }
 		]});
 		menu.push({ label: 'v' + version, enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);

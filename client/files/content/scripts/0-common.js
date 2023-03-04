@@ -220,6 +220,14 @@ function openDiscordDEHandler(event)
 {
 	air.navigateToURL(new air.URLRequest("https://discord.gg/rm6kmzhPg2"));
 }
+function openDonateHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://ko-fi.com/sirris"));
+}
+function openDonateTfHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://www.tinkoff.ru/cf/7qUyCUSg6ju"));
+}
 
 //backward compatibility
 function createModalWindow(id, title, drop) {	new Modal(id, title, drop||false).create(); }
