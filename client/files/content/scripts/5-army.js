@@ -5,13 +5,14 @@ var dResourceVODef = swmmo.getDefinitionByName("Communication.VO::dResourceVO");
 var armySpecTaskDef = swmmo.getDefinitionByName("Communication.VO::dStartSpecialistTaskVO");
 var armySpecTravelDef = swmmo.getDefinitionByName("Specialists::cSpecialistTask_TravelToStarMenu");
 var armyServices = swmmo.getDefinitionByName("com.bluebyte.tso.service::ServiceManager").getInstance();
+var armyResponder = game.createResponder(armyResponderHandler, armyResponderHandler);
 var armyPacket = {};
 var armyInfo = {};
 var armyFreeInfo = {};
 var armyWindow;
 var armyTemplates;
 var armyProgress = [
-	'',
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_BuildQueueTempSlotTimeLeftIcon"))().bitmapData),
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar1"))().bitmapData),
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar2"))().bitmapData),
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar3"))().bitmapData),
@@ -23,6 +24,18 @@ var armyProgress = [
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar7"))().bitmapData),
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar7"))().bitmapData)
 ];
+
+function armyResponderHandler(event, data)
+{
+	armyUpdateProgress(0);
+	setTimeout(function() {
+		armyFreeInfo = {};
+		updateFreeArmyInfo();
+		armyUpdateProgress(-1);
+		armyWindow.withFooter("button").prop('disabled',false);
+		armyGetData();
+	}, 3000);
+}
 
 function updateFreeArmyInfo()
 {
@@ -93,10 +106,16 @@ function armyMenuHandler(event)
 						total--;
 						return;
 					}
+					var dRaiseArmyVO = new dRaiseArmyVODef();
+					dRaiseArmyVO.armyHolderSpecialistVO = spec.CreateSpecialistVOFromSpecialist();
 					queue.add(function(){ 
 						try {
-							armyMilitarySystem.SendRaiseArmyToServer(game.gi, spec, null);
 							armyUpdateProgress(Math.round(Math.round((100 * counter) / total) / 10) * 10 / 10);
+							if(counter == total) {
+								game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
+							} else {
+								game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
+							}
 							counter++;
 							$(item).closest('.row').remove();
 						} catch(e) { 
@@ -106,9 +125,6 @@ function armyMenuHandler(event)
 				});
 				if(queue.len() > 0) {
 					armyWindow.withFooter("button").prop('disabled',true);
-					queue.add(function(){ updateFreeArmyInfo(); });
-					queue.add(function(){ armyUpdateProgress(-1); armyWindow.withFooter("button").prop('disabled',false); });
-					queue.add(function(){ armyGetData(); });
 					queue.run();
 				}
 			}),
@@ -218,18 +234,20 @@ function armyLoadGenerals(direct)
 			if(!direct) {
 				armyWindow.withBody('.close[value="'+item+'"]').closest("div.row div:first-child").addClass("buffReady");
 				armyUpdateProgress(Math.round(Math.round(100 * counter / total) / 10) * 10 / 10);
+				if(counter == total) {
+					game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
+				} else {
+					game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
+				}
+				counter++;
+			} else {
+				game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
 			}
-			game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
-			counter++;
 		});
 		
 		
 	});
 	if(!direct) {
-		queue.add(function(){ 
-			armyWindow.withFooter("button").prop('disabled',false);
-			armyGetData();
-		});
 		armyWindow.withFooter("button").prop('disabled',true);
 	}
 	queue.run();
