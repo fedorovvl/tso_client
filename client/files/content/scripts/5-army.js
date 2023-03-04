@@ -40,6 +40,7 @@ function armyResponderHandler(event, data)
 function updateFreeArmyInfo()
 {
 	var freeArmy = '<br><div class="container-fluid"><center>';
+	armyFreeInfo = {};
 	game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().forEach(function(item){
 		freeArmy += utils.getImageTag(item.GetType(), '20px') + ' ' + item.GetAmount() + '&nbsp;';
 		armyFreeInfo[item.GetType()] = item.GetAmount();
