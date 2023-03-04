@@ -319,6 +319,13 @@ function armyLoadData()
 	});
 }
 
+function armyGeneralSorter(a, b)
+{
+	if (a.GetType() < b.GetType()) return -1;
+	if (a.GetType() > b.GetType()) return 1;
+	return a.getName(false).replace(/<|b|>|\//g, "").toLowerCase().localeCompare(b.getName(false).replace(/<|b|>|\//g, "").toLowerCase());
+}
+
 function armyGetData()
 {
 	armyInfo = {};
@@ -327,7 +334,7 @@ function armyGetData()
 	armyWindow.withFooter(".armyReset, .armySubmit").hide();
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[4, $('<input>', { 'type': 'checkbox', 'class': 'toggleSelect' }).prop('outerHTML') + '&nbsp;&nbsp;' + loca.GetText("LAB", "Name")], [7, getText('armyCurrentArmy')], [1, '#']], true);
-	game.zone.GetSpecialists_vector().sort(0).forEach(function(item){
+	game.zone.GetSpecialists_vector().sort(armyGeneralSorter).forEach(function(item){
 		if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
 		if(item == null || item.GetTask() != null) { return; }
 		var info = '';
