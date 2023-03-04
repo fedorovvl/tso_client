@@ -196,7 +196,19 @@ function openWikiHandler(event)
 
 function openDiscordHandler(event)
 {
+	air.navigateToURL(new air.URLRequest("https://discord.gg/jQZnNAXg99"));
+}
+function openDiscordFRHandler(event)
+{
 	air.navigateToURL(new air.URLRequest("https://discord.gg/9G5X7VhA"));
+}
+function openDiscordENHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://discord.gg/HPCB9qdu"));
+}
+function openDiscordDEHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://discord.gg/rm6kmzhPg2"));
 }
 
 //backward compatibility
