@@ -15,6 +15,7 @@ function specHideMenuHandler(event)
 	specHideGetData(w);
 	w.Footer().prepend([
 		$("<button>").attr({'class':"btn btn-primary"}).text(loca.GetText("LAB","Save")).click(function(){
+			settings.store([], "specHide");
 			settings.store(specHideVector, "specHide");
 			specHideHandler(null);
 			w.hide();
