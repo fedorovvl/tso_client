@@ -312,15 +312,20 @@ const baseTranslation = {
 		'menustyle_grouped': 'Agrupado',
 		'menustyle_linear': 'Lineal',
 		'menustyle_desc': 'Estilo del menú',
-		'deffilter_desc': 'Filtro de juego predeterminado',
+		'deffilter_desc': 'Filtro de juego',
 		'dateformat_desc': 'Formato de fechas',
 		'geotemplates_desc': 'Plantillas de Geólogo: ',
 		'expltemplates_desc': 'Plantillas de Explorador: ',
 		'bufftemplates_desc': 'Plantillas de Potenciadores: ',
 		'buitemplates_desc': 'Plantillas de Edificios: ',
+		'armytemplates_desc': 'Plantillas de Ejército: ',
 		'geodeftask_desc': 'Tarea predeterminada de Geólogos',
 		'expldeftask_desc': 'Tarea predeterminada de Exploradores',
-		'spectimetype_desc': 'Tipo de cálculo de tiempo predeterminado'
+		'spectimetype_desc': 'Modo de cálculo de tiempo',
+		'armyCurrentArmy': 'Unidades asignadas',
+		'armyNewArmy': 'Nuevas unidades a asignar',
+		'armyUnload': 'Descargar unidades',
+		'armyLoad': 'Load army'
 	},
     "pl-pl": {
         "btn_submit": "Wyślij",
