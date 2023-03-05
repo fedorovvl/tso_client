@@ -74,6 +74,21 @@ var _exudUserAdventureLang = {
 		'Menuname' : 'Aventures',
 		'Command' : 'Commande',
 		'CannotSet' : "Il y a eu un problème, impossible de charger l'armée. Veuillez vérifier dans Spécialistes/Armée (F9)"
+  },
+	'pl-pl': {
+		'Options': 'Opcje',
+		'Add': 'Dodaj',
+		'Remove': 'Usuń',
+		'Title': 'Menedżer przygód',
+		'Filename': 'Nazwa pliku',
+		'AddError': 'Opis jest pusty!',
+		'AddItem': 'Dodaj Makro',
+		'AutoFree': 'Zawsze zwalniaj jednostki',
+		'NoUnitsOnBoard': 'Armia rozładowana',
+		'UnitReady': 'Armia gotowa',
+		'Menuname': 'Przygody',
+		'Command': 'Komenda',
+		'CannotSet': 'Coś nie tak, nie udało się załadować armii. Sprawdź w Specjaliści/Armia (F9)'
 		}
 	};
 	extendBaseLang(_exudUserAdventureLang, 'exudUserAdventureLang');
@@ -152,9 +167,9 @@ function _exuduserAdventurearmyLoadData()
 	}
 	var canSubmit = true;
 	$.each(armyPacket, function(item) { 
-		var uniqueID = item.split(".")
-		var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
-		var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
+		var uniqueID = item.split("."),
+			uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
+			spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
 		if(spec.GetGarrison() == null || spec.GetTask() != null) { canSubmit = false; }
 	});
 	if (canSubmit)
