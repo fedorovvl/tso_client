@@ -118,6 +118,7 @@ function _exuduserAdventureMenuSelectedHandler(event)
 
 function _exuduserAdventurearmyLoadData()
 {
+	var exuduserAdventurearmyFreeInfo = {};
 	try
 	{
 		if(Object.keys(armyPacket).length == 0) {
@@ -125,28 +126,11 @@ function _exuduserAdventurearmyLoadData()
 		}
 		var canSubmit = true;
 		
-		var exuduserAdventurearmyFreeInfo = {};
 		// Total army available
 		game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().forEach(function(item){
 			exuduserAdventurearmyFreeInfo[item.GetType()] = item.GetAmount();
 		});
-		// Remove from total , army actually in use . the player may need to release the units on the generals
-		swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
-			if (game.player.GetPlayerId() == item.getPlayerID() && _exudUserAdventuresSPECIALIST_TYPE.IsGeneral(item.GetType()) && item.HasUnits())
-			{
-				try{
-					item.GetArmy().GetSquads_vector().forEach(function(sv) {
-						exuduserAdventurearmyFreeInfo[sv.GetType()] -= sv.GetAmount();
-						//alert("In use : " + item.GetType() + " : " + sv.GetType() + " / " + sv.GetAmount());
-					});
-				}
-				catch (ee)
-				{
-					alert(ee);
-				}
-			}
-		});
-
+		
 		$.each(armyPacket, function(item) { 
 			var uniqueID = item.split(".")
 			var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
@@ -165,7 +149,7 @@ function _exuduserAdventurearmyLoadData()
 			$.each(requiredArmy, function(item) {
 				if(exuduserAdventurearmyFreeInfo[item] < requiredArmy[item]) { canSubmit = false; }
 			});
-			return true;
+			if (canSubmit) return true;
 		}
 	} catch (e)
 	{
