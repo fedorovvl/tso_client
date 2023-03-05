@@ -74,7 +74,7 @@ var _exudUserAdventureLang = {
 		'Menuname' : 'Aventures',
 		'Command' : 'Commande',
 		'CannotSet' : "Il y a eu un problème, impossible de charger l'armée. Veuillez vérifier dans Spécialistes/Armée (F9)"
-  },
+  		},
 	'pl-pl': {
 		'Options': 'Opcje',
 		'Add': 'Dodaj',
@@ -89,6 +89,21 @@ var _exudUserAdventureLang = {
 		'Menuname': 'Przygody',
 		'Command': 'Komenda',
 		'CannotSet': 'Coś nie tak, nie udało się załadować armii. Sprawdź w Specjaliści/Armia (F9)'
+		},
+	'de-de': {
+		'Options': 'Optionen',
+		'Add' : 'Hinzufügen',
+		'Remove' : 'Entfernen',
+		'Title' : 'Abenteuer Manager',
+		'Filename' : 'Dateiname',
+		'AddError' : 'Beschreibung ist leer!',
+		'AddItem' : 'Makro hinzufügen',
+		'AutoFree': 'Immer Truppen freilassen',
+		'NoUnitsOnBoard' : 'Truppen entfernt',
+		'UnitReady' : 'Truppen bereit',
+		'Menuname' : 'Abenteuer',
+		'Command' : 'Befehl',
+		'CannotSet' : 'Irgendwas stimmt nicht, konnte Truppe nicht laden. Bitte überprüfe die Truppen unter Spezialisten/Armnee (F9)'
 		}
 	};
 	extendBaseLang(_exudUserAdventureLang, 'exudUserAdventureLang');
