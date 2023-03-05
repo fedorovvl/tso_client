@@ -27,9 +27,11 @@ namespace client
         public static bool debug = false;
         public static string version = string.Empty;
         public static string setting_file = "settings.dat";
+        public static string tso_folder = "tso_portable";
         public static string lang = string.Empty;
         public static bool auto = false;
         public static bool upstream_swf = false;
+        public static bool isLoaded = false;
         public static string[] upstream_data = null;
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
@@ -46,7 +48,7 @@ namespace client
         private string _langRemember;
         public string appversion
         {
-            get { return "1.5.4.2"; }
+            get { return "1.5.5.1"; }
         }
         public string langLogin
         {
@@ -78,7 +80,7 @@ namespace client
             "--config - set config file",
             "--clientconfig - set client config file",
             "--login - set login",
-            "--fastlogin - use saved client boot arg",
+            "--fastlogin - use saved token and client boot arg. Read wiki carefully before use it!",
             "--password - set password",
             "--collect - autoconfirm ubicollect check",
             "--autologin - allows to start client with login/password from setting.dat",
@@ -86,6 +88,7 @@ namespace client
             "--window [fullscreen|maximized] - initital game window size",
             "--skip - allows to skip update checking of client.swf",
             "--http_timeout - set http requests timeout",
+            "--tsofolder - set different tso folder name",
             "--debug - creates a debug.txt file with an error report in case of failure"
         };
 
@@ -100,33 +103,21 @@ namespace client
             if (cmd["lang"] != null && Servers._langs.ContainsKey(cmd["lang"]))
                 lang = Servers._langs[cmd["lang"]];
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             System.Net.ServicePointManager.Expect100Continue = false;
             InitializeComponent();
             this.DataContext = this;
             Loaded += Main_Loaded;
         }
-        Assembly AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            if (args.Name.Contains("AutoUpdater"))
-            {
-                Assembly assembly = null;
-                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("client.AutoUpdater.NET.dll"))
-                {
-                    byte[] buffer = new BinaryReader(stream).ReadBytes((int)stream.Length);
-                    assembly = Assembly.Load(buffer);
-                    return assembly;
-                }
-            }
-            return null;
-        }
+
         private void Main_Loaded(object sender, RoutedEventArgs e)
         {
-            if (cmd["config"] != null && File.Exists(cmd["config"]))
-                setting_file = cmd["config"];
+            if (cmd["config"] != null)
+                setting_file = cmd["config"].Trim();
             ReadSettings();
             if (cmd["debug"] != null)
                 debug = true;
+            if (cmd["tsofolder"] != null)
+                tso_folder = cmd["tsofolder"].Trim();
             if (cmd["http_timeout"] != null && IsNumeric(cmd["http_timeout"]))
                 http_timeout = int.Parse(cmd["http_timeout"]);
             if (cmd["login"] != null && cmd["password"] != null)
@@ -135,6 +126,7 @@ namespace client
                 password.Password = cmd["password"];
                 pwd.Visibility = System.Windows.Visibility.Collapsed;
             }
+            isLoaded = true;
             new Thread(checkVersion) { IsBackground = true }.Start();
         }
 
@@ -142,7 +134,7 @@ namespace client
         {
             get
             {
-                return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tso_portable");
+                return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), tso_folder);
             }
         }
         private const string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -176,6 +168,7 @@ namespace client
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
+            
             using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
             {
                 // ensure that scripts dir always fresh
@@ -205,6 +198,13 @@ namespace client
                 if (cmd["autologin"] != null)
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { butt_Click_1(null, null); }));
+                }
+                if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(fast_nickname))
+                {
+                    Dispatcher.BeginInvoke(new ThreadStart(delegate
+                    {
+                        run_tso(fast_tsoarg, fast_nickname);
+                    }));
                 }
                 return;
             }
@@ -242,7 +242,7 @@ namespace client
                 }
                 upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
-                string swf_filename = !upstream_swf ? "client.swf" : "client_upstream.swf";
+                string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
                 if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
@@ -539,8 +539,7 @@ namespace client
             langRun = Servers.getTrans("run");
             langExit = Servers.getTrans("exit");
             langRemember = Servers.getTrans("remember");
-            bool new_upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
-            if(upstream_swf != new_upstream_swf)
+            if(isLoaded)
                 new Thread(checkVersion) { IsBackground = true }.Start();
         }
 

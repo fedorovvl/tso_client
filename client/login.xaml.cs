@@ -143,6 +143,7 @@ namespace client
                     post.PostItems.Add("expiration", unixTimestamp.ToString());
                     post.PostItems.Add("undefined", sessionData.sessionId);
                     post.PostItems.Add("activated", "true");
+                    post.useBC = true;
                     AddToRich(Servers.getTrans("auth") + " uplay");
                     res = post.Post(ref _cookies);
                     if (Main.debug)
@@ -156,6 +157,7 @@ namespace client
                             Type = PostSubmitter.PostTypeEnum.Post
                         };
                         post.PostItems.Add("start", "1");
+                        post.useBC = true;
                         res = post.Post(ref _cookies);
                         post = new PostSubmitter
                         {
@@ -163,6 +165,7 @@ namespace client
                             Type = PostSubmitter.PostTypeEnum.Get
                         };
                         AddToRich(Servers.getTrans("getplay"));
+                        post.useBC = true;
                         string token = post.Post(ref _cookies);
                         if (!token.Contains("thisProgram") && !token.Contains("return \"lang"))
                         {

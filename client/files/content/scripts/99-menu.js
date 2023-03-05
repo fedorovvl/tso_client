@@ -13,11 +13,13 @@ var Menu = function(type){
 						{ label: "tundra", onSelect: menuFilterHandler }, { label: "darkershadow", onSelect: menuFilterHandler },
 						{ label: "magicsepia", onSelect: menuFilterHandler }
 				]},
-				{ label: loca.GetText("LAB", "Update") + ' (F2)', keyCode: 113, onSelect: menuZoneRefreshHandler}
+				{ label: loca.GetText("LAB", "Update") + ' (F2)', keyCode: 113, onSelect: menuZoneRefreshHandler},
+				{ label: 'Debug window', onSelect: menuDebugHandler}
 			]},
 			{ label: loca.GetText("LAB", "Specialists"), items: [
 				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', keyCode: 114, onSelect: function() { specSharedHandler(1); } },
-				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', keyCode: 115, onSelect: function() { specSharedHandler(2); } }
+				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', keyCode: 115, onSelect: function() { specSharedHandler(2); } },
+				{ label: loca.GetText("LAB", "Army") + ' (F9)', keyCode: 120, onSelect: armyMenuHandler }
 			]},
 			{ label: loca.GetText("LAB", "Buildings"), items: [
 				{ label: loca.GetText("LAB", "Buffs") + ' (F5)', keyCode: 116, onSelect: menuBuffsHandler },
@@ -46,6 +48,15 @@ Menu.prototype = {
 			menu.push({ label: "SaveHTML", onSelect: menuSaveHandler });
 		}
 		menu.push({type: 'separator' });
+		menu.push({ label: loca.GetText("LAB", "ChatHelp"), items: [
+			{ label: "Wiki", onSelect: openWikiHandler },
+			{ label: "Discord (RU)", onSelect: openDiscordHandler },
+			{ label: "Discord (EN)", onSelect: openDiscordENHandler },
+			{ label: "Discord (DE)", onSelect: openDiscordDEHandler },
+			{ type: 'separator' },
+			{ label: "Donate (Ko-fi)", onSelect: openDonateHandler },
+			{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler }
+		]});
 		menu.push({ label: 'v' + version, enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;

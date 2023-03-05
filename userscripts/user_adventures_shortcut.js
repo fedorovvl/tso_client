@@ -44,6 +44,66 @@ var _exudUserAdventureLang = {
 		'Menuname' : 'Приключения',
 		'Command' : 'Команда',
 		'CannotSet' : 'Не все условия выполнены для загрузки армии. Проверьте в ручную в окне армии (F9)'
+		},
+	'es-es' : {
+		'Options': 'Macros',
+		'Add' : 'Nueva aventura',
+		'Remove' : 'Eliminar',
+		'Title' : 'Ajustes de los Macros de Aventuras',
+		'Filename' : 'Nombre del Macro',
+		'AddError' : '¡Lo has dejado en blanco!',
+		'AddItem' : 'Agregar Macro',
+		'AutoFree': 'Descargar unidades siempre',
+		'NoUnitsOnBoard' : 'Descargando unidades',
+		'UnitReady' : 'Cargando unidades',
+		'Menuname' : 'Aventuras',
+		'Command' : 'Comando',
+		'CannotSet' : "Algo salió mal, no fue posible cargar las unidades. Verifica en Especialistas -> Ejército / (F9)"
+		},
+	'fr-fr': {
+		'Options': 'Options',
+		'Add' : 'Ajouter',
+		'Remove' : 'Enlever',
+		'Title' : 'Aventure manager ',
+		'Filename' : 'nom de fichier',
+		'AddError' : 'la description est vide!',
+		'AddItem' : 'Ajouter une macro',
+		'AutoFree': 'Toujours les unités libres',
+		'NoUnitsOnBoard' : 'Armées vidées',
+		'UnitReady' : 'Armées prêtes',
+		'Menuname' : 'Aventures',
+		'Command' : 'Commande',
+		'CannotSet' : "Il y a eu un problème, impossible de charger l'armée. Veuillez vérifier dans Spécialistes/Armée (F9)"
+  		},
+	'pl-pl': {
+		'Options': 'Opcje',
+		'Add': 'Dodaj',
+		'Remove': 'Usuń',
+		'Title': 'Menedżer przygód',
+		'Filename': 'Nazwa pliku',
+		'AddError': 'Opis jest pusty!',
+		'AddItem': 'Dodaj Makro',
+		'AutoFree': 'Zawsze zwalniaj jednostki',
+		'NoUnitsOnBoard': 'Armia rozładowana',
+		'UnitReady': 'Armia gotowa',
+		'Menuname': 'Przygody',
+		'Command': 'Komenda',
+		'CannotSet': 'Coś nie tak, nie udało się załadować armii. Sprawdź w Specjaliści/Armia (F9)'
+		},
+	'de-de': {
+		'Options': 'Optionen',
+		'Add' : 'Hinzufügen',
+		'Remove' : 'Entfernen',
+		'Title' : 'Abenteuer Manager',
+		'Filename' : 'Dateiname',
+		'AddError' : 'Beschreibung ist leer!',
+		'AddItem' : 'Makro hinzufügen',
+		'AutoFree': 'Immer Truppen freilassen',
+		'NoUnitsOnBoard' : 'Truppen entfernt',
+		'UnitReady' : 'Truppen bereit',
+		'Menuname' : 'Abenteuer',
+		'Command' : 'Befehl',
+		'CannotSet' : 'Irgendwas stimmt nicht, konnte Truppe nicht laden. Bitte überprüfe die Truppen unter Spezialisten/Armnee (F9)'
 		}
 	};
 	extendBaseLang(_exudUserAdventureLang, 'exudUserAdventureLang');

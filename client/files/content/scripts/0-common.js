@@ -94,6 +94,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('expltemplates_desc') + getDefFolder('expllastDir')], [3, createButton('expllastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('bufftemplates_desc') + getDefFolder('bufflastDir')], [3, createButton('bufflastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('buitemplates_desc') + getDefFolder('builastDir')], [3, createButton('builastDir', loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, getText('armytemplates_desc') + getDefFolder('armylastDir')], [3, createButton('armylastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[6, getText('geodeftask_desc')], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
 	html += utils.createTableRow([[6, getText('expldeftask_desc')], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
 	html += utils.createTableRow([
@@ -186,6 +187,46 @@ function menuSaveHandler(event)
 {
 	var file = air.File.documentsDirectory.resolvePath("swmmo.html");
 	file.save($('html').prop('outerHTML'));
+}
+
+function menuDebugHandler(event)
+{
+	if(typeof air.Introspector=='undefined') {
+		$('head').append($("<script>").attr({ "src": "AIRIntrospector.js", "type": "text/javascript"}));
+		setTimeout(function(){ air.Introspector.toggleWindow(); }, 2000);
+	} else {
+		air.Introspector.toggleWindow();
+	}
+}
+
+function openWikiHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki"));
+}
+
+function openDiscordHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://discord.gg/ScB7RsvxfB"));
+}
+function openDiscordFRHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://discord.gg/9G5X7VhA"));
+}
+function openDiscordENHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://discord.gg/jQZnNAXg99"));
+}
+function openDiscordDEHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://discord.gg/rm6kmzhPg2"));
+}
+function openDonateHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://ko-fi.com/sirris"));
+}
+function openDonateTfHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://www.tinkoff.ru/cf/7qUyCUSg6ju"));
 }
 
 //backward compatibility

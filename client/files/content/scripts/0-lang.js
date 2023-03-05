@@ -63,9 +63,14 @@ const baseTranslation = {
 		'expltemplates_desc': 'Explorers templates: ',
 		'bufftemplates_desc': 'Buffs templates: ',
 		'buitemplates_desc': 'Buildings templates: ',
+		'armytemplates_desc': 'Army templates: ',
 		'geodeftask_desc': 'Geologists default task',
 		'expldeftask_desc': 'Explorers default task',
-		'spectimetype_desc': 'Default time calculation type'
+		'spectimetype_desc': 'Default time calculation type',
+		'armyCurrentArmy': 'Current army',
+		'armyNewArmy': 'New army to load',
+		'armyUnload': 'Unload selected',
+		'armyLoad': 'Load army'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -129,9 +134,14 @@ const baseTranslation = {
 		'expltemplates_desc': 'Шаблоны разведчиков: ',
 		'bufftemplates_desc': 'Шаблоны бафов: ',
 		'buitemplates_desc': 'Шаблоны зданий: ',
+		'armytemplates_desc': 'Шаблоны армии: ',
 		'geodeftask_desc': 'Задача геологов по умолчанию',
 		'expldeftask_desc': 'Задача разведчиков по умолчанию',
-		'spectimetype_desc': 'Тип расчета времени по умолчанию'
+		'spectimetype_desc': 'Тип расчета времени по умолчанию',
+		'armyCurrentArmy': 'Текущие войска',
+		'armyNewArmy': 'Новые войска для загрузки',
+		'armyUnload': 'Выгрузить выбранных',
+		'armyLoad': 'Загрузить войска'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
@@ -185,7 +195,24 @@ const baseTranslation = {
 		'prod_timed': 'Produktionsstätten Übersicht',
 		'prod_queuesize': 'Warteschlangengröße',
 		'prod_welcome': 'Herzlich Willkommen im Manager für Produktionen!',
-		'prod_welcome_block': '<p>Sie können Gebäude aufnehmen und dann die Produktionen im Manager stoppen oder starten. Klicken Sie "Aufnahme starten" an und klicken dann Ihre Gebäuden an die in der Liste erscheinen sollen. Danach klicken Sie wieder im Produktionsmanager auf "Aufnahme stoppen" an. Es wird dann eine Liste der angeklickten Gebäude angezeigt. Speichern sie diese als Vorlage. Nächstes Mal können Sie die Vorlage laden, Sie sehen den "Status" und können mit dem Schieberegler die Gebäudeproduktion steuern, abschließend auf "Senden" klicken.</p>'
+		'prod_welcome_block': '<p>Sie können Gebäude aufnehmen und dann die Produktionen im Manager stoppen oder starten. Klicken Sie "Aufnahme starten" an und klicken dann Ihre Gebäuden an die in der Liste erscheinen sollen. Danach klicken Sie wieder im Produktionsmanager auf "Aufnahme stoppen" an. Es wird dann eine Liste der angeklickten Gebäude angezeigt. Speichern sie diese als Vorlage. Nächstes Mal können Sie die Vorlage laden, Sie sehen den "Status" und können mit dem Schieberegler die Gebäudeproduktion steuern, abschließend auf "Senden" klicken.</p>',
+		'menustyle_grouped': 'gruppieren',
+		'menustyle_linear': 'Reihe',
+		'menustyle_desc': 'Menü Ansicht',
+		'deffilter_desc': 'Standard Filter',
+		'dateformat_desc': 'Datum Format',
+		'geotemplates_desc': 'Geologen Vorlagen: ',
+		'expltemplates_desc': 'Entdecker Vorlagen: ',
+		'bufftemplates_desc': 'Buff Vorlagen: ',
+		'buitemplates_desc': 'Gebäude Vorlagen: ',
+		'armytemplates_desc': 'Armee Vorlagen: ',
+		'geodeftask_desc': 'Geologen Standard Suche',
+		'expldeftask_desc': 'Entdecker Standard Suche',
+		'spectimetype_desc': 'Voreingestellte Zeitberechnungsart',
+		'armyCurrentArmy': 'Aktuelle Truppen',
+		'armyNewArmy': 'New army to load',
+		'armyUnload': 'Truppen entladen',
+		'armyLoad': 'Truppen auffüllen'	
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
@@ -240,7 +267,11 @@ const baseTranslation = {
 		'prod_timed': 'Production Chronométrée',
 		'prod_queuesize': 'Taille de la file',
 		'prod_welcome': 'Bienvenue dans le Gestionnaire de l’état de production !',
-        'prod_welcome_block': "<p>Vous pouvez enregistrer l’état de production des bâtiments puis les arrêter ou les démarrer en masse. Cliquer sur le bouton 'Début de l'enregistrement' et sélectionnez vos bâtiments. Après cela, revenez ici et cliquer sur 'Arrêter l'Enregistrement'. Vous verrez la liste des bâtiments avec l'état actuel. Enregistrer cette liste comme Modèle et la fois suivante, cliquer simplement sur 'Charger Modèle' puis 'Soumettre'.</p>"
+        'prod_welcome_block': "<p>Vous pouvez enregistrer l’état de production des bâtiments puis les arrêter ou les démarrer en masse. Cliquer sur le bouton 'Début de l'enregistrement' et sélectionnez vos bâtiments. Après cela, revenez ici et cliquer sur 'Arrêter l'Enregistrement'. Vous verrez la liste des bâtiments avec l'état actuel. Enregistrer cette liste comme Modèle et la fois suivante, cliquer simplement sur 'Charger Modèle' puis 'Soumettre'.</p>",
+		'armyCurrentArmy': 'Armée actuelle',
+		'armyNewArmy': 'Nouvelle armée à charger',
+		'armyUnload': 'Enlever les sélections',
+		'armyLoad': 'Charger une armée'
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -291,22 +322,27 @@ const baseTranslation = {
 		'auc_do_bid': 'Pujar',
 		'prod_estimate': 'Tiempo estimado',
 		'prod_finish': 'Data de fin',
-		'prod_timed': 'Crono Producción',
+		'prod_timed': 'Temporizador de Producción',
 		'prod_queuesize': 'Tamaño en cola',
-		'prod_welcome': '¡Bienvenido al gestor de Producción!',
-		'prod_welcome_block': '<p>Puedes grabar edificios y luego detenerlos o iniciarlos en masa. Presiona el botón "Iniciar grabación" y selecciona tus edificios. Después de eso, regresa y presiona "Detener grabación". Verás una lista de edificios con el estado actual. Guárdalo como plantilla y la próxima vez simplemente cargue la plantilla y presiona Enviar.</p>',
+		'prod_welcome': '¡Bienvenido al gestor de edificios de producción!',
+		'prod_welcome_block': '<p>Puedes grabar un listado de edificios para luego detenerlos o iniciarlos en masa de manera automática. Presiona el botón "Iniciar grabación" y selecciona los edificios. Después, regresa y presiona "Detener grabación". Verás la lista de edificios que seleccionaste. Guarda la plantilla y la próxima vez simplemente carga la plantilla y presiona Enviar.</p>',
 		'menustyle_grouped': 'Agrupado',
 		'menustyle_linear': 'Lineal',
 		'menustyle_desc': 'Estilo del menú',
-		'deffilter_desc': 'Filtro de juego predeterminado',
+		'deffilter_desc': 'Filtro de juego',
 		'dateformat_desc': 'Formato de fechas',
 		'geotemplates_desc': 'Plantillas de Geólogo: ',
 		'expltemplates_desc': 'Plantillas de Explorador: ',
 		'bufftemplates_desc': 'Plantillas de Potenciadores: ',
 		'buitemplates_desc': 'Plantillas de Edificios: ',
+		'armytemplates_desc': 'Plantillas de Ejército: ',
 		'geodeftask_desc': 'Tarea predeterminada de Geólogos',
 		'expldeftask_desc': 'Tarea predeterminada de Exploradores',
-		'spectimetype_desc': 'Tipo de cálculo de tiempo predeterminado'
+		'spectimetype_desc': 'Modo de cálculo de tiempo',
+		'armyCurrentArmy': 'Unidades asignadas',
+		'armyNewArmy': 'Nuevas unidades a asignar',
+		'armyUnload': 'Descargar unidades',
+		'armyLoad': 'Cargar unidades'
 	},
     "pl-pl": {
         "btn_submit": "Wyślij",
@@ -372,7 +408,11 @@ const baseTranslation = {
         "buitemplates_desc": "Szablony budynków: ",
         "geodeftask_desc": "Domyślne zadanie Geologa",
         "expldeftask_desc": "Domyślne zadanie Odkrywcy",
-        "spectimetype_desc": "Domyślne ustawienie kalkulacji czasu"
+        "spectimetype_desc": "Domyślne ustawienie kalkulacji czasu",
+        "armyCurrentArmy": "Aktualna armia",
+        "armyNewArmy": "Nowa armia do załadowania",
+        "armyUnload": "Rozładuj zaznaczonych",
+        "armyLoad": 'Załaduj armię'
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',

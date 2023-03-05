@@ -308,6 +308,7 @@
             <ComboBoxItem Tag="es" Uid="21" Content="Venezuela"/>
             <ComboBoxItem Tag="en" Uid="22" Content="United Kingdom"/>
             <ComboBoxItem Tag="en" Uid="23" Content="European English" IsSelected="True"/>
+            <ComboBoxItem Tag="ts" Uid="24" Content="Testing"/>
         </ComboBox>
         <Label Content="{Binding appversion, Mode=OneWay}" HorizontalAlignment="Left" Margin="174,114,0,0" HorizontalContentAlignment="Left" VerticalAlignment="Top" Height="23" Width="51" FontSize="9" Foreground="#FF9E8B56" FontWeight="Bold"/>
         <Image HorizontalAlignment="Left"  Height="102" Margin="10,0,0,0" VerticalAlignment="Top" Width="236" Source="files/logo.png"/>
