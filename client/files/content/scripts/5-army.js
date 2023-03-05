@@ -9,10 +9,11 @@ var armyResponder = game.createResponder(armyResponderHandler, armyResponderHand
 var armyPacket = {};
 var armyInfo = {};
 var armyFreeInfo = {};
+var armyProgressCounter = 0;
 var armyWindow;
 var armyTemplates;
 var armyProgress = [
-	utils.getImage(new(game.def("GUI.Assets::gAssetManager_BuildQueueTempSlotTimeLeftIcon"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_BuildQueueTempSlotTimeLeftIcon"))().bitmapData) + ' 5s',
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar1"))().bitmapData),
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar2"))().bitmapData),
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar3"))().bitmapData),
@@ -27,14 +28,17 @@ var armyProgress = [
 
 function armyResponderHandler(event, data)
 {
-	armyUpdateProgress(0);
-	setTimeout(function() {
-		armyFreeInfo = {};
-		updateFreeArmyInfo();
-		armyUpdateProgress(-1);
-		armyWindow.withFooter("button").prop('disabled',false);
-		armyGetData();
-	}, 5000);
+	armyProgressCounter--;
+	if(armyProgressCounter <= 0) {
+		armyUpdateProgress(0);
+		setTimeout(function() {
+			armyFreeInfo = {};
+			updateFreeArmyInfo();
+			armyUpdateProgress(-1);
+			armyWindow.withFooter("button").prop('disabled',false);
+			armyGetData();
+		}, 5000);
+	}
 }
 
 function updateFreeArmyInfo()
@@ -100,6 +104,7 @@ function armyMenuHandler(event)
 			$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
 				var queue = new TimedQueue(1000);
 				var counter = 1, total = armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').length;
+				armyProgressCounter = total;
 				armyUpdateProgress(-1);
 				armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
 					var uniqueID = item.id.split(".")
@@ -108,6 +113,7 @@ function armyMenuHandler(event)
 					if(!spec.HasUnits()) { 
 						$(item).closest('.row').remove();
 						total--;
+						armyProgressCounter--;
 						return;
 					}
 					var dRaiseArmyVO = new dRaiseArmyVODef();
@@ -115,11 +121,7 @@ function armyMenuHandler(event)
 					queue.add(function(){ 
 						try {
 							armyUpdateProgress(Math.round(Math.round((100 * counter) / total) / 10) * 10 / 10);
-							if(counter == total) {
-								game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
-							} else {
-								game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
-							}
+							game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
 							counter++;
 							$(item).closest('.row').remove();
 						} catch(e) { 
@@ -233,6 +235,7 @@ function armyLoadGenerals(direct)
 	direct = typeof direct === "boolean" ? direct : false;
 	var queue = new TimedQueue(1000);
 	var counter = 1, total = Object.keys(armyPacket).length;
+	armyProgressCounter = total;
 	$.each(armyPacket, function(item) { 
 		var dRaiseArmyVO = new dRaiseArmyVODef();
 		var spec = armyGetSpecialistFromID(item);
@@ -249,11 +252,7 @@ function armyLoadGenerals(direct)
 			if(!direct) {
 				armyWindow.withBody('.close[value="'+item+'"]').closest("div.row div:first-child").addClass("buffReady");
 				armyUpdateProgress(Math.round(Math.round(100 * counter / total) / 10) * 10 / 10);
-				if(counter == total) {
-					game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
-				} else {
-					game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
-				}
+				game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
 				counter++;
 			} else {
 				game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
@@ -299,7 +298,7 @@ function armyLoadData()
 			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(spec.getIconID(), '24px', '24px') + ' ' + spec.getName(false)], 
 			[7, info],
 			[1, gStatus ? 'OK' : 'FAIL', gStatus ? "buffReady" : "buffNotReady"]]);
-		if(spec.GetGarrison() == null || spec.GetTask() != null) { canSubmit = false; }
+		if(!gStatus) { canSubmit = false; }
 	});
 	out += '<br><p>'+loca.GetText("LAB","MilitaryHelp") + '</p>';
 	out += utils.createTableRow([[7, loca.GetText("LAB", "Name")], [2, loca.GetText("LAB", "Requires")], [2, loca.GetText("LAB", "Available")], [1, loca.GetText("LAB", "ProductionStatus")]], true);
