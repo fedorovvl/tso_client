@@ -48,7 +48,7 @@ function specSharedHandler(type)
 	const playerLevel = game.player.GetPlayerLevel();
     var out = '<div class="container-fluid">', isThereAnySpec = false, specialistsUniqueId;
 	game.getSpecialists().sort(0).forEach(function(item){
-		if (item.GetTask() != null || item.GetBaseType() != type) { return; }
+		if (item.GetTask() != null || item.GetBaseType() != type || item.getPlayerID() == -1) { return; }
 		specialistsUniqueId = item.GetUniqueID();
 		isThereAnySpec = true;
 		if(isExplorer) {
