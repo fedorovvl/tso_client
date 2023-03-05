@@ -347,7 +347,7 @@ function armyGetData()
 	game.zone.GetSpecialists_vector().sort(armyGeneralSorter).forEach(function(item){
 		try {
 			if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
-			if(item == null || item.GetTask() != null) { return; }
+			if(item == null || typeof item == 'undefined' || item.GetTask() != null) { return; }
 			var info = '';
 			var uniqId = item.GetUniqueID().toKeyString();
 			armyInfo[uniqId] = armyInfo[uniqId] || {};

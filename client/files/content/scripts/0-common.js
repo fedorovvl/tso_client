@@ -43,7 +43,9 @@ function extendBaseLang(data, module)
 
 function debug(obj)
 {
-	air.Introspector.Console.log(obj);
+	if(typeof air.Introspector !== 'undefined') {
+		air.Introspector.Console.log(obj);
+	}
 }
 
 function mainSettingsHandler(event)
