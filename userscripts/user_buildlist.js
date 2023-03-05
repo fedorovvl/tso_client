@@ -71,7 +71,25 @@ var _exudUserBuildingListLang = {
 		"PlayMute" : "Joue même en mode muet",
 		"ClearMonitor" : "Raz sélection",
 		"AutofitUpgrading" : "Auto suivi amélioration"
-		}
+		},
+	"pl-pl": {
+		"UserBuildingList": "Lista budynków",
+		"Monitor": "Monitor budynków",
+		"Monitoring": "Monitoring",
+		"Upgrading": "Rozbudowa",
+		"Notify": "Włącz powiadomienia",
+		"Minutes": "Minuty",
+		"Stop": "Stop",
+		"Start": "Start",
+		"ReadyMsg": "Monitor Budynków: {0} budynek gotowy!",
+		"ToolTipNotify": "Oznacz aby otrzymać powiadomienie",
+		"DebuffedMsg": "Monitor Budynków : {0} budynek bez buffa!",
+		"UpgradeSound": "Dźwięk rozbudowy",
+		"DebuffSound": "Dźwięk wygaśnięcia buffa",
+		"PlayMute": "Graj nawet gdy wyciszone",
+		"ClearMonitor": "Wyczyść zaznaczone",
+		"AutofitUpgrading": "Oznacz jako rozbudowywane"
+		},
 	};
 
 const _exudUserBuildingListSounds = [ "BuildingPlace", "BuildingDestroy", "BuildingUpgrade", "MenuClose", "ButtonClick", "BuffPlace", "GeneralAttack",
