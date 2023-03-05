@@ -44,6 +44,21 @@ var _exudUserAdventureLang = {
 		'Menuname' : 'Приключения',
 		'Command' : 'Команда',
 		'CannotSet' : 'Не все условия выполнены для загрузки армии. Проверьте в ручную в окне армии (F9)'
+		},
+	'es-es' : {
+		'Options': 'Macros',
+		'Add' : 'Nueva aventura',
+		'Remove' : 'Eliminar',
+		'Title' : 'Ajustes de los Macros de Aventuras',
+		'Filename' : 'Nombre del Macro',
+		'AddError' : '¡Lo has dejado en blanco!',
+		'AddItem' : 'Agregar Macro',
+		'AutoFree': 'Descargar unidades siempre',
+		'NoUnitsOnBoard' : 'Descargando unidades',
+		'UnitReady' : 'Cargando unidades',
+		'Menuname' : 'Aventuras',
+		'Command' : 'Comando',
+		'CannotSet' : "Algo salió mal, no fue posible cargar las unidades. Verifica en Especialistas -> Ejército / (F9)"
 		}
 	};
 	extendBaseLang(_exudUserAdventureLang, 'exudUserAdventureLang');
