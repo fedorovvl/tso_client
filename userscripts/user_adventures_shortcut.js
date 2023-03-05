@@ -13,7 +13,8 @@ var _exudUserAdventureLang = {
 		'UnitReady' : 'Army ready',
 		'Menuname' : 'Adventures',
 		'Command' : 'Command',
-		'CannotSet' : 'Something was wrong, cannot load army. Please verify in Specialists/Army (F9)'
+		'CannotSet' : 'Something was wrong, cannot load army. Please verify in Specialists/Army (F9)',
+		'Saved' : 'Saved !'
 		},
 	'pt-br' : {
 		'Options': 'Opções',
@@ -28,7 +29,8 @@ var _exudUserAdventureLang = {
 		'UnitReady' : 'Generais configurados',
 		'Menuname' : 'Aventuras',
 		'Command' : 'Comando',
-		'CannotSet' : 'Algo deu errado, Nao foi possivel carreagar as unidades. Verificar em Especialistas/Exercito (F9)'
+		'CannotSet' : 'Algo deu errado, Nao foi possivel carreagar as unidades. Verificar em Especialistas/Exercito (F9)',
+		'Saved' : 'Salvado !'
 		},
 	'ru-ru': {
 		'Options': 'Настройки',
@@ -43,7 +45,8 @@ var _exudUserAdventureLang = {
 		'UnitReady' : 'Армия готова',
 		'Menuname' : 'Приключения',
 		'Command' : 'Команда',
-		'CannotSet' : 'Не все условия выполнены для загрузки армии. Проверьте в ручную в окне армии (F9)'
+		'CannotSet' : 'Не все условия выполнены для загрузки армии. Проверьте в ручную в окне армии (F9)',
+		'Saved' : 'Сохранено !'
 		},
 	'es-es' : {
 		'Options': 'Macros',
@@ -58,7 +61,8 @@ var _exudUserAdventureLang = {
 		'UnitReady' : 'Cargando unidades',
 		'Menuname' : 'Aventuras',
 		'Command' : 'Comando',
-		'CannotSet' : "Algo salió mal, no fue posible cargar las unidades. Verifica en Especialistas -> Ejército / (F9)"
+		'CannotSet' : "Algo salió mal, no fue posible cargar las unidades. Verifica en Especialistas -> Ejército / (F9)",
+		'Saved' : 'Salvado !'
 		},
 	'fr-fr': {
 		'Options': 'Options',
@@ -73,7 +77,8 @@ var _exudUserAdventureLang = {
 		'UnitReady' : 'Armées prêtes',
 		'Menuname' : 'Aventures',
 		'Command' : 'Commande',
-		'CannotSet' : "Il y a eu un problème, impossible de charger l'armée. Veuillez vérifier dans Spécialistes/Armée (F9)"
+		'CannotSet' : "Il y a eu un problème, impossible de charger l'armée. Veuillez vérifier dans Spécialistes/Armée (F9)",
+		'Saved' : 'Enregistré !'
   		},
 	'pl-pl': {
 		'Options': 'Opcje',
@@ -88,7 +93,8 @@ var _exudUserAdventureLang = {
 		'UnitReady': 'Armia gotowa',
 		'Menuname': 'Przygody',
 		'Command': 'Komenda',
-		'CannotSet': 'Coś nie tak, nie udało się załadować armii. Sprawdź w Specjaliści/Armia (F9)'
+		'CannotSet': 'Coś nie tak, nie udało się załadować armii. Sprawdź w Specjaliści/Armia (F9)',
+		'Saved' : 'Zapisane !'
 		},
 	'de-de': {
 		'Options': 'Optionen',
@@ -103,7 +109,8 @@ var _exudUserAdventureLang = {
 		'UnitReady' : 'Truppen bereit',
 		'Menuname' : 'Abenteuer',
 		'Command' : 'Befehl',
-		'CannotSet' : 'Irgendwas stimmt nicht, konnte Truppe nicht laden. Bitte überprüfe die Truppen unter Spezialisten/Armnee (F9)'
+		'CannotSet' : 'Irgendwas stimmt nicht, konnte Truppe nicht laden. Bitte überprüfe die Truppen unter Spezialisten/Armnee (F9)',
+		'Saved' : 'Gerettet !'
 		}
 	};
 	extendBaseLang(_exudUserAdventureLang, 'exudUserAdventureLang');
@@ -321,6 +328,7 @@ function _exudUserAdventureAddHandler(event)
 			$('#UserAdventureModal .exudUserAdventureSave').click(function(){
 				storeSettings(_exudUserAdventureSettings, 'usMKF_Adventures');
 				_exudUserAdventuresMakeMenu();
+				game.showAlert(getText('Saved', 'exudUserAdventureLang'));	
 			});
 			
 			_exudUserAdventureModalInitialized = true;
