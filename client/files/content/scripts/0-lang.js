@@ -391,7 +391,11 @@ const baseTranslation = {
         "buitemplates_desc": "Szablony budynków: ",
         "geodeftask_desc": "Domyślne zadanie Geologa",
         "expldeftask_desc": "Domyślne zadanie Odkrywcy",
-        "spectimetype_desc": "Domyślne ustawienie kalkulacji czasu"
+        "spectimetype_desc": "Domyślne ustawienie kalkulacji czasu",
+        "armyCurrentArmy": "Aktualna armia",
+        "armyNewArmy": "Nowa armia do załadowania",
+        "armyUnload": "Rozładuj zaznaczonych",
+        "armyLoad": 'Załaduj armię'
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',
