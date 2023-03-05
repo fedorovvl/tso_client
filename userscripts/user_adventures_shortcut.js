@@ -209,14 +209,14 @@ function _exuduserAdventurearmyLoadData()
 			$.each(requiredArmy, function(item) {
 				if(exuduserAdventurearmyFreeInfo[item] < requiredArmy[item]) { canSubmit = false; }
 			});
-			if (canSubmit) return true;
 		}
 	} catch (e)
 	{
 	}
 
-	game.showAlert(getText('CannotSet', 'exudUserAdventureLang'));	
-	return false;
+	if (!canSubmit)
+		game.showAlert(getText('CannotSet', 'exudUserAdventureLang'));	
+	return canSubmit;
 }
 
 function _exudUserAdventureFreeAllUnits()
