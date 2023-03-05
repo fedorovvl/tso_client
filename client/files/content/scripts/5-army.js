@@ -34,7 +34,7 @@ function armyResponderHandler(event, data)
 		armyUpdateProgress(-1);
 		armyWindow.withFooter("button").prop('disabled',false);
 		armyGetData();
-	}, 3000);
+	}, 5000);
 }
 
 function updateFreeArmyInfo()
