@@ -90,6 +90,24 @@ var _exudUserBuildingListLang = {
 		"ClearMonitor": "Wyczyść zaznaczone",
 		"AutofitUpgrading": "Oznacz jako rozbudowywane"
 		},
+	'de-de': {
+		'UserBuildingList': 'Gebäude Übersichten',
+		'Monitor' : 'Gebäude Beobachtung',
+		'Monitoring' : 'Beobachtet',
+		'Upgrading' : 'Ausbau',
+		'Notify' : 'Benachrichtigungen aktivieren',
+		'Minutes' : 'Minuten',
+		"Stop": "Stop",
+		"Start": "Start",
+		"ReadyMsg" : "Building monitor : {0} building ready!",
+		"ToolTipNotify" : "Markiere für Erhalt von Benachrichtigungen",
+		"DebuffedMsg" : "Gebäude Beobachtung : {0} Gebäude ungebufft!",
+		"UpgradeSound" : "Ausbau Sound",
+		"DebuffSound" : "Ungebufft Sound",
+		"PlayMute" : "Auch im stummen Modus abspielen",
+		"ClearMonitor" : "Auswahl reseten",
+		"AutofitUpgrading" : "Markiere aktive Ausbauten"
+		}
 	};
 
 const _exudUserBuildingListSounds = [ "BuildingPlace", "BuildingDestroy", "BuildingUpgrade", "MenuClose", "ButtonClick", "BuffPlace", "GeneralAttack",
