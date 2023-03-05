@@ -134,6 +134,13 @@ function armyMenuHandler(event)
 					queue.run();
 				}
 			}),
+			$('<button>').attr({ "class": "btn btn-warning armyReload" }).text(loca.GetText("LAB", "Update")).click(function() {
+				try{
+					armyLoadData();
+				} catch(e) {
+					game.chatMessage("Error reloading " + e, 'army');
+				}
+			}),
 			$('<button>').attr({ "class": "btn btn-warning armyReset" }).text(getText('btn_reset')).click(function() {
 				armyPacket = {};
 				armyWindow.withFooter(".armySubmit, .armyReset").hide();
@@ -169,7 +176,7 @@ function armyMenuHandler(event)
 	} catch (error) {
 		alert("Err (retry): " + error.message);
 	}
-	armyWindow.withFooter(".armySubmit, .armyReset").hide();
+	armyWindow.withFooter(".armySubmit, .armyReset, .armyReload").hide();
 	armyWindow.withFooter(".armySaveTemplate, .armyLoadTemplate").show();
 	armyGetData();
 	armyWindow.show();
@@ -275,7 +282,7 @@ function armyLoadData()
 	updateFreeArmyInfo();
 	var canSubmit = true;
 	armyWindow.withFooter(".armyUnload, .armySendGeneralsBtn").hide();
-	armyWindow.withFooter(".armyReset").show();
+	armyWindow.withFooter(".armyReset, .armyReload").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [7, getText('armyNewArmy')], [1, loca.GetText("LAB", "ProductionStatus")]], true);
 	$.each(armyPacket, function(item) { 
@@ -341,7 +348,7 @@ function armyGetData()
 	armyInfo = {};
 	armyUpdateProgress(-1);
 	armyWindow.withFooter(".armyUnload, .armySendGeneralsBtn").show();
-	armyWindow.withFooter(".armyReset, .armySubmit").hide();
+	armyWindow.withFooter(".armyReset, .armySubmit, .armyReload").hide();
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[4, $('<input>', { 'type': 'checkbox', 'class': 'toggleSelect' }).prop('outerHTML') + '&nbsp;&nbsp;' + loca.GetText("LAB", "Name")], [7, getText('armyCurrentArmy')], [1, '#']], true);
 	game.zone.GetSpecialists_vector().sort(armyGeneralSorter).forEach(function(item){
