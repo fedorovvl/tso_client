@@ -35,6 +35,42 @@ var _exudUserBuildingListLang = {
 		"PlayMute" : "Toca mesmo quando mudo",
 		"ClearMonitor" : "Limpar selecionados",
 		"AutofitUpgrading" : "Marcar em melhora"
+		},
+	"es-es" : {
+		'UserBuildingList': 'Lista de edificios',
+		'Monitor' : 'Monitor de edificios',
+		'Monitoring' : 'Observador',
+		'Upgrading' : 'Subiendo de nivel',
+		'Notify' : 'Notificación con sonido',
+		'Minutes' : 'Minutos',
+		"Stop": "Parar",
+		"Start": "Activar",
+		"ReadyMsg" : "Observador: ¡{0} edificio(s) listos!",
+		"ToolTipNotify" : "Selecciona para recibir una notificación",
+		"DebuffedMsg" : "Observador: ¡{0} edificio(s) sin potenciar!",
+		"UpgradeSound" : "Sonido Mejora",
+		"DebuffSound" : "Sonido Sin potenciar",
+		"PlayMute" : "Incluso si está silenciado el juego",
+		"ClearMonitor" : "Limpiar lista",
+		"AutofitUpgrading" : "Marcar subiendo de nivel"
+		},
+	'fr-fr': {
+		'UserBuildingList': 'Liste bâtiments',
+		'Monitor' : 'Surveillance des bâtiments',
+		'Monitoring' : 'Suivi',
+		'Upgrading' : 'Amélioration',
+		'Notify' : 'Autoriser les notifications',
+		'Minutes' : 'Minutes',
+		"Stop": "Arrêt",
+		"Start": "Départ",
+		"ReadyMsg" : "Surveillance bâtiments : {0} bâtiments prêts!",
+		"ToolTipNotify" : "Marquer pour recevoir une notification",
+		"DebuffedMsg" : "Surveillance bâtiments : {0} Sans fortifiants!",
+		"UpgradeSound" : "Son amélioration",
+		"DebuffSound" : "Son arrêt fortifiant",
+		"PlayMute" : "Joue même en mode muet",
+		"ClearMonitor" : "Raz sélection",
+		"AutofitUpgrading" : "Auto suivi amélioration"
 		}
 	};
 
@@ -139,8 +175,8 @@ function _exudUserBuildingListMenuHandler(event) {
 				+ "<div id='udUserBuildingListTotal'> Tot :</div>"
 				+ createTableRow([
 						[1, getText('Monitoring', 'exudUserBuildingListLang')],
-						[5, loca.GetText("LAB", "Name")],
-						[1, getText('Upgrading', 'exudUserBuildingListLang')],
+						[4, loca.GetText("LAB", "Name")],
+						[2, getText('Upgrading', 'exudUserBuildingListLang')],
 						[3, loca.GetText("LAB", 'Buff')],
 						[1, loca.GetText("LAB", "Level")],
 						[1, loca.GetText("LAB", "Visit")]
@@ -174,10 +210,11 @@ function _exudUserBuildingListMenuHandler(event) {
 function _exudUserBuildingListClear()
 {
 	try {
-		_exudBuildingMonitorSettings.BM = [];
-		_exudBuildingMonitorSettings.NotifyUpgrade = [];
+		_exudBuildingMonitorSettings.BM = new Array();
+		_exudBuildingMonitorSettings.NotifyUpgrade = new Array();
 		// Not remove buffing notification. only upgrading
-		_exudBuildingMonitorSettings.BM = _exudBuildingMonitorSettings.NotifyBuffed.slice();
+		if (_exudBuildingMonitorSettings.NotifyBuffed.length > 0)
+			_exudBuildingMonitorSettings.NotifyBuffed.forEach(function(i) {_exudBuildingMonitorSettings.BM.push(i);});
 	}
 	catch (e)
 	{
@@ -251,6 +288,7 @@ function _exudUserBuildingListGetData() {
 			}
 			catch (e)
 			{
+				alert(e);
 			}
 		});
 		
@@ -306,6 +344,7 @@ function _exudUserBuildingListUpdateView()
 	var tot = 0;
 	var BuildToDisplay = $('#exudUserBuildingListSelect option:selected').val();
 	_exudUserBuildingListBuildings.forEach(function(bld) {
+		try{
 		if (bld.Name == BuildToDisplay)
 		{
 			isSelected = _exudBuildingMonitorIsMonitoring(bld.GridPos);
@@ -316,14 +355,20 @@ function _exudUserBuildingListUpdateView()
 					);
 			out += createTableRow([
 					[1, (bld.GridPos > 0 ?checkbox: "")],
-					[5, bld.Name],
-					[1, bld.Upg],
+					[4, bld.Name],
+					[2, bld.Upg],
 					[3, (bld.Buffed  == 1 ? bld.BuffEnd : loca.GetText("LAB", 'NO'))],
 					[1, bld.Level],
 					[1, (bld.GridPos > 0 ? bld.IconMap : "")]
 				], false);				
 				++tot;
 		}
+		}
+		catch (e)
+		{
+			alert(e);
+		}
+		
 	});
 	$("#udUserBuildingListTotal").html("Tot: " + tot);
 	$('#UserBuildingListModalData').html('<div class="container-fluid">{0}</div>'.format(out));
@@ -370,20 +415,48 @@ function _exudUserBuildingToggleMonitor(e)
 	var gid = btn.id.replace("_exudBL_","");
 	gid = parseInt(gid.replace("_exudBM_",""));
 	
-	if (btn.checked)
-		_exudBuildingMonitorSettings.BM.push(gid);
-	else
-	{
-		_exudBuildingMonitorSettings.BM.splice( $.inArray(gid, _exudBuildingMonitorSettings.BM), 1 );
-		_exudBuildingMonitorSettings.NotifyUpgrade.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyUpgrade), 1 );
-		_exudBuildingMonitorSettings.NotifyBuffed.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyBuffed), 1 );
-	}
-	
-	_exudBuildingMonitorSaveSettings();
+	_exudUserBuildingToggleMonitorGid(gid, btn.checked);
 	}
 	catch (e)
 	{
 	}
+}
+function _exudUserBuildingToggleMonitor2(e)
+{
+	try{
+	var btn = e.target;
+	var gid = btn.id.replace("_exudBL_","");
+	gid = parseInt(gid.replace("_exudBM_",""));
+	
+	_exudUserBuildingToggleMonitorGid(gid, btn.checked);
+	_exudUserBuildingMonitorRefresh();
+	}
+	catch (e)
+	{
+	}
+}
+function _exudUserBuildingToggleMonitorGid(gid, st)
+{	
+	try{
+		if (st)
+			_exudBuildingMonitorSettings.BM.push(gid);
+		else
+		{
+			_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.BM, gid);
+			_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.NotifyUpgrade, gid);
+			_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.NotifyBuffed, gid);
+		}
+		
+		_exudBuildingMonitorSaveSettings();
+	}
+	catch (e)
+	{
+	}
+}
+function _exudUserBuildingRemoveArrayItem(ar, it)
+{
+	if (ar != null && ar.indexOf(it) >= 0)
+		ar.splice($.inArray(it,ar),1);
 }
 function _exudUserBuildingToggleMonitorNotifyUpgrade(e)
 {
@@ -395,7 +468,7 @@ function _exudUserBuildingToggleMonitorNotifyUpgrade(e)
 			if (btn.checked)
 				_exudBuildingMonitorSettings.NotifyUpgrade.push(gid);
 			else
-				_exudBuildingMonitorSettings.NotifyUpgrade.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyUpgrade), 1 );
+				_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.NotifyUpgrade, gid);
 			
 			_exudBuildingMonitorSaveSettings();
 		}
@@ -415,8 +488,8 @@ function _exudUserBuildingToggleMonitorNotifyBuffed(e)
 		{
 			if (btn.checked)
 				_exudBuildingMonitorSettings.NotifyBuffed.push(gid);
-			else
-				_exudBuildingMonitorSettings.NotifyBuffed.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyBuffed), 1 );
+			else		
+				_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.NotifyBuffed,gid);
 			
 			_exudBuildingMonitorSaveSettings();
 		}
@@ -469,8 +542,8 @@ try{
 				+ '<div style="clear:both">'
 				+ createTableRow([
 						[1, getText('Monitoring', 'exudUserBuildingListLang')],
-						[5, loca.GetText("LAB", "Name")],
-						[1, getText('Upgrading', 'exudUserBuildingListLang')],
+						[4, loca.GetText("LAB", "Name")],
+						[2, getText('Upgrading', 'exudUserBuildingListLang')],
 						[3, loca.GetText("LAB", 'Buff')],
 						[1, loca.GetText("LAB", "Level")],
 						[1, loca.GetText("LAB", "Visit")]
@@ -638,8 +711,8 @@ function _exudUserBuildingMonitorRefresh()
 		var buffInfo = _exudBuildingListGetEndBuffTime(bld)
 		out += createTableRow([
 				[1, (item > 0 ?checkbox: "")],
-				[5, _exudUserBuildingListGetName(bld.GetBuildingName_string())],
-				[1, checkboxU + "&nbsp;" + isUpgrading],
+				[4, _exudUserBuildingListGetName(bld.GetBuildingName_string())],
+				[2, checkboxU + "&nbsp;" + isUpgrading],
 				[3, checkboxB + "&nbsp;" + (buffInfo == '' ? loca.GetText("LAB", 'NO') : buffInfo )],
 				[1, bld.GetUIUpgradeLevel()],
 				[1, (item > 0 ? IconMap : "")]
@@ -647,12 +720,12 @@ function _exudUserBuildingMonitorRefresh()
 		}
 		catch (e)
 		{
-			_exudUserBuildingToggleMonitor(item);
+			_exudUserBuildingToggleMonitor(item, false);
 		}
 	});
 	$('#UserBuildingMonitorModalData').html('<div class="container-fluid">{0}</div>'.format(out));
 	$('[data-toggle="tooltip"]').tooltip({container: 'body'});
-	$('#UserBuildingMonitorModalData input[id^="_exudBM_"]').click(_exudUserBuildingToggleMonitor);
+	$('#UserBuildingMonitorModalData input[id^="_exudBM_"]').click(_exudUserBuildingToggleMonitor2);
 	$('#UserBuildingMonitorModalData img[id^="exudBMPOS_"]').click(_exudUserBuildingListGoTo2);
 	$('#UserBuildingMonitorModalData input[id^="_exudBMU_"]').click(_exudUserBuildingToggleMonitorNotifyUpgrade);
 	$('#UserBuildingMonitorModalData input[id^="_exudBMB_"]').click(_exudUserBuildingToggleMonitorNotifyBuffed);
