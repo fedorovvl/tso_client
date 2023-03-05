@@ -129,6 +129,7 @@ const toolsItem = new air.NativeMenuItem(_exudUserAdventureMainMenuName);
 toolsItem.name = _exudUserAdventureMainMenuName;
 toolsItem.submenu = new air.NativeMenu();		
 toolsMenu.submenu.addItem(toolsItem);
+var _exudUserAdventuresSPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
 
 
 _exudUserAdventuresMakeMenu()
@@ -177,44 +178,78 @@ function _exuduserAdventureMenuSelectedHandler(event)
 
 function _exuduserAdventurearmyLoadData()
 {
-	if(Object.keys(armyPacket).length == 0) {
-		return false;
-	}
-	var canSubmit = true;
-	$.each(armyPacket, function(item) { 
-		var uniqueID = item.split("."),
-			uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
-			spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
-		if(spec.GetGarrison() == null || spec.GetTask() != null) { canSubmit = false; }
-	});
-	if (canSubmit)
+	try
 	{
-		var requiredArmy = {};
-		$.each(armyPacket, function(item) {
-			$.each(armyPacket[item], function(res) {
-				if(res == "name") { return; }
-				requiredArmy[res] = requiredArmy[res] + armyPacket[item][res] || armyPacket[item][res];
+		if(Object.keys(armyPacket).length == 0) {
+			return false;
+		}
+		var canSubmit = true;
+		
+		var exuduserAdventurearmyFreeInfo = {};
+		// Total army available
+		game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().forEach(function(item){
+			exuduserAdventurearmyFreeInfo[item.GetType()] = item.GetAmount();
+		});
+		// Remove from total , army actually in use . the player may need to release the units on the generals
+		swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
+			if (game.player.GetPlayerId() == item.getPlayerID() && _exudUserAdventuresSPECIALIST_TYPE.IsGeneral(item.GetType()) && item.HasUnits())
+			{
+				try{
+					item.GetArmy().GetSquads_vector().forEach(function(sv) {
+						exuduserAdventurearmyFreeInfo[sv.GetType()] -= sv.GetAmount();
+						//alert("In use : " + item.GetType() + " : " + sv.GetType() + " / " + sv.GetAmount());
+					});
+				}
+				catch (ee)
+				{
+					alert(ee);
+				}
+			}
+		});
+
+		$.each(armyPacket, function(item) { 
+			var uniqueID = item.split(".")
+			var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
+			var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
+			if(spec.GetGarrison() == null || spec.GetTask() != null || spec.GetGarrisonGridIdx() < 1 || spec.IsInUse() || spec.isTravellingAway()) {canSubmit = false; }
+		});
+		if (canSubmit)
+		{
+			var requiredArmy = {};
+			$.each(armyPacket, function(item) {
+				$.each(armyPacket[item], function(res) {
+					if(res == "name") { return; }
+					requiredArmy[res] = requiredArmy[res] + armyPacket[item][res] || armyPacket[item][res];
+				});
 			});
-		});
-		$.each(requiredArmy, function(item) {
-			if(armyFreeInfo[item] < requiredArmy[item]) { canSubmit = false; }
-		});
+			$.each(requiredArmy, function(item) {
+				if(exuduserAdventurearmyFreeInfo[item] < requiredArmy[item]) { canSubmit = false; }
+			});
+			return true;
+		}
+	} catch (e)
+	{
 	}
-	else
-		game.showAlert(getText('CannotSet', 'exudUserAdventureLang'));
-	return canSubmit;
+
+	game.showAlert(getText('CannotSet', 'exudUserAdventureLang'));	
+	return false;
 }
 
 function _exudUserAdventureFreeAllUnits()
 {
 	var queue = new TimedQueue(1000);
 	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
-		if (game.player.GetPlayerId() == item.getPlayerID() && item.GetGarrisonGridIdx() > 0 && item.HasUnits() && !item.IsInUse() && !item.isTravellingAway())
+		try{
+			if (game.player.GetPlayerId() == item.getPlayerID() && _exudUserAdventuresSPECIALIST_TYPE.IsGeneral(item.GetType()) && item.GetGarrisonGridIdx() > 0  && item.HasUnits() && !item.IsInUse() && !item.isTravellingAway())
+			{
+				queue.add(function(){ 
+					armyMilitarySystem.SendRaiseArmyToServer(game.gi, item, null);
+					//game.chatMessage(item.getName(false), getText('Menuname', 'exudUserAdventureLang'));
+				});
+			}
+		}
+		catch (e)
 		{
-			queue.add(function(){ 
-				armyMilitarySystem.SendRaiseArmyToServer(game.gi, item, null);
-				game.chatMessage(item.getName(false), getText('Menuname', 'exudUserAdventureLang'));
-			});
 		}
 	});
 	if(queue.len() > 0)

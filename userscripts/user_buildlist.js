@@ -246,10 +246,11 @@ function _exudUserBuildingListMenuHandler(event) {
 function _exudUserBuildingListClear()
 {
 	try {
-		_exudBuildingMonitorSettings.BM = [];
-		_exudBuildingMonitorSettings.NotifyUpgrade = [];
+		_exudBuildingMonitorSettings.BM = new Array();
+		_exudBuildingMonitorSettings.NotifyUpgrade = new Array();
 		// Not remove buffing notification. only upgrading
-		_exudBuildingMonitorSettings.BM = _exudBuildingMonitorSettings.NotifyBuffed.slice();
+		if (_exudBuildingMonitorSettings.NotifyBuffed.length > 0)
+			_exudBuildingMonitorSettings.NotifyBuffed.forEach(function(i) {_exudBuildingMonitorSettings.BM.push(i);});
 	}
 	catch (e)
 	{
@@ -323,6 +324,7 @@ function _exudUserBuildingListGetData() {
 			}
 			catch (e)
 			{
+				alert(e);
 			}
 		});
 		
@@ -378,6 +380,7 @@ function _exudUserBuildingListUpdateView()
 	var tot = 0;
 	var BuildToDisplay = $('#exudUserBuildingListSelect option:selected').val();
 	_exudUserBuildingListBuildings.forEach(function(bld) {
+		try{
 		if (bld.Name == BuildToDisplay)
 		{
 			isSelected = _exudBuildingMonitorIsMonitoring(bld.GridPos);
@@ -396,6 +399,12 @@ function _exudUserBuildingListUpdateView()
 				], false);				
 				++tot;
 		}
+		}
+		catch (e)
+		{
+			alert(e);
+		}
+		
 	});
 	$("#udUserBuildingListTotal").html("Tot: " + tot);
 	$('#UserBuildingListModalData').html('<div class="container-fluid">{0}</div>'.format(out));
@@ -442,20 +451,48 @@ function _exudUserBuildingToggleMonitor(e)
 	var gid = btn.id.replace("_exudBL_","");
 	gid = parseInt(gid.replace("_exudBM_",""));
 	
-	if (btn.checked)
-		_exudBuildingMonitorSettings.BM.push(gid);
-	else
-	{
-		_exudBuildingMonitorSettings.BM.splice( $.inArray(gid, _exudBuildingMonitorSettings.BM), 1 );
-		_exudBuildingMonitorSettings.NotifyUpgrade.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyUpgrade), 1 );
-		_exudBuildingMonitorSettings.NotifyBuffed.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyBuffed), 1 );
-	}
-	
-	_exudBuildingMonitorSaveSettings();
+	_exudUserBuildingToggleMonitorGid(gid, btn.checked);
 	}
 	catch (e)
 	{
 	}
+}
+function _exudUserBuildingToggleMonitor2(e)
+{
+	try{
+	var btn = e.target;
+	var gid = btn.id.replace("_exudBL_","");
+	gid = parseInt(gid.replace("_exudBM_",""));
+	
+	_exudUserBuildingToggleMonitorGid(gid, btn.checked);
+	_exudUserBuildingMonitorRefresh();
+	}
+	catch (e)
+	{
+	}
+}
+function _exudUserBuildingToggleMonitorGid(gid, st)
+{	
+	try{
+		if (st)
+			_exudBuildingMonitorSettings.BM.push(gid);
+		else
+		{
+			_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.BM, gid);
+			_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.NotifyUpgrade, gid);
+			_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.NotifyBuffed, gid);
+		}
+		
+		_exudBuildingMonitorSaveSettings();
+	}
+	catch (e)
+	{
+	}
+}
+function _exudUserBuildingRemoveArrayItem(ar, it)
+{
+	if (ar != null && ar.indexOf(it) >= 0)
+		ar.splice($.inArray(it,ar),1);
 }
 function _exudUserBuildingToggleMonitorNotifyUpgrade(e)
 {
@@ -467,7 +504,7 @@ function _exudUserBuildingToggleMonitorNotifyUpgrade(e)
 			if (btn.checked)
 				_exudBuildingMonitorSettings.NotifyUpgrade.push(gid);
 			else
-				_exudBuildingMonitorSettings.NotifyUpgrade.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyUpgrade), 1 );
+				_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.NotifyUpgrade, gid);
 			
 			_exudBuildingMonitorSaveSettings();
 		}
@@ -487,8 +524,8 @@ function _exudUserBuildingToggleMonitorNotifyBuffed(e)
 		{
 			if (btn.checked)
 				_exudBuildingMonitorSettings.NotifyBuffed.push(gid);
-			else
-				_exudBuildingMonitorSettings.NotifyBuffed.splice( $.inArray(gid, _exudBuildingMonitorSettings.NotifyBuffed), 1 );
+			else		
+				_exudUserBuildingRemoveArrayItem(_exudBuildingMonitorSettings.NotifyBuffed,gid);
 			
 			_exudBuildingMonitorSaveSettings();
 		}
@@ -719,12 +756,12 @@ function _exudUserBuildingMonitorRefresh()
 		}
 		catch (e)
 		{
-			_exudUserBuildingToggleMonitor(item);
+			_exudUserBuildingToggleMonitor(item, false);
 		}
 	});
 	$('#UserBuildingMonitorModalData').html('<div class="container-fluid">{0}</div>'.format(out));
 	$('[data-toggle="tooltip"]').tooltip({container: 'body'});
-	$('#UserBuildingMonitorModalData input[id^="_exudBM_"]').click(_exudUserBuildingToggleMonitor);
+	$('#UserBuildingMonitorModalData input[id^="_exudBM_"]').click(_exudUserBuildingToggleMonitor2);
 	$('#UserBuildingMonitorModalData img[id^="exudBMPOS_"]').click(_exudUserBuildingListGoTo2);
 	$('#UserBuildingMonitorModalData input[id^="_exudBMU_"]').click(_exudUserBuildingToggleMonitorNotifyUpgrade);
 	$('#UserBuildingMonitorModalData input[id^="_exudBMB_"]').click(_exudUserBuildingToggleMonitorNotifyBuffed);
