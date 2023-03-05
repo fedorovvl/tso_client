@@ -305,10 +305,10 @@ const baseTranslation = {
 		'auc_do_bid': 'Pujar',
 		'prod_estimate': 'Tiempo estimado',
 		'prod_finish': 'Data de fin',
-		'prod_timed': 'Crono Producción',
+		'prod_timed': 'Temporizador de Producción',
 		'prod_queuesize': 'Tamaño en cola',
-		'prod_welcome': '¡Bienvenido al gestor de Producción!',
-		'prod_welcome_block': '<p>Puedes grabar edificios y luego detenerlos o iniciarlos en masa. Presiona el botón "Iniciar grabación" y selecciona tus edificios. Después de eso, regresa y presiona "Detener grabación". Verás una lista de edificios con el estado actual. Guárdalo como plantilla y la próxima vez simplemente cargue la plantilla y presiona Enviar.</p>',
+		'prod_welcome': '¡Bienvenido al gestor de edificios de producción!',
+		'prod_welcome_block': '<p>Puedes grabar un listado de edificios para luego detenerlos o iniciarlos en masa de manera automática. Presiona el botón "Iniciar grabación" y selecciona los edificios. Después, regresa y presiona "Detener grabación". Verás la lista de edificios que seleccionaste. Guarda la plantilla y la próxima vez simplemente carga la plantilla y presiona Enviar.</p>',
 		'menustyle_grouped': 'Agrupado',
 		'menustyle_linear': 'Lineal',
 		'menustyle_desc': 'Estilo del menú',
@@ -325,7 +325,7 @@ const baseTranslation = {
 		'armyCurrentArmy': 'Unidades asignadas',
 		'armyNewArmy': 'Nuevas unidades a asignar',
 		'armyUnload': 'Descargar unidades',
-		'armyLoad': 'Load army'
+		'armyLoad': 'Cargar unidades'
 	},
     "pl-pl": {
         "btn_submit": "Wyślij",
