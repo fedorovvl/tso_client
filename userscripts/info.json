@@ -67,5 +67,12 @@
       "longDesc":"Shortcuts to saved army models",
       "author":"MkFera_SirriS",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
+   },
+   "user_langs.js":{
+      "name":"Languages",
+      "shortDesc":"Change game lang",
+      "longDesc":"Change game ui language in runtime",
+      "author":"SirriS",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
    }
 }
