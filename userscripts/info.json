@@ -30,7 +30,7 @@
       "name":"Friends",
       "shortDesc":"Friends info",
       "longDesc":"Show info about your friends and guild members",
-      "author":"MkFera&SirriS",
+      "author":"MkFera_SirriS",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
    },
    "user_deposit.js":{
@@ -46,7 +46,14 @@
       "longDesc":"list of buildings with the possibility to select and keep under observation some buildings that are being updated",
       "author":"MkFera",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
-},
+   },
+   "user_spechide.js":{
+      "name":"HideSpec",
+      "shortDesc":"Hiding specialists from StarMenu",
+      "longDesc":"Simply hididing generals, geologists or explorers from StarMenu",
+      "author":"SirriS",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
+   },
    "user_showmyloot.js":{
       "name":"Show My Loot",
       "shortDesc":"Loot stats service",
@@ -58,7 +65,14 @@
       "name":"Adventures",
       "shortDesc":"Army shortcuts",
       "longDesc":"Shortcuts to saved army models",
-      "author":"MkFera&SirriS",
+      "author":"MkFera_SirriS",
+	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
+   },
+   "user_langs.js":{
+      "name":"Languages",
+      "shortDesc":"Change game lang",
+      "longDesc":"Change game ui language in runtime",
+      "author":"SirriS",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
    }
 }

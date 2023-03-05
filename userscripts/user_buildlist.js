@@ -71,6 +71,42 @@ var _exudUserBuildingListLang = {
 		"PlayMute" : "Joue même en mode muet",
 		"ClearMonitor" : "Raz sélection",
 		"AutofitUpgrading" : "Auto suivi amélioration"
+		},
+	"pl-pl": {
+		"UserBuildingList": "Lista budynków",
+		"Monitor": "Monitor budynków",
+		"Monitoring": "Monitoring",
+		"Upgrading": "Rozbudowa",
+		"Notify": "Włącz powiadomienia",
+		"Minutes": "Minuty",
+		"Stop": "Stop",
+		"Start": "Start",
+		"ReadyMsg": "Monitor Budynków: {0} budynek gotowy!",
+		"ToolTipNotify": "Oznacz aby otrzymać powiadomienie",
+		"DebuffedMsg": "Monitor Budynków : {0} budynek bez buffa!",
+		"UpgradeSound": "Dźwięk rozbudowy",
+		"DebuffSound": "Dźwięk wygaśnięcia buffa",
+		"PlayMute": "Graj nawet gdy wyciszone",
+		"ClearMonitor": "Wyczyść zaznaczone",
+		"AutofitUpgrading": "Oznacz jako rozbudowywane"
+		},
+	'de-de': {
+		'UserBuildingList': 'Gebäude Übersichten',
+		'Monitor' : 'Gebäude Beobachtung',
+		'Monitoring' : 'Beobachtet',
+		'Upgrading' : 'Ausbau',
+		'Notify' : 'Benachrichtigungen aktivieren',
+		'Minutes' : 'Minuten',
+		"Stop": "Stop",
+		"Start": "Start",
+		"ReadyMsg" : "Building monitor : {0} building ready!",
+		"ToolTipNotify" : "Markiere für Erhalt von Benachrichtigungen",
+		"DebuffedMsg" : "Gebäude Beobachtung : {0} Gebäude ungebufft!",
+		"UpgradeSound" : "Ausbau Sound",
+		"DebuffSound" : "Ungebufft Sound",
+		"PlayMute" : "Auch im stummen Modus abspielen",
+		"ClearMonitor" : "Auswahl reseten",
+		"AutofitUpgrading" : "Markiere aktive Ausbauten"
 		}
 	};
 

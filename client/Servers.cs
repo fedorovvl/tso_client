@@ -23,6 +23,7 @@ namespace client
             { "it", new Server(){ domain = "https://www.thesettlersonline.it", uplay = "/it/api/user/uplay", main = "/it/homepage", play = "/it/gioca" } },
             { "el", new Server(){ domain = "https://www.thesettlersonline.gr", uplay = "/el/api/user/uplay", main = "/el/%CE%B1%CF%81%CF%87%CE%B9%CE%BA%CE%AE-%CF%83%CE%B5%CE%BB%CE%AF%CE%B4%CE%B1", play = "/el/play" } },
             { "ro", new Server(){ domain = "https://www.thesettlersonline.ro", uplay = "/ro/api/user/uplay", main = "/ro/pagina-de-start", play = "/ro/play" } },
+            { "ts", new Server(){ domain = "https://www.tsotesting.com", uplay = "/en/api/user/uplay", main = "/en/homepage", play = "/en/play" } },
         };
 
         public static Dictionary<string, string> _langs = new Dictionary<string, string>()
@@ -40,7 +41,8 @@ namespace client
             {  "pt", "pt-br" },
             {  "it", "it-it" },
             {  "el", "el-gr" },
-            {  "ro", "ro-ro" }
+            {  "ro", "ro-ro" },
+            {  "ts", "en-uk" }
         };
 
         public static Dictionary<string, Dictionary<string, string>> trans = new Dictionary<string, Dictionary<string, string>>()
