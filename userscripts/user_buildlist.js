@@ -107,7 +107,7 @@ var _exudUserBuildingListLang = {
 		"PlayMute" : "Auch im stummen Modus abspielen",
 		"ClearMonitor" : "Auswahl reseten",
 		"AutofitUpgrading" : "Markiere aktive Ausbauten"
-		},
+		}
 	};
 
 const _exudUserBuildingListSounds = [ "BuildingPlace", "BuildingDestroy", "BuildingUpgrade", "MenuClose", "ButtonClick", "BuffPlace", "GeneralAttack",
