@@ -1,5 +1,6 @@
 var armySPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
 var armyMilitarySystem = swmmo.getDefinitionByName("MilitarySystem::cMilitaryUtil");
+var armyMilitaryBase = swmmo.getDefinitionByName("MilitarySystem::cMilitaryUnitBase");
 var dRaiseArmyVODef = swmmo.getDefinitionByName("Communication.VO::dRaiseArmyVO");
 var dResourceVODef = swmmo.getDefinitionByName("Communication.VO::dResourceVO");
 var armySpecTaskDef = swmmo.getDefinitionByName("Communication.VO::dStartSpecialistTaskVO");
@@ -7,6 +8,7 @@ var armySpecTravelDef = swmmo.getDefinitionByName("Specialists::cSpecialistTask_
 var armyServices = swmmo.getDefinitionByName("com.bluebyte.tso.service::ServiceManager").getInstance();
 var armyResponder = game.createResponder(armyResponderHandler, armyResponderHandler);
 var armyPacket = {};
+var armyPacketMatches = {};
 var armyInfo = {};
 var armyFreeInfo = {};
 var armyProgressCounter = 0;
@@ -39,6 +41,16 @@ function armyResponderHandler(event, data)
 			armyGetData();
 		}, 5000);
 	}
+}
+
+function armyGetChecksum(army)
+{
+	var result = 0;
+	$.each(army, function(res) {
+		if(res == "name") { return; }
+		result = result ^ (armyMilitaryBase.GetUnitBaseForType(res).GetCombatPriority() + (army[res] << 6));
+	});
+	return result;
 }
 
 function updateFreeArmyInfo()
@@ -244,6 +256,11 @@ function armyLoadGenerals(direct)
 	var counter = 1, total = Object.keys(armyPacket).length;
 	armyProgressCounter = total;
 	$.each(armyPacket, function(item) { 
+		if(!direct && armyPacketMatches[item]) {
+			total--;
+			armyProgressCounter--;
+			return;
+		}
 		var dRaiseArmyVO = new dRaiseArmyVODef();
 		var spec = armyGetSpecialistFromID(item);
 		if(spec == null) { return; }
@@ -268,7 +285,7 @@ function armyLoadGenerals(direct)
 		
 		
 	});
-	if(!direct) {
+	if(!direct && queue.len() > 0) {
 		armyWindow.withFooter("button").prop('disabled',true);
 	}
 	queue.run();
@@ -280,11 +297,13 @@ function armyLoadData()
 		return armyGetData();
 	}
 	updateFreeArmyInfo();
+	armyPacketMatches = {};
 	var canSubmit = true;
 	armyWindow.withFooter(".armyUnload, .armySendGeneralsBtn").hide();
 	armyWindow.withFooter(".armyReset, .armyReload").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [7, getText('armyNewArmy')], [1, loca.GetText("LAB", "ProductionStatus")]], true);
+	var requiredArmy = {};
 	$.each(armyPacket, function(item) { 
 		var spec = armyGetSpecialistFromID(item);
 		if(spec == null) {
@@ -296,26 +315,30 @@ function armyLoadData()
 			return;
 		}
 		var info = '';
+		var alreadyMatch = armyGetChecksum(armyPacket[item]) == armyGetChecksum(armyInfo[item]);
+		armyPacketMatches[item] = alreadyMatch;
 		$.each(armyPacket[item], function(res) {
 			if(res == "name") { return; }
 			info += utils.getImageTag(res) + ' ' + armyPacket[item][res] + '&nbsp;';
+			if(!alreadyMatch) {
+				var req = armyPacket[item][res] - armyGetSquadCount(item, res);
+				if(req > 0) { 
+					requiredArmy[res] = requiredArmy[res] + req || req;
+				}
+			}
 		});
 		var gStatus = spec.GetGarrison() != null && spec.GetTask() == null;
 		out += utils.createTableRow([
-			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(spec.getIconID(), '24px', '24px') + ' ' + spec.getName(false)], 
+			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(spec.getIconID(), '24px', '24px') + ' ' + spec.getName(false), alreadyMatch ? "buffReady" : ""], 
 			[7, info],
 			[1, gStatus ? 'OK' : 'FAIL', gStatus ? "buffReady" : "buffNotReady"]]);
-		if(!gStatus) { canSubmit = false; }
+		
+		if(!gStatus && !alreadyMatch) { 
+			canSubmit = false;
+		}
 	});
 	out += '<br><p>'+loca.GetText("LAB","MilitaryHelp") + '</p>';
 	out += utils.createTableRow([[7, loca.GetText("LAB", "Name")], [2, loca.GetText("LAB", "Requires")], [2, loca.GetText("LAB", "Available")], [1, loca.GetText("LAB", "ProductionStatus")]], true);
-	var requiredArmy = {};
-	$.each(armyPacket, function(item) {
-		$.each(armyPacket[item], function(res) {
-			if(res == "name") { return; }
-			requiredArmy[res] = requiredArmy[res] + armyPacket[item][res] || armyPacket[item][res];
-		});
-	});
 	$.each(requiredArmy, function(item) {
 		var aStatus = armyFreeInfo[item] >= requiredArmy[item];
 		out += utils.createTableRow([
@@ -325,7 +348,7 @@ function armyLoadData()
 			[1, aStatus ? 'OK' : 'FAIL', aStatus ? "buffReady" : "buffNotReady"]]);
 		if(armyFreeInfo[item] < requiredArmy[item]) { canSubmit = false; }
 	});
-	if(canSubmit) {
+	if(canSubmit && Object.keys(requiredArmy).length > 0) {
 		armyWindow.withFooter(".armySubmit").show();
 	}
 	armyWindow.Body().html(out + '<div>');
@@ -334,6 +357,12 @@ function armyLoadData()
 		$(e.currentTarget).closest('.row').remove();
 		armyLoadData();
 	});
+}
+
+function armyGetSquadCount(spec, squad)
+{
+	if(!armyInfo[spec]) { return 0; }
+	return armyInfo[spec][squad] || 0;
 }
 
 function armyGeneralSorter(a, b)
