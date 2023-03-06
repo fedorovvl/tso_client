@@ -1,49 +1,51 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace client
 {
     public struct VersionInfo
     {
-        public uint Major;
-        public uint Minor;
-        public uint BuildNum;
+        public int Major;
+        public int Minor;
+        public int BuildNum;
     }
 
     public class WinVersion
     {
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        public struct OSVERSIONINFOEXW
+        [SecurityCritical]
+        [DllImport("ntdll.dll", SetLastError = true)]
+        internal static extern int RtlGetVersion(ref OSVERSIONINFOEX versionInfo);
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct OSVERSIONINFOEX
         {
-            public uint dwOSVersionInfoSize;
-            public uint dwMajorVersion;
-            public uint dwMinorVersion;
-            public uint dwBuildNumber;
-            public uint dwPlatformId;
-            [MarshalAs(UnmanagedType.LPWStr, SizeConst = 128)]
-            public string szCSDVersion;
-            public UInt16 wServicePackMajor;
-            public UInt16 wServicePackMinor;
-            public UInt16 wSuiteMask;
-            public byte wProductType;
-            public byte wReserved;
+            // The OSVersionInfoSize field must be set to Marshal.SizeOf(typeof(OSVERSIONINFOEX))
+            internal int OSVersionInfoSize;
+            internal int MajorVersion;
+            internal int MinorVersion;
+            internal int BuildNumber;
+            internal int PlatformId;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+            internal string CSDVersion;
+            internal ushort ServicePackMajor;
+            internal ushort ServicePackMinor;
+            internal short SuiteMask;
+            internal byte ProductType;
+            internal byte Reserved;
         }
-        [DllImport("ntdll.dll", CallingConvention = CallingConvention.StdCall)]
-        public static extern int RtlGetVersion(out OSVERSIONINFOEXW osv);
 
         public static bool GetVersion(out VersionInfo info)
         {
             info.Major = 0;
             info.Minor = 0;
             info.BuildNum = 0;
-            OSVERSIONINFOEXW osv = new OSVERSIONINFOEXW();
-            osv.dwOSVersionInfoSize = 284;
-            if (RtlGetVersion(out osv) == 0)
+            OSVERSIONINFOEX osv = new OSVERSIONINFOEX { OSVersionInfoSize = Marshal.SizeOf(typeof(OSVERSIONINFOEX)) };
+            if (RtlGetVersion(ref osv) == 0)
             {
-                info.Major = osv.dwMajorVersion;
-                info.Minor = osv.dwMinorVersion;
-                info.BuildNum = osv.dwBuildNumber;
-                if (osv.dwBuildNumber >= 22000)
+                info.Major = osv.MajorVersion;
+                info.Minor = osv.MinorVersion;
+                info.BuildNum = osv.BuildNumber;
+                if (osv.BuildNumber >= 22000)
                     info.Major = 11;
                 return true;
             }
