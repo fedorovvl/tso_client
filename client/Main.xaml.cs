@@ -184,6 +184,13 @@ namespace client
                 if (!debug)
                     unzip.ExtractToDirectory(ClientDirectory);
             }
+            if (System.Environment.Is64BitOperatingSystem && !debug)
+            {
+                using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x64)))
+                {
+                    unzip.ExtractToDirectory(ClientDirectory);
+                }
+            }
             try
             {
                 foreach (string tmpDir in Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TSO-*"))
