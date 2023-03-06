@@ -154,7 +154,6 @@ function armyMenuHandler(event)
 				}
 			}),
 			$('<button>').attr({ "class": "btn btn-warning armyReset" }).text(getText('btn_reset')).click(function() {
-				armyPacket = {};
 				armyWindow.withFooter(".armySubmit, .armyReset").hide();
 				armyWindow.withFooter(".armySaveTemplate, .armyLoadTemplate, .armyUnload, .armySendGeneralsBtn").show();
 				armyGetData();
