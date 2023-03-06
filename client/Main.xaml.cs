@@ -36,6 +36,7 @@ namespace client
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
         public static int http_timeout = 20000;
+        public static VersionInfo winver;
         public static bool is64 = System.Environment.Is64BitOperatingSystem;
         private int _regionUid;
         public static string fast_nickname = string.Empty;
@@ -111,6 +112,7 @@ namespace client
 
         private void Main_Loaded(object sender, RoutedEventArgs e)
         {
+            WinVersion.GetVersion(out winver);
             if (cmd["config"] != null)
                 setting_file = cmd["config"].Trim();
             ReadSettings();
