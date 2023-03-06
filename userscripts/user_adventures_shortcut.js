@@ -309,20 +309,22 @@ function _exudUserAdventureAddHandler(event)
 					return;
 				}
 				var adv = _exudUserAdventureGetActAdv();
+				var newUUID = _exudUseAdventureGenerateUUID();
 				if(adv != null) {
 					adv.Items.push({
-						'UUID' : _exudUseAdventureGenerateUUID(),
+						'UUID' : newUUID,
 						'Description' : des,
 						'Items' : new Array()
 					});
 				} else {
 					_exudUserAdventureSettings.Adventures.push({
-						'UUID' : _exudUseAdventureGenerateUUID(),
+						'UUID' : newUUID,
 						'Description' : des,
 						'Items' : new Array()
 					});
 				}
 				_exudUserAdventureRefresh();
+				$("#exudUserAdventureSelect").val(newUUID).change();
 			});
 			$('#exudUserAdventureAddItem').click(function() {
 				var adv = _exudUserAdventureGetActAdv();
