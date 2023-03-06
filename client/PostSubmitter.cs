@@ -212,7 +212,6 @@ namespace client
                     return data[1];
                 }
             }
-            return string.Empty;
         }
         /// <summary>
         ///   Posts data to a specified url. Note that this assumes that you have already url encoded the post data.
