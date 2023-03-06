@@ -149,14 +149,22 @@ function _exudUserAdventuresMakeMenu()
 		{ label: loca.GetText("LAB","UnloadUnits"), onSelect: _exudUserAdventureFreeAllUnits },
 		{ type: 'separator' }
 	];
-	_exudUserAdventureSettings.Adventures.forEach(function(adv){
+	_exudAdventureGenMenuRecursive(_exudUserAdventureSettings.Adventures, m);
+	toolsMenu.submenu.getItemByName(_exudUserAdventureMainMenuName).submenu = air.ui.Menu.createFromJSON(m);
+}
+
+function _exudAdventureGenMenuRecursive(item, m)
+{
+	item.forEach(function(adv){
 		var s = { label: adv.Description, items: [] };
 		adv.Items.forEach(function(i) {
+			if(typeof i == 'object') {
+				return _exudAdventureGenMenuRecursive([i], s.items);
+			}
 			s.items.push({ label: i.split("\\").pop().replace("_", "[UNDERSCORE]"), name: i, onSelect: _exuduserAdventureMenuSelectedHandler });
 		});
 		m.push(s);
 	});
-	toolsMenu.submenu.getItemByName(_exudUserAdventureMainMenuName).submenu = air.ui.Menu.createFromJSON(m);
 }
 
 // Execute a shortcut
@@ -300,11 +308,20 @@ function _exudUserAdventureAddHandler(event)
 					alert(getText('AddError', 'exudUserAdventureLang'));
 					return;
 				}
-				_exudUserAdventureSettings.Adventures.push({
-					'UUID' : _exudUseAdventureGenerateUUID(),
-					'Description' : des,
-					'Items' : new Array()
-				});
+				var adv = _exudUserAdventureGetActAdv();
+				if(adv != null) {
+					adv.Items.push({
+						'UUID' : _exudUseAdventureGenerateUUID(),
+						'Description' : des,
+						'Items' : new Array()
+					});
+				} else {
+					_exudUserAdventureSettings.Adventures.push({
+						'UUID' : _exudUseAdventureGenerateUUID(),
+						'Description' : des,
+						'Items' : new Array()
+					});
+				}
 				_exudUserAdventureRefresh();
 			});
 			$('#exudUserAdventureAddItem').click(function() {
@@ -320,9 +337,13 @@ function _exudUserAdventureAddHandler(event)
 			});
 			$('#exudUserAdventureRemove').click(function() {
 				var AdvToDisplay = $('#exudUserAdventureSelect option:selected').val();
-				for(var i = 0 ; i < _exudUserAdventureSettings.Adventures.length; i++)
-					if (_exudUserAdventureSettings.Adventures[i].UUID == AdvToDisplay)
+				for(var i = 0 ; i < _exudUserAdventureSettings.Adventures.length; i++) {
+					if (_exudUserAdventureSettings.Adventures[i].UUID == AdvToDisplay) {
 						_exudUserAdventureSettings.Adventures.splice(i, 1);
+						break;
+					}
+					_exudUserAdventureRemoveRecursive(_exudUserAdventureSettings.Adventures[i].Items, AdvToDisplay);
+				}
 				_exudUserAdventureRefresh();
 			});
 			$('#UserAdventureModal .exudUserAdventureSave').click(function(){
@@ -341,6 +362,17 @@ function _exudUserAdventureAddHandler(event)
 	$('#UserAdventureModal:not(:visible)').modal({ backdrop: "static" });
 }
 
+function _exudUserAdventureRemoveRecursive(t, idToRemove) {
+	for (i in t) {
+		if(typeof t[i] == 'object') {
+			if(t[i].UUID == idToRemove) {
+				t.splice(i, 1);
+				continue;
+			}
+			_exudUserAdventureRemoveRecursive(t[i].Items, idToRemove);
+		}
+	}
+}
 // Browse files to add a macro to the list
 
 function _exudUserAdventureselectTextFile(root) 
@@ -369,12 +401,12 @@ function _exudUserAdventureUpdateView()
 	if (adv != null)
 	{
 		$('#UserAdventureModal .modal-footer #exudUserAdventureRemove, #exudUserAdventureAddItem').show();
-		$('#UserAdventureModal .modal-footer #exudUserAdventureAdd').hide();
 		$( "#_exudAdventureDescription" ).val(adv.Description);
 		if (adv.Items != null && adv.Items.length > 0)
 		{
 			var out = "";
 			adv.Items.forEach(function(i, idx) {
+				if(typeof i == 'object') { return; }
 				out += createTableRow([
 					[10, i.split("\\").pop()],
 					[2, "<a href='#' id='_exudUserAdventureRemoveA_"+idx+"'>"+_exudUserAdventureButtons["remove"]+"</a>" +
@@ -403,16 +435,29 @@ function _exudUserAdventureUpdateView()
 		}
 	} else {
 		$('#UserAdventureModal .modal-footer #exudUserAdventureRemove, #exudUserAdventureAddItem').hide();
-		$('#UserAdventureModal .modal-footer #exudUserAdventureAdd').show();
 	}
 	
 }
 function _exudUserAdventureGetActAdv()
 {
 	var AdvToDisplay = $('#exudUserAdventureSelect option:selected').val();
-	var result = _exudUserAdventureSettings.Adventures.filter(function(e) { return e.UUID == AdvToDisplay; });
-	return result.length > 0 ? result[0] : null;
+	var result = _exudUserAdventureGetActAdvRecursive(_exudUserAdventureSettings.Adventures, AdvToDisplay);
+	return result;
 }
+
+function _exudUserAdventureGetActAdvRecursive(t, s)
+{
+	var result = null;
+	for(n in t) {
+		if (t[n].UUID == s) return t[n];
+		t[n].Items.forEach(function(item){
+			if(typeof item == 'object')
+				result = _exudUserAdventureGetActAdvRecursive([item], s) || result;
+		});
+	};
+	return result;
+}
+
 
 // Refresh comboBox and table
 function _exudUserAdventureRefresh()
@@ -423,11 +468,31 @@ function _exudUserAdventureRefresh()
 	_exudUserAdventureSettings.Adventures.sort(function(a, b) {
 		return a.Description.toUpperCase().localeCompare(b.Description.toUpperCase());
 	});
-
-	_exudUserAdventureSettings.Adventures.forEach(function(adv) {
+	_exudUserAdventureSettings.Adventures.forEach(function(adv){
 		$('#exudUserAdventureSelect').append($('<option>', { value: adv.UUID }).text(adv.Description)).prop("outerHTML");
+		var dim = [adv.Description];
+		var depth = 0;
+		for (i in adv.Items) {
+			if(typeof adv.Items[i] == 'object') {
+				depth = 1;
+				_exudUserAdventureRefreshRecursive(adv.Items[i], dim, depth);
+			}
+		}
 	});
 	_exudUserAdventureUpdateView();
+}
+
+function _exudUserAdventureRefreshRecursive(t, dim, depth)
+{
+	dim = dim.slice(0, depth);
+	dim.push(t.Description);
+	$('#exudUserAdventureSelect').append($('<option>', { value: t.UUID }).text(dim.join(" -> "))).prop("outerHTML");
+	for (i in t.Items) {
+		if(typeof t.Items[i] == 'object') {
+			depth++;
+			_exudUserAdventureRefreshRecursive(t.Items[i], dim, depth);
+		}
+	}
 }
 
 // Generate an UUID
