@@ -184,11 +184,20 @@ namespace client
                 if (!debug)
                     unzip.ExtractToDirectory(ClientDirectory);
             }
-            if (System.Environment.Is64BitOperatingSystem && !debug)
+            if (!debug)
             {
-                using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x64)))
+                if (System.Environment.Is64BitOperatingSystem)
                 {
-                    unzip.ExtractToDirectory(ClientDirectory);
+                    using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x64)))
+                    {
+                        unzip.ExtractToDirectory(ClientDirectory);
+                    }
+                } else
+                {
+                    using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x86)))
+                    {
+                        unzip.ExtractToDirectory(ClientDirectory);
+                    }
                 }
             }
             try
