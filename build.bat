@@ -1,4 +1,6 @@
 @echo off
+echo %cd%
+dir
 msbuild client.sln /p:Configuration=Release /p:Platform=x86 /t:Clean,Build
 rmdir \S "client\files\content\Adobe AIR"
 xcopy client\files\runtime_x64\ client\files\content\ /Y /S
