@@ -35,6 +35,7 @@ jobs:
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: build.bat
+      shell: cmd
 
     - uses: actions/upload-artifact@v3
       with:
