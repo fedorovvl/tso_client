@@ -58,6 +58,7 @@ Menu.prototype = {
 			{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler }
 		]});
 		menu.push({ label: 'v' + version, enabled: false });
+		menu.push({ label: '', name: 'memusage', enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;
 		this.buildKeybinds(menu);
@@ -105,4 +106,5 @@ Menu.prototype = {
 };
 menu = new Menu(mainSettings.menuStyle);
 menu.show();
+setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem: ' + humanMemorySize(air.System.privateMemory, 1); }, 5000);
 reloadScripts(null);

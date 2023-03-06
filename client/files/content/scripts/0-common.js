@@ -19,7 +19,16 @@ function reloadScripts(event)
 		}
 	});
 }
-	
+
+function humanMemorySize(bytes, dp) {
+	const units = ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+	var u = -1;
+	do {
+		bytes /= 1024;
+		u++;
+	} while (Math.round(Math.abs(bytes) * 10) / 10 >= 1024 && u < units.length - 1);
+	return bytes.toFixed(dp) + ' ' + units[u];
+}
 function getText(id, module)
 {
 	var searchPath = !module ? baseTranslation[gameLang] : baseTranslation[module][gameLang],
