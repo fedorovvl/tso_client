@@ -161,7 +161,7 @@ function _exudAdventureGenMenuRecursive(item, m)
 			if(typeof i == 'object') {
 				return _exudAdventureGenMenuRecursive([i], s.items);
 			}
-			s.items.push({ label: i.split("\\").pop().replace("_", "[UNDERSCORE]"), name: i, onSelect: _exuduserAdventureMenuSelectedHandler });
+			s.items.push({ label: i.split("\\").pop().replace(/_/g, "[UNDERSCORE]"), name: i, onSelect: _exuduserAdventureMenuSelectedHandler });
 		});
 		m.push(s);
 	});
