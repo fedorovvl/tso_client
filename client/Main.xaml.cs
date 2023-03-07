@@ -90,6 +90,7 @@ namespace client
             "--skip - allows to skip update checking of client.swf",
             "--http_timeout - set http requests timeout",
             "--tsofolder - set different tso folder name",
+            "--x64 - use x64 adobe air runtime",
             "--debug - creates a debug.txt file with an error report in case of failure"
         };
 
@@ -188,7 +189,7 @@ namespace client
             }
             if (!debug)
             {
-                if (System.Environment.Is64BitOperatingSystem)
+                if (System.Environment.Is64BitOperatingSystem && cmd["x64"] != null)
                 {
                     using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x64)))
                     {
