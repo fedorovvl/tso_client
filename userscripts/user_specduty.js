@@ -36,16 +36,7 @@ const _exudspecDutyLang = {
 		"HideShowGuest" : "Tutti/Solo i miei"
 	},
 	"es-es": {
-		"menuItemName": "Crono Especialistas"  ,
-		"menuTitle": "Tareas de los especialistas"  ,
-		"ColumnEstimated": "Duración"  ,
-		"ColumnArrival": "Hora de llegada"  ,
-		"NoData": "Sin datos"  ,
-		"YOU": "Tú",
-		"HideShowGuest" : "Todos/Solo míos"
-	},
-	"es-mx": {
-		"menuItemName": "Crono Especialistas"  ,
+		"menuItemName": "Temporizador de Especialistas"  ,
 		"menuTitle": "Tareas de los especialistas"  ,
 		"ColumnEstimated": "Duración"  ,
 		"ColumnArrival": "Hora de llegada"  ,
