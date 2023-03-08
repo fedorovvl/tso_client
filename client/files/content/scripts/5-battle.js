@@ -53,14 +53,14 @@ function battleSaveDialog()
 	battleWindow.sTitle().html(loca.GetText("LAB", "ChangeSortingOrder"));
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	var select = $('<select>').attr('class', 'form-control').append($('<option>', { value: 1000 }).text('1s'));
-	for(var i = 2; i < 21; i++) {
+	for(var i = 2; i < 61; i++) {
 		select.append($('<option>', { value: i * 1000 }).text(i+'s'));
 	}
 	var timeSelectRow = $(utils.createTableRow([[2, select.prop('outerHTML')]])).find("div:first");
 	battleWindow.withBody('[type=checkbox]:checked').each(function(i, item) {
 		var row = $(item).closest("div.row").clone();
 		row.find("div").slice(-1).remove();
-		row.find("[type=checkbox], #specOpen").hide();
+		row.find("[type=checkbox]").hide();
 		row.find("div:first").html(function(index,html){ return '&#8597;&nbsp;' + html.replace(/\&nbsp;/g,''); }).attr('class', function(i, c){
 			return c.replace(/4/g, '5');
 		});
@@ -69,6 +69,7 @@ function battleSaveDialog()
 		out += row.prop('outerHTML');
 	});
 	battleWindow.sBody().html(out + '<div>');
+	battleWindow.sBody().find("#specOpen").click(battleShowGeneral);
 	battleWindow.sBody().find(".container-fluid").sortable();
 	$('#' + battleWindow.rawsId).modal({backdrop: "static"});
 }
@@ -282,12 +283,15 @@ function battleGetData()
 	battleWindow.Dialog().find('.dropdown').on('hide.bs.dropdown', function () {
 		$("#battleWindow .modal-header, .modal-body, .modal-footer").css("opacity", 1);
 	});
-	battleWindow.withBody("#specOpen").click(function() { 
-		var grid = this.name || $(this).closest("div").find("button").val();
-		if(!grid || grid == 0 || grid == "0") { return; }
-		game.zone.ScrollToGrid(grid);
-		if(!this.name) { game.gi.SelectBuilding(game.zone.mStreetDataMap.GetBuildingByGridPos(grid)); }
-		$("#battleWindow").css("opacity", 0.2);
-		setTimeout(function() { $("#battleWindow").css("opacity", 1); }, 2000);
-	});
+	battleWindow.withBody("#specOpen").click(battleShowGeneral);
+}
+
+function battleShowGeneral()
+{
+	var grid = this.name || $(this).closest("div").find("button").val();
+	if(!grid || grid == 0 || grid == "0") { return; }
+	game.zone.ScrollToGrid(grid);
+	if(!this.name) { game.gi.SelectBuilding(game.zone.mStreetDataMap.GetBuildingByGridPos(grid)); }
+	$("#battleWindow, #battleWindowsettings").css("opacity", 0);
+	setTimeout(function() { $("#battleWindow, #battleWindowsettings").css("opacity", 1); }, 1500);
 }
