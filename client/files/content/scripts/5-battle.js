@@ -90,7 +90,7 @@ function battleSaveTemplate()
 	if(Object.keys(savePacket).length > 0) { battleTemplates.save(sortedPacket); }
 }
 
-function battleSendGeneral(spec, type, target)
+function battleSendGeneral(spec, name, targetName, type, target)
 {
 	try
 	{
@@ -99,6 +99,7 @@ function battleSendGeneral(spec, type, target)
 		stask.uniqueID = spec.GetUniqueID();
 		stask.subTaskID = 0;
 		swmmo.application.mGameInterface.SendServerAction(95, type, target, 0, stask);
+		game.chatMessage(name + (type == 5 ? ' x ' : ' > ') + targetName, 'battle');
 	}
 	catch (error) { }
 }
@@ -154,7 +155,7 @@ function battleAttack()
 		if(!battlePacket[item].canAttack) { return; }
 		var spec = armyGetSpecialistFromID(item);
 		debug("attack "+item+" - "+battlePacket[item].time);
-		queue.add(function(){ battleSendGeneral(spec, 5, battlePacket[item].target); }, battlePacket[item].time);
+		queue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].targetName, 5, battlePacket[item].target); }, battlePacket[item].time);
 	});
 	if(queue.len() > 0) {
 		queue.run();
@@ -169,7 +170,7 @@ function battleMove()
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canMove) { return; }
 		var spec = armyGetSpecialistFromID(item);
-		queue.add(function(){ battleSendGeneral(spec, 4, battlePacket[item].grid); });
+		queue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].grid, 4, battlePacket[item].grid); });
 	});
 	if(queue.len() > 0) {
 		queue.run();
