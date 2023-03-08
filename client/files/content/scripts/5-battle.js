@@ -99,7 +99,7 @@ function battleSendGeneral(spec, name, targetName, type, target)
 		stask.uniqueID = spec.GetUniqueID();
 		stask.subTaskID = 0;
 		swmmo.application.mGameInterface.SendServerAction(95, type, target, 0, stask);
-		game.chatMessage(name + (type == 5 ? ' x ' : ' > ') + targetName, 'battle');
+		game.chatMessage(name.replace(/<|b|>|\//g, "") + (type == 5 ? ' x ' : ' > ') + targetName, 'battle');
 	}
 	catch (error) { }
 }
@@ -154,7 +154,6 @@ function battleAttack()
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canAttack) { return; }
 		var spec = armyGetSpecialistFromID(item);
-		debug("attack "+item+" - "+battlePacket[item].time);
 		queue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].targetName, 5, battlePacket[item].target); }, battlePacket[item].time);
 	});
 	if(queue.len() > 0) {
