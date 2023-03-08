@@ -208,20 +208,37 @@ function battleDropdown(data)
 	]);
 	var groupSendItems = $('<div>', {
 		'x-placement': 'bottom-start',
-		'style': 'background: transparent; position: absolute; top: -100px; width:900px; height: 200px; overflow-y: scroll;',
+		'style': 'background: transparent; position: absolute; top: -70px; width:900px; height: 150px; overflow-y: scroll;',
 		'class': 'dropdown-menu modal-content'
-	}).append($('<li>', { 'style': 'float: left;' }).html($('<button>', { 'class': 'btn', 'style': 'clear: both;color:black;height:39px;', 'id': 0, 'value': loca.GetText("LAB", "Select") }).html(getText("btn_reset"))));
+	});
+
+	var buttonsBySector = {};
+	var sectorModifier = game.def("Map::AdditionalDataTSO").Sector;
 	data.forEach(function(item){
 		try {
-			var info = '';
+			var grid = item.GetGrid(),
+				sectorId = game.zone.mStreetDataMap.mAdditionalData.get(grid, sectorModifier),
+				info = '';
 			item.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
 				info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
 			});
-			groupSendItems.append($('<li>', { 'style': 'float: left;' }).html($('<button>', { 'class': 'btn', 'style': 'clear: both;color:black;', 'id': item.GetGrid(), 'value': loca.GetText("BUI", item.GetBuildingName_string()) }).html(info)));
-		} catch (e) {}
+			buttonsBySector[sectorId] = buttonsBySector[sectorId] || [$('<li>', { 'style': 'float: left;' }).html($('<button>', { 'class': 'btn', 'style': 'clear: both;color:black;height:39px;', 'id': 0, 'value': loca.GetText("LAB", "Select") }).html(getText("btn_reset"))).prop('outerHTML')];
+			buttonsBySector[sectorId].push($('<li>', { 'style': 'float: left;' }).html($('<button>', { 'class': 'btn', 'style': 'clear: both;color:black;', 'id': grid, 'value': loca.GetText("BUI", item.GetBuildingName_string()) }).html(info)).prop('outerHTML'));
+		} catch (e) { }
 	});
+	var tabs = $('<ul>', { 'class': 'nav nav-pills nav-justified', 'style': 'width: 65%;' });
+	var tabcontent = $('<div>', { 'class': 'tab-content' });
+	Object.keys(buttonsBySector).sort().forEach(function(v, i) {
+		tabs.append($('<li>', { 'class': v == 1 ? 'active' : '' }).append($('<a>', { 'data-toggle': 'tab', 'href': '#menu'+v }).text(v)));
+		tabcontent.append($('<div>', { 'class': 'tab-pane fade' + (v == 1 ? ' in active' : ''), 'id': 'menu' + v }).append(buttonsBySector[v].join('')));
+	});
+	groupSendItems.append([tabs, tabcontent]);
 	groupSend.append(groupSendItems);
 	$("#battleWindow .modal-content #armyDrop").html(groupSend.prop("outerHTML"));
+	$('#battleWindow .dropdown-menu a[data-toggle="tab"]').click(function (e) {
+		e.stopPropagation();
+		$(this).tab('show');
+	});
 }
 
 function battleGetData()
