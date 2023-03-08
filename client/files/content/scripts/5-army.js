@@ -91,6 +91,10 @@ function armyMenuHandler(event)
 	});
 	armyWindow = new Modal('armyWindow', utils.getImageTag('icon_general.png', '45px') + ' ' + loca.GetText("LAB","Army"));
 	armyWindow.create();
+	if(armyWindow.Title().find(".btn-wartime").length == 0) {
+		armyWindow.Title().append($('<button>').attr({ "class": "btn btn-wartime pull-right", 'style': 'position:relative;top:2px;left:-5px;' }).text(loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual")));
+		armyWindow.Title().find(".btn-wartime").click(battleMenuHandler);
+	}
 	if(armyWindow.withHeader("").parent().find("#army").length === 0)
 	{
 		armyWindow.withHeader("").parent().append($('<div>', { id: "army" }));
@@ -398,6 +402,7 @@ function armyGetData()
 		} catch(e) {}
 	});
 	armyWindow.Body().html(html + '<div>');
+	armyPacket = {};
 	armyWindow.withBody("#specOpen").click(function() { 
 		var uniqueID = $(this).closest("div.row").find('input[type="checkbox"]').prop("id").split(".")
 		var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
