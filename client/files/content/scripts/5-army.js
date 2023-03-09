@@ -349,7 +349,7 @@ function armyLoadData()
 			[2, requiredArmy[item]],
 			[2, armyFreeInfo[item]],
 			[1, aStatus ? 'OK' : 'FAIL', aStatus ? "buffReady" : "buffNotReady"]]);
-		if(armyFreeInfo[item] < requiredArmy[item]) { canSubmit = false; }
+		if(!aStatus) { canSubmit = false; }
 	});
 	if(canSubmit && Object.keys(requiredArmy).length > 0) {
 		armyWindow.withFooter(".armySubmit").show();
