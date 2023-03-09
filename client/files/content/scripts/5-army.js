@@ -52,9 +52,7 @@ function armyGetChecksum(army)
 	});
 	return result;
 }
-game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(item){
-	debug(item.GetType() + " - " + item.GetUnitBase().GetUnitCategory());
-});
+
 function updateFreeArmyInfo()
 {
 	var freeArmy = '<div class="container-fluid"><center>';
