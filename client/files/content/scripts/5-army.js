@@ -53,8 +53,9 @@ function armyGetChecksum(army)
 	return result;
 }
 
-function updateFreeArmyInfo()
+function updateFreeArmyInfo(direct)
 {
+	direct = typeof direct === "boolean" ? direct : false;
 	var freeArmy = '<div class="container-fluid"><center>';
 	var armyCategory = [];
 	armyFreeInfo = {};
@@ -66,7 +67,9 @@ function updateFreeArmyInfo()
 	});
 	freeArmy += armyCategory.filter(function(a) { return '<p>' + a; }).join('</p>');
 	freeArmy += '</center>';
-	armyWindow.withHeader("").parent().find("#army").html(freeArmy + '</div>');
+	if(!direct) {
+		armyWindow.withHeader("").parent().find("#army").html(freeArmy + '</div>');
+	}
 }
 
 function armyUpdateProgress(num)
