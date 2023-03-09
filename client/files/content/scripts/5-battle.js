@@ -211,6 +211,10 @@ function battleAttackDirect()
 	}
 }
 
+function battleTruncateName(str, n){ 
+	return (str.length > n) ? str.slice(0, n-1) + '...' : str;
+};
+
 function battleDropdown(data)
 {
 	var groupSend = $('<div>', { 'class': 'dropdown' }).append([
@@ -236,7 +240,7 @@ function battleDropdown(data)
 				sectorId = game.zone.mStreetDataMap.mAdditionalData.get(grid, sectorModifier),
 				info = '';
 			item.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
-				info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
+				info += utils.getImageTag(squad.GetType(), '24px', '24px') + ' ' + squad.GetAmount() + '&nbsp;';
 			});
 			buttonsBySector[sectorId] = buttonsBySector[sectorId] || [$('<li>', { 'style': 'float: left;' }).html($('<button>', { 'class': 'btn', 'style': 'clear: both;color:black;height:39px;', 'id': 0, 'value': loca.GetText("LAB", "Select") }).html(getText("btn_reset"))).prop('outerHTML')];
 			buttonsBySector[sectorId].push($('<li>', { 'style': 'float: left;' }).html($('<button>', { 'class': 'btn', 'style': 'clear: both;color:black;', 'id': grid, 'value': loca.GetText("BUI", item.GetBuildingName_string()) }).html(info)).prop('outerHTML'));
@@ -302,7 +306,7 @@ function battleGetData()
 	battleWindow.withBody(".armySelect").css("overflow", "visible");
 	battleWindow.withBody(".armySelect > div").css("overflow", "visible");
 	battleWindow.Dialog().find(".dropdown-menu button").click(function() {
-		battleWindow.withBody('button[id="'+battleSearchFor+'"]').text($(this).val()).val(this.id);
+		battleWindow.withBody('button[id="'+battleSearchFor+'"]').text(battleTruncateName($(this).val(), 25)).val(this.id);
 	});
 	battleWindow.Dialog().find(".dropdown-menu button").hover(function() {
 		var grid = this.id;
