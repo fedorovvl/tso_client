@@ -217,7 +217,7 @@ function feedbackMenuHandler(event)
 	w.create();
 	w.Footer().prepend([$('<button>').attr({ "class": "btn btn-primary pull-left feedbackSend" }).text(loca.GetText("LAB", "Send"))]);
 	var html = '<div class="container-fluid" style="user-select: all;">';
-	html += '<p>{1}</p><p style="float: right;"><small>{2}, SirriS</small></p>'.format(getText('feedbacktitle'),getText('feedbackdescription'),getText('feedbackregards'));
+	html += '<p>{1}</p><p style="float: right;"><small>{2} (aka SirriS)</small></p>'.format(getText('feedbacktitle'),getText('feedbackdescription'),getText('feedbackregards'));
 	html += '<textarea maxlength=2000 id="feedbackContent" style="width:100%;height:70%;background:none;"/>';
 	w.Body().html(html + '<div>');
 	w.withFooter('.feedbackSend').click(function() {

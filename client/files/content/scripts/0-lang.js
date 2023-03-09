@@ -74,7 +74,7 @@ const baseTranslation = {
 		'armyLoad': 'Load army',
 		'feedbacktitle': 'Feedback',
 		'feedbackdescription': 'Dear player, if you have something to say, you can easily do it using this script. Simply write your suggestion, review or critique in the text box below and hit submit. I always listen to feedback on my designs and would love to hear what you think :)',
-		'feedbackregards': 'Best regards',
+		'feedbackregards': 'Best regards, Vladimir',
 		'feedbacksended': 'Message sent!',
 		'feedbackerror': 'Error'
 	},
@@ -151,7 +151,7 @@ const baseTranslation = {
 		'armyLoad': 'Загрузить войска',
 		'feedbacktitle': 'Обратная связь',
 		'feedbackdescription': 'Уважаемый игрок, если Вам есть что сказать мне, Вы можете легко это сделать с помощью этого скрипта. Просто напишите Ваше предложение, отзыв или критику в текстовое поле ниже и нажмите отправить. Я всегда прислушиваюсь к отзывам на свои разработки и буду рад услышать что Вы думаете :)',
-		'feedbackregards': 'С уважением',
+		'feedbackregards': 'С уважением, Владимир',
 		'feedbacksended': 'Сообщение отправлено!',
 		'feedbackerror': 'Ошибка'
 	},
@@ -227,7 +227,7 @@ const baseTranslation = {
 		'armyLoad': 'Truppen auffüllen',
 		'feedbacktitle': 'Rückkopplung',
 		'feedbackdescription': 'Lieber Spieler, wenn du mir etwas zu sagen hast, kannst du das ganz einfach mit diesem Skript tun. Schreiben Sie einfach Ihren Vorschlag, Ihre Bewertung oder Ihre Kritik in das Textfeld unten und klicken Sie auf „Senden“. Ich höre mir immer Feedback zu meinen Entwicklungen an und freue mich auf Ihre Meinung :)',
-		'feedbackregards': 'Mit freundlichen Grüßen',
+		'feedbackregards': 'Mit freundlichen Grüßen, Vladimir',
 		'feedbacksended': 'Nachricht gesendet!',
 		'feedbackerror': 'Fehler'
 	},
@@ -305,7 +305,7 @@ const baseTranslation = {
 		'armyLoad': 'Charger une armée',
 		'feedbacktitle': 'Retour',
 		'feedbackdescription': "Cher joueur, si vous avez quelque chose à me dire, vous pouvez facilement le faire avec ce script. Écrivez simplement votre suggestion, critique ou critique dans la zone de texte ci-dessous et cliquez sur Soumettre. J'écoute toujours les retours sur mes développements et serai ravie de savoir ce que vous en pensez :)",
-		'feedbackregards': 'Cordialement',
+		'feedbackregards': 'Cordialement, Vladimir',
 		'feedbacksended': 'Message envoyé!',
 		'feedbackerror': 'Erreur'
 	},
@@ -381,7 +381,7 @@ const baseTranslation = {
 		'armyLoad': 'Cargar unidades',
 		'feedbacktitle': 'Opinión',
 		'feedbackdescription': 'Estimado jugador, si tiene algo que decirme, puede hacerlo fácilmente con este script. Simplemente escriba su sugerencia, revisión o crítica en el cuadro de texto a continuación y presione enviar. Siempre escucho comentarios sobre mis desarrollos y estaré encantado de escuchar lo que piensas :)',
-		'feedbackregards': 'Saludos',
+		'feedbackregards': 'Saludos, Vladimir',
 		'feedbacksended': 'Mensaje enviado!',
 		'feedbackerror': 'Error'
 	},
@@ -456,7 +456,7 @@ const baseTranslation = {
         "armyLoad": 'Załaduj armię',
 		'feedbacktitle': 'Informacja zwrotna',
 		'feedbackdescription': 'Drogi graczu, jeśli masz mi coś do powiedzenia, możesz to łatwo zrobić za pomocą tego skryptu. Po prostu napisz swoją sugestię, recenzję lub krytykę w polu tekstowym poniżej i naciśnij Prześlij. Zawsze słucham opinii na temat moich postępów i chętnie usłyszę, co myślisz :)',
-		'feedbackregards': 'Z poważaniem',
+		'feedbackregards': 'Z poważaniem, Vladimir',
 		'feedbacksended': 'Wiadomość wysłana!',
 		'feedbackerror': 'Błąd'
     },
@@ -515,7 +515,7 @@ const baseTranslation = {
 		'prod_welcome_block': '<p>Esta opçãopermite criar listas de edifícios  para ativar e desativar ao mesmo tempo. Após "Iniciar gravação", selecione os edifícios que deseja colocar na lista. Uma vez selecionado, volte aqui e pressione "Parar gravação". A lista de edifícios selecionados com seu status relativo será exibida. Salve o modelo assim da próxima vez, basta recarregar e "Confirmar".</p>',
 		'feedbacktitle': 'Opinião',
 		'feedbackdescription': 'Caro jogador, se você tem algo a me dizer, pode fazê-lo facilmente com este script. Basta escrever sua sugestão, revisão ou crítica na caixa de texto abaixo e clicar em enviar. Eu sempre ouço comentários sobre meus desenvolvimentos e ficarei feliz em saber o que você pensa :)',
-		'feedbackregards': 'Com os melhores cumprimentos',
+		'feedbackregards': 'Com os melhores cumprimentos, Vladimir',
 		'feedbacksended': 'Mensagem enviada!',
 		'feedbackerror': 'Erro'
 	}
