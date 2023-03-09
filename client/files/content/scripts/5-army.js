@@ -402,6 +402,11 @@ function armyGetData()
 		} catch(e) {}
 	});
 	armyWindow.Body().html(html + '<div>');
+	if(armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').length > 0) {
+		var headerRow = armyWindow.withBody(".container-fluid div:first");
+		var sortedRows = armyWindow.withBody(".container-fluid > div:gt(0)").sort(function(a, b) { return $(a).find('[type=checkbox]').is(':checked') ? -1 : 1; });
+		armyWindow.withBody(".container-fluid").html('').append([headerRow, sortedRows]);
+	}
 	armyPacket = {};
 	armyWindow.withBody("#specOpen").click(function() { 
 		var uniqueID = $(this).closest("div.row").find('input[type="checkbox"]').prop("id").split(".")
