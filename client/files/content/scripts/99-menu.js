@@ -53,7 +53,7 @@ Menu.prototype = {
 			{ label: "Discord (EN)", onSelect: openDiscordENHandler }, { label: "Discord (DE)", onSelect: openDiscordDEHandler },
 			{ type: 'separator' }, { label: "Donate (Ko-fi)", onSelect: openDonateHandler },
 			{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler }, { type: 'separator' },
-			{ label: getText('title', 'feedback'), onSelect: feedbackMenuHandler }
+			{ label: getText('feedbacktitle'), onSelect: feedbackMenuHandler }
 		]});
 		menu.push({ label: 'v' + version, enabled: false });
 		menu.push({ label: '', name: 'memusage', enabled: false });
