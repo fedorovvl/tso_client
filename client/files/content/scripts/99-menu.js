@@ -45,18 +45,15 @@ Menu.prototype = {
 		this.keybindings = {};
 		var menu = this.type == 'grouped' ? this.groupedMenu() : this.linearMenu();
 		if(isDebug) {
-			menu.push({ label: "CustomCode", onSelect: menuCustomHandler });
 			menu.push({ label: "SaveHTML", onSelect: menuSaveHandler });
 		}
 		menu.push({type: 'separator' });
-		menu.push({ label: loca.GetText("LAB", "ChatHelp"), items: [
-			{ label: "Wiki", onSelect: openWikiHandler },
-			{ label: "Discord (RU)", onSelect: openDiscordHandler },
-			{ label: "Discord (EN)", onSelect: openDiscordENHandler },
-			{ label: "Discord (DE)", onSelect: openDiscordDEHandler },
-			{ type: 'separator' },
-			{ label: "Donate (Ko-fi)", onSelect: openDonateHandler },
-			{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler }
+		menu.push({ label: loca.GetText("LAB", "ChatHelp"), name: 'Help', items: [
+			{ label: "Wiki", onSelect: openWikiHandler }, { label: "Discord (RU)", onSelect: openDiscordHandler },
+			{ label: "Discord (EN)", onSelect: openDiscordENHandler }, { label: "Discord (DE)", onSelect: openDiscordDEHandler },
+			{ type: 'separator' }, { label: "Donate (Ko-fi)", onSelect: openDonateHandler },
+			{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler }, { type: 'separator' },
+			{ label: getText('title', 'feedback'), onSelect: feedbackMenuHandler }
 		]});
 		menu.push({ label: 'v' + version, enabled: false });
 		menu.push({ label: '', name: 'memusage', enabled: false });
