@@ -297,7 +297,7 @@ function armyLoadGenerals(direct)
 
 function armyLoadDataCheck(data)
 {
-	var result = {}, requiredArmy = {};
+	var result = { 'canSubmit': true }, requiredArmy = {};
 	armyPacketMatches = {};
 	$.each(data, function(item) { 
 		result[item] = result[item] || { 'data': data[item] };
