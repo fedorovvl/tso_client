@@ -52,15 +52,18 @@ function armyGetChecksum(army)
 	});
 	return result;
 }
-
+game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(item){
+	debug(item.GetType() + " - " + item.GetUnitBase().GetUnitCategory());
+});
 function updateFreeArmyInfo()
 {
 	var freeArmy = '<div class="container-fluid"><center>';
 	var armyCategory = [];
 	armyFreeInfo = {};
 	game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(item){
-		armyCategory[item.GetUnitBase().GetUnitCategory()] = armyCategory[item.GetUnitBase().GetUnitCategory()] || '';
-		armyCategory[item.GetUnitBase().GetUnitCategory()] += utils.getImageTag(item.GetType(), '20px') + ' ' + item.GetAmount() + '&nbsp;';
+		var cat = item.GetUnitBase().GetUnitCategory() + +item.GetUnitBase().GetIsElite();
+		armyCategory[cat] = armyCategory[cat] || '';
+		armyCategory[cat] += utils.getImageTag(item.GetType(), '20px') + ' ' + item.GetAmount() + '&nbsp;';
 		armyFreeInfo[item.GetType()] = item.GetAmount();
 	});
 	freeArmy += armyCategory.filter(function(a) { return '<p>' + a; }).join('</p>');
@@ -294,64 +297,82 @@ function armyLoadGenerals(direct)
 	queue.run();
 }
 
-function armyLoadData()
+function armyLoadDataCheck(data)
 {
-	if(Object.keys(armyPacket).length == 0) {
-		return armyGetData();
-	}
-	updateFreeArmyInfo();
+	var result = {}, requiredArmy = {};
 	armyPacketMatches = {};
-	var canSubmit = true;
-	armyWindow.withFooter(".armyUnload, .armySendGeneralsBtn").hide();
-	armyWindow.withFooter(".armyReset, .armyReload").show();
-	var out = '<div class="container-fluid" style="user-select: all;">';
-	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [7, getText('armyNewArmy')], [1, loca.GetText("LAB", "ProductionStatus")]], true);
-	var requiredArmy = {};
-	$.each(armyPacket, function(item) { 
+	$.each(data, function(item) { 
+		result[item] = result[item] || { 'data': data[item] };
 		var spec = armyGetSpecialistFromID(item);
-		if(spec == null) {
-			out += utils.createTableRow([
-				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + armyPacket[item]["name"]], 
-				[7, 'spec is null'],
-				[1, 'FAIL', "buffNotReady"]]);
-			canSubmit = false
-			return;
-		}
-		var info = '';
-		var alreadyMatch = armyGetChecksum(armyPacket[item]) == armyGetChecksum(armyInfo[item]);
+		result[item].spec = spec;
+		if(spec == null) { return; }
+		var alreadyMatch = armyGetChecksum(data[item]) == armyGetChecksum(armyInfo[item]);
 		armyPacketMatches[item] = alreadyMatch;
-		$.each(armyPacket[item], function(res) {
+		$.each(data[item], function(res) {
 			if(res == "name") { return; }
-			info += utils.getImageTag(res) + ' ' + armyPacket[item][res] + '&nbsp;';
 			if(!alreadyMatch) {
-				var req = armyPacket[item][res] - armyGetSquadCount(item, res);
+				var req = data[item][res] - armyGetSquadCount(item, res);
 				if(req > 0) { 
 					requiredArmy[res] = requiredArmy[res] + req || req;
 				}
 			}
 		});
 		var gStatus = spec.GetGarrison() != null && spec.GetTask() == null;
-		out += utils.createTableRow([
-			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(spec.getIconID(), '24px', '24px') + ' ' + spec.getName(false), alreadyMatch ? "buffReady" : ""], 
-			[7, info],
-			[1, gStatus ? 'OK' : 'FAIL', gStatus ? "buffReady" : "buffNotReady"]]);
-		
+		result[item].gStatus = gStatus;
 		if(!gStatus && !alreadyMatch) { 
-			canSubmit = false;
+			result.canSubmit = false;
 		}
+	});
+	result["army"] = requiredArmy;
+	$.each(requiredArmy, function(item) {
+		var aStatus = armyFreeInfo[item] >= requiredArmy[item];
+		if(!aStatus) { result.canSubmit = false; }
+	});
+	if(Object.keys(requiredArmy).length == 0) { result.canSubmit = false; }
+	return result;
+}
+
+function armyLoadData()
+{
+	if(Object.keys(armyPacket).length == 0) {
+		return armyGetData();
+	}
+	updateFreeArmyInfo();
+	armyWindow.withFooter(".armyUnload, .armySendGeneralsBtn").hide();
+	armyWindow.withFooter(".armyReset, .armyReload").show();
+	var out = '<div class="container-fluid" style="user-select: all;">';
+	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [7, getText('armyNewArmy')], [1, loca.GetText("LAB", "ProductionStatus")]], true);
+	var checkedPacket = armyLoadDataCheck(armyPacket);
+	$.each(checkedPacket, function(item) {
+		if(item == 'army' || item == 'canSubmit') { return; }
+		if(checkedPacket[item].spec == null) {
+			out += utils.createTableRow([
+				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + checkedPacket[item]["data"]["name"]], 
+				[7, 'spec is null'],
+				[1, 'FAIL', "buffNotReady"]]);
+			return;
+		}
+		var info = '';
+		$.each(checkedPacket[item]['data'], function(res) {
+			if(res == "name") { return; }
+			info += utils.getImageTag(res) + ' ' + checkedPacket[item]["data"][res] + '&nbsp;';
+		});
+		out += utils.createTableRow([
+			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(checkedPacket[item].spec.getIconID(), '24px', '24px') + ' ' + checkedPacket[item]["data"]["name"], armyPacketMatches[item] ? "buffReady" : ""], 
+			[7, info],
+			[1, checkedPacket[item].gStatus ? 'OK' : 'FAIL', checkedPacket[item].gStatus ? "buffReady" : "buffNotReady"]]);
 	});
 	out += '<br><p>'+loca.GetText("LAB","MilitaryHelp") + '</p>';
 	out += utils.createTableRow([[7, loca.GetText("LAB", "Name")], [2, loca.GetText("LAB", "Requires")], [2, loca.GetText("LAB", "Available")], [1, loca.GetText("LAB", "ProductionStatus")]], true);
-	$.each(requiredArmy, function(item) {
-		var aStatus = armyFreeInfo[item] >= requiredArmy[item];
+	$.each(checkedPacket.army, function(item) {
+		var aStatus = armyFreeInfo[item] >= checkedPacket.army[item];
 		out += utils.createTableRow([
 			[7, loca.GetText("RES", item)], 
-			[2, requiredArmy[item]],
+			[2, checkedPacket.army[item]],
 			[2, armyFreeInfo[item]],
 			[1, aStatus ? 'OK' : 'FAIL', aStatus ? "buffReady" : "buffNotReady"]]);
-		if(!aStatus) { canSubmit = false; }
 	});
-	if(canSubmit && Object.keys(requiredArmy).length > 0) {
+	if(checkedPacket.canSubmit) {
 		armyWindow.withFooter(".armySubmit").show();
 	}
 	armyWindow.Body().html(out + '<div>');

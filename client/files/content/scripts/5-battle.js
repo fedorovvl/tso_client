@@ -12,6 +12,10 @@ function battleMenuHandler(event)
 			return;
 		}
 		battleTemplates = new SaveLoadTemplate('battle', function(data) {
+			if(!data[Object.keys(data)[0]].grid) {
+				alert("Wrong template!");
+				return;
+			}
 			battlePacket = data;
 			try{
 				battleLoadData();
@@ -105,6 +109,21 @@ function battleSendGeneral(spec, name, targetName, type, target)
 	catch (error) { }
 }
 
+function battleLoadDataCheck(data)
+{
+	$.each(data, function(item) { 
+		var spec = armyGetSpecialistFromID(item);
+		data[item].spec = spec;
+		if(spec == null) { return; }
+		data[item].onSameGrid = spec.GetGarrisonGridIdx() == data[item].grid;
+		data[item].canMove = spec.GetTask() == null && game.zone.mStreetDataMap.GetBlocked(data[item].grid) == 0 && !game.zone.mStreetDataMap.IsBlockedAllowedNothingOrFog(data[item].grid);
+		data[item].canAttack = spec.GetTask() == null && data[item].target > 0 && spec.GetTask() == null && spec.HasUnits() && game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target) != null;
+		data[item].canSubmitMove = battlePacket[item].canMove && !battlePacket[item].onSameGrid;
+		data[item].canSubmitAttack = battlePacket[item].canAttack && battlePacket[item].target > 0;
+	});
+	return data;
+}
+
 function battleLoadData()
 {
 	battleWindow.withFooter(".directAttack").hide();
@@ -112,32 +131,27 @@ function battleLoadData()
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, getText('armyCurrentArmy')], [1, loca.GetText("LAB", "Objective")], [2, loca.GetText("LAB", "Attack")], [1, '#']], true);
 	var canSubmitAttack = false, canSubmitMove = false;
+	battlePacket = battleLoadDataCheck(battlePacket);
 	$.each(battlePacket, function(item) { 
-		var spec = armyGetSpecialistFromID(item);
-		if(spec == null) {
+		if(battlePacket[item].spec == null) {
 			out += utils.createTableRow([
 				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + battlePacket[item].name], 
 				[8, 'spec is null', "buffNotReady"]]);
 			canSubmitAttack = false, canSubmitMove = false;
 			return;
 		}
-		battlePacket[item].onSameGrid = spec.GetGarrisonGridIdx() == battlePacket[item].grid;
-		battlePacket[item].canMove = spec.GetTask() == null && game.zone.mStreetDataMap.GetBlocked(battlePacket[item].grid) == 0 && !game.zone.mStreetDataMap.IsBlockedAllowedNothingOrFog(battlePacket[item].grid);
-		battlePacket[item].canAttack = spec.GetTask() == null && battlePacket[item].target > 0 && spec.GetTask() == null && spec.HasUnits() && game.zone.mStreetDataMap.GetBuildingByGridPos(battlePacket[item].target) != null;
 		var info = '';
-		spec.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
+		battlePacket[item].spec.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
 			info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
 		});
-		var targetBuilding = battlePacket[item].target > 0 ? game.zone.mStreetDataMap.GetBuildingByGridPos(battlePacket[item].target) : null;
 		out += utils.createTableRow([
-			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(spec.getIconID(), '24px', '24px') + ' ' + spec.getName(false)], 
+			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(battlePacket[item].spec.getIconID(), '24px', '24px') + ' ' + battlePacket[item].name], 
 			[4, info],
 			[1, battlePacket[item].grid, battlePacket[item].canMove || battlePacket[item].onSameGrid ? "buffReady" : "buffNotReady"],
-			[2, targetBuilding != null ? loca.GetText("BUI", targetBuilding.GetBuildingName_string()) : battlePacket[item].targetName,
-					!battlePacket[item].target || (battlePacket[item].target && battlePacket[item].canAttack) ? !battlePacket[item].target ? '' : "buffReady" : "buffNotReady"],
+			[2, battlePacket[item].target > 0 ? battlePacket[item].targetName : '', !battlePacket[item].target ? '' : battlePacket[item].canSubmitAttack ? "buffReady" : "buffNotReady"],
 			[1, (battlePacket[item].time / 1000) + 's']]);
-		if(battlePacket[item].canMove && !battlePacket[item].onSameGrid) { canSubmitMove = true; }
-		if(battlePacket[item].canAttack && battlePacket[item].target > 0) { canSubmitAttack = true; }
+		if(battlePacket[item].canSubmitMove) { canSubmitMove = true; }
+		if(battlePacket[item].canSubmitAttack) { canSubmitAttack = true; }
 	});
 	battleWindow.Body().html(out + '<div>');
 	if(canSubmitAttack) { battleWindow.withFooter(".loadAttack").show(); }
@@ -149,8 +163,9 @@ function battleLoadData()
 	});
 }
 
-function battleAttack()
+function battleAttack(direct)
 {
+	direct = typeof direct === "boolean" ? direct : false;
 	var queue = new TimedQueue(1000);
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canAttack) { return; }
@@ -159,13 +174,14 @@ function battleAttack()
 	});
 	if(queue.len() > 0) {
 		queue.run();
-		battleWindow.hide();
+		if(!direct) { battleWindow.hide(); }
 		showGameAlert(getText('command_sent'));
 	}
 }
 
-function battleMove()
+function battleMove(direct)
 {
+	direct = typeof direct === "boolean" ? direct : false;
 	var queue = new TimedQueue(1000);
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canMove) { return; }
@@ -174,7 +190,7 @@ function battleMove()
 	});
 	if(queue.len() > 0) {
 		queue.run();
-		battleWindow.hide();
+		if(!direct) { battleWindow.hide(); }
 		showGameAlert(getText('command_sent'));
 	}
 }
