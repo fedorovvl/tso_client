@@ -281,7 +281,7 @@ function shortcutsUpdateView()
 		active.items.forEach(function(i, idx) {
 			if(typeof i == 'object') { 
 				out += createTableRow([
-					[3, '&#8597;&nbsp;&nbsp; Раздел'],
+					[3, '&#8597;&nbsp;&nbsp; '+getText('shortcutsFolder')],
 					[9, i.name + $('<button>', { 'type': 'button', 'class': 'close', 'value': idx, 'style': 'display:none;' }).prop('outerHTML')]
 				], false);
 			} else if(i == '--sep--') {
