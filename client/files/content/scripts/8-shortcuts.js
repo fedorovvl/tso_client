@@ -252,7 +252,8 @@ function shortcutsRemoveRecursive(t, idToRemove) {
 function shortcutsselectTextFile(type) 
 { 
     var txtFilter = new air.FileFilter("Template", "*.*");
-	var root = new air.File(readLastDir(this.name));
+	var root = new air.File();
+	root.nativePath = readLastDir(type);
     root.browseForOpenMultiple("Open", new window.runtime.Array(txtFilter)); 
     root.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, function(event) {
 		var nametotype = { 'buff': 'u', 'bui': 'p', 'battle': 'b' };
