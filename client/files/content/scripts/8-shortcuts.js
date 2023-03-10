@@ -258,7 +258,7 @@ function shortcutsselectTextFile(type)
 { 
     var txtFilter = new air.FileFilter("Template", "*.*");
 	var root = new air.File();
-	root.nativePath = readLastDir(type);
+	root.nativePath = readLastDir(type == 'move' ? 'army' : type);
     root.browseForOpenMultiple("Open", new window.runtime.Array(txtFilter)); 
     root.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, function(event) {
 		var nametotype = { 'buff': 'u', 'bui': 'p', 'battle': 'b' };
@@ -284,7 +284,7 @@ function shortcutsUpdateView()
 			if(typeof i == 'object' && !Array.isArray(i)) { 
 				out += createTableRow([
 					[3, '&#8597;&nbsp;&nbsp; '+getText('shortcutsFolder')],
-					[6, $('<div>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
+					[6, $('<span>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
 					[3, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx, 'style': 'display:none;' })]
 				], false);
 			}
@@ -295,13 +295,15 @@ function shortcutsUpdateView()
 			shortcutsUpdateView();
 		});
 	}
-	if (active != null && active.items != null && active.items.length > 0) {
+	if(active != null) { 
 		shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem').show();
+	}
+	if (active != null && active.items != null && active.items.length > 0) {
 		active.items.forEach(function(i, idx) {
 			if(typeof i == 'object' && !Array.isArray(i)) { 
 				out += createTableRow([
 					[3, '&#8597;&nbsp;&nbsp; '+getText('shortcutsFolder')],
-					[6, $('<div>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
+					[6, $('<span>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
 					[3, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx, 'style': 'display:none;' })]
 				], false);
 			} else if(i == '--sep--') {
@@ -343,8 +345,6 @@ function shortcutsGetActiveRecursive(t, s)
 	var result = null;
 	for(n in t) {
 		if (t[n].id == s) return t[n];
-		debug("check " + t[n].id);
-		debug(t[n]);
 		t[n].items.forEach(function(item){
 			if(typeof item == 'object' && !Array.isArray(item))
 				result = shortcutsGetActiveRecursive([item], s) || result;
