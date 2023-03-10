@@ -109,8 +109,8 @@ var _exudUserAdventureLang = {
 		'UnitReady' : 'Truppen bereit',
 		'Menuname' : 'Abenteuer',
 		'Command' : 'Befehl',
-		'CannotSet' : 'Irgendwas stimmt nicht, konnte Truppe nicht laden. Bitte überprüfe die Truppen unter Spezialisten/Armnee (F9)',
-		'Saved' : 'Gerettet !'
+		'CannotSet' : 'Irgendwas stimmt nicht, konnte Truppen nicht laden. Bitte überprüfe die Truppen unter Spezialisten/Armnee (F9)',
+		'Saved' : 'Gespeichert!'
 		}
 	};
 	extendBaseLang(_exudUserAdventureLang, 'exudUserAdventureLang');
