@@ -357,7 +357,7 @@ function shortcutsGetActiveRecursive(t, s)
 function shortcutsRefresh()
 {
 	shortcutsWindow.withHeader('#shortcutsSelect').html('');
-	shortcutsWindow.withHeader('#shortcutsSelect').append($('<option>', { value:"---" }).text("---"));
+	shortcutsWindow.withHeader('#shortcutsSelect').append($('<option>', { value:"---" }).text("root"));
 	shortcutsSettings.forEach(function(item){
 		shortcutsWindow.withHeader('#shortcutsSelect').append($('<option>', { value: item.id }).text(item.name));
 		for (i in item.items) {
