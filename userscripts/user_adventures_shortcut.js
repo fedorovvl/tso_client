@@ -62,7 +62,7 @@ var _exudUserAdventureLang = {
 		'Menuname' : 'Aventuras',
 		'Command' : 'Comando',
 		'CannotSet' : "Algo salió mal, no fue posible cargar las unidades. Verifica en Especialistas -> Ejército / (F9)",
-		'Saved' : 'Salvado !'
+		'Saved' : 'Guardado !'
 		},
 	'fr-fr': {
 		'Options': 'Options',
