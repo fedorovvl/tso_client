@@ -169,7 +169,7 @@ const baseTranslation = {
 		'shortcutsSeparator' : 'Разделитель',
 		'shortcutsToStar' : 'Вернуть всех генералов в звезду',
 		'shortcutsSaved' : 'Сохранено',
-		'shortcutsTitle': 'Ярлыки'
+		'shortcutsTitle': 'Закладки'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
