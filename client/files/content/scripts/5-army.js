@@ -68,7 +68,7 @@ function updateFreeArmyInfo(direct)
 	freeArmy += armyCategory.filter(function(a) { return '<p>' + a; }).join('</p>');
 	freeArmy += '</center>';
 	if(!direct) {
-		armyWindow.withHeader("").parent().find("#army").html(freeArmy + '</div>');
+		armyWindow.withHeader("#army").html(freeArmy + '</div>');
 	}
 }
 
@@ -99,9 +99,9 @@ function armyMenuHandler(event)
 		armyWindow.Title().append($('<button>').attr({ "class": "btn btn-wartime pull-right", 'style': 'position:relative;top:2px;left:-5px;' }).text(loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual")));
 		armyWindow.Title().find(".btn-wartime").click(battleMenuHandler);
 	}
-	if(armyWindow.withHeader("").parent().find("#army").length === 0)
+	if(armyWindow.withHeader("#army").length === 0)
 	{
-		armyWindow.withHeader("").parent().append($('<div>', { id: "army" }));
+		armyWindow.withHeader("").append($('<div>', { id: "army" }));
 	}
 	updateFreeArmyInfo();
 	var groupSend = $('<div>', { 'class': 'btn-group' }).append([

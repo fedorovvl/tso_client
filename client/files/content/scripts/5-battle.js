@@ -13,7 +13,7 @@ function battleMenuHandler(event)
 		}
 		battleTemplates = new SaveLoadTemplate('battle', function(data) {
 			if(!data[Object.keys(data)[0]].grid) {
-				alert("Wrong template!");
+				getText("bad_template");
 				return;
 			}
 			battlePacket = data;

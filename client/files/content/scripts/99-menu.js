@@ -28,6 +28,7 @@ var Menu = function(type){
 				{ label: getText('prod_timed') + ' (F8)', keyCode: 119, onSelect: TimedMenuHandler }
 			]},
 			{ label: loca.GetText("LAB", "BlackMarketAuction") + ' (F6)', keyCode: 117, onSelect: menuAuctionHandler },
+			{ label: getText('shortcutsTitle'), name: 'Shortcuts' },
 			{ label: loca.GetText("RES", "Tool"), name: 'Tools', items: [
 				{label: loca.GetText("LAB", "Update"), onSelect: reloadScripts },
 				{label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: scriptsManager },
@@ -35,7 +36,9 @@ var Menu = function(type){
 			]}
 		];
 	};
-	this.linearMenu = function(){var e=[],r=this.groupedMenu();for(var i in r)if(r[i].items&&"Tools"!=r[i].name)for(var n in r[i].items)e.push(r[i].items[n]);else e.push(r[i]);return e};
+	this.linearMenu = function(){
+		var e=[],r=this.groupedMenu();for(var i in r)if(r[i].items&&"Tools"!=r[i].name&&"Shortcuts"!=r[i].name)for(var n in r[i].items)e.push(r[i].items[n]);else e.push(r[i]);return e;
+	};
 	this.type = type;
 	this.nativeMenu = null;
 	this.keybindings = {};
@@ -106,3 +109,4 @@ menu = new Menu(mainSettings.menuStyle);
 menu.show();
 setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem: ' + humanMemorySize(air.System.privateMemory, 1); }, 5000);
 reloadScripts(null);
+shortcutsMakeMenu();

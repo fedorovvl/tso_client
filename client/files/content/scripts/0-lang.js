@@ -76,7 +76,15 @@ const baseTranslation = {
 		'feedbackdescription': 'Dear player, if you have something to say, you can easily do it using this script. Simply write your suggestion, review or critique in the text box below and hit submit. I always listen to feedback on my designs and would love to hear what you think :)',
 		'feedbackregards': 'Best regards, Vladimir',
 		'feedbacksended': 'Message sent!',
-		'feedbackerror': 'Error'
+		'feedbackerror': 'Error',
+		'shortcutsAdd' : 'Add',
+		'shortcutsFilename' : 'Filename',
+		'shortcutsAddItem' : 'Add item',
+		'shortcutsFolder' : 'Partition',
+		'shortcutsSeparator' : 'Separator',
+		'shortcutsToStar' : 'Return all generals to star menu',
+		'shortcutsSaved' : 'Saved',
+		'shortcutsTitle': 'Shortcuts'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -153,7 +161,15 @@ const baseTranslation = {
 		'feedbackdescription': 'Уважаемый игрок, если Вам есть что сказать мне, Вы можете легко это сделать с помощью этого скрипта. Просто напишите Ваше предложение, отзыв или критику в текстовое поле ниже и нажмите отправить. Я всегда прислушиваюсь к отзывам на свои разработки и буду рад услышать что Вы думаете :)',
 		'feedbackregards': 'С уважением, Владимир',
 		'feedbacksended': 'Сообщение отправлено!',
-		'feedbackerror': 'Ошибка'
+		'feedbackerror': 'Ошибка',
+		'shortcutsAdd' : 'Добавить',
+		'shortcutsFilename' : 'Файл',
+		'shortcutsAddItem' : 'Добавить элемент',
+		'shortcutsFolder' : 'Раздел',
+		'shortcutsSeparator' : 'Разделитель',
+		'shortcutsToStar' : 'Вернуть всех генералов в звезду',
+		'shortcutsSaved' : 'Сохранено',
+		'shortcutsTitle': 'Ярлыки'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
@@ -229,7 +245,15 @@ const baseTranslation = {
 		'feedbackdescription': 'Lieber Spieler, wenn du mir etwas zu sagen hast, kannst du das ganz einfach mit diesem Skript tun. Schreiben Sie einfach Ihren Vorschlag, Ihre Bewertung oder Ihre Kritik in das Textfeld unten und klicken Sie auf „Senden“. Ich höre mir immer Feedback zu meinen Entwicklungen an und freue mich auf Ihre Meinung :)',
 		'feedbackregards': 'Mit freundlichen Grüßen, Vladimir',
 		'feedbacksended': 'Nachricht gesendet!',
-		'feedbackerror': 'Fehler'
+		'feedbackerror': 'Fehler',
+		'shortcutsAdd' : 'Hinzufügen',
+		'shortcutsFilename' : 'Dateiname',
+		'shortcutsAddItem' : 'Element hinzufügen',
+		'shortcutsFolder' : 'Partition',
+		'shortcutsSeparator' : 'Abscheider',
+		'shortcutsToStar' : 'Alle Generäle zurück ins Sternmenü',
+		'shortcutsSaved' : 'Gerettet',
+		'shortcutsTitle': 'Verknüpfungen'
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
@@ -290,7 +314,7 @@ const baseTranslation = {
 		'menustyle_desc': 'Style de menu',
 		'deffilter_desc': 'Filtre par défaut',
 		'dateformat_desc': 'Format de la date',
-                'geotemplates_desc': 'Modèles géologues : ',
+		'geotemplates_desc': 'Modèles géologues : ',
 		'expltemplates_desc': 'Modèles explorateurs : ',
 		'bufftemplates_desc': 'Modèles fortifiants : ',
 		'buitemplates_desc': 'Modèles batiments : ',
@@ -307,7 +331,15 @@ const baseTranslation = {
 		'feedbackdescription': "Cher joueur, si vous avez quelque chose à me dire, vous pouvez facilement le faire avec ce script. Écrivez simplement votre suggestion, critique ou critique dans la zone de texte ci-dessous et cliquez sur Soumettre. J'écoute toujours les retours sur mes développements et serai ravie de savoir ce que vous en pensez :)",
 		'feedbackregards': 'Cordialement, Vladimir',
 		'feedbacksended': 'Message envoyé!',
-		'feedbackerror': 'Erreur'
+		'feedbackerror': 'Erreur',
+		'shortcutsAdd' : 'Ajouter',
+		'shortcutsFilename' : 'Fichier',
+		'shortcutsAddItem' : 'Ajouter un item',
+		'shortcutsFolder' : 'Partition',
+		'shortcutsSeparator' : 'Séparateur',
+		'shortcutsToStar' : 'Retourner tous les généraux au menu étoile',
+		'shortcutsSaved' : 'Sauvegardé',
+		'shortcutsTitle': 'Raccourcis'
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -383,7 +415,15 @@ const baseTranslation = {
 		'feedbackdescription': 'Estimado jugador, si tiene algo que decirme, puede hacerlo fácilmente con este script. Simplemente escriba su sugerencia, revisión o crítica en el cuadro de texto a continuación y presione enviar. Siempre escucho comentarios sobre mis desarrollos y estaré encantado de escuchar lo que piensas :)',
 		'feedbackregards': 'Saludos, Vladimir',
 		'feedbacksended': 'Mensaje enviado!',
-		'feedbackerror': 'Error'
+		'feedbackerror': 'Error',
+		'shortcutsAdd' : 'Archivo',
+		'shortcutsFilename' : 'Nombre del Macro',
+		'shortcutsAddItem' : 'Añadir un elemento',
+		'shortcutsFolder' : 'Partición',
+		'shortcutsSeparator' : 'Separador',
+		'shortcutsToStar' : 'Devolver todos los generales al menú estrella',
+		'shortcutsSaved' : 'Salvado',
+		'shortcutsTitle': 'Atajos'
 	},
     "pl-pl": {
         "btn_submit": "Wyślij",
@@ -458,7 +498,15 @@ const baseTranslation = {
 		'feedbackdescription': 'Drogi graczu, jeśli masz mi coś do powiedzenia, możesz to łatwo zrobić za pomocą tego skryptu. Po prostu napisz swoją sugestię, recenzję lub krytykę w polu tekstowym poniżej i naciśnij Prześlij. Zawsze słucham opinii na temat moich postępów i chętnie usłyszę, co myślisz :)',
 		'feedbackregards': 'Z poważaniem, Vladimir',
 		'feedbacksended': 'Wiadomość wysłana!',
-		'feedbackerror': 'Błąd'
+		'feedbackerror': 'Błąd',
+		'shortcutsAdd': 'Dodaj',
+		'shortcutsFilename': 'Plik',
+		'shortcutsAddItem': 'Dodaj pozycję',
+		'shortcutsFolder' : 'Partycja',
+		'shortcutsSeparator' : 'Separator',
+		'shortcutsToStar' : 'Przywróć wszystkich generałów do menu gwiazdkowego',
+		'shortcutsSaved' : 'Zapisane',
+		'shortcutsTitle': 'Skróty'
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',
@@ -517,6 +565,14 @@ const baseTranslation = {
 		'feedbackdescription': 'Caro jogador, se você tem algo a me dizer, pode fazê-lo facilmente com este script. Basta escrever sua sugestão, revisão ou crítica na caixa de texto abaixo e clicar em enviar. Eu sempre ouço comentários sobre meus desenvolvimentos e ficarei feliz em saber o que você pensa :)',
 		'feedbackregards': 'Com os melhores cumprimentos, Vladimir',
 		'feedbacksended': 'Mensagem enviada!',
-		'feedbackerror': 'Erro'
+		'feedbackerror': 'Erro',
+		'shortcutsAdd' : 'Adicionar',
+		'shortcutsFilename' : 'Ficheiro',
+		'shortcutsAddItem' : 'Adicionar um item',
+		'shortcutsFolder' : 'Secção',
+		'shortcutsSeparator' : 'Delimitador',
+		'shortcutsToStar' : 'Devolver todos os generais ao menu estelar',
+		'shortcutsSaved' : 'Salvado',
+		'shortcutsTitle': 'Atalhos'
 	}
 };
