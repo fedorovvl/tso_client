@@ -138,13 +138,16 @@ const _exudGeneralsLang = {
 		"SkillTip": "Klicke auf den General um den Skill zu sehen."
 	}
 };
+var _exudGeneralsButtons = {
+	"...": utils.getImage(new(game.def("GUI.Assets::gAssetManager_ButtonContextMenuHighlight"))().bitmapData)
+};
 var _exudGeneralsTemplates;
 var _exudGeneralsOpening = false;
 var _exudGeneralsSortField = { 'key': 0, 'order': false }
 var _exudGeneralsModalInitialized = false;
+var _exudGeneralsModalInitializingWithTemplate = false;
 const playerId = swmmo.application.mGameInterface.mCurrentPlayer.GetPlayerId();
-
-addToolsMenuItem(loca.GetText("ACL", "MilitarySpecialists"), _exudGeneralsMenuHandler);
+var _exudGeneralsSortingFromTemplate = null;
 
 // inital settings
 var _exudGeneralsSettings = {
@@ -154,36 +157,153 @@ var _exudGeneralsSettings = {
 	'_exudGeneralsSelectedFirst' : false,
 	'_exudGeneralsExcludeStarMenu' : false,
 	'_exudGeneralsArmySorted' : false,
+	'_exudGeneralsShortcuts' : false,
+	'_exudGeneralsShortcutsRoot' : ''
+}
+$.extend(_exudGeneralsSettings, readSettings(null, 'usMKF_Generals'));
+_exudGeneralsMakeMenu();
+
+
+function _exudGeneralsMakeMenu()
+{
+	try{
+		var toolsMenu = menu.nativeMenu.getItemByName("Tools");
+		var toolsItem = new air.NativeMenuItem(loca.GetText("ACL", "MilitarySpecialists"));
+		toolsItem.name = loca.GetText("ACL", "MilitarySpecialists");
+		
+		if (!_exudGeneralsSettings._exudGeneralsShortcuts)
+			toolsItem.addEventListener(air.Event.SELECT, _exudGeneralsMenuHandler);
+
+		toolsMenu.submenu.addItem(toolsItem);
+		
+		if (_exudGeneralsSettings._exudGeneralsShortcuts)
+			_exudGeneralsMakeSubMenu();
+	}
+	catch (e)
+	{
+	}
+}
+function _exudGeneralsRemakeMenuHandler(event){
+	_exudGeneralsRemakeMenu();
 }
 
+function _exudGeneralsRemakeMenu()
+{
+	try{
+		if (_exudGeneralsSettings._exudGeneralsShortcuts)
+			_exudGeneralsMakeSubMenu();
+		else
+		{
+			var toolsMenu = menu.nativeMenu.getItemByName("Tools");
+			var myMenuItem = toolsMenu.submenu.getItemByName(loca.GetText("ACL", "MilitarySpecialists"));
+			var Idx = toolsMenu.submenu.getItemIndex(myMenuItem);
+			toolsMenu.submenu.removeItem(myMenuItem);
+			
+			myMenuItem = new air.NativeMenuItem(loca.GetText("ACL", "MilitarySpecialists"));
+			myMenuItem.name = loca.GetText("ACL", "MilitarySpecialists");
+			myMenuItem.addEventListener(air.Event.SELECT, _exudGeneralsMenuHandler);
+			toolsMenu.submenu.addItem(myMenuItem);
+			toolsMenu.submenu.setItemIndex(myMenuItem, Idx);
+		}
+	}
+	catch (e) {
+		alert(e);
+	}
+}
 
+function _exudGeneralsMakeSubMenu()
+{
+	try{
+		var homeDir = _exudGeneralsSettings._exudGeneralsShortcutsRoot;
+		var toolsMenu = menu.nativeMenu.getItemByName("Tools");
+		
+		var m = [
+			{ label: loca.GetText("ACL", "MilitarySpecialists"), onSelect: _exudGeneralsMenuHandler },
+			//{ label: loca.GetText("LAB", "Update"), onSelect: _exudGeneralsRemakeMenuHandler },
+			{ type: 'separator' }
+		];
+		if (homeDir != "")
+		{
+			_exudGeneralsMakeSubMenuRecursive(homeDir, m);
+		}
+
+		toolsMenu.submenu.getItemByName(loca.GetText("ACL", "MilitarySpecialists")).submenu = air.ui.Menu.createFromJSON(m);
+	}
+	catch (e)
+	{
+		alert(e);
+	}
+
+}
+function _exudGeneralsMakeSubMenuRecursive(dir, m)
+{
+	air.File.applicationDirectory.resolvePath(dir).getDirectoryListing().forEach(function(i){ 
+		if (i.isDirectory)
+		{
+			var s = { label: i.name, items: [] };
+			_exudGeneralsMakeSubMenuRecursive(dir + "/" + i.name, s.items);	
+			m.push(s);			
+		}
+		else
+			m.push({ label: i.name.split("\\").pop().replace("_", "[UNDERSCORE]").replace(".txt",""), name: dir + "/" + i.name, onSelect: _exudGeneralsMenuSelectedHandler });
+	});
+}
+function _exudGeneralsMenuSelectedHandler(event)
+{
+	
+	var Text =  event.target.name;
+	
+	try {
+		var file = new air.File();
+		file.nativePath = event.target.name;
+		var fileStream = new air.FileStream();
+		fileStream.open(file, air.FileMode.READ);
+		Text = fileStream.readUTFBytes(file.size);
+		fileStream.close();
+		if (Text == "") { return; }
+		
+		tdata = JSON.parse(Text);
+		
+		$( "#udGeneralsModal").modal("show");
+		if(!_exudGeneralsModalInitialized)			
+		{
+			_exudGeneralsModalInitializingWithTemplate = true;
+			_exudGeneralsMenuHandlerFunc();
+			_exudGetGeneralsData(tdata);
+			_exudGeneralsModalInitializingWithTemplate = false;
+		}
+		else
+			_exudMakeGeneralsTable(tdata);
+		
+		_exudGeneralsSetSendTypes();
+		
+	} catch (e) {
+	}
+	
+}
 function _exudGeneralsMenuHandler(event)
+{
+	_exudGeneralsMenuHandlerFunc();
+}
+function _exudGeneralsMenuHandlerFunc()
 {
 	$( "div[role='dialog']:not(#udGeneralsModal):visible").modal("hide");
 	_exudGeneralsOpening = true;	
-	// reopening modal not needed to refresh all data. only if a new script layout was loaded
-	// so is faster and shows the last data views
+
 try {
 	if(!_exudGeneralsModalInitialized || $('#udGeneralsModal .modal-header .container-fluid').length > 0 )
 	{
 		$('#udGeneralsStyle').remove();
 		$('#udGeneralsModal').remove();
 
-		$.extend(_exudGeneralsSettings, readSettings(null, 'usMKF_Generals'));
 		createModalWindow('udGeneralsModal', loca.GetText("ACL", "MilitarySpecialists"));
 		
-		_exudGeneralsTemplates = new SaveLoadTemplate('genspec', function(data) {
-			_exudMakeGeneralsTable(data);
-			if (_exudGeneralsSettings['_exudGeneralsSelectedFirst'])
-				_exudMakeGeneralsTable();
-		});
+		_exudGeneralsTemplates = new SaveLoadTemplate('genspec', function(data) {_exudMakeGeneralsTable(data);	},	_exudGeneralsRemakeMenu	);
 		if($('#udGeneralsStyle').length == 0)
 		{
 			$("head").append($("<style>", { 'id': 'udGeneralsStyle' }).text('.dropdown-toggle::after {display: inline-block;width: 0;height: 0;margin-left: .255em;vertical-align: .255em;content: ""; border-top: .3em solid;border-right: .3em solid transparent;  border-bottom: 0; border-left: .3em solid transparent;}#udGeneralsModal .modal-content{height: 90%;}.CellWithComment{position:relative;}#_exudGeneralsSkillTree{position:absolute; top: 1; left: 1; color: black; background: #B2A589; font-weight: bold; display:none; border : thick solid #000000 ; border-width: 2px; width:210px;} div .row:hover {background-color: #A65329;}'));
 		}
 		
-		//populate settings
-	
 		var groupSend = $('<div>', { 'class': 'btn-group' }).append([
 			$('<button>').attr({ 
 				"id": "_exudGeneralsSendGeneralsBtn",
@@ -217,6 +337,7 @@ try {
 					dataToSave.push(item.id);
 				}
 			});
+			
 			if (dataToSave.length > 0)
 				_exudGeneralsTemplates.save(dataToSave);
 		});
@@ -224,26 +345,9 @@ try {
 		_exudGetGeneralsTitle(0);
 
 		var out = '<div class="container-fluid">';
-		try
-		{
-			var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance(),
-				currentViewedZoneId = swmmo.application.mGameInterface.mCurrentViewedZoneID;
-			$("#udGeneralsModal .dropdown-menu").html($('<li>').html($('<a>', {'href': '#', 'value': '98'}).text(loca.GetText("LAB", "StarMenu"))));
 
-			if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone){
-				$("#udGeneralsModal .dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId()}).text(loca.GetText("LAB", "ReturnHome"))));
-			}
+		_exudGeneralsSetSendTypes();
 
-			AdvManager.getAdventures().forEach(function(item){
-				if (item.zoneID !== currentViewedZoneId) {
-					$("#udGeneralsModal .dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': item.zoneID}).text((item.ownerPlayerID !== playerId ? '*' : '') + loca.GetText("ADN", item.adventureName))));
-				}
-			});
-			
-			$('#udGeneralsModal .dropdown-menu a').click(_exudGeneralsSend);
-		} catch (error) {
-			alert("Err (retry): " + error.message);
-		}
 		out += '<div id="topRowWithIcons" class="text-center" style="display: none;"></div>';
 
 		var massCheckbox = $('<input>', { 'type': 'checkbox', 'class': '_exudSelectAllGeneralsBtn', 'data-toggle': 'tooltip', 'data-placement': 'top', 'title': _exudGeneralsGetLabel('SelectAll') }).prop('outerHTML') + '&nbsp;&nbsp;';
@@ -269,9 +373,9 @@ try {
 		
 		$('[data-toggle="tooltip"]').tooltip({container: 'body'});
 		$('#udGeneralsModal ._exudSelectAllGeneralsBtn').change(function() {
-			_exudGeneralsSettings['_exudGeneralsToggleselected'] = !_exudGeneralsSettings['_exudGeneralsToggleselected'];
+			_exudGeneralsSettings._exudGeneralsToggleselected = !_exudGeneralsSettings._exudGeneralsToggleselected;
 			$('#udGeneralsModalData input[type="checkbox"]').each(function(i, item) {
-				item.checked = _exudGeneralsSettings['_exudGeneralsToggleselected'];
+				item.checked = _exudGeneralsSettings._exudGeneralsToggleselected;
 			});
 		});
 		$('#udGeneralsModal ._exudGeneralRefreshBtn').click(function(){
@@ -289,7 +393,8 @@ try {
 			});
 		    }
 		});
-		_exudGetGeneralsData();
+		if (!_exudGeneralsModalInitializingWithTemplate)
+			_exudGetGeneralsData();
 		_exudGeneralsModalInitialized = true;
 	}
 	else
@@ -300,11 +405,35 @@ catch (egen) {}
 	_exudGeneralsOpening = false;
 }
 
+function _exudGeneralsSetSendTypes()
+{
+	try
+	{
+		var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance(),
+			currentViewedZoneId = swmmo.application.mGameInterface.mCurrentViewedZoneID;
+		$("#udGeneralsModal .dropdown-menu").html($('<li>').html($('<a>', {'href': '#', 'value': '98'}).text(loca.GetText("LAB", "StarMenu"))));
+
+		if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone){
+			$("#udGeneralsModal .dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId()}).text(loca.GetText("LAB", "ReturnHome"))));
+		}
+
+		AdvManager.getAdventures().forEach(function(item){
+			if (item.zoneID !== currentViewedZoneId) {
+				$("#udGeneralsModal .dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': item.zoneID}).text((item.ownerPlayerID !== playerId ? '*' : '') + loca.GetText("ADN", item.adventureName))));
+			}
+		});
+		
+		$('#udGeneralsModal .dropdown-menu a').click(_exudGeneralsSend);
+	} catch (error) {
+		alert("Err (retry): " + error.message);
+	}
+}
 
 function _exudGeneralsGetLabel(id)
 {
 	if(!_exudGeneralsLang[gameLang] && !_exudGeneralsLang["en-uk"][id]) { return "RES not found : " + id; }
-	return _exudGeneralsLang[gameLang] && _exudGeneralsLang[gameLang][id] ? _exudGeneralsLang[gameLang][id] : _exudGeneralsLang["en-uk"][id];
+	txt = _exudGeneralsLang[gameLang] && _exudGeneralsLang[gameLang][id] ? _exudGeneralsLang[gameLang][id] : _exudGeneralsLang["en-uk"][id];
+	return txt == undefined ? id : txt;
 }
 
 function _createTopRowWithIcons(generalsIconsList) {
@@ -324,26 +453,24 @@ function _exudGeneralsChangeSortingField(e)
 {
 	var selfIndex = $(this).parent().index();
 	var selfSubIndex = $(this).index();
-	//_exudAutoExpDebugMessage("selfIndex =  " + selfIndex);
-	//_exudAutoExpDebugMessage("selfSubIndex =  " + selfSubIndex);
 	switch(selfIndex)	{
 		case 0 :
 			switch (selfSubIndex)
 			{
 				case 0:
-					_exudGeneralsSettings['_exudGeneralsSelectedFirst'] = !_exudGeneralsSettings['_exudGeneralsSelectedFirst'];
+					_exudGeneralsSettings._exudGeneralsSelectedFirst = !_exudGeneralsSettings._exudGeneralsSelectedFirst;
 					break;
 				case 1 :
-					if (++_exudGeneralsSettings['_exudGeneralsSortType'] == 2)
-						_exudGeneralsSettings['_exudGeneralsSortType'] = 0;
+					if (++_exudGeneralsSettings._exudGeneralsSortType == 2)
+						_exudGeneralsSettings._exudGeneralsSortType = 0;
 					break;	
 			}
 			break;
 		case 1 :
-			_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'] = !_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'];
+			_exudGeneralsSettings._exudGeneralsExcludeStarMenu = !_exudGeneralsSettings._exudGeneralsExcludeStarMenu;
 			break;	
 		case 2 :
-			_exudGeneralsSettings['_exudGeneralsArmySorted'] = !_exudGeneralsSettings['_exudGeneralsArmySorted'];
+			_exudGeneralsSettings._exudGeneralsArmySorted = !_exudGeneralsSettings._exudGeneralsArmySorted;
 			break;	
 	}
 
@@ -369,55 +496,76 @@ function _exudGetGeneralsTitle(generalCount)
 
 function _exudGeneralsSaveSettings()
 {
-
 	try
 	{
 		storeSettings(_exudGeneralsSettings, 'usMKF_Generals');
 		$('#udGeneralsModalsettings').modal("hide");
+		_exudGeneralsRemakeMenu();
 	} catch (e) {
 		alert(e.message);
 	}
 }
+var ShortcutDirSelected = null;
 
 function _exudGeneralsOptions()
 {
 	createSettingsWindow('udGeneralsModal', _exudGeneralsSaveSettings,  'modal-sm');
 	$('#udGeneralsModalsettingsData').html(_exudGeneralsOptionsCreateSettings());
-	$('#udGeneralsModalsettingsData').css("height", "220px");
-	$('#udGeneralsModalsettings').css("height", "850px");
+	$('#udGeneralsModalsettingsData').css("height", "300px");
+	$('#udGeneralsModalsettings').css("height", "900px");
 	$('#udGeneralsModalsettings:not(:visible)').modal({backdrop: "static"});
 
 	$('#_exudChangeGeneralSortFloatBtn').change(function(){
 		if (_exudGeneralsOpening) return;
-		if (++_exudGeneralsSettings['_exudGeneralsSortType'] == 2)	_exudGeneralsSettings['_exudGeneralsSortType'] = 0;
+		if (++_exudGeneralsSettings._exudGeneralsSortType == 2)	_exudGeneralsSettings._exudGeneralsSortType = 0;
 		_exudMakeGeneralsTable();
 	});
 	$('#_exudHideUnselectedGeneralsFloatBtn').change(function(){
 		if (_exudGeneralsOpening) return;
-		_exudGeneralsSettings['_exudGeneralsHideUnselected'] = !_exudGeneralsSettings['_exudGeneralsHideUnselected'];
+		_exudGeneralsSettings._exudGeneralsHideUnselected = !_exudGeneralsSettings._exudGeneralsHideUnselected;
 		_exudMakeGeneralsTable();
 	});
 	$('#_exudHideGuestGeneralsFloatBtn').change(function(){
 		if (_exudGeneralsOpening) return;
-		_exudGeneralsSettings['_exudGeneralsHideGuest'] = !_exudGeneralsSettings['_exudGeneralsHideGuest'];
+		_exudGeneralsSettings._exudGeneralsHideGuest = !_exudGeneralsSettings._exudGeneralsHideGuest;
 		_exudMakeGeneralsTable();
 	});
 	$('#_exudGeneralsExcludeStarMenuFloatBtn').change(function(){
 		if (_exudGeneralsOpening) return;
-		_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'] = !_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'];
+		_exudGeneralsSettings._exudGeneralsExcludeStarMenu = !_exudGeneralsSettings._exudGeneralsExcludeStarMenu;
 		_exudMakeGeneralsTable();
 	});
 	$('#_exudGeneralsSelectedFirstBtn').click(function() {
-		_exudGeneralsSettings['_exudGeneralsSelectedFirst'] = !_exudGeneralsSettings['_exudGeneralsSelectedFirst'];
+		_exudGeneralsSettings._exudGeneralsSelectedFirst = !_exudGeneralsSettings._exudGeneralsSelectedFirst;
 		_exudMakeGeneralsTable();
+	});
+	$('#_exudGeneralsShortcutsBtn').click(function() {
+		_exudGeneralsSettings._exudGeneralsShortcuts = !_exudGeneralsSettings._exudGeneralsShortcuts;
+		_exudGeneralsRemakeMenu();
+	});
+	$('#_exudGeneralsShortcutsDirBtn').click(function() {
+		try{
+			ShortcutDirSelected = air.File.applicationDirectory; 
+			if (_exudGeneralsSettings._exudGeneralsShortcutsRoot != "")
+				ShortcutDirSelected = ShortcutDirSelected.resolvePath(_exudGeneralsSettings._exudGeneralsShortcutsRoot);
+			ShortcutDirSelected.addEventListener(air.Event.SELECT, _exudGeneralsOptionsdirSelected); 
+			ShortcutDirSelected.browseForDirectory("Select a directory"); 
+		}
+		catch (e) {
+		}	
 	});
 }
 
-function _getSettingsRow(switchName, switchValue, labelId) {
+function _exudGeneralsOptionsdirSelected(event) 
+{ 
+    _exudGeneralsSettings._exudGeneralsShortcutsRoot = ShortcutDirSelected.nativePath; 
+}
+function _getSettingsRow(switchName, switchValue, labelId, btnText, btnId) {
 	return [
 		'<div style="float: clear">',
 		'<div style="float: left;">' + createSwitch(switchName, switchValue) + '</div>',
-		'<div>&nbsp;&nbsp;' + _exudGeneralsGetLabel(labelId) + '</div>',
+		'<div>&nbsp;&nbsp;' + _exudGeneralsGetLabel(labelId) + 
+		(btnText ? "&nbsp;&nbsp;<a href='#' id='"+btnId+"'>"+_exudGeneralsButtons[btnText]+"</a>" : "") + '</div>',
 		'</div><br/>'
 	].join('');
 }
@@ -425,16 +573,17 @@ function _getSettingsRow(switchName, switchValue, labelId) {
 function _exudGeneralsOptionsCreateSettings() {
 	var out = '';
 	try {
-		out += _getSettingsRow('_exudChangeGeneralSortFloatBtn', _exudGeneralsSettings['_exudGeneralsSortType'] === 1, "ByName");
-		out += _getSettingsRow('_exudHideGuestGeneralsFloatBtn', _exudGeneralsSettings['_exudGeneralsHideGuest'], "HideGuest");
-		out += _getSettingsRow('_exudHideUnselectedGeneralsFloatBtn', _exudGeneralsSettings['_exudGeneralsHideUnselected'], "HideUnselected");
-		out += _getSettingsRow('_exudGeneralsExcludeStarMenuFloatBtn', _exudGeneralsSettings['_exudGeneralsExcludeStarMenu'], "ExcludeStarMenu");
-		out += _getSettingsRow('_exudGeneralsSelectedFirstBtn', _exudGeneralsSettings['_exudGeneralsSelectedFirst'], "SelectedFirst");
+		out += _getSettingsRow('_exudChangeGeneralSortFloatBtn', _exudGeneralsSettings._exudGeneralsSortType === 1, "ByName");
+		out += _getSettingsRow('_exudHideGuestGeneralsFloatBtn', _exudGeneralsSettings._exudGeneralsHideGuest, "HideGuest");
+		out += _getSettingsRow('_exudHideUnselectedGeneralsFloatBtn', _exudGeneralsSettings._exudGeneralsHideUnselected, "HideUnselected");
+		out += _getSettingsRow('_exudGeneralsExcludeStarMenuFloatBtn', _exudGeneralsSettings._exudGeneralsExcludeStarMenu, "ExcludeStarMenu");
+		out += _getSettingsRow('_exudGeneralsSelectedFirstBtn', _exudGeneralsSettings._exudGeneralsSelectedFirst, "SelectedFirst");
+		out += _getSettingsRow('_exudGeneralsShortcutsBtn', _exudGeneralsSettings._exudGeneralsShortcuts, loca.GetText("HIL", "Help_window_shortcuts_0"), '...','_exudGeneralsShortcutsDirBtn');
 	} catch (e) { alert(e.message); }
 	return out;
 }
 
-function _exudGetGeneralsData()
+function _exudGetGeneralsData(templateData)
 {
 	var out = $('<div>', { 'class': 'container-fluid', 'id': 'exGeneralsMainDiv' }).append([
 		$('<div>', { 'id': '_exudGeneralsDivTable' }),
@@ -442,7 +591,7 @@ function _exudGetGeneralsData()
 	]);
 	$('#udGeneralsModalData').html(out.prop('outerHTML'));
 
-	_exudMakeGeneralsTable();
+	_exudMakeGeneralsTable(templateData);
 }
 
 function _exudMakeGeneralsTable(templateData)
@@ -454,14 +603,16 @@ function _exudMakeGeneralsTable(templateData)
 		    myGens = 0,
 		    uniqueIconIDs = [],
 		    checkbox;
+		if (templateData && _exudGeneralsSettings._exudGeneralsSelectedFirst)
+			_exudGeneralsSortingFromTemplate = templateData;
 
 		_exudGetSpecialists().forEach(function(item){
 			try {
 				var isSelected = selectedGenerals.indexOf(item.UID) >= 0;
 				if (
-				    (_exudGeneralsSettings['_exudGeneralsHideGuest'] && !item.Owner) ||
-				    (_exudGeneralsSettings['_exudGeneralsExcludeStarMenu'] && (item.GridPosition < 1) && !isSelected) ||
-				    (_exudGeneralsSettings['_exudGeneralsHideUnselected'] && !isSelected)
+				    (_exudGeneralsSettings._exudGeneralsHideGuest && !item.Owner) ||
+				    (_exudGeneralsSettings._exudGeneralsExcludeStarMenu && (item.GridPosition < 1) && !isSelected) ||
+				    (_exudGeneralsSettings._exudGeneralsHideUnselected && !isSelected)
 				) {
 				    return;
 				}
@@ -472,7 +623,8 @@ function _exudMakeGeneralsTable(templateData)
 				    uniqueIconIDs.push(item.IconID);
 				}
 				var tooltip = loca.GetText("HIL", "Help_window_skilltrees_0");
-				var Icon =  item.Icon.replace('<img','<img id="exudSTIMG'+item.UID+'"').replace('style="', 'style="cursor: pointer;');
+
+				var Icon =  item.Icon.replace('<img','<img id="exudSTIMG'+item.UID+'"').replace('style="', 'style="cursor:pointer;');
 				var IconMap = "";
 				if (item.GridPosition > 0)
 					IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudSTGENPOS'+item.UID+'"').replace('style="', 'style="cursor: pointer;')
@@ -510,6 +662,7 @@ function _exudMakeGeneralsTable(templateData)
 	catch (e) {
 		alert(e.message);
 	}
+	_exudGeneralsSortingFromTemplate = null;
 	$('#_exudGeneralsDivTable').html(out);
 	$('#topRowWithIcons').html('').hide();
 	if (uniqueIconIDs.length > 0) {
@@ -539,7 +692,7 @@ function _exudGeneralsOpenSkillTree(e)
 			$("#_exudGeneralsSkillTree").show()
 			var out = '';
 			out += '<table width="200px" border="0" style="margin-left: 10px;margin-top: 5px;padding:5px; margin-right: 5px"';
-			out += '<tr><td style="white-space: nowrap; text-overflow:ellipsis; overflow: hidden; min-width:100px;max-width: 100px;">'+General.Icon + ' ' + General.Name+'</td>';
+			out += '<tr><td data-toggle="tooltip" data-placement="top" title="'+General.UID+'" style="white-space: nowrap; text-overflow:ellipsis; overflow: hidden; min-width:100px;max-width: 100px;">'+General.Icon + ' ' + General.Name+'</td>';
 			out += '<td><button style="cursor: pointer;background: none;border: none;" class="pull-right" id="_exudGeneralsSkillTreeCloseBtn">'+getImageTag("attackweakesttarget_negative.png", '15px')+'</button></td></tr>';
 			out += '</table>';
 
@@ -598,7 +751,10 @@ function _exudGeneralsGetChecked()
 
 function _exudGeneralsIsCheked(uid)
 {
-	return $('input:checkbox[id^="'+uid+'"]:checked').length>0;
+	if (_exudGeneralsSortingFromTemplate == null)
+		return $('input:checkbox[id^="'+uid+'"]:checked').length>0;
+	else	// From template and selectdFirst flag true
+		return (_exudGeneralsSortingFromTemplate.indexOf(uid) >= 0);
 }
 
 function _exudGeneralsSend(e)
@@ -647,7 +803,7 @@ function _exudSendGeneralToStar(S)
 		stask.uniqueID = S.GetUniqueID();
 		stask.subTaskID = 0;
 
-		swmmo.application.mGameInterface.SendServerAction(95,12,swmmo.application.mGameInterface.mCurrentCursor.GetGridPosition(),0,stask);
+		swmmo.application.mGameInterface.SendServerAction(95,12,S.GetGarrisonGridIdx(),0,stask);
 		wfcDef = swmmo.getDefinitionByName("Specialists::cSpecialistTask_TravelToStarMenu");
 		wfc = new wfcDef(swmmo.application.mGameInterface,S,0,12);
 		S.SetTask(wfc);
@@ -742,21 +898,22 @@ function _exudGeneralsGetSkills(itemS)
 
 function _exudCompareGenerals( a, b ) {
 	try{
-		if (_exudGeneralsSettings['_exudGeneralsSelectedFirst'])
+		if (_exudGeneralsSettings._exudGeneralsSelectedFirst)
 		{
 			var a_chkd = _exudGeneralsIsCheked(a.UID);
 			var b_chkd = _exudGeneralsIsCheked(b.UID);
+			
 			if (a_chkd != b_chkd)
 				return (a_chkd ? -1 : 1);
 		}
 		if (!b.Owner && a.Owner) return -1;
 		if (!a.Owner && b.Owner) return 1;
-		if (_exudGeneralsSettings['_exudGeneralsArmySorted'])
+		if (_exudGeneralsSettings._exudGeneralsArmySorted)
 		{
 			if (a.TotalArmy > b.TotalArmy)	return -1;
 			if (a.TotalArmy < b.TotalArmy)	return 1;
 		}
-		switch(_exudGeneralsSettings['_exudGeneralsSortType'])
+		switch(_exudGeneralsSettings._exudGeneralsSortType)
 		{
 			case 1:
 				var tp = a.Name.toLowerCase().localeCompare(b.Name.toLowerCase());

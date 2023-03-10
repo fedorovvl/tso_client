@@ -13,6 +13,7 @@ var _exudUserAdventureLang = {
 		'UnitReady' : 'Army ready',
 		'Menuname' : 'Adventures',
 		'Command' : 'Command',
+		'ToStar' : 'Return all generals to star',
 		'CannotSet' : 'Something was wrong, cannot load army. Please verify in Specialists/Army (F9)',
 		'Saved' : 'Saved !'
 		},
@@ -43,9 +44,10 @@ var _exudUserAdventureLang = {
 		'AutoFree': 'Всегда выгружать войска',
 		'NoUnitsOnBoard' : 'Армия распущена',
 		'UnitReady' : 'Армия готова',
+		'ToStar' : 'Вернуть всех генералов в звезду',
 		'Menuname' : 'Приключения',
 		'Command' : 'Команда',
-		'CannotSet' : 'Не все условия выполнены для загрузки армии. Проверьте в ручную в окне армии (F9)',
+		'CannotSet' : 'Не все условия выполнены для загрузки армии. Проверьте вручную в окне армии (F9)',
 		'Saved' : 'Сохранено !'
 		},
 	'es-es' : {
@@ -116,6 +118,8 @@ var _exudUserAdventureLang = {
 	extendBaseLang(_exudUserAdventureLang, 'exudUserAdventureLang');
 
 var _exudUserAdventureMainMenuName  = getText('Menuname', 'exudUserAdventureLang');
+var _exudUserAdventureTypes = { '[b]': 'x ', '[a]': '^ ', '[m]': '> ' };
+var _exudUserAdventureTypesLang = {'x ': loca.GetText("ACL", "PvPAttacker"), '^ ' : loca.GetText("LAB","Army"), '> ': loca.GetText("LAB", "Move")};
 var _exudUserAdventureButtons = {
 	"remove": utils.getImage(new(game.def("GUI.Assets::gAssetManager_ButtonIconThrowAway"))().bitmapData),
 	"up": utils.getImage(new(game.def("GUI.Assets::gAssetManager_ArrowSmallNUp"))().bitmapData),
@@ -147,6 +151,7 @@ function _exudUserAdventuresMakeMenu()
 	var m = [
 		{ label: getText('Options', 'exudUserAdventureLang'), onSelect: _exudUserAdventureAddHandler },
 		{ label: loca.GetText("LAB","UnloadUnits"), onSelect: _exudUserAdventureFreeAllUnits },
+		{ label: getText('ToStar', 'exudUserAdventureLang'), onSelect: _exudUserAdventureReturnAll },
 		{ type: 'separator' }
 	];
 	_exudAdventureGenMenuRecursive(_exudUserAdventureSettings.Adventures, m);
@@ -161,94 +166,109 @@ function _exudAdventureGenMenuRecursive(item, m)
 			if(typeof i == 'object') {
 				return _exudAdventureGenMenuRecursive([i], s.items);
 			}
-			s.items.push({ label: i.split("\\").pop().replace("_", "[UNDERSCORE]"), name: i, onSelect: _exuduserAdventureMenuSelectedHandler });
+			if(i == '--sep--') {
+				s.items.push({ type: 'separator' });
+			} else {
+				s.items.push({ label: _exudAdventureStripType(i)[1] + _exudAdventureStripType(i)[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]"), name: i, onSelect: _exuduserAdventureMenuSelectedHandler });
+			}
 		});
 		m.push(s);
 	});
 }
 
+function _exudAdventureStripType(value)
+{
+	var possibleType = value.slice(-3);
+	if(_exudUserAdventureTypes[possibleType] == null)
+		return [value, '^ '];
+	return [value.slice(0, -3), _exudUserAdventureTypes[possibleType]]; 
+}
+
 // Execute a shortcut
 function _exuduserAdventureMenuSelectedHandler(event)
 {
-	var Text = "";
 	try {
+		var filetype = _exudAdventureStripType(event.target.name);
 		var file = new air.File();
-		file.nativePath = event.target.name;
+		file.nativePath = filetype[0];
 		var fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.READ);
-		Text = fileStream.readUTFBytes(file.size);
+		var Text = fileStream.readUTFBytes(file.size);
 		fileStream.close();
 		if (Text == "") { return; }
-		if (_exudUserAdventureSettings.AutoFree)
-			_exudUserAdventureFreeAllUnits();
-		armyPacket = JSON.parse(Text);
-		if(_exuduserAdventurearmyLoadData()) {
-			armyLoadGenerals(true);
-			game.showAlert(getText('UnitReady', 'exudUserAdventureLang'));
-		}
+		_exudUserAdventureProceedFile(JSON.parse(Text), filetype[1]);
 	} catch (e) {
 		alert(e);
 	}
 }
 
-function _exuduserAdventurearmyLoadData()
+function _exudUserAdventureProceedFile(data, type)
 {
-	var exuduserAdventurearmyFreeInfo = {};
-	try
-	{
-		if(Object.keys(armyPacket).length == 0) {
-			return false;
-		}
-		var canSubmit = true;
-		
-		// Total army available
-		game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().forEach(function(item){
-			exuduserAdventurearmyFreeInfo[item.GetType()] = item.GetAmount();
-		});
-		
-		$.each(armyPacket, function(item) { 
-			var uniqueID = item.split(".")
-			var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
-			var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
-			if(spec.GetGarrison() == null || spec.GetTask() != null || spec.GetGarrisonGridIdx() < 1 || spec.IsInUse() || spec.isTravellingAway()) {canSubmit = false; }
-		});
-		if (canSubmit)
-		{
-			var requiredArmy = {};
-			$.each(armyPacket, function(item) {
-				$.each(armyPacket[item], function(res) {
-					if(res == "name") { return; }
-					requiredArmy[res] = requiredArmy[res] + armyPacket[item][res] || armyPacket[item][res];
-				});
+	switch(type) {
+		case '^ ':
+			updateFreeArmyInfo(true);
+			var checkedPacket = armyLoadDataCheck(data);
+			if(checkedPacket.canSubmit = false) {
+				game.showAlert(getText('CannotSet', 'exudUserAdventureLang'));
+				return;
+			}
+			armyPacket = data;
+			armyLoadGenerals(true);
+		break;
+		case '> ':
+			battlePacket = battleLoadDataCheck(data);
+			var canSubmitMove = true;
+			$.each(battlePacket, function(item) { 
+				if(!battlePacket[item].canSubmitMove) { canSubmitMove = false; }
 			});
-			$.each(requiredArmy, function(item) {
-				if(exuduserAdventurearmyFreeInfo[item] < requiredArmy[item]) { canSubmit = false; }
+			if(!canSubmitMove) {
+				game.showAlert(getText('CannotSet', 'exudUserAdventureLang'));
+				return;
+			}
+			battleMove(true);
+		break;
+		case 'x ':
+			battlePacket = battleLoadDataCheck(data);
+			var canSubmitAttack = true;
+			$.each(battlePacket, function(item) { 
+				if(!battlePacket[item].canSubmitAttack) { canSubmitAttack = false; }
 			});
-		}
-	} catch (e)
-	{
+			if(!canSubmitAttack) {
+				game.showAlert(getText('CannotSet', 'exudUserAdventureLang'));
+				return;
+			}
+			battleAttack(true);
+		break;
 	}
-
-	if (!canSubmit)
-		game.showAlert(getText('CannotSet', 'exudUserAdventureLang'));	
-	return canSubmit;
+	showGameAlert(getText('command_sent'));
 }
 
+function _exudUserAdventureReturnAll()
+{
+	var queue = new TimedQueue(1000);
+	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
+		if (game.player.GetPlayerId() == item.getPlayerID() && 
+		    _exudUserAdventuresSPECIALIST_TYPE.IsGeneral(item.GetType()) && 
+			item.GetGarrisonGridIdx() > 0  && !item.IsInUse() && !item.isTravellingAway())
+		{
+			queue.add(function(){ armySendGeneralToStar(item); });
+		}
+	});
+	if(queue.len() > 0)
+	{
+		queue.run();
+		game.showAlert(getText('NoUnitsOnBoard', 'exudUserAdventureLang'));
+	}
+}
 function _exudUserAdventureFreeAllUnits()
 {
 	var queue = new TimedQueue(1000);
 	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
-		try{
-			if (game.player.GetPlayerId() == item.getPlayerID() && _exudUserAdventuresSPECIALIST_TYPE.IsGeneral(item.GetType()) && item.GetGarrisonGridIdx() > 0  && item.HasUnits() && !item.IsInUse() && !item.isTravellingAway())
-			{
-				queue.add(function(){ 
-					armyMilitarySystem.SendRaiseArmyToServer(game.gi, item, null);
-					//game.chatMessage(item.getName(false), getText('Menuname', 'exudUserAdventureLang'));
-				});
-			}
-		}
-		catch (e)
+		if (game.player.GetPlayerId() == item.getPlayerID() && 
+		    _exudUserAdventuresSPECIALIST_TYPE.IsGeneral(item.GetType()) && 
+			item.GetGarrisonGridIdx() > 0  && item.HasUnits() && !item.IsInUse() && !item.isTravellingAway())
 		{
+			queue.add(function(){ armyMilitarySystem.SendRaiseArmyToServer(game.gi, item, null); });
 		}
 	});
 	if(queue.len() > 0)
@@ -278,9 +298,10 @@ function _exudUserAdventureAddHandler(event)
 			$('#UserAdventureModal .modal-header').append(
 				'<div class="container-fluid">' 
 				+ createTableRow([[2, loca.GetText("LAB","AdventuresHelp")],[6, select.prop("outerHTML")],
-				[4, '<div style="position: absolute;left: 55px;top: 1px;">&nbsp;&nbsp;'+getText('AutoFree', 'exudUserAdventureLang')+'</div>' + checkbox]], true)
+				[4, '']], true)
 				+ createTableRow([
-						[10, getText('Filename', 'exudUserAdventureLang')],
+						[3, loca.GetText("LAB", "Type")],
+						[7, getText('Filename', 'exudUserAdventureLang')],
 						[2, getText('Command', 'exudUserAdventureLang')]
 					], true)
 				+ "</div>"
@@ -292,12 +313,31 @@ function _exudUserAdventureAddHandler(event)
 				_exudUserAdventureSettings.AutoFree = !_exudUserAdventureSettings.AutoFree;
 			});
 			
-
+			var groupSelect = $('<div>', { 'class': 'btn-group' }).append([
+				$('<button>').attr({ 
+					"id": "exudUserAdventureAddItem",
+					"class": "btn btn-success exudUserAdventureAddItem dropdown-toggle",
+					'aria-haspopup': 'true',
+					'style': 'margin-left: 4px;',
+					'aria-expanded': 'false',
+					'data-toggle': "dropdown"
+				}).text(getText('AddItem', 'exudUserAdventureLang')), 
+				$('<div>', {
+					'x-placement': 'bottom-start',
+					'style': 'position: absolute; transform: translate3d(0px, 37px, 0px); top: 0px; left: 0px; will-change: transform;',
+					'class': 'dropdown-menu'
+				}).append([
+					$('<li>').html($('<a>', {'href': '#', 'name': 'army'}).text(loca.GetText("LAB","Army"))),
+					$('<li>').html($('<a>', {'href': '#', 'name': 'move'}).text(loca.GetText("LAB", "Move"))),
+					$('<li>').html($('<a>', {'href': '#', 'name': 'battle'}).text(loca.GetText("ACL", "PvPAttacker"))),
+					$('<li>').html($('<a>', {'href': '#', 'name': 'sep'}).text("Separator"))
+				])
+			]);
 			$("#UserAdventureModal .modal-footer").prepend([
 				$('<button>').attr({ "id": "exudUserAdventureSave", "class": "btn btn-primary exudUserAdventureSave" }).text(loca.GetText("LAB","GuildSave")),
 				$('<button>').attr({ "id": "exudUserAdventureAdd","class": "btn btn-primary pull-left"}).text(getText('Add', 'exudUserAdventureLang')),
 				$('<button>').attr({ "id": "exudUserAdventureRemove","class": "btn btn-primary pull-left"}).text(getText('Remove', 'exudUserAdventureLang')),
-				$('<button>').attr({ "id": "exudUserAdventureAddItem","class": "btn btn-primary pull-left"}).text(getText('AddItem', 'exudUserAdventureLang'))
+				groupSelect
 			]);
 			$('#UserAdventureModal .modal-footer #exudUserAdventureRemove, #exudUserAdventureAddItem').hide();
 			$('#exudUserAdventureAdd').click(function() {
@@ -308,31 +348,29 @@ function _exudUserAdventureAddHandler(event)
 					alert(getText('AddError', 'exudUserAdventureLang'));
 					return;
 				}
-				var adv = _exudUserAdventureGetActAdv();
-				if(adv != null) {
-					adv.Items.push({
-						'UUID' : _exudUseAdventureGenerateUUID(),
-						'Description' : des,
-						'Items' : new Array()
-					});
-				} else {
-					_exudUserAdventureSettings.Adventures.push({
-						'UUID' : _exudUseAdventureGenerateUUID(),
-						'Description' : des,
-						'Items' : new Array()
-					});
-				}
+				var newUUID = _exudUseAdventureGenerateUUID();
+				(_exudUserAdventureGetActAdv() && _exudUserAdventureGetActAdv().Items || _exudUserAdventureSettings.Adventures).push({
+					'UUID' : newUUID,
+					'Description' : des,
+					'Items' : new Array()
+				});
 				_exudUserAdventureRefresh();
+				$("#exudUserAdventureSelect").val(newUUID).change();
 			});
-			$('#exudUserAdventureAddItem').click(function() {
+			$('#UserAdventureModal .modal-footer .dropdown-menu a').click(function() {
 				var adv = _exudUserAdventureGetActAdv();
 				if (adv != null)
 				{
-					var base = readLastDir('army');
+					if(this.name == 'sep') {
+						adv.Items.push('--sep--');
+						_exudUserAdventureUpdateView();
+						return;
+					}
+					var base = readLastDir(this.name == 'army' ? this.name : 'battle');
 					_exudUserAdventurefileToOpen = air.File.documentsDirectory; 
 					if (base != '')
 						_exudUserAdventurefileToOpen.nativePath = base;
-					_exudUserAdventureselectTextFile(_exudUserAdventurefileToOpen); 
+					_exudUserAdventureselectTextFile(_exudUserAdventurefileToOpen, this.name); 
 				}
 			});
 			$('#exudUserAdventureRemove').click(function() {
@@ -375,19 +413,18 @@ function _exudUserAdventureRemoveRecursive(t, idToRemove) {
 }
 // Browse files to add a macro to the list
 
-function _exudUserAdventureselectTextFile(root) 
+function _exudUserAdventureselectTextFile(root, type) 
 { 
-    var txtFilter = new air.FileFilter("Macro", "*.*"); 
-    root.browseForOpen("Open", new window.runtime.Array(txtFilter)); 
-    root.addEventListener(air.Event.SELECT, function(event) {
-		var filename = _exudUserAdventurefileToOpen.nativePath;
+    var txtFilter = new air.FileFilter("Macro", "*.*");
+    root.browseForOpenMultiple("Open", new window.runtime.Array(txtFilter)); 
+    root.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, function(event) {
 		var adv = _exudUserAdventureGetActAdv();
-		if (adv != null)
-		{
-			adv.Items.push(filename);
-			_exudUserAdventureUpdateView();
-		}
-	}); 
+		if (adv == null) { return; }
+		event.files.forEach(function(item) {
+			adv.Items.push(item.nativePath + "[{0}]".format(type.charAt(0)));
+		});
+		_exudUserAdventureUpdateView();
+	});
 }
 
 // Udate rows
@@ -406,14 +443,34 @@ function _exudUserAdventureUpdateView()
 		{
 			var out = "";
 			adv.Items.forEach(function(i, idx) {
-				if(typeof i == 'object') { return; }
-				out += createTableRow([
-					[10, i.split("\\").pop()],
-					[2, "<a href='#' id='_exudUserAdventureRemoveA_"+idx+"'>"+_exudUserAdventureButtons["remove"]+"</a>" +
-						(idx > 0 ? "&nbsp;<a href='#' id='_exudUserAdventureUpA_"+idx+"'>"+_exudUserAdventureButtons["up"]+"</a>" : "") +
-						(idx != adv.Items.length - 1 ? "&nbsp;<a href='#' id='_exudUserAdventureDownA_"+idx+"'>"+_exudUserAdventureButtons["down"]+"</a>" : "")
-					]
-				], false);
+				if(typeof i == 'object') { 
+					out += createTableRow([
+						[3, 'Folder'],
+						[7, i.Description],
+						[2, '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8239;&#8239;' + 
+							(idx > 0 ? "&nbsp;<a href='#' id='_exudUserAdventureUpA_"+idx+"'>"+_exudUserAdventureButtons["up"]+"</a>" : "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8239;&#8239;") +
+							(idx != adv.Items.length - 1 ? "&nbsp;<a href='#' id='_exudUserAdventureDownA_"+idx+"'>"+_exudUserAdventureButtons["down"]+"</a>" : "")
+						]
+					], false);
+				} else if(i == '--sep--') {
+					out += createTableRow([
+						[10, '<hr style="margin: 10px 0;">'],
+						[2, "<a href='#' id='_exudUserAdventureRemoveA_"+idx+"'>"+_exudUserAdventureButtons["remove"]+"</a>" +
+							(idx > 0 ? "&nbsp;<a href='#' id='_exudUserAdventureUpA_"+idx+"'>"+_exudUserAdventureButtons["up"]+"</a>" : "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8239;&#8239;") +
+							(idx != adv.Items.length - 1 ? "&nbsp;<a href='#' id='_exudUserAdventureDownA_"+idx+"'>"+_exudUserAdventureButtons["down"]+"</a>" : "")
+						]
+					], false);
+				} else {
+					var typename = _exudAdventureStripType(i.split("\\").pop());
+					out += createTableRow([
+						[3, _exudUserAdventureTypesLang[typename[1]]],
+						[7, typename[0]],
+						[2, "<a href='#' id='_exudUserAdventureRemoveA_"+idx+"'>"+_exudUserAdventureButtons["remove"]+"</a>" +
+							(idx > 0 ? "&nbsp;<a href='#' id='_exudUserAdventureUpA_"+idx+"'>"+_exudUserAdventureButtons["up"]+"</a>" : "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8239;&#8239;") +
+							(idx != adv.Items.length - 1 ? "&nbsp;<a href='#' id='_exudUserAdventureDownA_"+idx+"'>"+_exudUserAdventureButtons["down"]+"</a>" : "")
+						]
+					], false);
+				}
 			});
 			$('#exudUserAdventureRows').html('<div class="container-fluid">{0}</div>'.format(out));
 			
