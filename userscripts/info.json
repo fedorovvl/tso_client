@@ -61,13 +61,6 @@
       "author":"SirriS",
 	  "url": "https://tsomaps.com/loots/"
    },
-   "user_adventures_shortcut.js":{
-      "name":"Adventures",
-      "shortDesc":"Army shortcuts",
-      "longDesc":"Shortcuts to saved army models",
-      "author":"MkFera_SirriS",
-	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
-   },
    "user_langs.js":{
       "name":"Languages",
       "shortDesc":"Change game lang",
