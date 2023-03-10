@@ -99,7 +99,7 @@ var _exudUserBuildingListLang = {
 		'Minutes' : 'Minuten',
 		"Stop": "Stop",
 		"Start": "Start",
-		"ReadyMsg" : "Building monitor : {0} building ready!",
+		"ReadyMsg" : "Gebäude Beobachtung : {0} Gebäude bereit!",
 		"ToolTipNotify" : "Markiere für Erhalt von Benachrichtigungen",
 		"DebuffedMsg" : "Gebäude Beobachtung : {0} Gebäude ungebufft!",
 		"UpgradeSound" : "Ausbau Sound",
