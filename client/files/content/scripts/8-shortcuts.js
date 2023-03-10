@@ -31,13 +31,14 @@ function shortcutsGenMenuRecursive(item, m)
 	item.forEach(function(data){
 		var s = { label: data.name, items: [] };
 		data.items.forEach(function(i) {
-			if(typeof i == 'object') {
+			if(typeof i == 'object' && !Array.isArray(i)) {
 				return shortcutsGenMenuRecursive([i], s.items);
 			}
 			if(i == '--sep--') {
 				s.items.push({ type: 'separator' });
 			} else {
-				s.items.push({ label: shortcutsStripType(i)[1] + shortcutsStripType(i)[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]"), name: i, onSelect: shortcutsMenuSelectedHandler });
+				var label = shortcutsStripType(i[0])[1] + (i[1] == null ? shortcutsStripType(i[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : i[1]);
+				s.items.push({ label: label, name: i[0], onSelect: shortcutsMenuSelectedHandler });
 			}
 		});
 		m.push(s);
@@ -152,7 +153,7 @@ function shortcutsAddHandler(event)
 				[6, select],
 				[4, $('<center>').append($('<span>', { 'class': "shortcutsSaved", 'style': "display:none;" }).html("<b>{0}</b>".format(getText('shortcutsSaved')))) ]
 			], true),
-			createTableRow([[3, loca.GetText("LAB", "Type")],[9, getText('shortcutsFilename')]], true)
+			createTableRow([[3, loca.GetText("LAB", "Type")],[5, getText('shortcutsFilename')],[4, '']], true)
 		]));
 		shortcutsWindow.withHeader('#shortcutsSelect').change(shortcutsUpdateView);
 	}
@@ -220,10 +221,14 @@ function shortcutsAddHandler(event)
 	});
 	shortcutsWindow.withFooter('.shortcutsSave').click(function(){
 		var active = shortcutsGetActive();
+		var sortOrder = {};
 		if (active != null) {
-			var sortOrder = {};
 			$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
 			active.items.sort(function(a,b) { return sortOrder[active.items.indexOf(a)] > sortOrder[active.items.indexOf(b)] ? 1 : -1; });
+			$.each(shortcutsWindow.withBody('.form-control'), function(i, item) { active.items[i][1] = $(item).val() || null; });
+		} else {
+			$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
+			shortcutsSettings.sort(function(a,b) { return sortOrder[shortcutsSettings.indexOf(a)] > sortOrder[shortcutsSettings.indexOf(b)] ? 1 : -1; });
 		}
 		settings.settings['shortcuts'] = [];
 		storeSettings(shortcutsSettings, 'shortcuts');
@@ -239,7 +244,7 @@ function shortcutsAddHandler(event)
 
 function shortcutsRemoveRecursive(t, idToRemove) {
 	for (i in t) {
-		if(typeof t[i] == 'object') {
+		if(typeof t[i] == 'object'  && !Array.isArray(t[i])) {
 			if(t[i].id == idToRemove) {
 				t.splice(i, 1);
 				continue;
@@ -260,7 +265,7 @@ function shortcutsselectTextFile(type)
 		var active = shortcutsGetActive();
 		if (active == null) { return; }
 		event.files.forEach(function(item) {
-			active.items.push(item.nativePath + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)));
+			active.items.push([item.nativePath + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)), null]);
 		});
 		shortcutsUpdateView();
 	});
@@ -271,19 +276,33 @@ function shortcutsUpdateView()
 	
 	shortcutsWindow.withBody('#shortcutsRows').html("");
 	var active = shortcutsGetActive();
-		
+	var out = "";
+
 	if (active == null) {
 		shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem').hide();
-		return;
-	}
-	shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem').show();
-	if (active.items != null && active.items.length > 0) {
-		var out = "";
-		active.items.forEach(function(i, idx) {
-			if(typeof i == 'object') { 
+		shortcutsSettings.forEach(function(i, idx) {
+			if(typeof i == 'object' && !Array.isArray(i)) { 
 				out += createTableRow([
 					[3, '&#8597;&nbsp;&nbsp; '+getText('shortcutsFolder')],
-					[9, i.name + $('<button>', { 'type': 'button', 'class': 'close', 'value': idx, 'style': 'display:none;' }).prop('outerHTML')]
+					[6, $('<div>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
+					[3, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx, 'style': 'display:none;' })]
+				], false);
+			}
+		});
+		shortcutsWindow.withBody('#shortcutsRows').html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;cursor:move;" }).html(out));
+		shortcutsWindow.withBody('.close').click(function(e){
+			shortcutsSettings.splice(parseInt($(this).val()), 1);
+			shortcutsUpdateView();
+		});
+	}
+	if (active != null && active.items != null && active.items.length > 0) {
+		shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem').show();
+		active.items.forEach(function(i, idx) {
+			if(typeof i == 'object' && !Array.isArray(i)) { 
+				out += createTableRow([
+					[3, '&#8597;&nbsp;&nbsp; '+getText('shortcutsFolder')],
+					[6, $('<div>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
+					[3, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx, 'style': 'display:none;' })]
 				], false);
 			} else if(i == '--sep--') {
 				out += createTableRow([
@@ -292,20 +311,25 @@ function shortcutsUpdateView()
 				[1,  $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
 				], false);
 			} else {
-				var typename = shortcutsStripType(i.split("\\").pop());
+				var typename = shortcutsStripType(i[0].split("\\").pop());
 				out += createTableRow([
 					[3, '&#8597;&nbsp;&nbsp;' + shortcutsTypesLang[typename[1]]],
-					[9, typename[0] + $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;')).prop('outerHTML')],
+					[4, typename[0]],
+					[3, $('<input>', { 'type': 'text', 'class': 'form-control', 'style': 'background:none;color:white;', 'value': i[1] == null ? '' : i[1] })],
+					[2, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
 				], false);
 			}
 		});
 		shortcutsWindow.withBody('#shortcutsRows').html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;cursor:move;" }).html(out));
-		shortcutsWindow.withBody('.container-fluid').sortable();
 		shortcutsWindow.withBody('.close').click(function(e){
 			shortcutsGetActive().items.splice(parseInt($(this).val()), 1);
 			shortcutsUpdateView();
 		});
 	}
+	shortcutsWindow.withBody('.container-fluid').sortable();
+	shortcutsWindow.withBody('.folder').click(function(e){
+		shortcutsWindow.withHeader("#shortcutsSelect").val(this.id).change();
+	});
 }
 
 function shortcutsGetActive()
@@ -322,7 +346,7 @@ function shortcutsGetActiveRecursive(t, s)
 		debug("check " + t[n].id);
 		debug(t[n]);
 		t[n].items.forEach(function(item){
-			if(typeof item == 'object')
+			if(typeof item == 'object' && !Array.isArray(item))
 				result = shortcutsGetActiveRecursive([item], s) || result;
 		});
 	};
@@ -330,18 +354,14 @@ function shortcutsGetActiveRecursive(t, s)
 }
 
 
-// Refresh comboBox and table
 function shortcutsRefresh()
 {
 	shortcutsWindow.withHeader('#shortcutsSelect').html('');
 	shortcutsWindow.withHeader('#shortcutsSelect').append($('<option>', { value:"---" }).text("---"));
-	shortcutsSettings.sort(function(a, b) {
-		return a.name.toUpperCase().localeCompare(b.name.toUpperCase());
-	});
 	shortcutsSettings.forEach(function(item){
 		shortcutsWindow.withHeader('#shortcutsSelect').append($('<option>', { value: item.id }).text(item.name));
 		for (i in item.items) {
-			if(typeof item.items[i] == 'object') {
+			if(typeof item.items[i] == 'object' && !Array.isArray(item.items[i])) {
 				shortcutsRefreshRecursive(item.items[i], [item.name], 1);
 			}
 		}
@@ -355,7 +375,7 @@ function shortcutsRefreshRecursive(t, dim, depth)
 	dim.push(t.name);
 	shortcutsWindow.withHeader('#shortcutsSelect').append($('<option>', { value: t.id }).text(dim.join(" > ")));
 	for (i in t.items) {
-		if(typeof t.items[i] == 'object') {
+		if(typeof t.items[i] == 'object' && !Array.isArray(t.items[i])) {
 			shortcutsRefreshRecursive(t.items[i], dim, ++depth);
 		}
 	}
