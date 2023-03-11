@@ -80,6 +80,16 @@ function battleSaveDialog()
 		out += row.prop('outerHTML');
 	});
 	battleWindow.sBody().html(out + '<div>');
+	if(battlePacket && Object.keys(battlePacket).length > 0) {
+		$.each(battlePacket, function(item) {
+			battleWindow.sBody().find('input[id="'+item+'"]').closest("div.row").find("select").val(battlePacket[item].time);
+		});
+		var keys = Object.keys(battlePacket);
+		var sorted = battleWindow.sBody().find("div.row").sort(function(a, b) {
+			return keys.indexOf($(a).find("[type=checkbox]").prop("id")) > keys.indexOf($(b).find("[type=checkbox]").prop("id")) ? 1 : -1;
+		});
+		battleWindow.sBody().find('.container-fluid').html(sorted);
+	}
 	battleWindow.sBody().find("#specOpen").click(battleShowGeneral);
 	battleWindow.sBody().find(".container-fluid").sortable();
 	$('#' + battleWindow.rawsId).modal({backdrop: "static"});
@@ -302,9 +312,9 @@ function battleGetData()
 		$.each(battlePacket, function(item) {
 			if(battlePacket[item].target && game.zone.mStreetDataMap.GetBuildingByGridPos(battlePacket[item].target) != null) {
 				battleWindow.withBody('button[id="'+item+'"]').text(battlePacket[item].targetName).val(battlePacket[item].target);
+				battleWindow.withBody('input[id="'+item+'"]').prop("checked", true);
 			}
 		});
-		battlePacket = {};
 	}
 	battleWindow.withBody("button").click(function(e){
 		battleSearchFor = this.id;
