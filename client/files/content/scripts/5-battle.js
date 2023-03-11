@@ -195,7 +195,6 @@ function battleAttack(direct)
 		battleTimedQueue.run();
 		if(!direct) { battleWindow.hide(); }
 		showGameAlert(getText('command_sent'));
-		battlePacket = {};
 	}
 }
 
@@ -212,7 +211,6 @@ function battleMove(direct)
 		battleTimedQueue.run();
 		if(!direct) { battleWindow.hide(); }
 		showGameAlert(getText('command_sent'));
-		battlePacket = {};
 	}
 }
 
