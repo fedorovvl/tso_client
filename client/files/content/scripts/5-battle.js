@@ -60,6 +60,7 @@ function battleSaveDialog()
 {
 	if(battleWindow.withBody('[type=checkbox]:checked').length == 0) { return; }
 	battleWindow.settings(battleSaveTemplate, '');
+	battleWindow.sDialog().css("height", "80%");
 	battleWindow.sTitle().html(loca.GetText("LAB", "ChangeSortingOrder"));
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	var select = $('<select>').attr('class', 'form-control').append($('<option>', { value: 1000 }).text('1s'));
