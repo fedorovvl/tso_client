@@ -83,6 +83,10 @@ function specNameSorter(a, b)
 		case 5:
 			return a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
 		break;
+		case 6:
+			var res = a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+			return res != 0 ? res : a.GetType() > b.GetType() ? -1 : 1;
+		break;
 		default:
 			return 0;
 		break;
@@ -138,6 +142,7 @@ function mainSettingsHandler(event)
 		$('<option>', { 'value': 3 }).text('type > name ASC'),
 		$('<option>', { 'value': 4 }).text('name DESC'),
 		$('<option>', { 'value': 5 }).text('name ASC'),
+		$('<option>', { 'value': 6 }).text('StarMenu'),
 	]);
 	html += utils.createTableRow([[6, getText('menustyle_desc')], [6, menuStyleSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('deffilter_desc')], [6, createFilterDrop()]]);
