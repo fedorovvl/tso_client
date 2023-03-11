@@ -269,7 +269,7 @@ function battleGetData()
 	battleWindow.withFooter(".loadAttack, .loadMove, .reset").hide();
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, getText('armyCurrentArmy')], [4, loca.GetText("LAB", "Attack")]], true);
-	game.zone.GetSpecialists_vector().sort(armyGeneralSorter).forEach(function(item){
+	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
 		try {
 			if(!armySPECIALIST_TYPE.IsGeneral(item.GetType()) || item.getPlayerID() != game.player.GetPlayerId()) { return; }
 			if(item == null || typeof item == 'undefined' || item.GetTask() != null) { return; }

@@ -7,7 +7,8 @@ var mainSettings = {
 	specDefTimeType: false,
 	defFilter: 'none',
 	dtfFormat: "MM-dd HH:mm",
-	forcegc: true
+	forcegc: true,
+	sortOrder: 2
 };
 
 function reloadScripts(event)
@@ -57,6 +58,37 @@ function debug(obj)
 	}
 }
 
+function specNameSorter(a, b)
+{
+	switch(mainSettings.sortOrder) {
+		case 0:
+			return a.GetType() > b.GetType() ? -1 : 1;
+		break;
+		case 1:
+			return a.GetType() > b.GetType() ? 1 : -1;
+		break;
+		case 2:
+			if (a.GetType() < b.GetType()) return -1;
+			if (a.GetType() > b.GetType()) return 1;
+			return b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+		break;
+		case 3:
+			if (a.GetType() < b.GetType()) return -1;
+			if (a.GetType() > b.GetType()) return 1;
+			return a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+		break;
+		case 4:
+			return b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+		break;
+		case 5:
+			return a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+		break;
+		default:
+			return 0;
+		break;
+	}
+}
+
 function mainSettingsHandler(event)
 {
 	var w = new Modal('mainSettings', utils.getImageTag('icon_dice.png', '45px') + ' '+loca.GetText("LAB", "ToggleOptionsPanel"));
@@ -98,6 +130,15 @@ function mainSettingsHandler(event)
 		$('<option>', { 'value': 'grouped' }).text(getText('menustyle_grouped')),
 		$('<option>', { 'value': 'linear' }).text(getText('menustyle_linear')),		
 	]);
+	var sortNameSelector = $('<select>', { 'class': 'form-control sortOrder' });
+	sortNameSelector.append([
+		$('<option>', { 'value': 0 }).text('type DESC'),
+		$('<option>', { 'value': 1 }).text('type ASC'),
+		$('<option>', { 'value': 2 }).text('type > name DESC'),
+		$('<option>', { 'value': 3 }).text('type > name ASC'),
+		$('<option>', { 'value': 4 }).text('name DESC'),
+		$('<option>', { 'value': 5 }).text('name ASC'),
+	]);
 	html += utils.createTableRow([[6, getText('menustyle_desc')], [6, menuStyleSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('deffilter_desc')], [6, createFilterDrop()]]);
 	html += utils.createTableRow([[6, getText('dateformat_desc')], [6, createDateFormatterDrop()]]);
@@ -113,6 +154,7 @@ function mainSettingsHandler(event)
 		[6, getText('spectimetype_desc')], 
 		[6, createSwitch('specDefTimeType', mainSettings.specDefTimeType) + '<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getDefTimeType())]
 	]);
+	html += utils.createTableRow([[6, "Spec name sorting type"], [6, sortNameSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, "Force use GC"], [6, createSwitch('forcegc', mainSettings.forcegc)]]);
 	w.Body().html(html + '<div>');
 	w.withBody('button').click(function(e) { 
@@ -125,6 +167,7 @@ function mainSettingsHandler(event)
 		file.browseForDirectory("Select a directory"); 
 	});
 	w.withBody('.menuStyle').val(mainSettings.menuStyle).change(function(e) { mainSettings.menuStyle = $(e.target).val(); });
+	w.withBody('.sortOrder').val(mainSettings.sortOrder).change(function(e) { mainSettings.sortOrder = parseInt($(e.target).val()); });
 	w.withBody('.defFilter').val(mainSettings.defFilter).change(function(e) { mainSettings.defFilter = $(e.target).val(); });
 	w.withBody('.dtfFormat').val(mainSettings.dtfFormat).change(function(e) { mainSettings.dtfFormat = $(e.target).val(); });
 	w.withBody('.geoMass select').val(mainSettings.geoDefTask).change(function(e) { mainSettings.geoDefTask = $(e.target).val(); });

@@ -47,7 +47,7 @@ function specSharedHandler(type)
 	specTemplates.setModule(isExplorer ? 'expl' : 'geo');
 	const playerLevel = game.player.GetPlayerLevel();
     var out = '<div class="container-fluid">', isThereAnySpec = false, specialistsUniqueId;
-	game.getSpecialists().sort(0).forEach(function(item){
+	game.getSpecialists().sort(specNameSorter).forEach(function(item){
 		if (item.GetTask() != null || item.GetBaseType() != type || item.getPlayerID() == -1) { return; }
 		specialistsUniqueId = item.GetUniqueID();
 		isThereAnySpec = true;
