@@ -63,7 +63,7 @@ function battleSaveDialog()
 	battleWindow.sTitle().html(loca.GetText("LAB", "ChangeSortingOrder"));
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	var select = $('<select>').attr('class', 'form-control').append($('<option>', { value: 1000 }).text('1s'));
-	for(var i = 2; i < 61; i++) {
+	for(var i = 2; i < 301; i++) {
 		select.append($('<option>', { value: i * 1000 }).text(i+'s'));
 	}
 	var timeSelectRow = $(utils.createTableRow([[2, select.prop('outerHTML')]])).find("div:first");
