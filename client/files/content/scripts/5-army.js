@@ -302,6 +302,7 @@ function armyLoadDataCheck(data)
 {
 	var result = { 'canSubmit': true }, requiredArmy = {};
 	armyPacketMatches = {};
+	var canFree = false;
 	$.each(data, function(item) { 
 		result[item] = result[item] || { 'data': data[item] };
 		var spec = armyGetSpecialistFromID(item);
@@ -315,6 +316,8 @@ function armyLoadDataCheck(data)
 				var req = data[item][res] - armyGetSquadCount(item, res);
 				if(req > 0) { 
 					requiredArmy[res] = requiredArmy[res] + req || req;
+				} else {
+					canFree = true;
 				}
 			}
 		});
@@ -329,7 +332,7 @@ function armyLoadDataCheck(data)
 		var aStatus = armyFreeInfo[item] >= requiredArmy[item];
 		if(!aStatus) { result.canSubmit = false; }
 	});
-	if(Object.keys(requiredArmy).length == 0) { result.canSubmit = false; }
+	if(Object.keys(requiredArmy).length == 0 && !canFree) { result.canSubmit = false; }
 	return result;
 }
 
