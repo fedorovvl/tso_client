@@ -110,6 +110,7 @@ function battleSaveTemplate()
 	Object.keys(savePacket).sort(function(a, b){ return savePacket[a].order - savePacket[b].order; }).forEach(function(key) { sortedPacket[key] = savePacket[key]; });
 	$('#' + battleWindow.rawsId).modal('hide');
 	if(Object.keys(savePacket).length > 0) { battleTemplates.save(sortedPacket); }
+	battlePacket = {};
 }
 
 function battleSendGeneral(spec, name, targetName, type, target)
