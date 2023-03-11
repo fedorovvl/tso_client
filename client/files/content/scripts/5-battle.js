@@ -221,7 +221,7 @@ function battleAttackDirect()
 		var spec = armyGetSpecialistFromID(item.id);
 		var grid = $(item).closest("div.row").find("button").val();
 		if(!grid || grid == 0 || grid == "0") { return; }
-		battleTimedQueue.add(function(){ battleSendGeneral(spec, 5, grid); });
+		battleTimedQueue.add(function(){ battleSendGeneral(spec, spec.getName(false), grid, 5, grid); });
 	});
 	if(battleTimedQueue.len() > 0) {
 		battleTimedQueue.run();
@@ -313,8 +313,8 @@ function battleGetData()
 		$.each(battlePacket, function(item) {
 			if(battlePacket[item].target && game.zone.mStreetDataMap.GetBuildingByGridPos(battlePacket[item].target) != null) {
 				battleWindow.withBody('button[id="'+item+'"]').text(battlePacket[item].targetName).val(battlePacket[item].target);
-				battleWindow.withBody('input[id="'+item+'"]').prop("checked", true);
 			}
+			battleWindow.withBody('input[id="'+item+'"]').prop("checked", true);
 		});
 	}
 	battleWindow.withBody("button").click(function(e){
