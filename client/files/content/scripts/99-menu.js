@@ -79,7 +79,7 @@ Menu.prototype = {
 	addKeybBind: function(fn, key, ctrl, isUser) {
 		var keyComb = key.toString() + (ctrl ? ctrl : false).toString();
 		if (this.keybindings[keyComb]) {
-			  alert(keyComb + " already binded");
+			  game.showAlert("Key combination {0} for {1} already binded on {2}".format(keyComb, fn.name, this.keybindings[keyComb].fn.name));
 			  return;
 		}
 		this.keybindings[keyComb] = { 'isUser': isUser, 'fn': fn };
@@ -109,6 +109,7 @@ Menu.prototype = {
 };
 menu = new Menu(mainSettings.menuStyle);
 menu.show();
+menu.addKeybBind(shortcutsPickupAll, 115, true, false);
 setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem: ' + humanMemorySize(air.System.privateMemory, 1); }, 5000);
 reloadScripts(null);
 shortcutsMakeMenu();

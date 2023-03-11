@@ -20,6 +20,7 @@ function shortcutsMakeMenu()
 		{ label: loca.GetText("LAB","ToggleOptionsPanel"), onSelect: shortcutsAddHandler },
 		{ label: loca.GetText("LAB","UnloadUnits"), onSelect: shortcutsFreeAllUnits },
 		{ label: getText('shortcutsToStar'), onSelect: shortcutsReturnAll },
+		{ label: loca.GetText("LAB", "WarehouseTab7") + " (Ctrl + F4)", onSelect: shortcutsPickupAll },
 		{ type: 'separator' }
 	];
 	shortcutsGenMenuRecursive(shortcutsSettings, m);
@@ -126,6 +127,50 @@ function shortcutsReturnAll()
 		game.showAlert(getText('command_sent'));
 	}
 }
+
+function shortcutsPickupAll(event) {
+    var collectionsManager = swmmo.getDefinitionByName("Collections::CollectionsManager").getInstance(),
+        queue = new TimedQueue(1000),
+        questTriggersMap = {},
+        itemBuildingName, itemGOContainer;
+    if (game.gi.mCurrentPlayer.mIsAdventureZone && game.gi.mNewQuestManager.GetQuestPool().IsAnyQuestsActive()) {
+		$.each(game.gi.mNewQuestManager.GetQuestPool().GetQuest_vector(), function(i, item) {
+			if (item.isFinished() || !item.IsQuestActive()) { return; }
+			$.each(item.mQuestDefinition.questTriggers_vector, function(n, trigger) {
+				if(trigger.name_string != null && trigger.name_string != '')
+					questTriggersMap[trigger.name_string] = true;
+			});
+		});
+    }
+
+    game.zone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
+        if (item === null) { return; }
+        itemGOContainer = item.GetGOContainer();
+        if (
+            collectionsManager.getBuildingIsCollectible(item.GetBuildingName_string()) ||
+            (
+                questTriggersMap[item.GetBuildingName_string()] &&
+                item.mIsSelectable &&
+                itemGOContainer.mIsAttackable &&
+                !itemGOContainer.mIsLeaderCamp &&
+                itemGOContainer.ui !== "enemy" &&
+                (item.GetArmy() == null || !item.GetArmy().HasUnits())
+            )
+        ) {
+            queue.add(function(){
+                game.gi.SelectBuilding(item);
+            });
+        }
+    });
+
+    if (queue.len() === 0) {
+        showGameAlert("No collectibles found");
+        return;
+    }
+    showGameAlert(getText('command_sent'));
+    queue.run();
+}
+
 function shortcutsFreeAllUnits()
 {
 	var queue = new TimedQueue(1000);

@@ -45,12 +45,12 @@ function specDutyMenuHandler(event) {
 
 	dutyWindow.withFooter('.dutyExplorersBtn, .dutyGeologistBtn').attr("disabled", game.gi.mCurrentPlayer.mIsAdventureZone);
 	var out = '';
-	var tabStat = [];
-	game.getSpecialists().sort(specNameSorter).forEach(function(item){
+	var tabStat = [], listSpec = [];
+	game.getSpecialists().sort(0).forEach(function(item){
 		if(item.GetTask() == null) { return; }
 		var playerOwner = game.gi.GetPlayerName_string(item.getPlayerID());
 		var name = '{1} ({0})'.format(playerOwner, item.getName(false));
-		var type = item.GetBaseType() < 3 ? item.GetBaseType() : 3;
+		var type = [1,2].indexOf(item.GetBaseType()) != -1 ? item.GetBaseType() : 3;
 		tabStat[type] = ++tabStat[type] || 1;
 		var task;
 		if(type < 3) {
@@ -59,15 +59,23 @@ function specDutyMenuHandler(event) {
 			task = loca.GetText("LAB","SpecialistTask"+dutySPECIALIST_TASK_TYPE.toString(item.GetTask().CreateTaskVOFromSpecialistTask().type));
 		}
 		var time = item.GetTask().GetRemainingTime();
-		if(time > 0) {
+		listSpec.push( [ name, time, item.getIconID(), task, type, item.getPlayerID()  ]  );
+	});
+	listSpec.sort(function (a, b){
+		if (a[1] > b[1]) return 1;
+		if (a[1] < b[1]) return -1;
+		return a[0].toLowerCase().localeCompare(b[0].toLowerCase());
+	});
+	listSpec.forEach(function(item){
+		if(item[1] > 0) {
 			out += createTableRow([
-				[4, getImageTag(item.getIconID(), '10%') + name, item.getPlayerID() + ' type' + type],
-				[4, task],
-				[2, loca.FormatDuration(time, 1)],
-				[2, dtf.format(new window.runtime.Date(Date.now() + time))]
+				[4, getImageTag(item[2], '10%') + item[0], item[5] + ' type' + item[4]],
+				[4, item[3]],
+				[2, loca.FormatDuration(item[1], 1)],
+				[2, dtf.format(new window.runtime.Date(Date.now() + item[1]))]
 			]);
 		} else {
-			out += createTableRow([[3, getImageTag(item.getIconID(), '10%') + name, item.getPlayerID() + ' type' + type],[9, task]]);
+			out += createTableRow([[3, getImageTag(item[2], '10%') + item[0], item[5] + ' type' + item[4]],[9, item[3]]]);
 		}
 	});
 	$.each(dutySpecTypes, function(i, item) {
