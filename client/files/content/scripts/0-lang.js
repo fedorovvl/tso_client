@@ -87,7 +87,9 @@ const baseTranslation = {
 		'shortcutsTitle': 'Shortcuts',
 		'sortorder_desc': 'Specialists sorting type',
 		'sortbytype': 'Type',
-		'sortbyname': 'Name'
+		'sortbyname': 'Name',
+		"dutyShowGuest" : "Hide/Show Guest",
+		"specHideTitle" : "Hide specialists"
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -175,7 +177,9 @@ const baseTranslation = {
 		'shortcutsTitle': 'Закладки',
 		'sortorder_desc': 'Тип сортировки специалистов',
 		'sortbytype': 'Тип',
-		'sortbyname': 'Имя'
+		'sortbyname': 'Имя',
+		"dutyShowGuest" : "Скрыть/показать гостевых",
+		"specHideTitle" : "Скрытие специалистов"
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
@@ -263,7 +267,9 @@ const baseTranslation = {
 		'shortcutsTitle': 'Verknüpfungen',
 		'sortorder_desc': 'Spezialisten Sortierart',
 		'sortbytype': 'Typ',
-		'sortbyname': 'Name'
+		'sortbyname': 'Name',
+		"dutyShowGuest" : "Gast ein/aus",
+		"specHideTitle" : "Spezialisten ausblenden"
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
@@ -352,7 +358,9 @@ const baseTranslation = {
 		'shortcutsTitle': 'Raccourcis',
 		'sortorder_desc': 'Spécialistes du tri',
 		'sortbytype': 'Type',
-		'sortbyname': 'Nom'
+		'sortbyname': 'Nom',
+		"dutyShowGuest" : "Masquer/Afficher Invité(s)",
+		"specHideTitle" : "Cacher les spécialistes"
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -439,7 +447,9 @@ const baseTranslation = {
 		'shortcutsTitle': 'Atajos',
 		'sortorder_desc': 'Ordenar especialistas por',
 		'sortbytype': 'Tipo',
-		'sortbyname': 'Nombre'
+		'sortbyname': 'Nombre',
+		"dutyShowGuest" : "Todos/Solo míos",
+		"specHideTitle" : "Ocultar especialistas"
 	},
     "pl-pl": {
         "btn_submit": "Wyślij",
@@ -525,7 +535,9 @@ const baseTranslation = {
 		'shortcutsTitle': 'Skróty',
 		'sortorder_desc': 'Specjaliści typ sortowania',
 		'sortbytype': 'Typ',
-		'sortbyname': 'Nazwa'
+		'sortbyname': 'Nazwa',
+		"dutyShowGuest" : "Pokaż/Ukryj gości",
+		"specHideTitle" : "Ukryj specjalistów"
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',
@@ -595,6 +607,8 @@ const baseTranslation = {
 		'shortcutsTitle': 'Atalhos',
 		'sortorder_desc': 'Especialistas tipo de classificação',
 		'sortbytype': 'Tipo',
-		'sortbyname': 'Nome'
+		'sortbyname': 'Nome',
+		"dutyShowGuest" : "Todos/Apenas meus",
+		"specHideTitle" : "Esconder especialistas"
 	}
 };

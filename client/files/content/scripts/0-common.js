@@ -8,7 +8,7 @@ var mainSettings = {
 	defFilter: 'none',
 	dtfFormat: "MM-dd HH:mm",
 	forcegc: true,
-	sortOrder: 2
+	sortOrder: 6
 };
 
 function reloadScripts(event)

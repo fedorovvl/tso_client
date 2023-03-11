@@ -20,7 +20,9 @@ var Menu = function(type){
 				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', keyCode: 114, onSelect: function() { specSharedHandler(1); } },
 				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', keyCode: 115, onSelect: function() { specSharedHandler(2); } },
 				{ label: loca.GetText("LAB", "Army") + ' (F9)', keyCode: 120, onSelect: armyMenuHandler },
-				{ label: loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual") + ' (F10)', keyCode: 121, onSelect: battleMenuHandler }
+				{ label: loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual") + ' (F10)', keyCode: 121, onSelect: battleMenuHandler },
+				{ label: loca.GetText("LAB", 'ProductionDetails'), onSelect: specDutyMenuHandler },
+				{ label: getText('specHideTitle'), onSelect: hideSpecMenuHandler }
 			]},
 			{ label: loca.GetText("LAB", "Buildings"), items: [
 				{ label: loca.GetText("LAB", "Buffs") + ' (F5)', keyCode: 116, onSelect: menuBuffsHandler },
