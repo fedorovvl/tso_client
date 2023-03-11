@@ -84,7 +84,10 @@ const baseTranslation = {
 		'shortcutsSeparator' : 'Separator',
 		'shortcutsToStar' : 'Return all generals to star menu',
 		'shortcutsSaved' : 'Saved',
-		'shortcutsTitle': 'Shortcuts'
+		'shortcutsTitle': 'Shortcuts',
+		'sortorder_desc': 'Specialists sorting type',
+		'sortbytype': 'Type',
+		'sortbyname': 'Name'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -169,7 +172,10 @@ const baseTranslation = {
 		'shortcutsSeparator' : 'Разделитель',
 		'shortcutsToStar' : 'Вернуть всех генералов в звезду',
 		'shortcutsSaved' : 'Сохранено',
-		'shortcutsTitle': 'Закладки'
+		'shortcutsTitle': 'Закладки',
+		'sortorder_desc': 'Тип сортировки специалистов',
+		'sortbytype': 'Тип',
+		'sortbyname': 'Имя'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
@@ -254,7 +260,10 @@ const baseTranslation = {
 		'shortcutsSeparator' : 'Abtrennung',
 		'shortcutsToStar' : 'Alle Generäle zurück ins Sternmenü',
 		'shortcutsSaved' : 'Gespeichert',
-		'shortcutsTitle': 'Verknüpfungen'
+		'shortcutsTitle': 'Verknüpfungen',
+		'sortorder_desc': 'Spezialisten Sortierart',
+		'sortbytype': 'Typ',
+		'sortbyname': 'Name'
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
@@ -340,7 +349,10 @@ const baseTranslation = {
 		'shortcutsSeparator' : 'Séparateur',
 		'shortcutsToStar' : 'Retourner tous les généraux au menu étoile',
 		'shortcutsSaved' : 'Sauvegardé',
-		'shortcutsTitle': 'Raccourcis'
+		'shortcutsTitle': 'Raccourcis',
+		'sortorder_desc': 'Spécialistes du tri',
+		'sortbytype': 'Type',
+		'sortbyname': 'Nom'
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -424,7 +436,10 @@ const baseTranslation = {
 		'shortcutsSeparator' : 'Separador',
 		'shortcutsToStar' : 'Devolver todos los generales al menú estrella',
 		'shortcutsSaved' : 'Guardado',
-		'shortcutsTitle': 'Atajos'
+		'shortcutsTitle': 'Atajos',
+		'sortorder_desc': 'Especialistas clasificar tipo',
+		'sortbytype': 'Tipo',
+		'sortbyname': 'Nombre'
 	},
     "pl-pl": {
         "btn_submit": "Wyślij",
@@ -507,7 +522,10 @@ const baseTranslation = {
 		'shortcutsSeparator' : 'Separator',
 		'shortcutsToStar' : 'Przywróć wszystkich generałów do menu gwiazdkowego',
 		'shortcutsSaved' : 'Zapisane',
-		'shortcutsTitle': 'Skróty'
+		'shortcutsTitle': 'Skróty',
+		'sortorder_desc': 'Specjaliści typ sortowania',
+		'sortbytype': 'Typ',
+		'sortbyname': 'Nazwa'
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',
@@ -574,6 +592,9 @@ const baseTranslation = {
 		'shortcutsSeparator' : 'Delimitador',
 		'shortcutsToStar' : 'Devolver todos os generais ao menu estelar',
 		'shortcutsSaved' : 'Salvado',
-		'shortcutsTitle': 'Atalhos'
+		'shortcutsTitle': 'Atalhos',
+		'sortorder_desc': 'Especialistas tipo de classificação',
+		'sortbytype': 'Tipo',
+		'sortbyname': 'Nome'
 	}
 };

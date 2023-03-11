@@ -138,13 +138,13 @@ function mainSettingsHandler(event)
 	]);
 	var sortNameSelector = $('<select>', { 'class': 'form-control sortOrder' });
 	sortNameSelector.append([
-		$('<option>', { 'value': 0 }).text('type DESC'),
-		$('<option>', { 'value': 1 }).text('type ASC'),
-		$('<option>', { 'value': 2 }).text('type > name DESC'),
-		$('<option>', { 'value': 3 }).text('type > name ASC'),
-		$('<option>', { 'value': 4 }).text('name DESC'),
-		$('<option>', { 'value': 5 }).text('name ASC'),
-		$('<option>', { 'value': 6 }).text('StarMenu'),
+		$('<option>', { 'value': 0 }).text('{0} (DESC)'.format(getText('sortbytype'))),
+		$('<option>', { 'value': 1 }).text('{0} (ASC)'.format(getText('sortbytype'))),
+		$('<option>', { 'value': 2 }).text('{0} > {1} (DESC)'.format(getText('sortbytype'), getText('sortbyname'))),
+		$('<option>', { 'value': 3 }).text('{0} > {1} (ASC)'.format(getText('sortbytype'), getText('sortbyname'))),
+		$('<option>', { 'value': 4 }).text('{0} (DESC)'.format(getText('sortbyname'))),
+		$('<option>', { 'value': 5 }).text('{0} (ASC)'.format(getText('sortbyname'))),
+		$('<option>', { 'value': 6 }).text(loca.GetText("LAB", "StarMenu")),
 	]);
 	html += utils.createTableRow([[6, getText('menustyle_desc')], [6, menuStyleSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('deffilter_desc')], [6, createFilterDrop()]]);
@@ -161,7 +161,7 @@ function mainSettingsHandler(event)
 		[6, getText('spectimetype_desc')], 
 		[6, createSwitch('specDefTimeType', mainSettings.specDefTimeType) + '<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getDefTimeType())]
 	]);
-	html += utils.createTableRow([[6, "Spec name sorting type"], [6, sortNameSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('sortorder_desc')], [6, sortNameSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, "Force use GC"], [6, createSwitch('forcegc', mainSettings.forcegc)]]);
 	w.Body().html(html + '<div>');
 	w.withBody('button').click(function(e) { 
