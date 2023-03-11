@@ -58,6 +58,10 @@ function shortcutsMenuSelectedHandler(event)
 	try {
 		var filetype = shortcutsStripType(event.target.name);
 		var file = new air.File(filetype[0]);
+		if(!file.exists) {
+			alert(getText("bad_template"));
+			return;
+		}
 		var fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.READ);
 		var data = fileStream.readUTFBytes(file.size);
@@ -65,7 +69,7 @@ function shortcutsMenuSelectedHandler(event)
 		if (data == "") { return; }
 		shortcutsProceedFile(JSON.parse(data), filetype[1]);
 	} catch(e) {
-		getText("bad_template");
+		alert(getText("bad_template"));
 	}
 }
 
