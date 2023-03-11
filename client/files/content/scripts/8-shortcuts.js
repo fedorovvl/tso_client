@@ -223,13 +223,20 @@ function shortcutsAddHandler(event)
 		}
 		shortcutsRefresh();
 	});
+	var sortOrder = {};
+	$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
+	debug(sortOrder);
 	shortcutsWindow.withFooter('.shortcutsSave').click(function(){
 		var active = shortcutsGetActive();
 		var sortOrder = {};
 		if (active != null) {
 			$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
 			active.items.sort(function(a,b) { return sortOrder[active.items.indexOf(a)] > sortOrder[active.items.indexOf(b)] ? 1 : -1; });
-			$.each(shortcutsWindow.withBody('.form-control'), function(i, item) { active.items[i][1] = $(item).val() || null; });
+			$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
+				if($(item).find('.form-control').length > 0) {
+					active.items[i][1] = $(item).find('.form-control').val() || null;
+				}
+			});
 		} else {
 			$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
 			shortcutsSettings.sort(function(a,b) { return sortOrder[shortcutsSettings.indexOf(a)] > sortOrder[shortcutsSettings.indexOf(b)] ? 1 : -1; });
