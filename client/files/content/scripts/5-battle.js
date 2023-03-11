@@ -3,12 +3,18 @@ var battleWindow;
 var battleSearchFor;
 var battlePacket;
 var battleTemplates;
+var battleTimedQueue;
 
 function battleMenuHandler(event)
 {
 	try {
 		if(game.gi.isOnHomzone()) {
 			game.showAlert(loca.GetText("MEL", "ExplorerDidNotFindEventZone"));
+			return;
+		}
+		if(battleTimedQueue && battleTimedQueue.index != battleTimedQueue.len())
+		{
+			game.showAlert(loca.GetText("ALT", "ServerOverstrained"));
 			return;
 		}
 		battleTemplates = new SaveLoadTemplate('battle', function(data) {
@@ -167,14 +173,14 @@ function battleLoadData()
 function battleAttack(direct)
 {
 	direct = typeof direct === "boolean" ? direct : false;
-	var queue = new TimedQueue(1000);
+	battleTimedQueue = new TimedQueue(1000);
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canAttack) { return; }
 		var spec = armyGetSpecialistFromID(item);
-		queue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].targetName, 5, battlePacket[item].target); }, battlePacket[item].time);
+		battleTimedQueue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].targetName, 5, battlePacket[item].target); }, battlePacket[item].time);
 	});
-	if(queue.len() > 0) {
-		queue.run();
+	if(battleTimedQueue.len() > 0) {
+		battleTimedQueue.run();
 		if(!direct) { battleWindow.hide(); }
 		showGameAlert(getText('command_sent'));
 	}
@@ -183,14 +189,14 @@ function battleAttack(direct)
 function battleMove(direct)
 {
 	direct = typeof direct === "boolean" ? direct : false;
-	var queue = new TimedQueue(1000);
+	battleTimedQueue = new TimedQueue(1000);
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canMove) { return; }
 		var spec = armyGetSpecialistFromID(item);
-		queue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].grid, 4, battlePacket[item].grid); });
+		battleTimedQueue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].grid, 4, battlePacket[item].grid); });
 	});
-	if(queue.len() > 0) {
-		queue.run();
+	if(battleTimedQueue.len() > 0) {
+		battleTimedQueue.run();
 		if(!direct) { battleWindow.hide(); }
 		showGameAlert(getText('command_sent'));
 	}
@@ -198,15 +204,15 @@ function battleMove(direct)
 
 function battleAttackDirect()
 {
-	var queue = new TimedQueue(1000);
+	battleTimedQueue = new TimedQueue(1000);
 	battleWindow.withBody('[type=checkbox]').each(function(i, item) {
 		var spec = armyGetSpecialistFromID(item.id);
 		var grid = $(item).closest("div.row").find("button").val();
 		if(!grid || grid == 0 || grid == "0") { return; }
-		queue.add(function(){ battleSendGeneral(spec, 5, grid); });
+		battleTimedQueue.add(function(){ battleSendGeneral(spec, 5, grid); });
 	});
-	if(queue.len() > 0) {
-		queue.run();
+	if(battleTimedQueue.len() > 0) {
+		battleTimedQueue.run();
 		battleWindow.hide();
 		showGameAlert(getText('command_sent'));
 	}
