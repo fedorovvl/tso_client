@@ -34,7 +34,7 @@ function shortcutsGenMenuRecursive(item, m)
 			if(typeof i == 'object' && !Array.isArray(i)) {
 				return shortcutsGenMenuRecursive([i], s.items);
 			}
-			if(i == '--sep--') {
+			if(/--s[0-9]+p--/.test(i)) {
 				s.items.push({ type: 'separator' });
 			} else {
 				var label = shortcutsStripType(i[0])[1] + (i[1] == null ? shortcutsStripType(i[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : i[1]);
@@ -201,7 +201,7 @@ function shortcutsAddHandler(event)
 		var item = shortcutsGetActive();
 		if (item != null) {
 			if(this.name == 'sep') {
-				item.items.push('--sep--');
+				item.items.push('--s'+Date.now()+'p--');
 				shortcutsUpdateView();
 				return;
 			}
@@ -306,7 +306,7 @@ function shortcutsUpdateView()
 					[6, $('<span>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
 					[3, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx, 'style': 'display:none;' })]
 				], false);
-			} else if(i == '--sep--') {
+			} else if(/--s[0-9]+p--/.test(i) || i == '--sep--') {
 				out += createTableRow([
 				[1, '&#8597;&nbsp;&nbsp;'],
 				[10, $('<hr>', { 'style': 'margin: 10px 0;' })],
