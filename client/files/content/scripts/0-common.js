@@ -60,37 +60,39 @@ function debug(obj)
 
 function specNameSorter(a, b)
 {
-	switch(mainSettings.sortOrder) {
-		case 0:
-			return a.GetType() > b.GetType() ? -1 : 1;
-		break;
-		case 1:
-			return a.GetType() > b.GetType() ? 1 : -1;
-		break;
-		case 2:
-			if (a.GetType() < b.GetType()) return -1;
-			if (a.GetType() > b.GetType()) return 1;
-			return b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
-		break;
-		case 3:
-			if (a.GetType() < b.GetType()) return -1;
-			if (a.GetType() > b.GetType()) return 1;
-			return a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
-		break;
-		case 4:
-			return b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
-		break;
-		case 5:
-			return a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
-		break;
-		case 6:
-			var res = a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
-			return res != 0 ? res : a.GetType() > b.GetType() ? -1 : 1;
-		break;
-		default:
-			return 0;
-		break;
-	}
+	try {
+		switch(mainSettings.sortOrder) {
+			case 0:
+				return a.GetType() > b.GetType() ? -1 : 1;
+			break;
+			case 1:
+				return a.GetType() > b.GetType() ? 1 : -1;
+			break;
+			case 2:
+				if (a.GetType() < b.GetType()) return -1;
+				if (a.GetType() > b.GetType()) return 1;
+				return b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+			break;
+			case 3:
+				if (a.GetType() < b.GetType()) return -1;
+				if (a.GetType() > b.GetType()) return 1;
+				return a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+			break;
+			case 4:
+				return b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+			break;
+			case 5:
+				return a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+			break;
+			case 6:
+				var res = a.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase().localeCompare(b.getName(false).replace(/(<([^>]+)>)/gi, "").toLowerCase());
+				return res != 0 ? res : a.GetType() > b.GetType() ? -1 : 1;
+			break;
+			default:
+				return 0;
+			break;
+		}
+	} catch (e) { return 0; }
 }
 
 function mainSettingsHandler(event)
