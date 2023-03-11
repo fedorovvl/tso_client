@@ -39,7 +39,7 @@ function battleMenuHandler(event)
 			battleWindow.Footer().prepend([
 				$('<button>').attr({ "class": "btn btn-primary pull-left armySaveTemplate" }).text(getText('save_template')).click(battleSaveDialog),
 				$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { battleTemplates.load(); }),
-				$('<button>').attr({ "class": "btn btn-primary directAttack" }).text(loca.GetText("ACL", "PvPAttacker")).click(battleAttackDirect),
+				$('<button>').attr({ "class": "btn btn-primary directAttack" }).text(loca.GetText("ACL", "WinSmallMapsFast")).click(battleAttackDirect),
 				$('<button>').attr({ "class": "btn btn-primary reset" }).text(getText('btn_reset')).click(function(){
 					battleGetData();
 				}),
