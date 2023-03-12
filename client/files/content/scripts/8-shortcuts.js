@@ -17,10 +17,10 @@ $.extend(shortcutsSettings, readSettings(null, 'shortcuts'));
 function shortcutsMakeMenu()
 {
 	var m = [
-		{ label: loca.GetText("LAB","ToggleOptionsPanel"), onSelect: shortcutsAddHandler },
-		{ label: loca.GetText("LAB","UnloadUnits"), onSelect: shortcutsFreeAllUnits },
-		{ label: getText('shortcutsToStar'), onSelect: shortcutsReturnAll },
-		{ label: loca.GetText("LAB", "WarehouseTab7") + " (Ctrl + F4)", onSelect: shortcutsPickupAll },
+		{ label: loca.GetText("LAB","ToggleOptionsPanel"), mnemonicIndex: 0, onSelect: shortcutsAddHandler },
+		{ label: loca.GetText("LAB","UnloadUnits"), mnemonicIndex: 0, onSelect: shortcutsFreeAllUnits },
+		{ label: getText('shortcutsToStar'), mnemonicIndex: 0, onSelect: shortcutsReturnAll },
+		{ label: loca.GetText("LAB", "WarehouseTab7") + " (Ctrl + F4)", mnemonicIndex: 0, onSelect: shortcutsPickupAll },
 		{ type: 'separator' }
 	];
 	shortcutsGenMenuRecursive(shortcutsSettings, m);
@@ -30,7 +30,7 @@ function shortcutsMakeMenu()
 function shortcutsGenMenuRecursive(item, m)
 {
 	item.forEach(function(data){
-		var s = { label: data.name, items: [] };
+		var s = { label: data.name, mnemonicIndex: 0, items: [] };
 		data.items.forEach(function(i) {
 			if(typeof i == 'object' && !Array.isArray(i)) {
 				return shortcutsGenMenuRecursive([i], s.items);

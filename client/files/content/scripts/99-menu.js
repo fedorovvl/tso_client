@@ -1,9 +1,9 @@
 var Menu = function(type){
 	this.groupedMenu = function() {
 		return [
-			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), items: [
-				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: mainSettingsHandler },
-				{ label: loca.GetText("LAB", "Filter"), items: [
+			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), mnemonicIndex: 0, items: [
+				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), mnemonicIndex: 0, onSelect: mainSettingsHandler },
+				{ label: loca.GetText("LAB", "Filter"), mnemonicIndex: 0, items: [
 						{ label: "none", onSelect: menuFilterHandler }, { label: "snownowater", onSelect: menuFilterHandler },
 						{ label: "snowlight", onSelect: menuFilterHandler }, { label: "snow", onSelect: menuFilterHandler },
 						{ label: "oven", onSelect: menuFilterHandler }, { label: "doomsday", onSelect: menuFilterHandler },
@@ -13,25 +13,25 @@ var Menu = function(type){
 						{ label: "tundra", onSelect: menuFilterHandler }, { label: "darkershadow", onSelect: menuFilterHandler },
 						{ label: "magicsepia", onSelect: menuFilterHandler }
 				]},
-				{ label: loca.GetText("LAB", "Update") + ' (F2)', keyCode: 113, onSelect: menuZoneRefreshHandler},
+				{ label: loca.GetText("LAB", "Update") + ' (F2)', mnemonicIndex: 0, keyCode: 113, onSelect: menuZoneRefreshHandler},
 				{ label: 'Debug window', onSelect: menuDebugHandler}
 			]},
-			{ label: loca.GetText("LAB", "Specialists"), items: [
-				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', keyCode: 114, onSelect: function() { specSharedHandler(1); } },
-				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', keyCode: 115, onSelect: function() { specSharedHandler(2); } },
-				{ label: loca.GetText("LAB", "Army") + ' (F9)', keyCode: 120, onSelect: armyMenuHandler },
-				{ label: loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual") + ' (F10)', keyCode: 121, onSelect: battleMenuHandler },
-				{ label: loca.GetText("LAB", 'ProductionDetails'), onSelect: specDutyMenuHandler },
-				{ label: getText('specHideTitle'), onSelect: hideSpecMenuHandler }
+			{ label: loca.GetText("LAB", "Specialists"), mnemonicIndex: 0, items: [
+				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', mnemonicIndex: 0, keyCode: 114, onSelect: function() { specSharedHandler(1); } },
+				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', mnemonicIndex: 0, keyCode: 115, onSelect: function() { specSharedHandler(2); } },
+				{ label: loca.GetText("LAB", "Army") + ' (F9)', mnemonicIndex: 0, keyCode: 120, onSelect: armyMenuHandler },
+				{ label: loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual") + ' (F10)', mnemonicIndex: 0, keyCode: 121, onSelect: battleMenuHandler },
+				{ label: loca.GetText("LAB", 'ProductionDetails'), mnemonicIndex: 0, onSelect: specDutyMenuHandler },
+				{ label: getText('specHideTitle'), mnemonicIndex: 0, onSelect: hideSpecMenuHandler }
 			]},
-			{ label: loca.GetText("LAB", "Buildings"), items: [
-				{ label: loca.GetText("LAB", "Buffs") + ' (F5)', keyCode: 116, onSelect: menuBuffsHandler },
-				{ label: loca.GetText("LAB", "Production") + ' (F7)', keyCode: 118, onSelect: menuBuildingHandler },
-				{ label: getText('prod_timed') + ' (F8)', keyCode: 119, onSelect: TimedMenuHandler }
+			{ label: loca.GetText("LAB", "Buildings"), mnemonicIndex: 0, items: [
+				{ label: loca.GetText("LAB", "Buffs") + ' (F5)', mnemonicIndex: 0, keyCode: 116, onSelect: menuBuffsHandler },
+				{ label: loca.GetText("LAB", "Production") + ' (F7)', mnemonicIndex: 0, keyCode: 118, onSelect: menuBuildingHandler },
+				{ label: getText('prod_timed') + ' (F8)', mnemonicIndex: 0, keyCode: 119, onSelect: TimedMenuHandler }
 			]},
-			{ label: loca.GetText("LAB", "BlackMarketAuction") + ' (F6)', keyCode: 117, onSelect: menuAuctionHandler },
-			{ label: getText('shortcutsTitle'), name: 'Shortcuts' },
-			{ label: loca.GetText("RES", "Tool"), name: 'Tools', items: [
+			{ label: loca.GetText("LAB", "BlackMarketAuction") + ' (F6)', mnemonicIndex: 0, keyCode: 117, onSelect: menuAuctionHandler },
+			{ label: getText('shortcutsTitle'), name: 'Shortcuts', mnemonicIndex: 0 },
+			{ label: loca.GetText("RES", "Tool"), name: 'Tools', mnemonicIndex: 0, items: [
 				{label: loca.GetText("LAB", "Update"), onSelect: reloadScripts },
 				{label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: scriptsManager },
 				{type: 'separator' }
@@ -53,7 +53,7 @@ Menu.prototype = {
 			menu.push({ label: "SaveHTML", onSelect: menuSaveHandler });
 		}
 		menu.push({type: 'separator' });
-		menu.push({ label: loca.GetText("LAB", "ChatHelp"), name: 'Help', items: [
+		menu.push({ label: loca.GetText("LAB", "ChatHelp"), name: 'Help', mnemonicIndex: 0, items: [
 			{ label: "Wiki", onSelect: openWikiHandler }, { label: "Discord (RU)", onSelect: openDiscordHandler },
 			{ label: "Discord (EN)", onSelect: openDiscordENHandler }, { label: "Discord (DE)", onSelect: openDiscordDEHandler },
 			{ type: 'separator' }, { label: "Donate (Ko-fi)", onSelect: openDonateHandler },
