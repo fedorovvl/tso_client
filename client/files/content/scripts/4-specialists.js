@@ -29,6 +29,16 @@ var explorerDropSpec = [
   ]}
 ];
 
+function specExplorerMenuHandler(event)
+{
+	specSharedHandler(1);
+}
+
+function specGeologistMenuHandler(event)
+{
+	specSharedHandler(2);
+}
+
 function specSharedHandler(type)
 {
 	const isExplorer = type === 1,

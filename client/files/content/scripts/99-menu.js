@@ -17,8 +17,8 @@ var Menu = function(type){
 				{ label: 'Debug window', onSelect: menuDebugHandler}
 			]},
 			{ label: loca.GetText("LAB", "Specialists"), mnemonicIndex: 0, items: [
-				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', mnemonicIndex: 0, keyCode: 114, onSelect: function() { specSharedHandler(1); } },
-				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', mnemonicIndex: 0, keyCode: 115, onSelect: function() { specSharedHandler(2); } },
+				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', mnemonicIndex: 0, keyCode: 114, onSelect: specExplorerMenuHandler },
+				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', mnemonicIndex: 0, keyCode: 115, onSelect: specGeologistMenuHandler },
 				{ label: loca.GetText("LAB", "Army") + ' (F9)', mnemonicIndex: 0, keyCode: 120, onSelect: armyMenuHandler },
 				{ label: loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual") + ' (F10)', mnemonicIndex: 0, keyCode: 121, onSelect: battleMenuHandler },
 				{ label: loca.GetText("LAB", 'ProductionDetails'), mnemonicIndex: 0, onSelect: specDutyMenuHandler },
@@ -76,8 +76,8 @@ Menu.prototype = {
 				this.addKeybBind(menu[i].onSelect, menu[i].keyCode, false, false);
 		}
 	},
-	addKeybBind: function(fn, key, ctrl, isUser) {
-		var keyComb = key.toString() + (ctrl ? ctrl : false).toString();
+	addKeybBind: function(fn, key, ctrlKey, isUser, shiftKey, altKey) {
+		var keyComb = '{0}.{1}.{2}.{3}'.format(key.toString(), (ctrlKey ? ctrlKey : false).toString(), (shiftKey ? shiftKey : false).toString(), (altKey ? altKey : false).toString());
 		if (this.keybindings[keyComb]) {
 			  game.showAlert("Key combination {0} for {1} already binded on {2}".format(keyComb, fn.name, this.keybindings[keyComb].fn.name));
 			  return;
@@ -85,7 +85,7 @@ Menu.prototype = {
 		this.keybindings[keyComb] = { 'isUser': isUser, 'fn': fn };
 	},
 	checkKeybind: function(event) {
-		var keyComb = '{0}{1}'.format(event.keyCode.toString(), event.ctrlKey.toString());
+		var keyComb = '{0}.{1}.{2}.{3}'.format(event.keyCode.toString(), event.ctrlKey.toString(), event.shiftKey.toString(), event.altKey.toString());
 		if(this.keybindings[keyComb])
 			this.keybindings[keyComb].fn(null);
 	},
@@ -95,9 +95,9 @@ Menu.prototype = {
 		item.addEventListener(air.Event.SELECT, fn);
 		return item;
 	},
-	addToolsItem: function(name, fn, key, ctrl) {
+	addToolsItem: function(name, fn, key, ctrl, shiftKey, altKey) {
 		this.nativeMenu.getItemByName("Tools").submenu.addItem(this.createItem(name, fn));
-		if(key) { this.addKeybBind(fn, key, ctrl, true); }
+		if(key) { this.addKeybBind(fn, key, ctrl, true, shiftKey, altKey); }
 	},
 	clearTools: function() {
 		$('script[id="user"]').remove();
