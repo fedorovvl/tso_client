@@ -31,7 +31,7 @@ function shortcutsGenMenuRecursive(item, m)
 {
 	item.forEach(function(data){
 		var s = { label: data.name, mnemonicIndex: 0, items: [] };
-		data.items.forEach(function(i) {
+		data.items.forEach(function(i, index) {
 			if(typeof i == 'object' && !Array.isArray(i)) {
 				return shortcutsGenMenuRecursive([i], s.items);
 			}
@@ -39,7 +39,7 @@ function shortcutsGenMenuRecursive(item, m)
 				s.items.push({ type: 'separator' });
 			} else {
 				var label = shortcutsStripType(i[0])[1] + (i[1] == null ? shortcutsStripType(i[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : i[1]);
-				s.items.push({ label: label, name: i[0], onSelect: shortcutsMenuSelectedHandler });
+				s.items.push({ label: "{0}. {1}".format(index, label), mnemonicIndex: 0, name: i[0], onSelect: shortcutsMenuSelectedHandler });
 			}
 		});
 		m.push(s);
