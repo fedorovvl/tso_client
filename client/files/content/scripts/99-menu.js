@@ -3,33 +3,41 @@ var Menu = function(type){
 		return [
 			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), mnemonicIndex: 0, items: [
 				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), mnemonicIndex: 0, onSelect: mainSettingsHandler },
+				{ label: "Hotkeys", mnemonicIndex: 0, onSelect: keybindsMenuHandler },
 				{ label: loca.GetText("LAB", "Filter"), mnemonicIndex: 0, items: [
-						{ label: "none", onSelect: menuFilterHandler }, { label: "snownowater", onSelect: menuFilterHandler },
-						{ label: "snowlight", onSelect: menuFilterHandler }, { label: "snow", onSelect: menuFilterHandler },
-						{ label: "oven", onSelect: menuFilterHandler }, { label: "doomsday", onSelect: menuFilterHandler },
-						{ label: "night", onSelect: menuFilterHandler }, { label: "desert", onSelect: menuFilterHandler },
-						{ label: "tropical", onSelect: menuFilterHandler },	{ label: "blackandwhite", onSelect: menuFilterHandler },
-						{ label: "spooky", onSelect: menuFilterHandler }, { label: "snow_medium", onSelect: menuFilterHandler },
-						{ label: "tundra", onSelect: menuFilterHandler }, { label: "darkershadow", onSelect: menuFilterHandler },
-						{ label: "magicsepia", onSelect: menuFilterHandler }
+						{ label: "none", name: "none", onSelect: menuFilterHandler },
+						{ label: "snownowater", name: "snownowater", onSelect: menuFilterHandler },
+						{ label: "snowlight", name: "snowlight", onSelect: menuFilterHandler },
+						{ label: "snow", name: "snow", onSelect: menuFilterHandler },
+						{ label: "oven", name: "oven", onSelect: menuFilterHandler },
+						{ label: "doomsday", name: "doomsday", onSelect: menuFilterHandler },
+						{ label: "night", name: "night", onSelect: menuFilterHandler },
+						{ label: "desert", name: "desert", onSelect: menuFilterHandler },
+						{ label: "tropical", name: "tropical", onSelect: menuFilterHandler },
+						{ label: "blackandwhite", name: "blackandwhite", onSelect: menuFilterHandler },
+						{ label: "spooky", name: "spooky", onSelect: menuFilterHandler },
+						{ label: "snow_medium", name: "snow_medium", onSelect: menuFilterHandler },
+						{ label: "tundra", name: "tundra", onSelect: menuFilterHandler },
+						{ label: "darkershadow", name: "darkershadow", onSelect: menuFilterHandler },
+						{ label: "magicsepia", name: "magicsepia", onSelect: menuFilterHandler }
 				]},
-				{ label: loca.GetText("LAB", "Update") + ' (F2)', mnemonicIndex: 0, keyCode: 113, onSelect: menuZoneRefreshHandler},
+				{ label: loca.GetText("LAB", "Update"), mnemonicIndex: 0, keyCode: 113, onSelect: menuZoneRefreshHandler},
 				{ label: 'Debug window', onSelect: menuDebugHandler}
 			]},
 			{ label: loca.GetText("LAB", "Specialists"), mnemonicIndex: 0, items: [
-				{ label: loca.GetText("SPE", "Explorer") + ' (F3)', mnemonicIndex: 0, keyCode: 114, onSelect: specExplorerMenuHandler },
-				{ label: loca.GetText("SPE", "Geologist") + ' (F4)', mnemonicIndex: 0, keyCode: 115, onSelect: specGeologistMenuHandler },
-				{ label: loca.GetText("LAB", "Army") + ' (F9)', mnemonicIndex: 0, keyCode: 120, onSelect: armyMenuHandler },
-				{ label: loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual") + ' (F10)', mnemonicIndex: 0, keyCode: 121, onSelect: battleMenuHandler },
+				{ label: loca.GetText("SPE", "Explorer"), mnemonicIndex: 0, keyCode: 114, onSelect: specExplorerMenuHandler },
+				{ label: loca.GetText("SPE", "Geologist"), mnemonicIndex: 0, keyCode: 115, onSelect: specGeologistMenuHandler },
+				{ label: loca.GetText("LAB", "Army"), mnemonicIndex: 0, keyCode: 120, onSelect: armyMenuHandler },
+				{ label: loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual"), mnemonicIndex: 0, keyCode: 121, onSelect: battleMenuHandler },
 				{ label: loca.GetText("LAB", 'ProductionDetails'), mnemonicIndex: 0, onSelect: specDutyMenuHandler },
 				{ label: getText('specHideTitle'), mnemonicIndex: 0, onSelect: hideSpecMenuHandler }
 			]},
 			{ label: loca.GetText("LAB", "Buildings"), mnemonicIndex: 0, items: [
-				{ label: loca.GetText("LAB", "Buffs") + ' (F5)', mnemonicIndex: 0, keyCode: 116, onSelect: menuBuffsHandler },
-				{ label: loca.GetText("LAB", "Production") + ' (F7)', mnemonicIndex: 0, keyCode: 118, onSelect: menuBuildingHandler },
-				{ label: getText('prod_timed') + ' (F8)', mnemonicIndex: 0, keyCode: 119, onSelect: TimedMenuHandler }
+				{ label: loca.GetText("LAB", "Buffs"), mnemonicIndex: 0, keyCode: 116, onSelect: menuBuffsHandler },
+				{ label: loca.GetText("LAB", "Production"), mnemonicIndex: 0, keyCode: 118, onSelect: menuBuildingHandler },
+				{ label: getText('prod_timed'), mnemonicIndex: 0, keyCode: 119, onSelect: TimedMenuHandler }
 			]},
-			{ label: loca.GetText("LAB", "BlackMarketAuction") + ' (F6)', mnemonicIndex: 0, keyCode: 117, onSelect: menuAuctionHandler },
+			{ label: loca.GetText("LAB", "BlackMarketAuction"), mnemonicIndex: 0, keyCode: 117, onSelect: menuAuctionHandler },
 			{ label: getText('shortcutsTitle'), name: 'Shortcuts', mnemonicIndex: 0 },
 			{ label: loca.GetText("RES", "Tool"), name: 'Tools', mnemonicIndex: 0, items: [
 				{label: loca.GetText("LAB", "Update"), onSelect: reloadScripts },
@@ -47,7 +55,7 @@ var Menu = function(type){
 };
 Menu.prototype = {
 	show:function(){
-		this.keybindings = {};
+		this.keybindings = { '115.true.false.false': { 'fn': shortcutsPickupAll } };
 		var menu = this.type == 'grouped' ? this.groupedMenu() : this.linearMenu();
 		if(isDebug) {
 			menu.push({ label: "SaveHTML", onSelect: menuSaveHandler });
@@ -64,7 +72,12 @@ Menu.prototype = {
 		menu.push({ label: '', name: 'memusage', enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;
-		this.buildKeybinds(menu);
+		var keybindsSettings = readSettings(null, 'keybinds');
+		if(Object.keys(keybindsSettings).length > 0) {
+			this.keybindings = keybindsSettings;
+		} else {
+			this.buildKeybinds(menu);
+		}
 	},
 	buildKeybinds: function(menu){
 		for(var i in menu) {
@@ -79,7 +92,7 @@ Menu.prototype = {
 	addKeybBind: function(fn, key, ctrlKey, isUser, shiftKey, altKey) {
 		var keyComb = '{0}.{1}.{2}.{3}'.format(key.toString(), (ctrlKey ? ctrlKey : false).toString(), (shiftKey ? shiftKey : false).toString(), (altKey ? altKey : false).toString());
 		if (this.keybindings[keyComb]) {
-			  game.showAlert("Key combination {0} for {1} already binded on {2}".format(keyComb, fn.name, this.keybindings[keyComb].fn.name));
+			  game.showAlert("Key combination {0} for {1} already binded on {2}".format(keyComb, fn.name, this.keybindings[keyComb].fn.name||this.keybindings[keyComb].fn));
 			  return;
 		}
 		this.keybindings[keyComb] = { 'isUser': isUser, 'fn': fn };
@@ -97,6 +110,7 @@ Menu.prototype = {
 	createItem: function(name, fn) {
 		var item = new air.NativeMenuItem(name);
 		item.mnemonicIndex = 0;
+		item.data = { 'item': { 'onSelect': fn } };
 		item.addEventListener(air.Event.SELECT, fn);
 		return item;
 	},
@@ -115,7 +129,6 @@ Menu.prototype = {
 };
 menu = new Menu(mainSettings.menuStyle);
 menu.show();
-menu.addKeybBind(shortcutsPickupAll, 115, true, false);
 setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem: ' + humanMemorySize(air.System.privateMemory, 1); }, 5000);
 reloadScripts(null);
 shortcutsMakeMenu();

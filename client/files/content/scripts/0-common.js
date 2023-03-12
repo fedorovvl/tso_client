@@ -221,7 +221,7 @@ function setFilterHandler(filter, init)
 
 function menuFilterHandler(event)
 {
-	setFilterHandler(event.target.label);
+	setFilterHandler(event.target.name);
 }
 
 function menuZoneRefreshHandler(event)
@@ -322,7 +322,7 @@ function getImage(bd, w, h) { return utils.getImage(bd, w, h); }
 function getImageTag(name, w, h) { return utils.getImage(assets.GetBitmapData(name), w, h); }
 function createTableRow(data, isHeader){ return utils.createTableRow(data, isHeader); }
 function createSwitch(checkboxId, isChecked){ return utils.createSwitch(checkboxId, isChecked); }
-function addToolsMenuItem(name, fn, key, ctrl) { try{ menu.addToolsItem(name, fn, key, ctrl); }catch(e){alert(e);} }
+function addToolsMenuItem(name, fn, key, ctrl, shiftKey, altKey) { try{ menu.addToolsItem(name, fn, key, ctrl, shiftKey, altKey); }catch(e){alert(e);} }
 function saveLastDir(type, dir) { 
 	var l = {};
 	l[type + 'lastDir'] = dir;

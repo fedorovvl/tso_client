@@ -20,7 +20,7 @@ function shortcutsMakeMenu()
 		{ label: loca.GetText("LAB","ToggleOptionsPanel"), mnemonicIndex: 0, onSelect: shortcutsAddHandler },
 		{ label: loca.GetText("LAB","UnloadUnits"), mnemonicIndex: 0, onSelect: shortcutsFreeAllUnits },
 		{ label: getText('shortcutsToStar'), mnemonicIndex: 0, onSelect: shortcutsReturnAll },
-		{ label: loca.GetText("LAB", "WarehouseTab7") + " (Ctrl + F4)", mnemonicIndex: 0, onSelect: shortcutsPickupAll },
+		{ label: loca.GetText("LAB", "WarehouseTab7"), mnemonicIndex: 0, onSelect: shortcutsPickupAll },
 		{ type: 'separator' }
 	];
 	shortcutsGenMenuRecursive(shortcutsSettings, m);

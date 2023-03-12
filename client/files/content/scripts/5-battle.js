@@ -158,7 +158,7 @@ function battleLoadData()
 	battleWindow.withFooter(".reset").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, getText('armyCurrentArmy')], [1, loca.GetText("LAB", "Objective")], [2, loca.GetText("LAB", "Attack")], [1, '#']], true);
-	var canSubmitAttack = true, canSubmitMove = false, attackSubmitChecker = [];
+	var canSubmitAttack = true, canSubmitMove = true, attackSubmitChecker = [];
 	battlePacket = battleLoadDataCheck(battlePacket);
 	$.each(battlePacket, function(item) { 
 		if(battlePacket[item].spec == null) {
@@ -178,7 +178,7 @@ function battleLoadData()
 			[1, battlePacket[item].grid, battlePacket[item].canMove || battlePacket[item].onSameGrid ? "buffReady" : "buffNotReady"],
 			[2, battlePacket[item].target > 0 ? battlePacket[item].targetName : '', !battlePacket[item].target ? '' : battlePacket[item].canSubmitAttack ? "buffReady" : "buffNotReady"],
 			[1, (battlePacket[item].time / 1000) + 's']]);
-		if(battlePacket[item].canSubmitMove) { canSubmitMove = true; }
+		if(!battlePacket[item].canSubmitMove) { canSubmitMove = false; }
 		if(!battlePacket[item].canSubmitAttack && battlePacket[item].target > 0) { canSubmitAttack = false; }
 		if(battlePacket[item].target > 0) { attackSubmitChecker.push(battlePacket[item].canSubmitAttack); }
 	});
