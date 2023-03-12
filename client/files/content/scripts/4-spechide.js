@@ -13,23 +13,26 @@ function hideSpecMenuHandler(event)
 	}
 	var w = new Modal('hideSpecWindow', utils.getImageTag('icon_dice.png', '45px') + ' ' + getText('specHideTitle'));
 	w.create();
-	w.Footer().prepend([
-		$("<button>").attr({'class':"btn btn-primary"}).text(loca.GetText("LAB","Save")).click(function(){
-			settings.settings["specHide"] = {};
-			settings.store(specHideVector, "specHide");
-			hideSpecHandler(null);
-			w.hide();
-		}),
-		$('<button>').attr({ "id": "dutyExplorersBtn", "class": "btn btn-primary pull-left" }).text(loca.GetText("SPE", "Explorer")),
-		$('<button>').attr({ "id": "dutyGeologistBtn", "class": "btn btn-primary pull-left" }).text(loca.GetText("SPE", "Geologist")),
-		$('<button>').attr({ "id": "dutyGeneralsBtn", "class": "btn btn-primary pull-left" }).text(loca.GetText("SPE", "General"))
-	]);
-	w.withFooter('#dutyExplorersBtn, #dutyGeologistBtn, #dutyGeneralsBtn').click(function(event) {
-		hideSpecSelectedType = dutySpecTypes[this.id];
-		w.withHeader("img").prop('src', dutyTitleIconByType[this.id]);
-		w.withBody('div.row').find('.type'+hideSpecSelectedType).closest('div.row').show();
-		w.withBody('div.row').find(':first:not(.type'+hideSpecSelectedType+')').closest('div.row').hide();
-	});
+	if(w.withFooter('#dutyExplorersBtn').length == 0) {
+		w.Footer().prepend([
+			$("<button>").attr({'class':"btn btn-primary"}).text(loca.GetText("LAB","Save")).click(function(){
+				settings.settings["specHide"] = {};
+				settings.store(specHideVector, "specHide");
+				hideSpecHandler(null);
+				w.hide();
+			}),
+			$('<button>').attr({ "id": "dutyExplorersBtn", "class": "btn btn-primary pull-left" }).text(loca.GetText("SPE", "Explorer")),
+			$('<button>').attr({ "id": "dutyGeologistBtn", "class": "btn btn-primary pull-left" }).text(loca.GetText("SPE", "Geologist")),
+			$('<button>').attr({ "id": "dutyGeneralsBtn", "class": "btn btn-primary pull-left" }).text(loca.GetText("SPE", "General"))
+		]);
+		
+		w.withFooter('#dutyExplorersBtn, #dutyGeologistBtn, #dutyGeneralsBtn').click(function(event) {
+			hideSpecSelectedType = dutySpecTypes[this.id];
+			w.withHeader("img").prop('src', dutyTitleIconByType[this.id]);
+			w.withBody('div.row').find('.type'+hideSpecSelectedType).closest('div.row').show();
+			w.withBody('div.row').find(':first:not(.type'+hideSpecSelectedType+')').closest('div.row').hide();
+		});
+	}
 	if(w.withHeader('.container-fluid').length == 0) {
 		w.withHeader('').append('<div class="container-fluid"><br>' + utils.createTableRow([[6, loca.GetText("LAB", "Name")], [3, "UniqueID"], [3, loca.GetText("LAB", "GuildOnlineLast24")]], true) + '</div>');
 	}
