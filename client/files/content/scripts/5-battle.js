@@ -129,7 +129,7 @@ function battleSendGeneral(spec, name, targetName, type, target)
 
 function battleLoadDataCheck(data)
 {
-	game.gi.mMouseCursor.SetCursorEditModeObjectName(86, '');
+	game.gi.mMouseCursor.SetCursorEditMode(86);
 	$.each(data, function(item) { 
 		var spec = armyGetSpecialistFromID(item);
 		data[item].spec = spec;
@@ -145,7 +145,7 @@ function battleLoadDataCheck(data)
 		data[item].canSubmitMove = data[item].canMove && !data[item].onSameGrid;
 		data[item].canSubmitAttack = data[item].canAttack && data[item].target > 0;
 	});
-	game.gi.mMouseCursor.SetCursorEditModeObjectName(55, '');
+	game.gi.mMouseCursor.SetToLastEditMode();
 	return data;
 }
 
