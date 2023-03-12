@@ -137,13 +137,13 @@ function battleLoadDataCheck(data)
 		data[item].canMove = spec.GetTask() == null && 
 		                     game.zone.mStreetDataMap.GetBlocked(data[item].grid) == 0 && 
 							 !game.zone.mStreetDataMap.IsBlockedAllowedNothingOrFog(data[item].grid) &&
-							 game.gi.mPathFinder.CalculatePath(spec.GetGarrisonGridIdx(), data[item].grid, null, true).pathLenX10000 > 0;
+							 game.gi.mPathFinder.CalculatePath(data[item].grid, spec.GetGarrisonGridIdx(), null, true).pathLenX10000 > 0;
 		data[item].canAttack = spec.GetTask() == null && 
 		                       data[item].target > 0 && 
 							   spec.GetTask() == null && 
 							   spec.HasUnits() && 
 							   game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target) != null &&
-							   game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target).GetStreetGridEntry(), data[item].grid, null, true).pathLenX10000 > 0;
+							   game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target).GetStreetGridEntry(), spec.GetGarrisonGridIdx(), null, true).pathLenX10000 > 0;
 		data[item].canSubmitMove = data[item].canMove && !data[item].onSameGrid;
 		data[item].canSubmitAttack = data[item].canAttack && data[item].target > 0;
 	});
