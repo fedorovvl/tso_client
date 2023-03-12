@@ -135,7 +135,12 @@ function battleLoadDataCheck(data)
 		if(spec == null) { return; }
 		data[item].onSameGrid = spec.GetGarrisonGridIdx() == data[item].grid;
 		data[item].canMove = spec.GetTask() == null && game.zone.mStreetDataMap.GetBlocked(data[item].grid) == 0 && !game.zone.mStreetDataMap.IsBlockedAllowedNothingOrFog(data[item].grid);
-		data[item].canAttack = spec.GetTask() == null && data[item].target > 0 && spec.GetTask() == null && spec.HasUnits() && game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target) != null;
+		data[item].canAttack = spec.GetTask() == null && 
+		                       data[item].target > 0 && 
+							   spec.GetTask() == null && 
+							   spec.HasUnits() && 
+							   game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target) != null &&
+							   game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target).GetStreetGridEntry(), data[item].grid, null, true).pathLenX10000 > 0;
 		data[item].canSubmitMove = data[item].canMove && !data[item].onSameGrid;
 		data[item].canSubmitAttack = data[item].canAttack && data[item].target > 0;
 	});
@@ -221,7 +226,9 @@ function battleAttackDirect()
 		var spec = armyGetSpecialistFromID(item.id);
 		var grid = $(item).closest("div.row").find("button").val();
 		if(!grid || grid == 0 || grid == "0") { return; }
-		battleTimedQueue.add(function(){ battleSendGeneral(spec, spec.getName(false), grid, 5, grid); });
+		if(game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(grid).GetStreetGridEntry(), spec.GetGarrisonGridIdx(), null, true).pathLenX10000 != 0) {
+			battleTimedQueue.add(function(){ battleSendGeneral(spec, spec.getName(false), grid, 5, grid); });
+		}
 	});
 	if(battleTimedQueue.len() > 0) {
 		battleTimedQueue.run();
