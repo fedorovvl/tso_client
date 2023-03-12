@@ -123,6 +123,7 @@ function shortcutsReturnAll()
 	});
 	if(queue.len() > 0)
 	{
+		queue.add(function(){ game.showAlert(loca.GetText("LAB", "GuildQuestCompleted")); });
 		queue.run();
 		game.showAlert(getText('command_sent'));
 	}
@@ -184,6 +185,7 @@ function shortcutsFreeAllUnits()
 	});
 	if(queue.len() > 0)
 	{
+		queue.add(function(){ game.showAlert(loca.GetText("LAB", "GuildQuestCompleted")); });
 		queue.run();
 		game.showAlert(getText('command_sent'));
 	}

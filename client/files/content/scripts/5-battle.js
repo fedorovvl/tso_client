@@ -136,9 +136,8 @@ function battleLoadDataCheck(data)
 		if(spec == null) { return; }
 		data[item].onSameGrid = spec.GetGarrisonGridIdx() == data[item].grid;
 		data[item].canMove = spec.GetTask() == null && game.gi.mMouseCursor.CheckIfGarrisonIsPlacableInGame(data[item].grid, true) == 0;
-		data[item].canAttack = spec.GetTask() == null && 
-		                       data[item].target > 0 && 
-							   spec.GetTask() == null && 
+		data[item].canAttack = data[item].target > 0 && 
+		                       spec.GetTask() == null && 
 							   spec.HasUnits() && 
 							   game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target) != null &&
 							   game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target).GetStreetGridEntry(), spec.GetGarrisonGridIdx(), null, true).pathLenX10000 > 0;
