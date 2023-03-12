@@ -11,7 +11,7 @@ function hideSpecMenuHandler(event)
 		game.showAlert(getText('not_home'));
 		return;
 	}
-	var w = new Modal('hideSpecWindow', utils.getImageTag('icon_dice.png', '45px') + ' ' + getText('specHideTitle'));
+	var w = new Modal('hideSpecWindow', utils.getImageTag('PropagationBuff_AdventureZoneTravelBoost_BlackTree', '45px') + ' ' + getText('specHideTitle'));
 	w.create();
 	if(w.withFooter('#dutyExplorersBtn').length == 0) {
 		w.Footer().prepend([
