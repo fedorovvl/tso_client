@@ -134,7 +134,10 @@ function battleLoadDataCheck(data)
 		data[item].spec = spec;
 		if(spec == null) { return; }
 		data[item].onSameGrid = spec.GetGarrisonGridIdx() == data[item].grid;
-		data[item].canMove = spec.GetTask() == null && game.zone.mStreetDataMap.GetBlocked(data[item].grid) == 0 && !game.zone.mStreetDataMap.IsBlockedAllowedNothingOrFog(data[item].grid);
+		data[item].canMove = spec.GetTask() == null && 
+		                     game.zone.mStreetDataMap.GetBlocked(data[item].grid) == 0 && 
+							 !game.zone.mStreetDataMap.IsBlockedAllowedNothingOrFog(data[item].grid) &&
+							 game.gi.mPathFinder.CalculatePath(spec.GetGarrisonGridIdx(), data[item].grid, null, true).pathLenX10000 > 0;
 		data[item].canAttack = spec.GetTask() == null && 
 		                       data[item].target > 0 && 
 							   spec.GetTask() == null && 
