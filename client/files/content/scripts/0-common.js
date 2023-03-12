@@ -193,6 +193,7 @@ function mainSettingsHandler(event)
 			menu.type = mainSettings.menuStyle;
 			menu.show();
 			reloadScripts(null);
+			shortcutsMakeMenu();
 		}
 		setFilterHandler(mainSettings.defFilter);
 		dtf.setDateTimePattern(mainSettings.dtfFormat); 
