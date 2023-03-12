@@ -270,7 +270,6 @@ function shortcutsAddHandler(event)
 	});
 	var sortOrder = {};
 	$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
-	debug(sortOrder);
 	shortcutsWindow.withFooter('.shortcutsSave').click(function(){
 		var active = shortcutsGetActive();
 		var sortOrder = {};

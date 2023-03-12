@@ -25,7 +25,7 @@
 		  window.nativeWindow.stage.addChild( swmmo ); 
 		  window.nativeWindow.stage.addEventListener(air.Event.RESIZE, onResize);
 		  window.nativeWindow.addEventListener("displayStateChange", onResize);
-		  window.nativeWindow.stage.addEventListener(window.runtime.flash.events.KeyboardEvent.KEY_DOWN, function(event) { try{ menu.checkKeybind(event); } catch(e){} });
+		  window.nativeWindow.stage.addEventListener(window.runtime.flash.events.KeyboardEvent.KEY_DOWN, stageKeyDownListener);
 		  air.NativeApplication.nativeApplication.addEventListener("invoke", function(event) {
 			var p={};
 			event.arguments[0].replace(/[?&]+([^=&]+)=([^&]*)/gi, function(s,k,v){p[k]=v})
@@ -56,6 +56,7 @@
 			}
 		  }, 2000);
 		}
+		function stageKeyDownListener(event) { try{ menu.checkKeybind(event); } catch(e){} }
 		function convertSettings(){var e=new air.File("file:///"+air.File.applicationDirectory.resolvePath(settingsFile).nativePath);if(e.exists){var t=new air.FileStream;try{t.open(e,"read");var i=t.readUTFBytes(1);"{"!=i&&(t.position=0,i=JSON.parse(t.readUTF()),t.close(),t.open(e,"write"),t.writeUTFBytes(JSON.stringify(i,null,"  "))),t.close()}catch(r){}}}
 		function combineSameLang(e){return 0==e.indexOf("en")?"en-uk":0==e.indexOf("es")?"es-es":e}
 		function onResize(event) { swmmo.setActualSize(window.nativeWindow.stage.stageWidth, window.nativeWindow.stage.stageHeight); }

@@ -86,8 +86,13 @@ Menu.prototype = {
 	},
 	checkKeybind: function(event) {
 		var keyComb = '{0}.{1}.{2}.{3}'.format(event.keyCode.toString(), event.ctrlKey.toString(), event.shiftKey.toString(), event.altKey.toString());
-		if(this.keybindings[keyComb])
-			this.keybindings[keyComb].fn(null);
+		if(this.keybindings[keyComb]) {
+			if(typeof this.keybindings[keyComb].fn == 'function') {
+				this.keybindings[keyComb].fn(null);
+			} else {
+				window[this.keybindings[keyComb].fn](this.keybindings[keyComb].arg != null ? { 'target': { 'name': this.keybindings[keyComb].arg } } : null);
+			}
+		}
 	},
 	createItem: function(name, fn) {
 		var item = new air.NativeMenuItem(name);
