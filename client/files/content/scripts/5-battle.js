@@ -136,8 +136,10 @@ function battleLoadDataCheck(data)
 		data[item].onSameGrid = spec.GetGarrisonGridIdx() == data[item].grid;
 		data[item].canMove = spec.GetTask() == null && 
 		                     game.zone.mStreetDataMap.GetBlocked(data[item].grid) == 0 && 
-							 !game.zone.mStreetDataMap.IsBlockedAllowedNothingOrFog(data[item].grid) &&
-							 game.gi.mPathFinder.CalculatePath(data[item].grid, spec.GetGarrisonGridIdx(), null, true).pathLenX10000 > 0;
+							 !game.zone.mStreetDataMap.IsBlockedAllowedNothingOrFog(data[item].grid) && (
+								spec.GetGarrisonGridIdx() == -1 ||
+								game.gi.mPathFinder.CalculatePath(data[item].grid, spec.GetGarrisonGridIdx(), null, true).pathLenX10000 > 0
+							 );
 		data[item].canAttack = spec.GetTask() == null && 
 		                       data[item].target > 0 && 
 							   spec.GetTask() == null && 
@@ -181,7 +183,7 @@ function battleLoadData()
 		if(battlePacket[item].target > 0) { attackSubmitChecker.push(battlePacket[item].canSubmitAttack); }
 	});
 	battleWindow.Body().html(out + '<div>');
-	if(canSubmitAttack && attackSubmitChecker.indexOf(false) == -1) { battleWindow.withFooter(".loadAttack").show(); }
+	if(canSubmitAttack && attackSubmitChecker.indexOf(false) == -1 && attackSubmitChecker.length > 0) { battleWindow.withFooter(".loadAttack").show(); }
 	if(canSubmitMove) { battleWindow.withFooter(".loadMove").show(); }
 	battleWindow.withBody(".close").click(function(e) { 
 		delete battlePacket[$(e.currentTarget).val()];
