@@ -91,6 +91,7 @@ Menu.prototype = {
 	},
 	createItem: function(name, fn) {
 		var item = new air.NativeMenuItem(name);
+		item.mnemonicIndex = 0;
 		item.addEventListener(air.Event.SELECT, fn);
 		return item;
 	},
