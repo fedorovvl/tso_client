@@ -129,17 +129,13 @@ function battleSendGeneral(spec, name, targetName, type, target)
 
 function battleLoadDataCheck(data)
 {
+	game.gi.mMouseCursor.SetCursorEditModeObjectName(86, '');
 	$.each(data, function(item) { 
 		var spec = armyGetSpecialistFromID(item);
 		data[item].spec = spec;
 		if(spec == null) { return; }
 		data[item].onSameGrid = spec.GetGarrisonGridIdx() == data[item].grid;
-		data[item].canMove = spec.GetTask() == null && 
-		                     game.zone.mStreetDataMap.GetBlocked(data[item].grid) == 0 && 
-							 !game.zone.mStreetDataMap.IsBlockedAllowedNothingOrFog(data[item].grid) && (
-								spec.GetGarrisonGridIdx() == -1 ||
-								game.gi.mPathFinder.CalculatePath(data[item].grid, spec.GetGarrisonGridIdx(), null, true).pathLenX10000 > 0
-							 );
+		data[item].canMove = spec.GetTask() == null && game.gi.mMouseCursor.CheckIfGarrisonIsPlacableInGame(data[item].grid, true) == 0;
 		data[item].canAttack = spec.GetTask() == null && 
 		                       data[item].target > 0 && 
 							   spec.GetTask() == null && 
@@ -149,6 +145,7 @@ function battleLoadDataCheck(data)
 		data[item].canSubmitMove = data[item].canMove && !data[item].onSameGrid;
 		data[item].canSubmitAttack = data[item].canAttack && data[item].target > 0;
 	});
+	game.gi.mMouseCursor.SetCursorEditModeObjectName(55, '');
 	return data;
 }
 

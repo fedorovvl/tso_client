@@ -38,8 +38,8 @@ function shortcutsGenMenuRecursive(item, m)
 			if(/--s[0-9]+p--/.test(i)) {
 				s.items.push({ type: 'separator' });
 			} else {
-				var label = "[{0}] {1}".format(shortcutsTypesLang[shortcutsStripType(i[0])[1]], i[1] == null ? shortcutsStripType(i[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : i[1]);
-				s.items.push({ label: "{0}. {1}".format(index, label), mnemonicIndex: 0, name: i[0], onSelect: shortcutsMenuSelectedHandler });
+				var label = "{0}. [{1}] {2}".format(index, shortcutsTypesLang[shortcutsStripType(i[0])[1]], i[1] == null ? shortcutsStripType(i[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : i[1]);
+				s.items.push({ label: label, mnemonicIndex: 0, name: i[0], onSelect: shortcutsMenuSelectedHandler });
 			}
 		});
 		m.push(s);
