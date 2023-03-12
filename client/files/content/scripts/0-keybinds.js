@@ -66,7 +66,7 @@ function keybindsMenuHandler(event)
 	});
 	keybindsKeys = $.extend(Object.keys(keybindsKeys).sort().reduce(function (r, k) { r[k] = keybindsKeys[k]; return r; }, {}), keybindsKeysAlt);
 	keybindsFlippedKeys = Object.keys(keybindsKeys).reduce(function (r, k) { r[keybindsKeys[k]] = k; return r; }, {});
-	var w = new Modal('keybindsWindow', utils.getImageTag('icon_dice.png', '45px') + ' Hotkeys');
+	var w = new Modal('keybindsWindow', utils.getImageTag('icon_dice.png', '45px') + ' ' + getText('hotkeysTitle'));
 	w.create();
 	$('#keybindsWindow').on("show.bs.modal",function(e){
 		window.nativeWindow.stage.removeEventListener("keyDown", stageKeyDownListener);

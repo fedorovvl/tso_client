@@ -89,7 +89,8 @@ const baseTranslation = {
 		'sortbytype': 'Type',
 		'sortbyname': 'Name',
 		"dutyShowGuest" : "Hide/Show Guest",
-		"specHideTitle" : "Hide specialists"
+		"specHideTitle" : "Hide specialists",
+		'hotkeysTitle': 'Hotkeys'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -179,7 +180,8 @@ const baseTranslation = {
 		'sortbytype': 'Тип',
 		'sortbyname': 'Имя',
 		"dutyShowGuest" : "Скрыть/показать гостевых",
-		"specHideTitle" : "Скрытие специалистов"
+		"specHideTitle" : "Скрытие специалистов",
+		'hotkeysTitle': 'Горячие клавиши'
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
@@ -269,7 +271,8 @@ const baseTranslation = {
 		'sortbytype': 'Typ',
 		'sortbyname': 'Name',
 		"dutyShowGuest" : "Gast ein/aus",
-		"specHideTitle" : "Spezialisten ausblenden"
+		"specHideTitle" : "Spezialisten ausblenden",
+		'hotkeysTitle': 'Tastenkombinationen'
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
@@ -360,7 +363,8 @@ const baseTranslation = {
 		'sortbytype': 'Type',
 		'sortbyname': 'Nom',
 		"dutyShowGuest" : "Masquer/Afficher Invité(s)",
-		"specHideTitle" : "Cacher les spécialistes"
+		"specHideTitle" : "Cacher les spécialistes",
+		'hotkeysTitle': 'Touches de raccourci'
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -449,7 +453,8 @@ const baseTranslation = {
 		'sortbytype': 'Tipo',
 		'sortbyname': 'Nombre',
 		"dutyShowGuest" : "Todos/Solo míos",
-		"specHideTitle" : "Ocultar especialistas"
+		"specHideTitle" : "Ocultar especialistas",
+		'hotkeysTitle': 'Teclas rápidas'
 	},
     "pl-pl": {
         "btn_submit": "Wyślij",
@@ -537,7 +542,8 @@ const baseTranslation = {
 		'sortbytype': 'Typ',
 		'sortbyname': 'Nazwa',
 		"dutyShowGuest" : "Pokaż/Ukryj gości",
-		"specHideTitle" : "Ukryj specjalistów"
+		"specHideTitle" : "Ukryj specjalistów",
+		'hotkeysTitle': 'Klawisze skrótu'
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',
@@ -609,6 +615,7 @@ const baseTranslation = {
 		'sortbytype': 'Tipo',
 		'sortbyname': 'Nome',
 		"dutyShowGuest" : "Todos/Apenas meus",
-		"specHideTitle" : "Esconder especialistas"
+		"specHideTitle" : "Esconder especialistas",
+		'hotkeysTitle': 'Teclas de atalho'
 	}
 };

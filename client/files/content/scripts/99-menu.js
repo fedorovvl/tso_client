@@ -3,7 +3,7 @@ var Menu = function(type){
 		return [
 			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), mnemonicIndex: 0, items: [
 				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), mnemonicIndex: 0, onSelect: mainSettingsHandler },
-				{ label: "Hotkeys", mnemonicIndex: 0, onSelect: keybindsMenuHandler },
+				{ label: getText('hotkeysTitle'), mnemonicIndex: 0, onSelect: keybindsMenuHandler },
 				{ label: loca.GetText("LAB", "Filter"), mnemonicIndex: 0, items: [
 						{ label: "none", name: "none", onSelect: menuFilterHandler },
 						{ label: "snownowater", name: "snownowater", onSelect: menuFilterHandler },
@@ -72,7 +72,8 @@ Menu.prototype = {
 		menu.push({ label: '', name: 'memusage', enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;
-		var keybindsSettings = readSettings(null, 'keybinds');
+		var keybindsSettings = {};
+		$.extend(keybindsSettings, readSettings(null, 'keybinds'));
 		if(Object.keys(keybindsSettings).length > 0) {
 			this.keybindings = keybindsSettings;
 		} else {
