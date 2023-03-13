@@ -92,7 +92,8 @@ const baseTranslation = {
 		"specHideTitle" : "Hide specialists",
 		'hotkeysTitle': 'Hotkeys',
 		"dutymenuTitle": "Specialists duty time",
-		"NoData": "No data found!"
+		"NoData": "No data found!",
+		"NoCollectibles": "No collectibles found"
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -185,7 +186,8 @@ const baseTranslation = {
 		"specHideTitle" : "Скрытие специалистов",
 		'hotkeysTitle': 'Горячие клавиши',
 		"dutymenuTitle": "Занятость специалистов",
-		"NoData": "Нет данных!"
+		"NoData": "Нет данных!",
+		"NoCollectibles": "Коллекционных предметов не найдено"
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
@@ -278,7 +280,8 @@ const baseTranslation = {
 		"specHideTitle" : "Spezialisten ausblenden",
 		'hotkeysTitle': 'Tastenkombinationen',
 		"dutymenuTitle": "Einsatzzeit",
-		"NoData": "Nichts gefunden!"
+		"NoData": "Nichts gefunden!",
+		"NoCollectibles": "Keine Sammlerstücke gefunden"
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
@@ -372,7 +375,8 @@ const baseTranslation = {
 		"specHideTitle" : "Cacher les spécialistes",
 		'hotkeysTitle': 'Touches de raccourci',
 		"dutymenuTitle": "Temps d'exécution des Spécialistes",
-		"NoData": "Pas d'information!"
+		"NoData": "Pas d'information!",
+		"NoCollectibles": "Aucun objet de collection n'a été trouvé"
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -464,7 +468,8 @@ const baseTranslation = {
 		"specHideTitle" : "Ocultar especialistas",
 		'hotkeysTitle': 'Teclas rápidas',
 		"dutymenuTitle": "Tareas de los especialistas",
-		"NoData": "Sin datos"
+		"NoData": "Sin datos",
+		"NoCollectibles": "No se han encontrado coleccionables"
 	},
     "pl-pl": {
         "btn_submit": "Wyślij",
@@ -555,8 +560,9 @@ const baseTranslation = {
 		"specHideTitle" : "Ukryj specjalistów",
 		'hotkeysTitle': 'Klawisze skrótu',
 		"dutymenuTitle": "Specjaliści w użyciu",
-		"NoData": "Brak danych"
-    },
+		"NoData": "Brak danych",
+		"NoCollectibles": "Nie znaleziono żadnych przedmiotów"
+	},
 	'pt-br': {
 		'btn_submit': 'Confirmar',
 		'btn_reset': 'Redefinir',
@@ -630,6 +636,7 @@ const baseTranslation = {
 		"specHideTitle" : "Esconder especialistas",
 		'hotkeysTitle': 'Teclas de atalho',
 		"dutymenuTitle": "Tarefas em andamento dos especialistas",
-		"NoData": "Nenhuma tarefa encontrada!"
+		"NoData": "Nenhuma tarefa encontrada!",
+		"NoCollectibles": "Não foram encontrados colecionáveis"
 	}
 };
