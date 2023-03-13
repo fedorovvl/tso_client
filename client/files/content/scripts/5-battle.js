@@ -324,7 +324,7 @@ function battleGetData()
 	if(battlePacket && Object.keys(battlePacket).length > 0) {
 		$.each(battlePacket, function(item) {
 			if(battlePacket[item].target > 0) {
-				battleWindow.withBody('button[id="'+item+'"]').text(battlePacket[item].targetName).val(battlePacket[item].target);
+				battleWindow.withBody('button[id="'+item+'"]').text(battleTruncateName(battlePacket[item].targetName, 25)).val(battlePacket[item].target);
 				battleWindow.withBody('button[id="'+item+'"]').closest('div').addClass(battlecheckCanAttack(item, battlePacket[item].target) ? "buffReady" : "buffNotReady");
 			}
 			battleWindow.withBody('input[id="'+item+'"]').prop("checked", true);
