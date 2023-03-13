@@ -1,6 +1,7 @@
 
 var shortcutsTypes = { '[b]': 'a ', '[a]': 'l ', '[m]': 'm ', '[g]': 'g ', '[e]': 'e ', '[u]': 'b ', '[p]': 'p ' };
 var shortcutsWindow;
+var shortcutsLRUItem;
 var shortcutsTypesLang = {
 	'a ': loca.GetText("ACL", "PvPAttacker"),
 	'l ': loca.GetText("LAB","Army"),
@@ -56,6 +57,11 @@ function shortcutsStripType(value)
 
 function shortcutsMenuSelectedHandler(event)
 {
+	if(shortcutsLRUItem) {
+		shortcutsLRUItem.label = shortcutsLRUItem.label.slice(2);
+	}
+	shortcutsLRUItem = event.target;
+	shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
 	try {
 		var filetype = shortcutsStripType(event.target.name);
 		var file = new air.File(filetype[0]);
