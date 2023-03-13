@@ -105,7 +105,7 @@ function battleSaveTemplate()
 		var grid = $(item).closest("div.row").find("button").val();
 		if(!grid || grid == 0 || grid == "0") { return; }
 		savePacket[item.id].target = parseInt(grid);
-		savePacket[item.id].targetName = loca.GetText("BUI", game.zone.mStreetDataMap.GetBuildingByGridPos(parseInt(grid)).GetBuildingName_string());
+		savePacket[item.id].targetName = $(item).closest("div.row").find("button").text();
 	});
 	Object.keys(savePacket).sort(function(a, b){ return savePacket[a].order - savePacket[b].order; }).forEach(function(key) { sortedPacket[key] = savePacket[key]; });
 	$('#' + battleWindow.rawsId).modal('hide');
