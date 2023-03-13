@@ -104,7 +104,7 @@ function armyMenuHandler(event)
 		armyWindow.withHeader("").append($('<div>', { id: "army" }));
 	}
 	updateFreeArmyInfo();
-	var groupSend = $('<div>', { 'class': 'btn-group' }).append([
+	var groupSend = $('<div>', { 'class': 'btn-group dropup' }).append([
 		$('<button>').attr({ 
 			"id": "armySendGeneralsBtn",
 			"class": "btn btn-success armySendGeneralsBtn dropdown-toggle",
@@ -112,11 +112,7 @@ function armyMenuHandler(event)
 			'aria-expanded': 'false',
 			'data-toggle': "dropdown"
 		}).text(loca.GetText("LAB", "Send")), 
-		$('<div>', {
-			'x-placement': 'bottom-start',
-			'style': 'position: absolute; transform: translate3d(0px, 37px, 0px); top: 0px; left: 0px; will-change: transform;',
-			'class': 'dropdown-menu'
-		})
+		$('<div>', { 'class': 'dropdown-menu' })
 	]);
 	if(armyWindow.withFooter(".armyUnload").length == 0) {
 		armyWindow.Footer().prepend([
