@@ -37,7 +37,7 @@ function keybindsGetBinds(value) {
 	var keybindsSelector = $('<select>', { 'class': 'form-control key' });
 	$.each(keybindsCurrentBinds, function(item) {
 		keybindsCurrentBinds[item].forEach(function(bind, index) {
-			if(item == value) {
+			if(item == value[0] && bind[1] == value[1]) {
 				keybindsSelector.append($('<option>', { 'value': item, 'id': index, 'selected': 'selected' }).text(bind[0]));
 			} else {
 				keybindsSelector.append($('<option>', { 'value': item, 'id': index }).text(bind[0]));
@@ -140,9 +140,10 @@ function keybindsMenuHandler(event)
 				)], [1, '']
 			]);
 		} else {
+			var selectorData = [ menu.keybindings[item].fn.name||menu.keybindings[item].fn, menu.keybindings[item].arg||null ];
 			out += createTableRow([
 				[4, $('<input>', { 'type': 'text', 'class': 'form-control', 'value': currentBind })],
-				[7, keybindsGetBinds(menu.keybindings[item].fn.name||menu.keybindings[item].fn)],
+				[7, keybindsGetBinds(selectorData)],
 				[1, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>']
 			]);
 		}
