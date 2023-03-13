@@ -206,8 +206,10 @@ function armyGeneralsSend(e)
 		armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
 			var spec = armyGetSpecialistFromID(item);
 			if(spec == null) { return; }
-			if (OptionSelected == '98' && spec.GetGarrisonGridIdx() > 0) {
-				queue.add(function(){ armySendGeneralToStar(spec); });
+			if (OptionSelected == '98') {
+				if(spec.GetGarrisonGridIdx() > 0) {
+					queue.add(function(){ armySendGeneralToStar(spec); });
+				}
 			} else {
 				queue.add(function(){ armyServices.specialist.sendToZone(spec, OptionSelected); });
 			}
