@@ -323,8 +323,9 @@ function battleGetData()
 	battleWindow.Body().html(html + '<div>');
 	if(battlePacket && Object.keys(battlePacket).length > 0) {
 		$.each(battlePacket, function(item) {
-			if(battlePacket[item].target && game.zone.mStreetDataMap.GetBuildingByGridPos(battlePacket[item].target) != null) {
+			if(battlePacket[item].target > 0) {
 				battleWindow.withBody('button[id="'+item+'"]').text(battlePacket[item].targetName).val(battlePacket[item].target);
+				battleWindow.withBody('button[id="'+item+'"]').closest('div').addClass(battlecheckCanAttack(item, battlePacket[item].target) ? "buffReady" : "buffNotReady");
 			}
 			battleWindow.withBody('input[id="'+item+'"]').prop("checked", true);
 		});
@@ -338,7 +339,6 @@ function battleGetData()
 	battleWindow.withBody(".armySelect > div").css("overflow", "visible");
 	battleWindow.Dialog().find(".dropdown-menu button").click(function() {
 		battleWindow.withBody('button[id="'+battleSearchFor+'"]').text(battleTruncateName($(this).val(), 25)).val(this.id);
-		debug(this.id);
 		if(this.id > 0) {
 			battleWindow.withBody('button[id="'+battleSearchFor+'"]').closest('div').addClass(battlecheckCanAttack(battleSearchFor, this.id) ? "buffReady" : "buffNotReady");
 			debug("set style");
@@ -361,6 +361,8 @@ function battleGetData()
 		$("#battleWindow .modal-header, .modal-body, .modal-footer").css("opacity", 1);
 	});
 	battleWindow.withBody("#specOpen").click(battleShowGeneral);
+	var count = battleWindow.withBody('button').closest('div .buffReady, .buffNotReady').length;
+	battleWindow.withFooter('.directAttack').css('display', count > 0 && count == battleWindow.withBody('button').closest('div .buffReady').length ? '' : 'none');
 }
 
 function battleShowGeneral()
