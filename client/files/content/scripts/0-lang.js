@@ -90,7 +90,9 @@ const baseTranslation = {
 		'sortbyname': 'Name',
 		"dutyShowGuest" : "Hide/Show Guest",
 		"specHideTitle" : "Hide specialists",
-		'hotkeysTitle': 'Hotkeys'
+		'hotkeysTitle': 'Hotkeys',
+		"dutymenuTitle": "Specialists duty time",
+		"NoData": "No data found!"
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -181,7 +183,9 @@ const baseTranslation = {
 		'sortbyname': 'Имя',
 		"dutyShowGuest" : "Скрыть/показать гостевых",
 		"specHideTitle" : "Скрытие специалистов",
-		'hotkeysTitle': 'Горячие клавиши'
+		'hotkeysTitle': 'Горячие клавиши',
+		"dutymenuTitle": "Занятость специалистов",
+		"NoData": "Нет данных!"
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
@@ -272,7 +276,9 @@ const baseTranslation = {
 		'sortbyname': 'Name',
 		"dutyShowGuest" : "Gast ein/aus",
 		"specHideTitle" : "Spezialisten ausblenden",
-		'hotkeysTitle': 'Tastenkombinationen'
+		'hotkeysTitle': 'Tastenkombinationen',
+		"dutymenuTitle": "Einsatzzeit",
+		"NoData": "Nichts gefunden!"
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
@@ -364,7 +370,9 @@ const baseTranslation = {
 		'sortbyname': 'Nom',
 		"dutyShowGuest" : "Masquer/Afficher Invité(s)",
 		"specHideTitle" : "Cacher les spécialistes",
-		'hotkeysTitle': 'Touches de raccourci'
+		'hotkeysTitle': 'Touches de raccourci',
+		"dutymenuTitle": "Temps d'exécution des Spécialistes",
+		"NoData": "Pas d'information!"
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -454,7 +462,9 @@ const baseTranslation = {
 		'sortbyname': 'Nombre',
 		"dutyShowGuest" : "Todos/Solo míos",
 		"specHideTitle" : "Ocultar especialistas",
-		'hotkeysTitle': 'Teclas rápidas'
+		'hotkeysTitle': 'Teclas rápidas',
+		"dutymenuTitle": "Tareas de los especialistas",
+		"NoData": "Sin datos"
 	},
     "pl-pl": {
         "btn_submit": "Wyślij",
@@ -543,7 +553,9 @@ const baseTranslation = {
 		'sortbyname': 'Nazwa',
 		"dutyShowGuest" : "Pokaż/Ukryj gości",
 		"specHideTitle" : "Ukryj specjalistów",
-		'hotkeysTitle': 'Klawisze skrótu'
+		'hotkeysTitle': 'Klawisze skrótu',
+		"dutymenuTitle": "Specjaliści w użyciu",
+		"NoData": "Brak danych"
     },
 	'pt-br': {
 		'btn_submit': 'Confirmar',
@@ -616,6 +628,8 @@ const baseTranslation = {
 		'sortbyname': 'Nome',
 		"dutyShowGuest" : "Todos/Apenas meus",
 		"specHideTitle" : "Esconder especialistas",
-		'hotkeysTitle': 'Teclas de atalho'
+		'hotkeysTitle': 'Teclas de atalho',
+		"dutymenuTitle": "Tarefas em andamento dos especialistas",
+		"NoData": "Nenhuma tarefa encontrada!"
 	}
 };

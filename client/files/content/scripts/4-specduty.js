@@ -1,5 +1,5 @@
 var dutyHideGuest = false;
-var dutyType = 1;
+var dutyType = 1, dutyCounter = [];
 var dutySPECIALIST_TASK_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TASK_TYPES");
 var dutySpecTypes = { 'dutyExplorersBtn': 1,'dutyGeologistBtn': 2,'dutyGeneralsBtn': 3 };
 var dutyTitleIconByType = {
@@ -11,15 +11,15 @@ var dutyWindow;
 
 function specDutyMenuHandler(event) {
 	
-	dutyWindow = new Modal('dutyWindow', getImageTag('IntrepidExplorer') + ' ' + loca.GetText("LAB", 'ProductionDetails'));
+	dutyWindow = new Modal('dutyWindow', getImageTag('IntrepidExplorer') + ' ' + getText('dutymenuTitle') + '<span id="dutyCounter"/>');
 	dutyWindow.create();
 
 	if(dutyWindow.withFooter('.dutyExplorersBtn').length == 0)
 	{
 		dutyWindow.Footer().prepend([
-			$('<button>').attr({ "id": "dutyExplorersBtn", "class": "btn btn-primary pull-left dutyExplorersBtn" }).text(loca.GetText("SPE", "Explorer")),
-			$('<button>').attr({ "id": "dutyGeologistBtn", "class": "btn btn-primary pull-left dutyGeologistBtn" }).text(loca.GetText("SPE", "Geologist")),
-			$('<button>').attr({ "id": "dutyGeneralsBtn", "class": "btn btn-primary pull-left dutyGeneralsBtn" }).text(loca.GetText("SPE", "General")),
+			$('<button>').attr({ "id": "dutyExplorersBtn", "class": "btn btn-primary pull-left dutyExplorersBtn type1" }).text(loca.GetText("SPE", "Explorer")),
+			$('<button>').attr({ "id": "dutyGeologistBtn", "class": "btn btn-primary pull-left dutyGeologistBtn type2" }).text(loca.GetText("SPE", "Geologist")),
+			$('<button>').attr({ "id": "dutyGeneralsBtn", "class": "btn btn-primary pull-left dutyGeneralsBtn type3" }).text(loca.GetText("SPE", "General")),
 			$('<button>').attr({ "id": "dutydutyShowGuestBtn", "class": "btn btn-primary pull-left dutydutyShowGuestBtn" }).text(getText("dutyShowGuest")),
 		]);
 		dutyWindow.withFooter('.dutyExplorersBtn, .dutyGeologistBtn, .dutyGeneralsBtn').click(function(event) {
@@ -78,16 +78,19 @@ function specDutyMenuHandler(event) {
 			out += createTableRow([[3, getImageTag(item[2], '10%') + item[0], item[5] + ' type' + item[4]],[9, item[3]]]);
 		}
 	});
+	dutyCounter = tabStat;
 	$.each(dutySpecTypes, function(i, item) {
-		if(!tabStat[item]) { out += createTableRow([[12, loca.GetText("LAB", 'DepositMissing'), 'type'+item]]); }
+		dutyWindow.withFooter('.type'+item).prop('disabled', !tabStat[item]);
 	});
 	dutyWindow.Body().html('<div class="container-fluid">{0}</div>'.format(out));
-	dutyWindow.withBody('div.row').find(':first:not(.type'+dutyType+')').closest('div.row').hide()
+	dutyWindow.withBody('div.row').find(':first:not(.type'+dutyType+')').closest('div.row').hide();
+	dutyWindow.withHeader('#dutyCounter').html(" ({0})".format(dutyCounter[dutyType]||0));
 	dutyWindow.show();
 }
 
 function dutyRefreshView()
 {
+	dutyWindow.withHeader('#dutyCounter').html(" ({0})".format(dutyCounter[dutyType]||0));
 	dutyWindow.withBody('div.row').find('.type'+dutyType).closest('div.row').show();
 	dutyWindow.withBody('div.row').find(':first:not(.type'+dutyType+')').closest('div.row').hide();
 	if(dutyHideGuest) {
