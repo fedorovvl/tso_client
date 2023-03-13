@@ -136,16 +136,22 @@ function battleLoadDataCheck(data)
 		if(spec == null) { return; }
 		data[item].onSameGrid = spec.GetGarrisonGridIdx() == data[item].grid;
 		data[item].canMove = spec.GetTask() == null && game.gi.mMouseCursor.CheckIfGarrisonIsPlacableInGame(data[item].grid, true) == 0;
-		data[item].canAttack = data[item].target > 0 && 
-		                       spec.GetTask() == null && 
-							   spec.HasUnits() && 
-							   game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target) != null &&
-							   game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target).GetStreetGridEntry(), spec.GetGarrisonGridIdx(), null, true).pathLenX10000 > 0;
+		data[item].canAttack = battlecheckCanAttack(spec, data[item].target);
 		data[item].canSubmitMove = data[item].canMove && !data[item].onSameGrid;
 		data[item].canSubmitAttack = data[item].canAttack && data[item].target > 0;
 	});
 	game.gi.mMouseCursor.SetToLastEditMode();
 	return data;
+}
+
+function battlecheckCanAttack(id, target)
+{
+	var spec = typeof id == 'object' ? id : armyGetSpecialistFromID(id);
+	return target > 0 && 
+		   spec.GetTask() == null && 
+		   spec.HasUnits() && 
+		   game.zone.mStreetDataMap.GetBuildingByGridPos(target) != null &&
+		   game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(target).GetStreetGridEntry(), spec.GetGarrisonGridIdx(), null, true).pathLenX10000 > 0;
 }
 
 function battleLoadData()
@@ -290,9 +296,7 @@ function battleDropdown(data)
 
 function battleGetData()
 {
-	battleSearchFor = null;
-	battleWindow.withFooter(".directAttack").show();
-	battleWindow.withFooter(".loadAttack, .loadMove, .reset").hide();
+	battleWindow.withFooter(".loadAttack, .loadMove, .reset, .directAttack").hide();
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, getText('armyCurrentArmy')], [4, loca.GetText("LAB", "Attack")]], true);
 	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
@@ -334,6 +338,15 @@ function battleGetData()
 	battleWindow.withBody(".armySelect > div").css("overflow", "visible");
 	battleWindow.Dialog().find(".dropdown-menu button").click(function() {
 		battleWindow.withBody('button[id="'+battleSearchFor+'"]').text(battleTruncateName($(this).val(), 25)).val(this.id);
+		debug(this.id);
+		if(this.id > 0) {
+			battleWindow.withBody('button[id="'+battleSearchFor+'"]').closest('div').addClass(battlecheckCanAttack(battleSearchFor, this.id) ? "buffReady" : "buffNotReady");
+			debug("set style");
+		} else {
+			battleWindow.withBody('button[id="'+battleSearchFor+'"]').closest('div').removeClass( [ "buffReady", "buffNotReady" ] );
+		}
+		var count = battleWindow.withBody('button').closest('div .buffReady, .buffNotReady').length;
+		battleWindow.withFooter('.directAttack').css('display', count > 0 && count == battleWindow.withBody('button').closest('div .buffReady').length ? '' : 'none');
 	});
 	battleWindow.Dialog().find(".dropdown-menu button").hover(function() {
 		var grid = this.id;
