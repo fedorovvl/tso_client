@@ -317,7 +317,7 @@ function armyLoadDataCheck(data)
 		result[item].spec = spec;
 		if(spec == null) { return; }
 		var tmplArmyChecksum = armyGetChecksum(data[item]);
-		var curArmyChecksum = armyGetChecksum(armyInfo[item]);
+		var curArmyChecksum = armyInfo[item]&&armyGetChecksum(armyInfo[item]);
 		var alreadyMatch = tmplArmyChecksum == curArmyChecksum;
 		armyPacketMatches[item] = alreadyMatch;
 		$.each(data[item].army, function(res) {
