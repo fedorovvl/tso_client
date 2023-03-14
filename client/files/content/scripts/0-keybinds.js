@@ -120,7 +120,7 @@ function keybindsMenuHandler(event)
 			$("<button>").attr({'class':"btn btn-primary pull-left"}).text(getText('shortcutsAdd')).click(function(){
 				w.withBody('.container-fluid').append(createTableRow([
 					[4, $('<input>', { 'type': 'text', 'class': 'form-control' })],
-					[7, keybindsGetBinds()],
+					[7, keybindsGetBinds([null,null])],
 					[1, '<button type="button" class="close pull-left" value="65.false.false.false"><span>&times;</span></button>']
 				]));
 				w.withBody(".close").click(function(e) { $(e.currentTarget).closest('.row').remove(); });
