@@ -171,7 +171,7 @@ function shortcutsPickupAll(event) {
     });
 
     if (queue.len() === 0) {
-        showGameAlert("No collectibles found");
+        showGameAlert(getText("NoCollectibles"));
         return;
     }
     showGameAlert(getText('command_sent'));
