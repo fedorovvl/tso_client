@@ -137,7 +137,7 @@ function battleLoadDataCheck(data)
 		data[item].onSameGrid = spec.GetGarrisonGridIdx() == data[item].grid;
 		game.gi.mCurrentCursor.mCurrentSpecialist = spec;
 		data[item].canMove = spec.GetTask() == null && game.gi.mMouseCursor.CheckIfGarrisonIsPlacableInGame(data[item].grid, true) == 0;
-		data[item].canAttack = battlecheckCanAttack(spec, data[item].target);
+		data[item].canAttack = battlecheckCanAttack(spec, data[item].target) && data[item].onSameGrid;
 		data[item].canSubmitMove = data[item].canMove && !data[item].onSameGrid;
 		data[item].canSubmitAttack = data[item].canAttack && data[item].target > 0;
 	});
@@ -162,7 +162,7 @@ function battleLoadData()
 	battleWindow.withFooter(".reset").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, getText('armyCurrentArmy')], [1, loca.GetText("LAB", "Objective")], [2, loca.GetText("LAB", "Attack")], [1, '#']], true);
-	var canSubmitAttack = true, canSubmitMove = true, attackSubmitChecker = [], attackMoveChecker = [];
+	var canSubmitAttack = true, canSubmitMove = false, attackSubmitChecker = [];
 	battlePacket = battleLoadDataCheck(battlePacket);
 	$.each(battlePacket, function(item) { 
 		if(battlePacket[item].spec == null) {
@@ -182,14 +182,13 @@ function battleLoadData()
 			[1, battlePacket[item].grid, battlePacket[item].canMove ? "buffReady" : "buffNotReady"],
 			[2, battlePacket[item].target > 0 ? battlePacket[item].targetName : '', !battlePacket[item].target ? '' : battlePacket[item].canSubmitAttack ? "buffReady" : "buffNotReady"],
 			[1, (battlePacket[item].time / 1000) + 's']]);
-		if(!battlePacket[item].canSubmitMove && !battlePacket[item].onSameGrid) { canSubmitMove = false; }
-		if(battlePacket[item].canSubmitMove && !battlePacket[item].onSameGrid) { attackMoveChecker.push(true); }
+		if(battlePacket[item].canSubmitMove) { canSubmitMove = true; }
 		if(!battlePacket[item].canSubmitAttack && battlePacket[item].target > 0) { canSubmitAttack = false; }
 		if(battlePacket[item].target > 0) { attackSubmitChecker.push(battlePacket[item].canSubmitAttack); }
 	});
 	battleWindow.Body().html(out + '<div>');
 	if(canSubmitAttack && attackSubmitChecker.indexOf(false) == -1 && attackSubmitChecker.length > 0) { battleWindow.withFooter(".loadAttack").show(); }
-	if(canSubmitMove && attackMoveChecker.length > 0) { battleWindow.withFooter(".loadMove").show(); }
+	if(canSubmitMove) { battleWindow.withFooter(".loadMove").show(); }
 	battleWindow.withBody(".close").click(function(e) { 
 		delete battlePacket[$(e.currentTarget).val()];
 		$(e.currentTarget).closest('.row').remove();
