@@ -47,7 +47,7 @@ function armyGetChecksum(army)
 {
 	var result = 0;
 	$.each(army.army, function(res) {
-		result = result ^ (armyMilitaryBase.GetUnitBaseForType(res).GetCombatPriority() + (army[res] << 6));
+		result = result ^ (armyMilitaryBase.GetUnitBaseForType(res).GetCombatPriority() + (army.army[res] << 6));
 	});
 	return result;
 }
