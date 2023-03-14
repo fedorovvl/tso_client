@@ -320,7 +320,7 @@ function armyLoadDataCheck(data)
 		armyPacketMatches[item] = alreadyMatch;
 		$.each(data[item].army, function(res) {
 			if(!alreadyMatch) {
-				var req = data[item][res] - armyGetSquadCount(item, res);
+				var req = data[item].army[res] - armyGetSquadCount(item, res);
 				if(req > 0) { 
 					requiredArmy[res] = requiredArmy[res] + req || req;
 				} else {
