@@ -148,6 +148,7 @@ function battleLoadDataCheck(data)
 function battlecheckCanAttack(id, target)
 {
 	var spec = typeof id == 'object' ? id : armyGetSpecialistFromID(id);
+	if(spec == null) { return false; }
 	return target > 0 && 
 		   spec.GetTask() == null && 
 		   spec.HasUnits() && 
@@ -181,7 +182,8 @@ function battleLoadData()
 			[1, battlePacket[item].grid, battlePacket[item].canMove ? "buffReady" : "buffNotReady"],
 			[2, battlePacket[item].target > 0 ? battlePacket[item].targetName : '', !battlePacket[item].target ? '' : battlePacket[item].canSubmitAttack ? "buffReady" : "buffNotReady"],
 			[1, (battlePacket[item].time / 1000) + 's']]);
-		if(!battlePacket[item].canSubmitMove && !battlePacket[item].onSameGrid) { canSubmitMove = false; } else { attackMoveChecker.push(true); }
+		if(!battlePacket[item].canSubmitMove && !battlePacket[item].onSameGrid) { canSubmitMove = false; }
+		if(battlePacket[item].canSubmitMove && !battlePacket[item].onSameGrid) { attackMoveChecker.push(true); }
 		if(!battlePacket[item].canSubmitAttack && battlePacket[item].target > 0) { canSubmitAttack = false; }
 		if(battlePacket[item].target > 0) { attackSubmitChecker.push(battlePacket[item].canSubmitAttack); }
 	});
