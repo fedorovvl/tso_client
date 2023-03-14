@@ -46,6 +46,7 @@ function armyResponderHandler(event, data)
 function armyGetChecksum(army)
 {
 	var result = 0;
+	if(!army.army) { return result; }
 	$.each(army.army, function(res) {
 		result = result ^ (armyMilitaryBase.GetUnitBaseForType(res).GetCombatPriority() + (army.army[res] << 6));
 	});
