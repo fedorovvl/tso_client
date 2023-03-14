@@ -85,7 +85,7 @@ function shortcutsProceedFile(data, type)
 	switch(type) {
 		case 'l ':
 			armyMenuHandler(null);
-			armyPacket = data;
+			armyPacket = armyConvertTemplate(data);
 			armyLoadData();
 		break;
 		case 'm ':
