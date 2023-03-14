@@ -316,9 +316,8 @@ function armyLoadDataCheck(data)
 		var spec = armyGetSpecialistFromID(item);
 		result[item].spec = spec;
 		if(spec == null) { return; }
-		var tmplArmyChecksum = armyGetChecksum(data[item]);
 		var curArmyChecksum = armyInfo[item]&&armyGetChecksum(armyInfo[item]);
-		var alreadyMatch = tmplArmyChecksum == curArmyChecksum;
+		var alreadyMatch = armyGetChecksum(data[item]) == curArmyChecksum;
 		armyPacketMatches[item] = alreadyMatch;
 		$.each(data[item].army, function(res) {
 			if(!alreadyMatch) {
@@ -361,7 +360,7 @@ function armyLoadData()
 		if(checkedPacket[item].spec == null) {
 			out += utils.createTableRow([
 				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + checkedPacket[item]["data"]["name"]], 
-				[7, 'spec is null'],
+				[7, getGext('NoData')],
 				[1, 'FAIL', "buffNotReady"]]);
 			return;
 		}
