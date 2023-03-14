@@ -46,7 +46,6 @@ function armyResponderHandler(event, data)
 function armyGetChecksum(army)
 {
 	var result = 0;
-	if(!army.army) { return result; }
 	$.each(army.army, function(res) {
 		result = result ^ (armyMilitaryBase.GetUnitBaseForType(res).GetCombatPriority() + (army.army[res] << 6));
 	});
@@ -317,7 +316,9 @@ function armyLoadDataCheck(data)
 		var spec = armyGetSpecialistFromID(item);
 		result[item].spec = spec;
 		if(spec == null) { return; }
-		var alreadyMatch = armyGetChecksum(data[item]) == armyGetChecksum(armyInfo[item]);
+		var tmplArmyChecksum = armyGetChecksum(data[item]);
+		var curArmyChecksum = armyGetChecksum(armyInfo[item]);
+		var alreadyMatch = tmplArmyChecksum == curArmyChecksum;
 		armyPacketMatches[item] = alreadyMatch;
 		$.each(data[item].army, function(res) {
 			if(!alreadyMatch) {
