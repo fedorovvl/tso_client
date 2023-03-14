@@ -46,8 +46,7 @@ function armyResponderHandler(event, data)
 function armyGetChecksum(army)
 {
 	var result = 0;
-	$.each(army, function(res) {
-		if(res == "name") { return; }
+	$.each(army.army, function(res) {
 		result = result ^ (armyMilitaryBase.GetUnitBaseForType(res).GetCombatPriority() + (army[res] << 6));
 	});
 	return result;
@@ -83,11 +82,23 @@ function armyUpdateProgress(num)
 	}
 }
 
+function armyConvertTemplate(data)
+{
+	if(data[Object.keys(data)[0]].army) { return data; }
+	var newData = {};
+	$.each(data, function(item) { 
+		newData[item] = { 'name': data[item].name, 'army': {} };
+		delete data[item].name;
+		newData[item].army = data[item];
+	});
+	return newData;
+}
+
 function armyMenuHandler(event)
 {
 	armyTemplates = new SaveLoadTemplate('army', function(data) {
-		armyPacket = data;
 		try{
+			armyPacket = armyConvertTemplate(data);
 			armyLoadData();
 		} catch(e) {
 			game.chatMessage("Error loading " + e, 'army');
@@ -270,11 +281,10 @@ function armyLoadGenerals(direct)
 		var spec = armyGetSpecialistFromID(item);
 		if(spec == null) { return; }
 		dRaiseArmyVO.armyHolderSpecialistVO = spec.CreateSpecialistVOFromSpecialist();
-		$.each(armyPacket[item], function(res) {
-			if(res == "name") { return; }
+		$.each(armyPacket[item].army, function(res) {
 			var dResourceVO = new dResourceVODef();
 			dResourceVO.name_string = res;
-			dResourceVO.amount = armyPacket[item][res];
+			dResourceVO.amount = armyPacket[item].army[res];
 			dRaiseArmyVO.unitSquads.addItem(dResourceVO);
 		});
 		queue.add(function(){ 
@@ -308,8 +318,7 @@ function armyLoadDataCheck(data)
 		if(spec == null) { return; }
 		var alreadyMatch = armyGetChecksum(data[item]) == armyGetChecksum(armyInfo[item]);
 		armyPacketMatches[item] = alreadyMatch;
-		$.each(data[item], function(res) {
-			if(res == "name") { return; }
+		$.each(data[item].army, function(res) {
 			if(!alreadyMatch) {
 				var req = data[item][res] - armyGetSquadCount(item, res);
 				if(req > 0) { 
@@ -355,9 +364,8 @@ function armyLoadData()
 			return;
 		}
 		var info = '';
-		$.each(checkedPacket[item]['data'], function(res) {
-			if(res == "name") { return; }
-			info += utils.getImageTag(res) + ' ' + checkedPacket[item]["data"][res] + '&nbsp;';
+		$.each(checkedPacket[item]['data'].army, function(res) {
+			info += utils.getImageTag(res) + ' ' + checkedPacket[item]["data"].army[res] + '&nbsp;';
 		});
 		out += utils.createTableRow([
 			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(checkedPacket[item].spec.getIconID(), '24px', '24px') + ' ' + checkedPacket[item]["data"]["name"], armyPacketMatches[item] ? "buffReady" : ""], 
@@ -388,7 +396,7 @@ function armyLoadData()
 function armyGetSquadCount(spec, squad)
 {
 	if(!armyInfo[spec]) { return 0; }
-	return armyInfo[spec][squad] || 0;
+	return armyInfo[spec].army[squad] || 0;
 }
 
 function armyGetData()
@@ -405,12 +413,11 @@ function armyGetData()
 			if(item == null || typeof item == 'undefined' || item.GetTask() != null) { return; }
 			var info = '';
 			var uniqId = item.GetUniqueID().toKeyString();
-			armyInfo[uniqId] = armyInfo[uniqId] || {};
+			armyInfo[uniqId] = armyInfo[uniqId] || { 'name': item.getName(false), 'army': {} };
 			item.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
-				armyInfo[uniqId][squad.GetType()] = squad.GetAmount();
+				armyInfo[uniqId].army[squad.GetType()] = squad.GetAmount();
 				info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
 			});
-			armyInfo[uniqId]["name"] = item.getName(false);
 			html += utils.createTableRow([
 				[4, '<input type="checkbox" id="' + uniqId + '" ' + (armyPacket[uniqId] ? "checked" : "") + ' />&nbsp;&nbsp;' + getImageTag(item.getIconID(), '24px', '24px') + ' ' + armyInfo[uniqId]["name"]], 
 				[7, info],

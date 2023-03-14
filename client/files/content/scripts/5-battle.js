@@ -97,20 +97,32 @@ function battleSaveDialog()
 
 function battleSaveTemplate()
 {
-	var sortOrder = {}, savePacket = {}, sortedPacket = {};
-	battleWindow.sBody().find('[type=checkbox]').each(function(i, item) { sortOrder[item.id] = { 'order': i, 'time': parseInt($(item).closest("div.row").find("select").val()) }; });
-	battleWindow.withBody('[type=checkbox]:checked').each(function(i, item) {
-		var spec = armyGetSpecialistFromID(item.id);
-		savePacket[item.id] = { 'grid': spec.GetGarrisonGridIdx(), 'name': spec.getName(false), 'order': sortOrder[item.id].order, 'time': sortOrder[item.id].time };
-		var grid = $(item).closest("div.row").find("button").val();
-		if(!grid || grid == 0 || grid == "0") { return; }
-		savePacket[item.id].target = parseInt(grid);
-		savePacket[item.id].targetName = $(item).closest("div.row").find("button").text();
-	});
-	Object.keys(savePacket).sort(function(a, b){ return savePacket[a].order - savePacket[b].order; }).forEach(function(key) { sortedPacket[key] = savePacket[key]; });
-	$('#' + battleWindow.rawsId).modal('hide');
-	if(Object.keys(savePacket).length > 0) { battleTemplates.save(sortedPacket); }
-	battlePacket = {};
+	try {
+		var sortOrder = {}, savePacket = {}, sortedPacket = {};
+		battleWindow.sBody().find('[type=checkbox]').each(function(i, item) { sortOrder[item.id] = { 'order': i, 'time': parseInt($(item).closest("div.row").find("select").val()) }; });
+		battleWindow.withBody('[type=checkbox]:checked').each(function(i, item) {
+			var spec = armyGetSpecialistFromID(item.id);
+			savePacket[item.id] = { 
+				'grid': spec.GetGarrisonGridIdx(),
+				'name': spec.getName(false),
+				'order': sortOrder[item.id].order,
+				'time': sortOrder[item.id].time,
+				'skills': [],
+				'type': spec.GetType()
+			};
+			spec.getSkillTree().getItems_vector().forEach(function(skill){
+				savePacket[item.id].skills.push(skill.getLevel());
+			});
+			var grid = $(item).closest("div.row").find("button").val();
+			if(!grid || grid == 0 || grid == "0") { return; }
+			savePacket[item.id].target = parseInt(grid);
+			savePacket[item.id].targetName = $(item).closest("div.row").find("button").text();
+		});
+		Object.keys(savePacket).sort(function(a, b){ return savePacket[a].order - savePacket[b].order; }).forEach(function(key) { sortedPacket[key] = savePacket[key]; });
+		$('#' + battleWindow.rawsId).modal('hide');
+		if(Object.keys(savePacket).length > 0) { battleTemplates.save(sortedPacket); }
+		battlePacket = {};
+	} catch (e) { alert("Error save " + e); }
 }
 
 function battleSendGeneral(spec, name, targetName, type, target)
@@ -343,7 +355,6 @@ function battleGetData()
 		battleWindow.withBody('button[id="'+battleSearchFor+'"]').text(battleTruncateName($(this).val(), 25)).val(this.id);
 		if(this.id > 0) {
 			battleWindow.withBody('button[id="'+battleSearchFor+'"]').closest('div').addClass(battlecheckCanAttack(battleSearchFor, this.id) ? "buffReady" : "buffNotReady");
-			debug("set style");
 		} else {
 			battleWindow.withBody('button[id="'+battleSearchFor+'"]').closest('div').removeClass( [ "buffReady", "buffNotReady" ] );
 		}
