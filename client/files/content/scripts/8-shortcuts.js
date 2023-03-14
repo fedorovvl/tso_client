@@ -2,6 +2,8 @@
 var shortcutsTypes = { '[b]': 'a ', '[a]': 'l ', '[m]': 'm ', '[g]': 'g ', '[e]': 'e ', '[u]': 'b ', '[p]': 'p ' };
 var shortcutsWindow;
 var shortcutsLRUItem;
+var shortcutsImportedTree;
+var shortcutsImportedGens;
 var shortcutsTypesLang = {
 	'a ': loca.GetText("ACL", "PvPAttacker"),
 	'l ': loca.GetText("LAB","Army"),
@@ -39,7 +41,10 @@ function shortcutsGenMenuRecursive(item, m)
 			if(/--s[0-9]+p--/.test(i)) {
 				s.items.push({ type: 'separator' });
 			} else {
-				var label = "{0}. [{1}] {2}".format(index, shortcutsTypesLang[shortcutsStripType(i[0])[1]], i[1] == null ? shortcutsStripType(i[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : i[1]);
+				var label = "{0}. [{1}] {2}".format(
+					index,
+					shortcutsTypesLang[shortcutsStripType(i[0])[1]], i[1] == null ? shortcutsStripType(i[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : i[1].replace(/_/g, "[UNDERSCORE]")
+				);
 				s.items.push({ label: label, mnemonicIndex: 0, name: i[0], onSelect: shortcutsMenuSelectedHandler });
 			}
 		});
@@ -240,10 +245,12 @@ function shortcutsAddHandler(event)
 		$('<button>').attr({ "id": "shortcutsAdd","class": "btn btn-primary pull-left"}).text("{0} {1}".format(getText('shortcutsAdd'),getText('shortcutsFolder'))),
 		$('<button>').attr({ "id": "shortcutsRemove","class": "btn btn-primary pull-left"}).text(loca.GetText("LAB","Delete")),
 		$('<button>').attr({ "id": "shortcutsExport","class": "btn btn-primary pull-left"}).text("Export"),
+		$('<button>').attr({ "id": "shortcutsImport","class": "btn btn-primary pull-left"}).text("Import"),
 		groupSelect
 	]);
 	shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem, #shortcutsExport').hide();
 	shortcutsWindow.withFooter('#shortcutsExport').click(shortcutsExport);
+	shortcutsWindow.withFooter('#shortcutsImport').click(shortcutsImport);
 	shortcutsWindow.withFooter('#shortcutsAdd').click(function() {
 		var des = prompt("Folder name", '');
 		if(des == null || des == "") { return; }
@@ -446,6 +453,94 @@ function shortcutsRefreshRecursive(t, dim, depth)
 	}
 }
 
+function shortcutsImport()
+{
+	var exportSource = new SaveLoadTemplate('short', function(data) {
+		if(!data.tree || !data.content) {
+			showGameAlert(getText("bad_template"));
+			return;
+		}
+		shortcutsImportProceed(data);
+	});
+	exportSource.load();
+}
+
+function shortcutsImportMakeSelect()
+{
+	var select = $('<select>', { 'class': "form-control" });
+	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
+			if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
+			select.append($('<option>', { value: item.GetUniqueID().toKeyString(), id: item.GetType() }).text(item.getName(false).replace(/(<([^>]+)>)/gi, "")));
+	});
+	return select;
+}
+
+function shortcutsImportFilterSelect(select, type)
+{
+	var result = select.clone();
+	result.find('option[id!="'+type+'"]').remove();
+	result.prepend($('<option>', { value: 0 }).text("Choose"));
+	return result;
+}
+
+function shortcutsImportProceed(data)
+{
+	shortcutsImportedTree = data.tree;
+	shortcutsImportedGens = shortcutsImportGetGens(data.content);
+	shortcutsWindow.settings(function() { }, 'modal-lg');
+	shortcutsWindow.sDialog().css("height", "80%");
+	shortcutsWindow.sTitle().html("Import node {0} ({1} templates)".format(data.tree.name, Object.keys(data.content).length));
+	shortcutsWindow.sFooter().find('.pull-left').hide();
+	var out = '';
+	var select = shortcutsImportMakeSelect();
+	var select = shortcutsImportMakeSelect();
+	if(Object.keys(shortcutsImportedGens.army).length > 0) {
+		out += "<H4>Non battle gens</H4>" + createTableRow([[5, "template"],[1, "match"],[6, "ur possible gen"]], true);
+		$.each(shortcutsImportedGens.army, function(item) {
+			out += createTableRow([
+				[5, shortcutsImportedGens.army[item].name, item],
+				[1, "-", 'match'],
+				[6, shortcutsImportFilterSelect(select, shortcutsImportedGens.army[item].type), item]
+			], false);
+		});
+	}
+	if(Object.keys(shortcutsImportedGens.battle).length > 0) {
+		out += "<H4>Battle gens</H4>" + createTableRow([[5, "template"],[1, "match"],[6, "ur possible gen"]], true);
+		$.each(shortcutsImportedGens.battle, function(item) {
+			out += createTableRow([
+				[5, shortcutsImportedGens.battle[item].name],
+				[1, "-", 'match'],
+				[6, shortcutsImportFilterSelect(select, shortcutsImportedGens.battle[item].type), item]
+			], false);
+		});
+	}
+	shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;" }).html(out));
+	shortcutsWindow.sBody().find('select').change(shortcutsImportMatch);
+	$('#' + shortcutsWindow.rawsId).modal({backdrop: "static"});
+}
+
+function shortcutsImportMatch()
+{
+	var selected = $(this).val();
+	var compared = $(this).closest('div').attr('class').split(' ').pop();
+	if(selected == 0) { 
+		$(this).closest('div.row').find('.match').html("");
+		return;
+	}
+	var spec = armyGetSpecialistFromID($(this).val());
+	var match = true;
+	if(spec != null) {
+		spec.getSkillTree().getItems_vector().every(function(skill, index){
+			if(shortcutsImportedGens.battle[compared].skills[index] > skill.getLevel()) {
+				match = false;
+				return false;
+			}
+			return true;
+		});
+	}
+	$(this).closest('div.row').find('.match').html(match ? 'ok' : 'fail');
+}
+
 function shortcutsExport()
 {
 	if(!shortcutsGetActive()) {
@@ -455,16 +550,31 @@ function shortcutsExport()
 	var dataToexport = JSON.parse(JSON.stringify(shortcutsGetActive())),
 		skippedTemplates = [],
 		exportedContent = {},
-		extractedGenerals = {},
 		exportStatus = shortcutsExportTree(dataToexport, exportedContent, skippedTemplates);
 	if(exportStatus == true) {
 		if(skippedTemplates.length > 0) {
-			alert("Skipped templates "+skippedTemplates.join(','));
+			shortcutsWindow.settings(function() { shortcutsExportFinal({ 'tree': dataToexport, 'content': exportedContent }); }, '');
+			shortcutsWindow.sDialog().css("height", "80%");
+			shortcutsWindow.sTitle().html("Skipped templates");
+			var out = createTableRow([[12, "Filename"]], true);
+			for(tmpl in skippedTemplates) {
+				out += createTableRow([[12, skippedTemplates[tmpl]]], false);
+			}
+			shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;cursor:move;" }).html(out));
+			$('#' + shortcutsWindow.rawsId).modal({backdrop: "static"});
+			return;
 		}
-		extractedGenerals = shortcutsExportExtractGens(exportedContent);
-		var file = air.File.documentsDirectory.resolvePath("shortcutsExport.data");
-		file.save(JSON.stringify({ 'tree': dataToexport, 'content': exportedContent, 'gens': extractedGenerals }));
+		shortcutsExportFinal({ 'tree': dataToexport, 'content': exportedContent })
 	}
+}
+
+function shortcutsExportFinal(data)
+{
+	if($('#' + shortcutsWindow.rawsId).length > 0) {
+		$('#' + shortcutsWindow.rawsId).modal('hide');
+	}
+	var file = air.File.documentsDirectory.resolvePath(data.tree.name + '_export.data');
+	file.save(JSON.stringify(data));
 }
 
 function shortcutsExportTree(t, content, skipped)
@@ -508,7 +618,7 @@ function shortcutsExportGetTemplateData(filepath)
 			return false;
 		}
 		data = JSON.parse(data);
-		if(!data[Object.keys(data)[0]].army && !data[Object.keys(data)[0]].grid) { return null; }
+		if(!data[Object.keys(data)[0]].skills) { return null; }
 		return data;
 	} catch(e) {
 		alert(filepath + " error " + e);
@@ -516,16 +626,12 @@ function shortcutsExportGetTemplateData(filepath)
 	}
 }
 
-function shortcutsExportExtractGens(data)
+function shortcutsImportGetGens(data)
 {
-	var result = { 'battle': {}, 'army': {} };
+	var result = { };
 	$.each(data, function(item) { 
 		$.each(data[item], function(spec) { 
-		if(!data[item][spec].grid) { 
-			result.army[spec] = { 'type': data[item][spec].type };
-			return;
-		}
-		result.battle[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills };
+		result[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills, 'name': data[item][spec].name };
 	});});
 	$.each(result.battle, function(item) {
 		if(result.army[item]) { delete result.army[item]; }

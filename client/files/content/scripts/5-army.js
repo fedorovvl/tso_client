@@ -181,8 +181,9 @@ function armyMenuHandler(event)
 				armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
 					savePacket[item.id] = armyInfo[item.id];
 				});
-				if(Object.keys(savePacket).length > 0) { armyTemplates.save(savePacket); return; }
-				if(Object.keys(armyPacket).length > 0) { armyTemplates.save(armyPacket); }
+				if(Object.keys(savePacket).length > 0) { 
+					armyTemplates.save(savePacket);
+				}
 			}),
 			$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { armyTemplates.load(); })
 		]);
@@ -414,7 +415,10 @@ function armyGetData()
 			if(item == null || typeof item == 'undefined' || item.GetTask() != null) { return; }
 			var info = '';
 			var uniqId = item.GetUniqueID().toKeyString();
-			armyInfo[uniqId] = armyInfo[uniqId] || { 'name': item.getName(false), 'army': {} };
+			armyInfo[uniqId] = armyInfo[uniqId] || { 'name': item.getName(false), 'type': item.GetType(), 'army': {}, 'skills': [] };
+			item.getSkillTree().getItems_vector().forEach(function(skill){
+				armyInfo[uniqId].skills.push(skill.getLevel());
+			});
 			item.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
 				armyInfo[uniqId].army[squad.GetType()] = squad.GetAmount();
 				info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
