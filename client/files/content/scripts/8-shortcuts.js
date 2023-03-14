@@ -458,11 +458,12 @@ function shortcutsExport()
 		extractedGenerals = {},
 		exportStatus = shortcutsExportTree(dataToexport, exportedContent, skippedTemplates);
 	if(exportStatus == true) {
+		if(skippedTemplates.length > 0) {
+			alert("Skipped templates "+skippedTemplates.join(','));
+		}
 		extractedGenerals = shortcutsExportExtractGens(exportedContent);
 		var file = air.File.documentsDirectory.resolvePath("shortcutsExport.data");
-		utils.b64.reset();
-		utils.b64.encode(JSON.stringify({ 'tree': dataToexport, 'content': exportedContent, 'gens': extractedGenerals }));
-		file.save(utils.b64.toString());
+		file.save(JSON.stringify({ 'tree': dataToexport, 'content': exportedContent, 'gens': extractedGenerals }));
 	}
 }
 
@@ -478,8 +479,8 @@ function shortcutsExportTree(t, content, skipped)
 		var data = shortcutsExportGetTemplateData(t.items[i][0].slice(0, -3));
 		if(data == false) { return false; }
 		if(data != null) {
-			content[t.items[i][0].split("\\").pop().slice(0, -3)] = data;
 			var file = t.items[i][0].split("\\").pop();
+			content[file.slice(0, -3)] = data;
 			t.items[i][0] = file;
 		} else {
 			skipped.push(t.items[i][0].slice(0, -3));
