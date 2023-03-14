@@ -461,7 +461,7 @@ function shortcutsExport()
 		extractedGenerals = shortcutsExportExtractGens(exportedContent);
 		var file = air.File.documentsDirectory.resolvePath("shortcutsExport.data");
 		utils.b64.reset();
-		utils.b64.encodeUTFBytes(JSON.stringify({ 'tree': dataToexport, 'content': exportedContent, 'gens': extractedGenerals }));
+		utils.b64.encode(JSON.stringify({ 'tree': dataToexport, 'content': exportedContent, 'gens': extractedGenerals }));
 		file.save(utils.b64.toString());
 	}
 }
