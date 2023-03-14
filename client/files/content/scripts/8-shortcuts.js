@@ -239,9 +239,11 @@ function shortcutsAddHandler(event)
 		$('<button>').attr({ "id": "shortcutsSave", "class": "btn btn-primary shortcutsSave" }).text(loca.GetText("LAB","GuildSave")),
 		$('<button>').attr({ "id": "shortcutsAdd","class": "btn btn-primary pull-left"}).text("{0} {1}".format(getText('shortcutsAdd'),getText('shortcutsFolder'))),
 		$('<button>').attr({ "id": "shortcutsRemove","class": "btn btn-primary pull-left"}).text(loca.GetText("LAB","Delete")),
+		$('<button>').attr({ "id": "shortcutsExport","class": "btn btn-primary pull-left"}).text("Export"),
 		groupSelect
 	]);
-	shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem').hide();
+	shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem, #shortcutsExport').hide();
+	shortcutsWindow.withFooter('#shortcutsExport').click(shortcutsExport);
 	shortcutsWindow.withFooter('#shortcutsAdd').click(function() {
 		var des = prompt("Folder name", '');
 		if(des == null || des == "") { return; }
@@ -359,7 +361,7 @@ function shortcutsUpdateView()
 		});
 	}
 	if(active != null) { 
-		shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem').show();
+		shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem, #shortcutsExport').show();
 	}
 	if (active != null && active.items != null && active.items.length > 0) {
 		active.items.forEach(function(i, idx) {
@@ -442,4 +444,90 @@ function shortcutsRefreshRecursive(t, dim, depth)
 			shortcutsRefreshRecursive(t.items[i], dim, ++depth);
 		}
 	}
+}
+
+function shortcutsExport()
+{
+	if(!shortcutsGetActive()) {
+		alert("You cant export root");
+		return;
+	}
+	var dataToexport = JSON.parse(JSON.stringify(shortcutsGetActive())),
+		skippedTemplates = [],
+		exportedContent = {},
+		extractedGenerals = {},
+		exportStatus = shortcutsExportTree(dataToexport, exportedContent, skippedTemplates);
+	if(exportStatus == true) {
+		extractedGenerals = shortcutsExportExtractGens(exportedContent);
+		var file = air.File.documentsDirectory.resolvePath("shortcutsExport.data");
+		utils.b64.reset();
+		utils.b64.encodeUTFBytes(JSON.stringify({ 'tree': dataToexport, 'content': exportedContent, 'gens': extractedGenerals }));
+		file.save(utils.b64.toString());
+	}
+}
+
+function shortcutsExportTree(t, content, skipped)
+{
+	for (i in t.items) {
+		if(typeof t.items[i] == 'string') { continue; }
+		if(!Array.isArray(t.items[i])) { 
+			if(!shortcutsExportTree(t.items[i], content, skipped))
+				return false;
+			continue;
+		}
+		var data = shortcutsExportGetTemplateData(t.items[i][0].slice(0, -3));
+		if(data == false) { return false; }
+		if(data != null) {
+			content[t.items[i][0].split("\\").pop().slice(0, -3)] = data;
+			var file = t.items[i][0].split("\\").pop();
+			t.items[i][0] = file;
+		} else {
+			skipped.push(t.items[i][0].slice(0, -3));
+			delete t.items[i];
+		}
+	}
+	t.items = t.items.filter(function(e) { return e != null; });
+	return true;
+}
+
+function shortcutsExportGetTemplateData(filepath)
+{
+	try {
+		var file = new air.File(filepath);
+		if(!file.exists) {
+			alert(filepath + " not exists!");
+			return false;
+		}
+		var fileStream = new air.FileStream();
+		fileStream.open(file, air.FileMode.READ);
+		var data = fileStream.readUTFBytes(file.size);
+		fileStream.close();
+		if (data == "") { 
+			alert(filepath + " data null");
+			return false;
+		}
+		data = JSON.parse(data);
+		if(!data[Object.keys(data)[0]].army && !data[Object.keys(data)[0]].grid) { return null; }
+		return data;
+	} catch(e) {
+		alert(filepath + " error " + e);
+		return false;
+	}
+}
+
+function shortcutsExportExtractGens(data)
+{
+	var result = { 'battle': {}, 'army': {} };
+	$.each(data, function(item) { 
+		$.each(data[item], function(spec) { 
+		if(!data[item][spec].grid) { 
+			result.army[spec] = { 'type': data[item][spec].type };
+			return;
+		}
+		result.battle[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills };
+	});});
+	$.each(result.battle, function(item) {
+		if(result.army[item]) { delete result.army[item]; }
+	});
+	return result;
 }
