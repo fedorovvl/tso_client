@@ -494,26 +494,14 @@ function shortcutsImportProceed(data)
 	var out = '';
 	var select = shortcutsImportMakeSelect();
 	var select = shortcutsImportMakeSelect();
-	if(Object.keys(shortcutsImportedGens.army).length > 0) {
-		out += "<H4>Non battle gens</H4>" + createTableRow([[5, "template"],[1, "match"],[6, "ur possible gen"]], true);
-		$.each(shortcutsImportedGens.army, function(item) {
-			out += createTableRow([
-				[5, shortcutsImportedGens.army[item].name, item],
-				[1, "-", 'match'],
-				[6, shortcutsImportFilterSelect(select, shortcutsImportedGens.army[item].type), item]
-			], false);
-		});
-	}
-	if(Object.keys(shortcutsImportedGens.battle).length > 0) {
-		out += "<H4>Battle gens</H4>" + createTableRow([[5, "template"],[1, "match"],[6, "ur possible gen"]], true);
-		$.each(shortcutsImportedGens.battle, function(item) {
-			out += createTableRow([
-				[5, shortcutsImportedGens.battle[item].name],
-				[1, "-", 'match'],
-				[6, shortcutsImportFilterSelect(select, shortcutsImportedGens.battle[item].type), item]
-			], false);
-		});
-	}
+	out += "<H4>Gens</H4>" + createTableRow([[5, "template"],[1, "match"],[6, "ur possible gen"]], true);
+	$.each(shortcutsImportedGens, function(item) {
+		out += createTableRow([
+			[5, shortcutsImportedGens[item].name],
+			[1, "-", 'match'],
+			[6, shortcutsImportFilterSelect(select, shortcutsImportedGens[item].type), item]
+		], false);
+	});
 	shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;" }).html(out));
 	shortcutsWindow.sBody().find('select').change(shortcutsImportMatch);
 	$('#' + shortcutsWindow.rawsId).modal({backdrop: "static"});
@@ -531,7 +519,7 @@ function shortcutsImportMatch()
 	var match = true;
 	if(spec != null) {
 		spec.getSkillTree().getItems_vector().every(function(skill, index){
-			if(shortcutsImportedGens.battle[compared].skills[index] > skill.getLevel()) {
+			if(shortcutsImportedGens[compared].skills[index] > skill.getLevel()) {
 				match = false;
 				return false;
 			}
