@@ -288,8 +288,8 @@ const baseTranslation = {
 		"dutymenuTitle": "Einsatzzeit",
 		"NoData": "Nichts gefunden!",
 		"NoCollectibles": "Keine Sammlerstücke gefunden",
-		"buiFastCarousel": "Carousel",
-		"buiFastLevel": "Höchstes Gebäude Level",
+		"buiFastCarousel": "Gebäude in der Nähe (Karussell Modus)",
+		"buiFastLevel": "Immer höchstes Gebäude Level wählen",
 		"buiFastdesc": "Schnellzugriff Gebäude Auswahl"
 	},
 	'fr-fr': {
