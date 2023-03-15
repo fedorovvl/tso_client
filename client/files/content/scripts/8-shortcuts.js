@@ -45,7 +45,7 @@ function shortcutsGenMenuRecursive(item, m)
 			m.push({ label: label, mnemonicIndex: 0, name: data[0], onSelect: shortcutsMenuSelectedHandler });
 			return;
 		}
-		var s = { label: data.name, mnemonicIndex: 0, items: [] };
+		var s = { label: data.name.replace(/_/g, "[UNDERSCORE]"), mnemonicIndex: 0, items: [] };
 		data.items.forEach(function(i, index) {
 			if(typeof i == 'object' && !Array.isArray(i)) {
 				return shortcutsGenMenuRecursive([i], s.items);
