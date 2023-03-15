@@ -180,7 +180,7 @@ function battleLoadData()
 		if(battlePacket[item].spec == null) {
 			out += utils.createTableRow([
 				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + battlePacket[item].name], 
-				[8, getText('NoData'), "buffNotReady"]]);
+				[8, '<b>' + getText('NoData') + '</b>']]);
 			canSubmitAttack = false, canSubmitMove = false;
 			return;
 		}
