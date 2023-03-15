@@ -450,7 +450,7 @@ const baseTranslation = {
 		'bufftemplates_desc': 'Plantillas de Potenciadores: ',
 		'buitemplates_desc': 'Plantillas de Producción: ',
 		'armytemplates_desc': 'Plantillas de Ejército: ',
-		'battletemplates_desc': 'Platillas de Guerra: ',
+		'battletemplates_desc': 'Plantillas de Guerra: ',
 		'geodeftask_desc': 'Tarea predeterminada de Geólogos',
 		'expldeftask_desc': 'Tarea predeterminada de Exploradores',
 		'spectimetype_desc': 'Modo de cálculo de tiempo',
