@@ -480,7 +480,7 @@ function shortcutsImportFilterSelect(select, type)
 	var result = select.clone();
 	result.find('option[id!="'+type+'"]').remove();
 	result.prepend($('<option>', { value: 0 }).text("Choose"));
-	return result;
+	return result.find('option').length == 1 ? getGext('NoData') : result;
 }
 
 function shortcutsImportProceed(data)
@@ -493,8 +493,7 @@ function shortcutsImportProceed(data)
 	shortcutsWindow.sFooter().find('.pull-left').hide();
 	var out = '';
 	var select = shortcutsImportMakeSelect();
-	var select = shortcutsImportMakeSelect();
-	out += "<H4>Gens</H4>" + createTableRow([[5, "template"],[1, "match"],[6, "ur possible gen"]], true);
+	out += "<H4>Generals comparator</H4>" + createTableRow([[5, "template"],[1, "match"],[6, "ur possible gen"]], true);
 	$.each(shortcutsImportedGens, function(item) {
 		out += createTableRow([
 			[5, shortcutsImportedGens[item].name],
@@ -518,12 +517,11 @@ function shortcutsImportMatch()
 	var spec = armyGetSpecialistFromID($(this).val());
 	var match = true;
 	if(spec != null) {
-		spec.getSkillTree().getItems_vector().every(function(skill, index){
-			if(shortcutsImportedGens[compared].skills[index] > skill.getLevel()) {
+		var skills = spec.getSkillTree().getItems_vector();
+		$.each(shortcutsImportedGens[compared].skills, function(index, item) {
+			if(item > skill[index].getLevel()) {
 				match = false;
-				return false;
 			}
-			return true;
 		});
 	}
 	$(this).closest('div.row').find('.match').html(match ? 'ok' : 'fail');
@@ -544,9 +542,9 @@ function shortcutsExport()
 			shortcutsWindow.settings(function() { shortcutsExportFinal({ 'tree': dataToexport, 'content': exportedContent }); }, '');
 			shortcutsWindow.sDialog().css("height", "80%");
 			shortcutsWindow.sTitle().html("Skipped templates");
-			var out = createTableRow([[12, "Filename"]], true);
+			var out = createTableRow([[10, "Filename"],[2, "Reason"]], true);
 			for(tmpl in skippedTemplates) {
-				out += createTableRow([[12, skippedTemplates[tmpl]]], false);
+				out += createTableRow([[10, skippedTemplates[tmpl][0]],[2, skippedTemplates[tmpl][1]]], false);
 			}
 			shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;cursor:move;" }).html(out));
 			$('#' + shortcutsWindow.rawsId).modal({backdrop: "static"});
@@ -575,13 +573,12 @@ function shortcutsExportTree(t, content, skipped)
 			continue;
 		}
 		var data = shortcutsExportGetTemplateData(t.items[i][0].slice(0, -3));
-		if(data == false) { return false; }
-		if(data != null) {
+		if(typeof data == 'object') {
 			var file = t.items[i][0].split("\\").pop();
 			content[file.slice(0, -3)] = data;
 			t.items[i][0] = file;
 		} else {
-			skipped.push(t.items[i][0].slice(0, -3));
+			skipped.push([t.items[i][0].slice(0, -3), data]);
 			delete t.items[i];
 		}
 	}
@@ -593,25 +590,16 @@ function shortcutsExportGetTemplateData(filepath)
 {
 	try {
 		var file = new air.File(filepath);
-		if(!file.exists) {
-			alert(filepath + " not exists!");
-			return false;
-		}
+		if(!file.exists) { return "not exists"; }
 		var fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.READ);
 		var data = fileStream.readUTFBytes(file.size);
 		fileStream.close();
-		if (data == "") { 
-			alert(filepath + " data null");
-			return false;
-		}
+		if (data == "") { return "empty"; }
 		data = JSON.parse(data);
-		if(!data[Object.keys(data)[0]].skills) { return null; }
+		if(!data[Object.keys(data)[0]].skills) { return "bad format"; }
 		return data;
-	} catch(e) {
-		alert(filepath + " error " + e);
-		return false;
-	}
+	} catch(e) { return "error"; }
 }
 
 function shortcutsImportGetGens(data)

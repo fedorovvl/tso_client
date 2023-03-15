@@ -415,9 +415,9 @@ function armyGetData()
 			if(item == null || typeof item == 'undefined' || item.GetTask() != null) { return; }
 			var info = '';
 			var uniqId = item.GetUniqueID().toKeyString();
-			armyInfo[uniqId] = armyInfo[uniqId] || { 'name': item.getName(false), 'type': item.GetType(), 'army': {}, 'skills': [] };
-			item.getSkillTree().getItems_vector().forEach(function(skill){
-				armyInfo[uniqId].skills.push(skill.getLevel());
+			armyInfo[uniqId] = armyInfo[uniqId] || { 'name': item.getName(false), 'type': item.GetType(), 'army': {}, 'skills': {} };
+			item.getSkillTree().getItems_vector().forEach(function(skill, index){
+				if(skill.getLevel() > 0) { armyInfo[uniqId].skills[index] = skill.getLevel(); }
 			});
 			item.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
 				armyInfo[uniqId].army[squad.GetType()] = squad.GetAmount();

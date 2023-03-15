@@ -107,11 +107,11 @@ function battleSaveTemplate()
 				'name': spec.getName(false),
 				'order': sortOrder[item.id].order,
 				'time': sortOrder[item.id].time,
-				'skills': [],
+				'skills': {},
 				'type': spec.GetType()
 			};
-			spec.getSkillTree().getItems_vector().forEach(function(skill){
-				savePacket[item.id].skills.push(skill.getLevel());
+			spec.getSkillTree().getItems_vector().forEach(function(skill, index){
+				if(skill.getLevel() > 0) { savePacket[item.id].skills[index] = skill.getLevel(); }
 			});
 			var grid = $(item).closest("div.row").find("button").val();
 			if(!grid || grid == 0 || grid == "0") { return; }
