@@ -38,6 +38,10 @@ var Menu = function(type){
 				{ label: getText('prod_timed'), mnemonicIndex: 0, keyCode: 119, onSelect: TimedMenuHandler },
 				{ label: loca.GetText("LAB", "Visit"), mnemonicIndex: 0, items: [
 					{ label: loca.GetText("LAB", "Specialbuildings"), mnemonicIndex: 0, items: [
+						{ label: loca.GetText("BUI", "ProvisionHouse"), name: "ProvisionHouse", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "BuildingProvisionHouse2"), name: "BuildingProvisionHouse2", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Barracks"), name: "Barracks", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "EliteBarracks"), name: "EliteBarracks", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "Bookbinder"), name: "Bookbinder", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "AdventureBookbinder"), name: "AdventureBookbinder", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "WhiteCastle"), name: "WhiteCastle", onSelect: buiFastAccessMenuHandler },
@@ -45,9 +49,7 @@ var Menu = function(type){
 						{ label: loca.GetText("BUI", "EpicWorkyardWood"), name: "EpicWorkyardWood", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "EpicWorkyardCorn"), name: "EpicWorkyardCorn", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "GiftChristmasTree"), name: "GiftChristmasTree", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "FlyingHouse"), name: "FlyingHouse", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "Barracks"), name: "Barracks", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "EliteBarracks"), name: "EliteBarracks", onSelect: buiFastAccessMenuHandler }
+						{ label: loca.GetText("BUI", "FlyingHouse"), name: "FlyingHouse", onSelect: buiFastAccessMenuHandler }
 					]},
 					{ label: loca.GetText("LAB", "AdventureLevelSuperHigh"), mnemonicIndex: 0, items: [
 						{ label: loca.GetText("BUI", "Observatory"), name: "Observatory", onSelect: buiFastAccessMenuHandler },

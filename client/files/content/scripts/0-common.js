@@ -128,7 +128,7 @@ function mainSettingsHandler(event)
 		return !mainSettings.specDefTimeType ? getText('spec_time_normal') : getText('spec_time_arrival');
 	};
 	var getBuiFastAccessType = function(){
-		return mainSettings.buiFastAccessType == 0 ? "carousel" : "max level";
+		return mainSettings.buiFastAccessType == 0 ? getText('buiFastCarousel') : getText('buiFastLevel');
 	};
 	var createFilterDrop = function(){
 		const filters = ["none","snownowater","snowlight","snow","oven","doomsday","night","desert","tropical","blackandwhite","spooky","snow_medium","tundra","darkershadow","magicsepia"];
@@ -189,11 +189,11 @@ function mainSettingsHandler(event)
 	]);
 	html += utils.createTableRow([[6, getText('sortorder_desc')], [6, sortNameSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, "Force use GC"], [6, createSwitch('forcegc', mainSettings.forcegc)]]);
-	html += utils.createTableRow([[6, 'OK Color'], [6, '<input type="text" value="'+mainSettings.statusColorOk+'" id="statusColorOk" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([[6, 'FAIL Color'], [6, '<input type="text" value="'+mainSettings.statusColorFail+'" id="statusColorFail" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([[6, 'FAIL Color'], [6, '<input type="text" value="'+mainSettings.statusColorSameGrid+'" id="statusColorFail" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
+	html += utils.createTableRow([[6, 'OK сolor'], [6, '<input type="text" value="'+mainSettings.statusColorOk+'" id="statusColorOk" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
+	html += utils.createTableRow([[6, 'FAIL сolor'], [6, '<input type="text" value="'+mainSettings.statusColorFail+'" id="statusColorFail" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
+	html += utils.createTableRow([[6, 'Same grid color'], [6, '<input type="text" value="'+mainSettings.statusColorSameGrid+'" id="statusColorFail" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([
-		[6, 'Building fast access type'], 
+		[6, getText('buiFastdesc')], 
 		[6, createSwitch('buiFastAccessType', mainSettings.buiFastAccessType == 0 ? false : true) + '<div style="position: absolute;left: 55px;top: 1px;" id="buiFastAccessTypeLang">{0}</div>'.format(getBuiFastAccessType())]
 	]);
 	w.Body().html(html + '<div>');

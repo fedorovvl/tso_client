@@ -93,7 +93,10 @@ const baseTranslation = {
 		'hotkeysTitle': 'Hotkeys',
 		"dutymenuTitle": "Specialists duty time",
 		"NoData": "No data found!",
-		"NoCollectibles": "No collectibles found"
+		"NoCollectibles": "No collectibles found",
+		"buiFastCarousel": "Carousel",
+		"buiFastLevel": "Max level",
+		"buiFastdesc": "Fast building access type"
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -187,7 +190,10 @@ const baseTranslation = {
 		'hotkeysTitle': 'Горячие клавиши',
 		"dutymenuTitle": "Занятость специалистов",
 		"NoData": "Нет данных!",
-		"NoCollectibles": "Коллекционных предметов не найдено"
+		"NoCollectibles": "Коллекционных предметов не найдено",
+		"buiFastCarousel": "Карусель",
+		"buiFastLevel": "Макс. уровень",
+		"buiFastdesc": "Тип быстрого доступа к зданиям"
 	},
 	'de-de': {
 		'btn_submit': 'Senden',
