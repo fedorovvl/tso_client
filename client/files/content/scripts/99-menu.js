@@ -156,6 +156,7 @@ Menu.prototype = {
 		this.keybindings[keyComb] = { 'isUser': isUser, 'fn': fn };
 	},
 	checkKeybind: function(event) {
+		if(window.nativeWindow.stage.focus && /TextField/.test(window.nativeWindow.stage.focus.name)) { return; }
 		var keyComb = '{0}.{1}.{2}.{3}'.format(event.keyCode.toString(), event.ctrlKey.toString(), event.shiftKey.toString(), event.altKey.toString());
 		if(this.keybindings[keyComb]) {
 			if(typeof this.keybindings[keyComb].fn == 'function') {
