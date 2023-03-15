@@ -287,7 +287,10 @@ const baseTranslation = {
 		'hotkeysTitle': 'Tastenkombinationen',
 		"dutymenuTitle": "Einsatzzeit",
 		"NoData": "Nichts gefunden!",
-		"NoCollectibles": "Keine Sammlerstücke gefunden"
+		"NoCollectibles": "Keine Sammlerstücke gefunden",
+		"buiFastCarousel": "Gebäude in der Nähe (Karussell Modus)",
+		"buiFastLevel": "Immer höchstes Gebäude Level wählen",
+		"buiFastdesc": "Schnellzugriff Gebäude Auswahl"
 	},
 	'fr-fr': {
 		'btn_close': 'Fermer',
