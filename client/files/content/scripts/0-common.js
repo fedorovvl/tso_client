@@ -105,7 +105,7 @@ function buiFastAccessMenuHandler(event) {
 		var vector = game.zone.mStreetDataMap.getBuildingsByName_vector(event.target.name);
 		if(!vector) { return true; }
 		if(mainSettings.buiFastAccessType == 1) {
-			vector.sort(function(a, b) { return a.GetUpgradeLevel() > b.GetUpgradeLevel() ? 1 : -1; });
+			vector.sort(function(a, b) { return a.GetUpgradeLevel() > b.GetUpgradeLevel() ? -1 : 1; });
 			game.zone.ScrollToGrid(vector[0].GetGrid());
 			game.gi.SelectBuilding(vector[0]);
 			return;
