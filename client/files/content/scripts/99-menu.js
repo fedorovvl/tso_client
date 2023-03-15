@@ -39,7 +39,7 @@ var Menu = function(type){
 				{ label: loca.GetText("LAB", "Visit"), mnemonicIndex: 0, items: [
 					{ label: loca.GetText("LAB", "Specialbuildings"), mnemonicIndex: 0, items: [
 						{ label: loca.GetText("BUI", "ProvisionHouse"), name: "ProvisionHouse", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "ProvisionHouse2"), name: "BuildingProvisionHouse2", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "ProvisionHouse2"), name: "ProvisionHouse2", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "Barracks"), name: "Barracks", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "EliteBarracks"), name: "EliteBarracks", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "Bookbinder"), name: "Bookbinder", onSelect: buiFastAccessMenuHandler },
