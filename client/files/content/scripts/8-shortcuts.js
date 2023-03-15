@@ -32,7 +32,19 @@ function shortcutsMakeMenu()
 
 function shortcutsGenMenuRecursive(item, m)
 {
-	item.forEach(function(data){
+	item.forEach(function(data, idx){
+		if(/--s[0-9]+p--/.test(data)) {
+			m.push({ type: 'separator' });
+			return;
+		}
+		if(Array.isArray(data)) {
+			var label = "{0}. [{1}] {2}".format(
+				idx,
+				shortcutsTypesLang[shortcutsStripType(data[0])[1]], data[1] == null ? shortcutsStripType(data[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : data[1].replace(/_/g, "[UNDERSCORE]")
+			);
+			m.push({ label: label, mnemonicIndex: 0, name: data[0], onSelect: shortcutsMenuSelectedHandler });
+			return;
+		}
 		var s = { label: data.name, mnemonicIndex: 0, items: [] };
 		data.items.forEach(function(i, index) {
 			if(typeof i == 'object' && !Array.isArray(i)) {
@@ -247,40 +259,37 @@ function shortcutsAddHandler(event)
 		$('<button>').attr({ "id": "shortcutsImport","class": "btn btn-primary pull-left"}).text("Import"),
 		groupSelect
 	]);
-	shortcutsWindow.withFooter('#shortcutsAddItem, #shortcutsExport').hide();
+	shortcutsWindow.withFooter('#shortcutsExport').hide();
 	shortcutsWindow.withFooter('#shortcutsExport').click(shortcutsExport);
 	shortcutsWindow.withFooter('#shortcutsImport').click(shortcutsImport);
 	shortcutsWindow.withFooter('.dropdown-menu a').click(function() {
-		var item = shortcutsGetActive();
-		if (item != null) {
-			if(this.name == 'sep') {
-				item.items.push('--s'+Date.now()+'p--');
-				shortcutsUpdateView();
-				return;
-			}
-			if(this.name == 'folder') {
-				var des = prompt("Folder name", '');
-				if(des == null || des == "") { return; }
-				var newid = Date.now();
-				(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push({
-					'id' : newid,
-					'name' : des,
-					'items' : new Array()
-				});
-				shortcutsRefresh();
-				shortcutsWindow.withHeader("#shortcutsSelect").val(newid).change();
-				return;
-			}
-			shortcutsselectTextFile(this.name); 
+		if(this.name == 'sep') {
+			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push('--s'+Date.now()+'p--');
+			shortcutsUpdateView();
+			return;
 		}
+		if(this.name == 'folder') {
+			var des = prompt("Folder name", '');
+			if(des == null || des == "") { return; }
+			var newid = Date.now();
+			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push({
+				'id' : newid,
+				'name' : des,
+				'items' : new Array()
+			});
+			shortcutsRefresh();
+			shortcutsWindow.withHeader("#shortcutsSelect").val(newid).change();
+			return;
+		}
+		shortcutsselectTextFile(this.name); 
 	});
 	var sortOrder = {};
 	$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
 	shortcutsWindow.withFooter('.shortcutsSave').click(function(){
 		var active = shortcutsGetActive();
 		var sortOrder = {};
+		$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
 		if (active != null) {
-			$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
 			active.items.sort(function(a,b) { return sortOrder[active.items.indexOf(a)] > sortOrder[active.items.indexOf(b)] ? 1 : -1; });
 			$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
 				if($(item).find('.form-control').length > 0) {
@@ -288,8 +297,12 @@ function shortcutsAddHandler(event)
 				}
 			});
 		} else {
-			$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
 			shortcutsSettings.sort(function(a,b) { return sortOrder[shortcutsSettings.indexOf(a)] > sortOrder[shortcutsSettings.indexOf(b)] ? 1 : -1; });
+			$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
+				if($(item).find('.form-control').length > 0) {
+					shortcutsSettings[i][1] = $(item).find('.form-control').val() || null;
+				}
+			});
 		}
 		settings.settings['shortcuts'] = [];
 		storeSettings(shortcutsSettings, 'shortcuts');
@@ -323,10 +336,8 @@ function shortcutsselectTextFile(type)
     root.browseForOpenMultiple("Open", new window.runtime.Array(txtFilter)); 
     root.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, function(event) {
 		var nametotype = { 'buff': 'u', 'bui': 'p', 'battle': 'b' };
-		var active = shortcutsGetActive();
-		if (active == null) { return; }
 		event.files.forEach(function(item) {
-			active.items.push([item.nativePath + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)), null]);
+			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push([item.nativePath + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)), null]);
 		});
 		shortcutsUpdateView();
 	});
@@ -336,63 +347,41 @@ function shortcutsUpdateView()
 {
 	
 	shortcutsWindow.withBody('#shortcutsRows').html("");
-	var active = shortcutsGetActive();
 	var out = "";
 
-	if (active == null) {
-		shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem').hide();
-		shortcutsSettings.forEach(function(i, idx) {
-			if(typeof i == 'object' && !Array.isArray(i)) { 
-				out += createTableRow([
-					[3, '&#8597;&nbsp;&nbsp; '+getText('shortcutsFolder')],
-					[6, $('<span>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
-					[3, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))]
-				], false);
-			}
-		});
-		shortcutsWindow.withBody('#shortcutsRows').html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;cursor:move;" }).html(out));
-		shortcutsWindow.withBody('.close').click(function(e){
-			shortcutsSettings.splice(parseInt($(this).val()), 1);
-			shortcutsRefresh();
-		});
-	}
-	if(active != null) { 
-		shortcutsWindow.withFooter('#shortcutsRemove, #shortcutsAddItem, #shortcutsExport').show();
-	}
-	if (active != null && active.items != null && active.items.length > 0) {
-		active.items.forEach(function(i, idx) {
-			if(typeof i == 'object' && !Array.isArray(i)) { 
-				out += createTableRow([
-					[3, '&#8597;&nbsp;&nbsp; '+getText('shortcutsFolder')],
-					[6, $('<span>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
-					[3, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))]
-				], false);
-			} else if(/--s[0-9]+p--/.test(i) || i == '--sep--') {
-				out += createTableRow([
-				[1, '&#8597;&nbsp;&nbsp;'],
-				[10, $('<hr>', { 'style': 'margin: 10px 0;' })],
-				[1,  $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
-				], false);
-			} else {
-				var typename = shortcutsStripType(i[0].split("\\").pop());
-				out += createTableRow([
-					[3, '&#8597;&nbsp;&nbsp;' + shortcutsTypesLang[typename[1]]],
-					[4, typename[0]],
-					[3, $('<input>', { 'type': 'text', 'class': 'form-control', 'style': 'background:none;color:white;', 'value': i[1] == null ? '' : i[1] })],
-					[2, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
-				], false);
-			}
-		});
-		shortcutsWindow.withBody('#shortcutsRows').html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;cursor:move;" }).html(out));
-		shortcutsWindow.withBody('.close').click(function(e){
-			var actVal = shortcutsWindow.withHeader('#shortcutsSelect').val();
-			shortcutsGetActive().items.splice(parseInt($(this).val()), 1);
-			shortcutsRefresh();
-			if(actVal != 'root') {
-				shortcutsWindow.withHeader('#shortcutsSelect').val(actVal).change();
-			}
-		});
-	}
+	shortcutsGetActive()&&shortcutsWindow.withFooter('#shortcutsExport').show();
+	(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).forEach(function(i, idx) {
+		if(typeof i == 'object' && !Array.isArray(i)) { 
+			out += createTableRow([
+				[3, '&#8597;&nbsp;&nbsp;'+getText('shortcutsFolder')],
+				[6, $('<span>', { 'class': 'folder', 'id': i.id, 'style': 'cursor:pointer;' }).text(i.name)],
+				[3, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))]
+			], false);
+		} else if(/--s[0-9]+p--/.test(i) || i == '--sep--') {
+			out += createTableRow([
+			[1, '&#8597;&nbsp;&nbsp;'],
+			[10, $('<hr>', { 'style': 'margin: 10px 0;' })],
+			[1,  $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
+			], false);
+		} else {
+			var typename = shortcutsStripType(i[0].split("\\").pop());
+			out += createTableRow([
+				[3, '&#8597;&nbsp;&nbsp;' + shortcutsTypesLang[typename[1]]],
+				[4, typename[0]],
+				[3, $('<input>', { 'type': 'text', 'class': 'form-control', 'style': 'background:none;color:white;', 'value': i[1] == null ? '' : i[1] })],
+				[2, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
+			], false);
+		}
+	});
+	shortcutsWindow.withBody('#shortcutsRows').html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;cursor:move;" }).html(out));
+	shortcutsWindow.withBody('.close').click(function(e){
+		var actVal = shortcutsWindow.withHeader('#shortcutsSelect').val();
+		(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).splice(parseInt($(this).val()), 1);
+		shortcutsRefresh();
+		if(actVal != 'root') {
+			shortcutsWindow.withHeader('#shortcutsSelect').val(actVal).change();
+		}
+	});
 	shortcutsWindow.withBody('.container-fluid').sortable();
 	shortcutsWindow.withBody('.folder').click(function(e){
 		shortcutsWindow.withHeader("#shortcutsSelect").val(this.id).change();

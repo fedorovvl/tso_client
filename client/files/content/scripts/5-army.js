@@ -361,7 +361,7 @@ function armyLoadData()
 		if(checkedPacket[item].spec == null) {
 			out += utils.createTableRow([
 				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + checkedPacket[item]["data"]["name"]], 
-				[7, getGext('NoData')],
+				[7, getText('NoData')],
 				[1, 'FAIL', "buffNotReady"]]);
 			return;
 		}
