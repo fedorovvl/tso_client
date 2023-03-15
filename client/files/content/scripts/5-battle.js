@@ -191,7 +191,7 @@ function battleLoadData()
 		out += utils.createTableRow([
 			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(battlePacket[item].spec.getIconID(), '24px', '24px') + ' ' + battlePacket[item].name], 
 			[4, info],
-			[1, battlePacket[item].grid, battlePacket[item].canMove ? "buffReady" : "buffNotReady"],
+			[1, battlePacket[item].grid, battlePacket[item].canMove ? "buffReady" : battlePacket[item].onSameGrid ? "specSamegrid" : "buffNotReady"],
 			[2, battlePacket[item].target > 0 ? battlePacket[item].targetName : '', !battlePacket[item].target ? '' : battlePacket[item].canSubmitAttack ? "buffReady" : "buffNotReady"],
 			[1, (battlePacket[item].time / 1000) + 's']]);
 		if(battlePacket[item].canSubmitMove) { canSubmitMove = true; }

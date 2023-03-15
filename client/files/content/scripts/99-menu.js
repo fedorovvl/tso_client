@@ -35,7 +35,62 @@ var Menu = function(type){
 			{ label: loca.GetText("LAB", "Buildings"), mnemonicIndex: 0, items: [
 				{ label: loca.GetText("LAB", "Buffs"), mnemonicIndex: 0, keyCode: 116, onSelect: menuBuffsHandler },
 				{ label: loca.GetText("LAB", "Production"), mnemonicIndex: 0, keyCode: 118, onSelect: menuBuildingHandler },
-				{ label: getText('prod_timed'), mnemonicIndex: 0, keyCode: 119, onSelect: TimedMenuHandler }
+				{ label: getText('prod_timed'), mnemonicIndex: 0, keyCode: 119, onSelect: TimedMenuHandler },
+				{ label: loca.GetText("LAB", "Visit"), mnemonicIndex: 0, items: [
+					{ label: loca.GetText("LAB", "Specialbuildings"), mnemonicIndex: 0, items: [
+						{ label: loca.GetText("BUI", "Bookbinder"), name: "Bookbinder", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "AdventureBookbinder"), name: "AdventureBookbinder", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "WhiteCastle"), name: "WhiteCastle", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Logistics"), name: "Logistics", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "EpicWorkyardWood"), name: "EpicWorkyardWood", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "EpicWorkyardCorn"), name: "EpicWorkyardCorn", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "GiftChristmasTree"), name: "GiftChristmasTree", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "FlyingHouse"), name: "FlyingHouse", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Barracks"), name: "Barracks", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "EliteBarracks"), name: "EliteBarracks", onSelect: buiFastAccessMenuHandler }
+					]},
+					{ label: loca.GetText("LAB", "AdventureLevelSuperHigh"), mnemonicIndex: 0, items: [
+						{ label: loca.GetText("BUI", "Observatory"), name: "Observatory", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "EspionageBuilding"), name: "EspionageBuilding", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "MedicGarrison"), name: "MedicGarrison", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "OutdoorCanteen"), name: "OutdoorCanteen", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "S4Lazaret"), name: "S4Lazaret", onSelect: buiFastAccessMenuHandler }
+					]},
+					{ label: loca.GetText("SHI", "ChristmasBreweryBuff"), mnemonicIndex: 0, items: [
+						{ label: loca.GetText("BUI", "SpringPark"), name: "SpringPark", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "ConcertHall"), name: "ConcertHall", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Meadhall"), name: "Meadhall", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "SoccerField"), name: "SoccerField", onSelect: buiFastAccessMenuHandler }
+					]},
+					{ label: loca.GetText("QUL", "TutZoneWideBuffs1"), mnemonicIndex: 0, items: [
+						{ label: loca.GetText("BUI", "LoveTree"), name: "LoveTree", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Snowglobe"), name: "Snowglobe", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "ChristmasBakery"), name: "ChristmasBakery", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "ChristmasMarket_Player"), name: "ChristmasMarket_Player", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "LoveGarden"), name: "LoveGarden", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "CarnivalGrounds"), name: "CarnivalGrounds", onSelect: buiFastAccessMenuHandler }
+					]},
+					{ label: loca.GetText("LAB", "Production"), mnemonicIndex: 0, items: [
+
+						{ label: loca.GetText("BUI", "ArtificerStudy"), name: "ArtificerStudy", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Stronghold"), name: "Stronghold", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Smokehouse"), name: "Smokehouse", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "OilRefinery"), name: "OilRefinery", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Oilmill"), name: "Oilmill", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "SiegeWorkshop"), name: "SiegeWorkshop", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "SnackStand"), name: "SnackStand", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "LoversStatue"), name: "LoversStatue", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "ToyFactory"), name: "ToyFactory", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "CandyFactory"), name: "CandyFactory", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Chocolatier"), name: "Chocolatier", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "BlackTree_Blue"), name: "BlackTree_Blue", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "BlackTree_Gold"), name: "BlackTree_Gold", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "BlackTree_Green"), name: "BlackTree_Green", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "BlackTree_Purple"), name: "BlackTree_Purple", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "BlackTree_Red"), name: "BlackTree_Red", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "CrystalShardPit"), name: "CrystalShardPit", onSelect: buiFastAccessMenuHandler }
+					]}
+				]}
 			]},
 			{ label: loca.GetText("LAB", "BlackMarketAuction"), mnemonicIndex: 0, keyCode: 117, onSelect: menuAuctionHandler },
 			{ label: getText('shortcutsTitle'), name: 'Shortcuts', mnemonicIndex: 0 },
