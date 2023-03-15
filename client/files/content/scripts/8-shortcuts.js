@@ -242,7 +242,7 @@ function shortcutsAddHandler(event)
 	]);
 
 	shortcutsWindow.Footer().prepend([
-		$('<button>').attr({ "id": "shortcutsSave", "class": "btn btn-primary shortcutsSave" }).text(loca.GetText("LAB","GuildSave")),
+		$('<button>').attr({ "id": "shortcutsSave", "class": "btn btn-primary pull-left shortcutsSave" }).text(loca.GetText("LAB","GuildSave")),
 		$('<button>').attr({ "id": "shortcutsExport","class": "btn btn-primary pull-left"}).text("Export"),
 		$('<button>').attr({ "id": "shortcutsImport","class": "btn btn-primary pull-left"}).text("Import"),
 		groupSelect
