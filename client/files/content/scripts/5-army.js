@@ -439,9 +439,8 @@ function armyGetData()
 	}
 	armyPacket = {};
 	armyWindow.withBody("#specOpen").click(function() { 
-		var uniqueID = $(this).closest("div.row").find('input[type="checkbox"]').prop("id").split(".")
-		var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
-		var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
+		var uniqueID = $(this).closest("div.row").find('input[type="checkbox"]').prop("id");
+		var spec = armyGetSpecialistFromID(uniqueID);
 		game.zone.ScrollToGrid(spec.GetGarrisonGridIdx());
 	});
 	armyWindow.withBody(".toggleSelect").change(function() {
