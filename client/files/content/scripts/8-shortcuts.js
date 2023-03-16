@@ -400,10 +400,12 @@ function shortcutsGetActiveRecursive(t, s)
 	var result = null;
 	for(n in t) {
 		if (t[n].id == s) return t[n];
-		t[n].items.forEach(function(item){
-			if(typeof item == 'object' && !Array.isArray(item))
-				result = shortcutsGetActiveRecursive([item], s) || result;
-		});
+		if(t[n].id) {
+			t[n].items.forEach(function(item){
+				if(typeof item == 'object' && !Array.isArray(item))
+					result = shortcutsGetActiveRecursive([item], s) || result;
+			});
+		}
 	};
 	return result;
 }
