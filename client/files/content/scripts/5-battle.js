@@ -29,6 +29,7 @@ function battleMenuHandler(event)
 				game.chatMessage("Error loading " + e, 'army_move');
 			}
 		});
+		battlePacket = {};
 		battleWindow = new Modal('battleWindow', utils.getImageTag('SummerEvent2022Bundle1') + ' ' + loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual"));
 		battleWindow.create();
 		if(battleWindow.Title().find(".btn-army").length == 0) {

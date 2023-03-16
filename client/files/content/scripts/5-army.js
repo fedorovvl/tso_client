@@ -104,6 +104,8 @@ function armyMenuHandler(event)
 			game.chatMessage("Error loading " + e, 'army');
 		}
 	});
+	armyPacket = {};
+	armyPacketMatches = {};
 	armyWindow = new Modal('armyWindow', utils.getImageTag('icon_general.png', '45px') + ' ' + loca.GetText("LAB","Army"));
 	armyWindow.create();
 	if(armyWindow.Title().find(".btn-wartime").length == 0) {
