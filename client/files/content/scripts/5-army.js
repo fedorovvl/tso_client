@@ -136,8 +136,7 @@ function armyMenuHandler(event)
 				armyProgressCounter = total;
 				armyUpdateProgress(-1);
 				armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
-					var uniqueID = item.id.split(".")
-					var spec = armyGetSpecialistFromID(uniqueID);
+					var spec = armyGetSpecialistFromID(item);
 					if(!spec.HasUnits()) { 
 						$(item).closest('.row').remove();
 						total--;
