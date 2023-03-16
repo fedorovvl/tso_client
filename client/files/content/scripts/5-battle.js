@@ -99,7 +99,7 @@ function battleSaveTemplate()
 {
 	try {
 		var sortOrder = {}, savePacket = {}, sortedPacket = {};
-		battleWindow.sBody().find('[type=checkbox]').each(function(i, item) { sortOrder[item.id] = { 'order': i, 'time': parseInt($(item).closest("div.row").find("select").val()) }; });
+		battleWindow.sBody().find('[type=checkbox]').each(function(i, item) { sortOrder[item.id] = { 'order': (i + 1) * 10, 'time': parseInt($(item).closest("div.row").find("select").val()) }; });
 		battleWindow.withBody('[type=checkbox]:checked').each(function(i, item) {
 			var spec = armyGetSpecialistFromID(item.id);
 			savePacket[item.id] = { 
