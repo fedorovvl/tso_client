@@ -303,16 +303,16 @@ function shortcutsAddHandler(event)
 		var active = shortcutsGetActive();
 		var sortOrder = {};
 		$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
-		$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
-			if($(item).find('.form-control').length > 0) {
-				(active && active.items || shortcutsSettings)[i][1] = $(item).find('.form-control').val() || null;
-			}
-		});
 		if (active != null) {
 			active.items.sort(function(a,b) { return sortOrder[active.items.indexOf(a)] > sortOrder[active.items.indexOf(b)] ? 1 : -1; });
 		} else {
 			shortcutsSettings.sort(function(a,b) { return sortOrder[shortcutsSettings.indexOf(a)] > sortOrder[shortcutsSettings.indexOf(b)] ? 1 : -1; });
 		}
+		$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
+			if($(item).find('.form-control').length > 0) {
+				(active && active.items || shortcutsSettings)[i][1] = $(item).find('.form-control').val() || null;
+			}
+		});
 		settings.settings['shortcuts'] = [];
 		storeSettings(shortcutsSettings, 'shortcuts');
 		shortcutsMakeMenu();
