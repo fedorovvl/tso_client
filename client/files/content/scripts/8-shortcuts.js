@@ -107,6 +107,15 @@ function shortcutsProceedFile(data, type)
 		break;
 		case 'm ':
 		case 'a ':
+			if(game.gi.isOnHomzone()) {
+				game.showAlert(loca.GetText("MEL", "ExplorerDidNotFindEventZone"));
+				return;
+			}
+			if(battleTimedQueue && battleTimedQueue.index != battleTimedQueue.len())
+			{
+				game.showAlert(loca.GetText("ALT", "ServerOverstrained"));
+				return;
+			}
 			battleMenuHandler(null);
 			if(game.gi.isOnHomzone()) { return; }
 			battlePacket = data;
@@ -114,6 +123,10 @@ function shortcutsProceedFile(data, type)
 		break;
 		case 'e ':
 		case 'g ':
+			if(game.gi.isOnHomzone() == false) {
+				game.showAlert(getText('not_home'));
+				return;
+			}
 			specSharedHandler(type == 'e ' ? 1 : 2);
 			$('#specModalData select').val(0);
 			$.each(data, function(spec, val) { $('#' + spec.replace('expl-','')).val(val); });
