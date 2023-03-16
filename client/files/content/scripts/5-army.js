@@ -381,7 +381,7 @@ function armyLoadData()
 		out += utils.createTableRow([
 			[7, loca.GetText("RES", item)], 
 			[2, checkedPacket.army[item]],
-			[2, armyFreeInfo[item]],
+			[2, armyFreeInfo[item] ? armyFreeInfo[item] : 0],
 			[1, aStatus ? 'OK' : 'FAIL', aStatus ? "buffReady" : "buffNotReady"]]);
 	});
 	if(checkedPacket.canSubmit) {
