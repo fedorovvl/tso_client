@@ -27,7 +27,7 @@ function reloadScripts(event)
 }
 
 function humanMemorySize(bytes, dp) {
-	const units = ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+	const units = ['kB', 'MB', 'GB', 'TB'];
 	var u = -1;
 	do {
 		bytes /= 1024;
