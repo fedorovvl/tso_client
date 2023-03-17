@@ -36,6 +36,7 @@ namespace client
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
         public static int http_timeout = 20000;
+        public static VersionInfo winver;
         public static bool is64 = System.Environment.Is64BitOperatingSystem;
         private int _regionUid;
         public static string fast_nickname = string.Empty;
@@ -48,7 +49,7 @@ namespace client
         private string _langRemember;
         public string appversion
         {
-            get { return "1.5.5.1"; }
+            get { return "1.5.6.0"; }
         }
         public string langLogin
         {
@@ -89,6 +90,7 @@ namespace client
             "--skip - allows to skip update checking of client.swf",
             "--http_timeout - set http requests timeout",
             "--tsofolder - set different tso folder name",
+            "--x64 - use x64 adobe air runtime",
             "--debug - creates a debug.txt file with an error report in case of failure"
         };
 
@@ -111,6 +113,7 @@ namespace client
 
         private void Main_Loaded(object sender, RoutedEventArgs e)
         {
+            WinVersion.GetVersion(out winver);
             if (cmd["config"] != null)
                 setting_file = cmd["config"].Trim();
             ReadSettings();
@@ -183,6 +186,22 @@ namespace client
                 }
                 if (!debug)
                     unzip.ExtractToDirectory(ClientDirectory);
+            }
+            if (!debug)
+            {
+                if (System.Environment.Is64BitOperatingSystem && cmd["x64"] != null)
+                {
+                    using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x64)))
+                    {
+                        unzip.ExtractToDirectory(ClientDirectory);
+                    }
+                } else
+                {
+                    using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x86)))
+                    {
+                        unzip.ExtractToDirectory(ClientDirectory);
+                    }
+                }
             }
             try
             {

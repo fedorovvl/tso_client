@@ -29,6 +29,16 @@ var explorerDropSpec = [
   ]}
 ];
 
+function specExplorerMenuHandler(event)
+{
+	specSharedHandler(1);
+}
+
+function specGeologistMenuHandler(event)
+{
+	specSharedHandler(2);
+}
+
 function specSharedHandler(type)
 {
 	const isExplorer = type === 1,
@@ -47,8 +57,8 @@ function specSharedHandler(type)
 	specTemplates.setModule(isExplorer ? 'expl' : 'geo');
 	const playerLevel = game.player.GetPlayerLevel();
     var out = '<div class="container-fluid">', isThereAnySpec = false, specialistsUniqueId;
-	game.getSpecialists().sort(0).forEach(function(item){
-		if (item.GetTask() != null || item.GetBaseType() != type) { return; }
+	game.getSpecialists().sort(specNameSorter).forEach(function(item){
+		if (item.GetTask() != null || item.GetBaseType() != type || item.getPlayerID() == -1) { return; }
 		specialistsUniqueId = item.GetUniqueID();
 		isThereAnySpec = true;
 		if(isExplorer) {

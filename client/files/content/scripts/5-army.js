@@ -1,5 +1,6 @@
 var armySPECIALIST_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TYPE");
 var armyMilitarySystem = swmmo.getDefinitionByName("MilitarySystem::cMilitaryUtil");
+var armyMilitaryBase = swmmo.getDefinitionByName("MilitarySystem::cMilitaryUnitBase");
 var dRaiseArmyVODef = swmmo.getDefinitionByName("Communication.VO::dRaiseArmyVO");
 var dResourceVODef = swmmo.getDefinitionByName("Communication.VO::dResourceVO");
 var armySpecTaskDef = swmmo.getDefinitionByName("Communication.VO::dStartSpecialistTaskVO");
@@ -7,12 +8,14 @@ var armySpecTravelDef = swmmo.getDefinitionByName("Specialists::cSpecialistTask_
 var armyServices = swmmo.getDefinitionByName("com.bluebyte.tso.service::ServiceManager").getInstance();
 var armyResponder = game.createResponder(armyResponderHandler, armyResponderHandler);
 var armyPacket = {};
+var armyPacketMatches = {};
 var armyInfo = {};
 var armyFreeInfo = {};
+var armyProgressCounter = 0;
 var armyWindow;
 var armyTemplates;
 var armyProgress = [
-	utils.getImage(new(game.def("GUI.Assets::gAssetManager_BuildQueueTempSlotTimeLeftIcon"))().bitmapData),
+	utils.getImage(new(game.def("GUI.Assets::gAssetManager_BuildQueueTempSlotTimeLeftIcon"))().bitmapData) + ' 5s',
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar1"))().bitmapData),
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar2"))().bitmapData),
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar3"))().bitmapData),
@@ -27,29 +30,45 @@ var armyProgress = [
 
 function armyResponderHandler(event, data)
 {
-	armyUpdateProgress(0);
-	setTimeout(function() {
-		armyFreeInfo = {};
-		updateFreeArmyInfo();
-		armyUpdateProgress(-1);
-		armyWindow.withFooter("button").prop('disabled',false);
-		armyGetData();
-	}, 5000);
+	armyProgressCounter--;
+	if(armyProgressCounter <= 0) {
+		armyUpdateProgress(0);
+		setTimeout(function() {
+			armyFreeInfo = {};
+			updateFreeArmyInfo();
+			armyUpdateProgress(-1);
+			armyWindow.withFooter("button").prop('disabled',false);
+			armyGetData();
+		}, 5000);
+	}
 }
 
-function updateFreeArmyInfo()
+function armyGetChecksum(army)
 {
+	var result = 0;
+	$.each(army.army, function(res) {
+		result = result ^ (armyMilitaryBase.GetUnitBaseForType(res).GetCombatPriority() + (army.army[res] << 6));
+	});
+	return result;
+}
+
+function updateFreeArmyInfo(direct)
+{
+	direct = typeof direct === "boolean" ? direct : false;
 	var freeArmy = '<div class="container-fluid"><center>';
 	var armyCategory = [];
 	armyFreeInfo = {};
 	game.zone.GetArmy(game.player.GetPlayerId()).GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(item){
-		armyCategory[item.GetUnitBase().GetUnitCategory()] = armyCategory[item.GetUnitBase().GetUnitCategory()] || '';
-		armyCategory[item.GetUnitBase().GetUnitCategory()] += utils.getImageTag(item.GetType(), '20px') + ' ' + item.GetAmount() + '&nbsp;';
+		var cat = item.GetUnitBase().GetUnitCategory() + +item.GetUnitBase().GetIsElite();
+		armyCategory[cat] = armyCategory[cat] || '';
+		armyCategory[cat] += utils.getImageTag(item.GetType(), '20px') + ' ' + item.GetAmount() + '&nbsp;';
 		armyFreeInfo[item.GetType()] = item.GetAmount();
 	});
 	freeArmy += armyCategory.filter(function(a) { return '<p>' + a; }).join('</p>');
 	freeArmy += '</center>';
-	armyWindow.withHeader("").parent().find("#army").html(freeArmy + '</div>');
+	if(!direct) {
+		armyWindow.withHeader("#army").html(freeArmy + '</div>');
+	}
 }
 
 function armyUpdateProgress(num)
@@ -63,24 +82,42 @@ function armyUpdateProgress(num)
 	}
 }
 
+function armyConvertTemplate(data)
+{
+	if(data[Object.keys(data)[0]].army) { return data; }
+	var newData = {};
+	$.each(data, function(item) { 
+		newData[item] = { 'name': data[item].name, 'army': {} };
+		delete data[item].name;
+		newData[item].army = data[item];
+	});
+	return newData;
+}
+
 function armyMenuHandler(event)
 {
 	armyTemplates = new SaveLoadTemplate('army', function(data) {
-		armyPacket = data;
 		try{
+			armyPacket = armyConvertTemplate(data);
 			armyLoadData();
 		} catch(e) {
 			game.chatMessage("Error loading " + e, 'army');
 		}
 	});
+	armyPacket = {};
+	armyPacketMatches = {};
 	armyWindow = new Modal('armyWindow', utils.getImageTag('icon_general.png', '45px') + ' ' + loca.GetText("LAB","Army"));
 	armyWindow.create();
-	if(armyWindow.withHeader("").parent().find("#army").length === 0)
+	if(armyWindow.Title().find(".btn-wartime").length == 0) {
+		armyWindow.Title().append($('<button>').attr({ "class": "btn btn-wartime pull-right", 'style': 'position:relative;top:2px;left:-5px;' }).text(loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual")));
+		armyWindow.Title().find(".btn-wartime").click(battleMenuHandler);
+	}
+	if(armyWindow.withHeader("#army").length === 0)
 	{
-		armyWindow.withHeader("").parent().append($('<div>', { id: "army" }));
+		armyWindow.withHeader("").append($('<div>', { id: "army" }));
 	}
 	updateFreeArmyInfo();
-	var groupSend = $('<div>', { 'class': 'btn-group' }).append([
+	var groupSend = $('<div>', { 'class': 'btn-group dropup' }).append([
 		$('<button>').attr({ 
 			"id": "armySendGeneralsBtn",
 			"class": "btn btn-success armySendGeneralsBtn dropdown-toggle",
@@ -88,11 +125,7 @@ function armyMenuHandler(event)
 			'aria-expanded': 'false',
 			'data-toggle': "dropdown"
 		}).text(loca.GetText("LAB", "Send")), 
-		$('<div>', {
-			'x-placement': 'bottom-start',
-			'style': 'position: absolute; transform: translate3d(0px, 37px, 0px); top: 0px; left: 0px; will-change: transform;',
-			'class': 'dropdown-menu'
-		})
+		$('<div>', { 'class': 'dropdown-menu' })
 	]);
 	if(armyWindow.withFooter(".armyUnload").length == 0) {
 		armyWindow.Footer().prepend([
@@ -100,14 +133,14 @@ function armyMenuHandler(event)
 			$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
 				var queue = new TimedQueue(1000);
 				var counter = 1, total = armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').length;
+				armyProgressCounter = total;
 				armyUpdateProgress(-1);
 				armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
-					var uniqueID = item.id.split(".")
-					var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
-					var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
+					var spec = armyGetSpecialistFromID(item);
 					if(!spec.HasUnits()) { 
 						$(item).closest('.row').remove();
 						total--;
+						armyProgressCounter--;
 						return;
 					}
 					var dRaiseArmyVO = new dRaiseArmyVODef();
@@ -115,11 +148,7 @@ function armyMenuHandler(event)
 					queue.add(function(){ 
 						try {
 							armyUpdateProgress(Math.round(Math.round((100 * counter) / total) / 10) * 10 / 10);
-							if(counter == total) {
-								game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
-							} else {
-								game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
-							}
+							game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
 							counter++;
 							$(item).closest('.row').remove();
 						} catch(e) { 
@@ -132,8 +161,14 @@ function armyMenuHandler(event)
 					queue.run();
 				}
 			}),
+			$('<button>').attr({ "class": "btn btn-warning armyReload" }).text(loca.GetText("LAB", "Update")).click(function() {
+				try{
+					armyLoadData();
+				} catch(e) {
+					game.chatMessage("Error reloading " + e, 'army');
+				}
+			}),
 			$('<button>').attr({ "class": "btn btn-warning armyReset" }).text(getText('btn_reset')).click(function() {
-				armyPacket = {};
 				armyWindow.withFooter(".armySubmit, .armyReset").hide();
 				armyWindow.withFooter(".armySaveTemplate, .armyLoadTemplate, .armyUnload, .armySendGeneralsBtn").show();
 				armyGetData();
@@ -146,8 +181,9 @@ function armyMenuHandler(event)
 				armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
 					savePacket[item.id] = armyInfo[item.id];
 				});
-				if(Object.keys(savePacket).length > 0) { armyTemplates.save(savePacket); return; }
-				if(Object.keys(armyPacket).length > 0) { armyTemplates.save(armyPacket); }
+				if(Object.keys(savePacket).length > 0) { 
+					armyTemplates.save(savePacket);
+				}
 			}),
 			$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { armyTemplates.load(); })
 		]);
@@ -167,7 +203,7 @@ function armyMenuHandler(event)
 	} catch (error) {
 		alert("Err (retry): " + error.message);
 	}
-	armyWindow.withFooter(".armySubmit, .armyReset").hide();
+	armyWindow.withFooter(".armySubmit, .armyReset, .armyReload").hide();
 	armyWindow.withFooter(".armySaveTemplate, .armyLoadTemplate").show();
 	armyGetData();
 	armyWindow.show();
@@ -182,8 +218,10 @@ function armyGeneralsSend(e)
 		armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
 			var spec = armyGetSpecialistFromID(item);
 			if(spec == null) { return; }
-			if (OptionSelected == '98' && spec.GetGarrisonGridIdx() > 0) {
-				queue.add(function(){ armySendGeneralToStar(spec); });
+			if (OptionSelected == '98') {
+				if(spec.GetGarrisonGridIdx() > 0) {
+					queue.add(function(){ armySendGeneralToStar(spec); });
+				}
 			} else {
 				queue.add(function(){ armyServices.specialist.sendToZone(spec, OptionSelected); });
 			}
@@ -203,7 +241,7 @@ function armyGetSpecialistFromID(item)
 {
 	try{
 		var uniqueID = item.id !== undefined ? item.id.split(".") : item.split(".");
-		var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
+		var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]);
 		var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
 		return spec;
 	} catch (e) {
@@ -233,27 +271,28 @@ function armyLoadGenerals(direct)
 	direct = typeof direct === "boolean" ? direct : false;
 	var queue = new TimedQueue(1000);
 	var counter = 1, total = Object.keys(armyPacket).length;
+	armyProgressCounter = total;
 	$.each(armyPacket, function(item) { 
+		if(!direct && armyPacketMatches[item]) {
+			total--;
+			armyProgressCounter--;
+			return;
+		}
 		var dRaiseArmyVO = new dRaiseArmyVODef();
 		var spec = armyGetSpecialistFromID(item);
 		if(spec == null) { return; }
 		dRaiseArmyVO.armyHolderSpecialistVO = spec.CreateSpecialistVOFromSpecialist();
-		$.each(armyPacket[item], function(res) {
-			if(res == "name") { return; }
+		$.each(armyPacket[item].army, function(res) {
 			var dResourceVO = new dResourceVODef();
 			dResourceVO.name_string = res;
-			dResourceVO.amount = armyPacket[item][res];
+			dResourceVO.amount = armyPacket[item].army[res];
 			dRaiseArmyVO.unitSquads.addItem(dResourceVO);
 		});
 		queue.add(function(){ 
 			if(!direct) {
 				armyWindow.withBody('.close[value="'+item+'"]').closest("div.row div:first-child").addClass("buffReady");
 				armyUpdateProgress(Math.round(Math.round(100 * counter / total) / 10) * 10 / 10);
-				if(counter == total) {
-					game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
-				} else {
-					game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
-				}
+				game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
 				counter++;
 			} else {
 				game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO);
@@ -262,10 +301,48 @@ function armyLoadGenerals(direct)
 		
 		
 	});
-	if(!direct) {
+	if(!direct && queue.len() > 0) {
 		armyWindow.withFooter("button").prop('disabled',true);
 	}
 	queue.run();
+}
+
+function armyLoadDataCheck(data)
+{
+	var result = { 'canSubmit': true }, requiredArmy = {};
+	armyPacketMatches = {};
+	var canFree = false;
+	$.each(data, function(item) { 
+		result[item] = result[item] || { 'data': data[item] };
+		var spec = armyGetSpecialistFromID(item);
+		result[item].spec = spec;
+		if(spec == null) { return; }
+		var curArmyChecksum = armyInfo[item]&&armyGetChecksum(armyInfo[item]);
+		var alreadyMatch = armyGetChecksum(data[item]) == curArmyChecksum;
+		armyPacketMatches[item] = alreadyMatch;
+		$.each(data[item].army, function(res) {
+			if(!alreadyMatch) {
+				var req = data[item].army[res] - armyGetSquadCount(item, res);
+				if(req > 0) { 
+					requiredArmy[res] = requiredArmy[res] + req || req;
+				} else {
+					canFree = true;
+				}
+			}
+		});
+		var gStatus = spec.GetGarrison() != null && spec.GetTask() == null;
+		result[item].gStatus = gStatus;
+		if(!gStatus && !alreadyMatch) { 
+			result.canSubmit = false;
+		}
+	});
+	result["army"] = requiredArmy;
+	$.each(requiredArmy, function(item) {
+		var aStatus = armyFreeInfo[item] >= requiredArmy[item];
+		if(!aStatus) { result.canSubmit = false; }
+	});
+	if(Object.keys(requiredArmy).length == 0 && !canFree) { result.canSubmit = false; }
+	return result;
 }
 
 function armyLoadData()
@@ -274,52 +351,40 @@ function armyLoadData()
 		return armyGetData();
 	}
 	updateFreeArmyInfo();
-	var canSubmit = true;
 	armyWindow.withFooter(".armyUnload, .armySendGeneralsBtn").hide();
-	armyWindow.withFooter(".armyReset").show();
+	armyWindow.withFooter(".armyReset, .armyReload").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [7, getText('armyNewArmy')], [1, loca.GetText("LAB", "ProductionStatus")]], true);
-	$.each(armyPacket, function(item) { 
-		var spec = armyGetSpecialistFromID(item);
-		if(spec == null) {
+	var checkedPacket = armyLoadDataCheck(armyPacket);
+	$.each(checkedPacket, function(item) {
+		if(item == 'army' || item == 'canSubmit') { return; }
+		if(checkedPacket[item].spec == null) {
 			out += utils.createTableRow([
-				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + armyPacket[item]["name"]], 
-				[7, 'spec is null'],
+				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + checkedPacket[item]["data"]["name"]], 
+				[7, '<b>' + getText('NoData') + '</b>'],
 				[1, 'FAIL', "buffNotReady"]]);
-			canSubmit = false
 			return;
 		}
 		var info = '';
-		$.each(armyPacket[item], function(res) {
-			if(res == "name") { return; }
-			info += utils.getImageTag(res) + ' ' + armyPacket[item][res] + '&nbsp;';
+		$.each(checkedPacket[item]['data'].army, function(res) {
+			info += utils.getImageTag(res) + ' ' + checkedPacket[item]["data"].army[res] + '&nbsp;';
 		});
-		var gStatus = spec.GetGarrison() != null && spec.GetTask() == null;
 		out += utils.createTableRow([
-			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(spec.getIconID(), '24px', '24px') + ' ' + spec.getName(false)], 
+			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(checkedPacket[item].spec.getIconID(), '24px', '24px') + ' ' + checkedPacket[item]["data"]["name"], armyPacketMatches[item] ? "buffReady" : ""], 
 			[7, info],
-			[1, gStatus ? 'OK' : 'FAIL', gStatus ? "buffReady" : "buffNotReady"]]);
-		if(spec.GetGarrison() == null || spec.GetTask() != null) { canSubmit = false; }
+			[1, checkedPacket[item].gStatus ? 'OK' : 'FAIL', checkedPacket[item].gStatus ? "buffReady" : "buffNotReady"]]);
 	});
 	out += '<br><p>'+loca.GetText("LAB","MilitaryHelp") + '</p>';
 	out += utils.createTableRow([[7, loca.GetText("LAB", "Name")], [2, loca.GetText("LAB", "Requires")], [2, loca.GetText("LAB", "Available")], [1, loca.GetText("LAB", "ProductionStatus")]], true);
-	var requiredArmy = {};
-	$.each(armyPacket, function(item) {
-		$.each(armyPacket[item], function(res) {
-			if(res == "name") { return; }
-			requiredArmy[res] = requiredArmy[res] + armyPacket[item][res] || armyPacket[item][res];
-		});
-	});
-	$.each(requiredArmy, function(item) {
-		var aStatus = armyFreeInfo[item] >= requiredArmy[item];
+	$.each(checkedPacket.army, function(item) {
+		var aStatus = armyFreeInfo[item] >= checkedPacket.army[item];
 		out += utils.createTableRow([
 			[7, loca.GetText("RES", item)], 
-			[2, requiredArmy[item]],
-			[2, armyFreeInfo[item]],
+			[2, checkedPacket.army[item]],
+			[2, armyFreeInfo[item] ? armyFreeInfo[item] : 0],
 			[1, aStatus ? 'OK' : 'FAIL', aStatus ? "buffReady" : "buffNotReady"]]);
-		if(armyFreeInfo[item] < requiredArmy[item]) { canSubmit = false; }
 	});
-	if(canSubmit) {
+	if(checkedPacket.canSubmit) {
 		armyWindow.withFooter(".armySubmit").show();
 	}
 	armyWindow.Body().html(out + '<div>');
@@ -330,11 +395,10 @@ function armyLoadData()
 	});
 }
 
-function armyGeneralSorter(a, b)
+function armyGetSquadCount(spec, squad)
 {
-	if (a.GetType() < b.GetType()) return -1;
-	if (a.GetType() > b.GetType()) return 1;
-	return a.getName(false).replace(/<|b|>|\//g, "").toLowerCase().localeCompare(b.getName(false).replace(/<|b|>|\//g, "").toLowerCase());
+	if(!armyInfo[spec]) { return 0; }
+	return armyInfo[spec].army[squad] || 0;
 }
 
 function armyGetData()
@@ -342,21 +406,23 @@ function armyGetData()
 	armyInfo = {};
 	armyUpdateProgress(-1);
 	armyWindow.withFooter(".armyUnload, .armySendGeneralsBtn").show();
-	armyWindow.withFooter(".armyReset, .armySubmit").hide();
+	armyWindow.withFooter(".armyReset, .armySubmit, .armyReload").hide();
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[4, $('<input>', { 'type': 'checkbox', 'class': 'toggleSelect' }).prop('outerHTML') + '&nbsp;&nbsp;' + loca.GetText("LAB", "Name")], [7, getText('armyCurrentArmy')], [1, '#']], true);
-	game.zone.GetSpecialists_vector().sort(armyGeneralSorter).forEach(function(item){
+	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
 		try {
 			if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
-			if(item == null || item.GetTask() != null) { return; }
+			if(item == null || typeof item == 'undefined' || item.GetTask() != null) { return; }
 			var info = '';
 			var uniqId = item.GetUniqueID().toKeyString();
-			armyInfo[uniqId] = armyInfo[uniqId] || {};
+			armyInfo[uniqId] = armyInfo[uniqId] || { 'name': item.getName(false), 'type': item.GetType(), 'army': {}, 'skills': {} };
+			item.getSkillTree().getItems_vector().forEach(function(skill, index){
+				if(skill.getLevel() > 0) { armyInfo[uniqId].skills[index] = skill.getLevel(); }
+			});
 			item.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
-				armyInfo[uniqId][squad.GetType()] = squad.GetAmount();
+				armyInfo[uniqId].army[squad.GetType()] = squad.GetAmount();
 				info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
 			});
-			armyInfo[uniqId]["name"] = item.getName(false);
 			html += utils.createTableRow([
 				[4, '<input type="checkbox" id="' + uniqId + '" ' + (armyPacket[uniqId] ? "checked" : "") + ' />&nbsp;&nbsp;' + getImageTag(item.getIconID(), '24px', '24px') + ' ' + armyInfo[uniqId]["name"]], 
 				[7, info],
@@ -364,10 +430,15 @@ function armyGetData()
 		} catch(e) {}
 	});
 	armyWindow.Body().html(html + '<div>');
+	if(armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').length > 0) {
+		var headerRow = armyWindow.withBody(".container-fluid div:first");
+		var sortedRows = armyWindow.withBody(".container-fluid > div:gt(0)").sort(function(a, b) { return $(a).find('[type=checkbox]').is(':checked') ? -1 : 1; });
+		armyWindow.withBody(".container-fluid").html('').append([headerRow, sortedRows]);
+	}
+	armyPacket = {};
 	armyWindow.withBody("#specOpen").click(function() { 
-		var uniqueID = $(this).closest("div.row").find('input[type="checkbox"]').prop("id").split(".")
-		var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
-		var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
+		var uniqueID = $(this).closest("div.row").find('input[type="checkbox"]').prop("id");
+		var spec = armyGetSpecialistFromID(uniqueID);
 		game.zone.ScrollToGrid(spec.GetGarrisonGridIdx());
 	});
 	armyWindow.withBody(".toggleSelect").change(function() {

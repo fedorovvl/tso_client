@@ -107,6 +107,7 @@
       <DependentUpon>Main.xaml</DependentUpon>
     </Compile>
     <Compile Include="Unzip.cs" />
+    <Compile Include="WinVersion.cs" />
     <Page Include="login.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -140,6 +141,8 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="files\content.zip" />
+    <None Include="files\runtime_x64.zip" />
+    <None Include="files\runtime_x86.zip" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

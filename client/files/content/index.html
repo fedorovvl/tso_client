@@ -25,7 +25,7 @@
 		  window.nativeWindow.stage.addChild( swmmo ); 
 		  window.nativeWindow.stage.addEventListener(air.Event.RESIZE, onResize);
 		  window.nativeWindow.addEventListener("displayStateChange", onResize);
-		  window.nativeWindow.stage.addEventListener(window.runtime.flash.events.KeyboardEvent.KEY_DOWN, function(event) { try{ menu.checkKeybind(event); } catch(e){} });
+		  window.nativeWindow.stage.addEventListener(window.runtime.flash.events.KeyboardEvent.KEY_DOWN, stageKeyDownListener);
 		  air.NativeApplication.nativeApplication.addEventListener("invoke", function(event) {
 			var p={};
 			event.arguments[0].replace(/[?&]+([^=&]+)=([^&]*)/gi, function(s,k,v){p[k]=v})
@@ -34,6 +34,7 @@
 			if(p["debug"]) { isDebug = true; }
 			if(p["version"]) { version = p["version"]; }
 			if(p["clientconfig"]) { settingsFile = unescape(p["clientconfig"]); }
+			convertSettings();
 		  });
 		  loadInterval = setInterval(function(){ 
 			if(!swmmo.getDefinitionByName("globalFlash").gui.GetDefaultGuiElementsLoaded()) { return; }
@@ -55,6 +56,8 @@
 			}
 		  }, 2000);
 		}
+		function stageKeyDownListener(event) { try{ menu.checkKeybind(event); } catch(e){} }
+		function convertSettings(){var e=new air.File("file:///"+air.File.applicationDirectory.resolvePath(settingsFile).nativePath);if(e.exists){var t=new air.FileStream;try{t.open(e,"read");var i=t.readUTFBytes(1);"{"!=i&&(t.position=0,i=JSON.parse(t.readUTF()),t.close(),t.open(e,"write"),t.writeUTFBytes(JSON.stringify(i,null,"  "))),t.close()}catch(r){}}}
 		function combineSameLang(e){return 0==e.indexOf("en")?"en-uk":0==e.indexOf("es")?"es-es":e}
 		function onResize(event) { swmmo.setActualSize(window.nativeWindow.stage.stageWidth, window.nativeWindow.stage.stageHeight); }
 		var Game=function(e){this.gi=e,this.player=e.mCurrentPlayer,this.zone=e.mCurrentPlayerZone,this.quests=e.mNewQuestManager,this.trackers={},this.questCallbacks=e.mQuestClientCallbacks};Game.prototype={def:function(e,t){var n=swmmo.getDefinitionByName(e);return t?new n:n},chatMessage:function(e,t){t=t||"main",globalFlash.gui.mChatPanel.PutMessageToChannelWithoutServer("news",new window.runtime.Date,"Client [{0}]".format(t),e,!1,!1)},getBuildings:function(e){if((e=e||1)>5)return null;try{return this.zone.mStreetDataMap.GetBuildings_vector()}catch(t){return this.getBuildings(++e)}},getSpecialists:function(e){if((e=e||1)>5)return null;try{return this.zone.GetSpecialists_vector()}catch(t){return this.getSpecialists(++e)}},getBuffs:function(e){if((e=e||1)>5)return null;try{return this.player.getAvailableBuffs_vector()}catch(t){return this.getBuffs(++e)}},getResources:function(e){if((e=e||1)>5)return null;try{return this.zone.GetResources(this.player)}catch(t){return this.getResources(++e)}},createResponder:function(e,t){return new(this.def("ServerState::ResponderSimple"))(e,t)},showAlert:function(e){var t=this.def("GUI.Components.ItemRenderer::AvatarMessageItemRenderer",!0);swmmo.getDefinitionByName("globalFlash").gui.mAvatarMessageList.mClientMessages.addChild(t),t.headlineLabel.text="Client",t.messageBody.text=e,t.image.source=assets.GetBitmap("1-Up.png")},getTracker:function(r,e){return this.trackers[r]||(this.trackers[r]=new window.runtime.ClientBuff,this.trackers[r].addEventListener("buffApply",e)),this.trackers[r]}};

@@ -212,7 +212,6 @@ namespace client
                     return data[1];
                 }
             }
-            return string.Empty;
         }
         /// <summary>
         ///   Posts data to a specified url. Note that this assumes that you have already url encoded the post data.
@@ -223,7 +222,7 @@ namespace client
         private string PostData(string url,
                                 string postData)
         {
-            if (useBC) { return PostDataBC(url, postData); }
+            if (useBC && Main.winver.Major < 10) { return PostDataBC(url, postData); }
             if (Main.debug)
                 File.AppendAllText("debug.txt", "begin request " + url + "\r\n");
             var result = string.Empty;
