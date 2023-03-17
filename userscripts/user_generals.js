@@ -264,7 +264,12 @@ function _exudGeneralsMenuSelectedHandler(event)
 		
 		tdata = JSON.parse(Text);
 		
-		$( "#udGeneralsModal").modal("show");
+		//$( "#udGeneralsModal").modal("show");
+		_exudGeneralsModalInitializingWithTemplate = true;
+		_exudGeneralsMenuHandler(null);
+		_exudGetGeneralsData(tdata);
+		_exudGeneralsModalInitializingWithTemplate = false;
+		/*
 		if(!_exudGeneralsModalInitialized)			
 		{
 			_exudGeneralsModalInitializingWithTemplate = true;
@@ -274,7 +279,7 @@ function _exudGeneralsMenuSelectedHandler(event)
 		}
 		else
 			_exudMakeGeneralsTable(tdata);
-		
+		*/
 		_exudGeneralsSetSendTypes();
 		
 	} catch (e) {
