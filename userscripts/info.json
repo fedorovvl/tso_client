@@ -1,10 +1,4 @@
 {
-   "user_specduty.js":{
-      "name":"SpecDuty",
-      "shortDesc":"Specialists active task info",
-      "longDesc":"Show explorers/geologists task info with estimated and arrival time. With slide switch you can change specialist type",
-      "author":"SirriS"
-   },
    "user_guild.js":{
       "name":"Guild",
       "shortDesc":"Simple guild info",
@@ -18,13 +12,6 @@
       "longDesc":"Show info about your generals like army, status and more. Can send to star menu or adventure. Support templates.",
       "author":"MkFera",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3924047"
-   },
-   "user_collectables.js":{
-      "name":"Collectables",
-      "shortDesc":"Collectibles finder",
-      "longDesc":"Find and select collectibles on main island or adventure",
-      "author":"MkFera",
-	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
    },
    "user_friends.js":{
       "name":"Friends",
@@ -45,13 +32,6 @@
       "shortDesc":"List of buildings ans monitoring updates",
       "longDesc":"list of buildings with the possibility to select and keep under observation some buildings that are being updated",
       "author":"MkFera",
-	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
-   },
-   "user_spechide.js":{
-      "name":"HideSpec",
-      "shortDesc":"Hiding specialists from StarMenu",
-      "longDesc":"Simply hididing generals, geologists or explorers from StarMenu",
-      "author":"SirriS",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
    },
    "user_showmyloot.js":{
