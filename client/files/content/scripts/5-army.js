@@ -136,9 +136,7 @@ function armyMenuHandler(event)
 				armyProgressCounter = total;
 				armyUpdateProgress(-1);
 				armyWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
-					var uniqueID = item.id.split(".")
-					var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
-					var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
+					var spec = armyGetSpecialistFromID(item);
 					if(!spec.HasUnits()) { 
 						$(item).closest('.row').remove();
 						total--;
@@ -243,7 +241,7 @@ function armyGetSpecialistFromID(item)
 {
 	try{
 		var uniqueID = item.id !== undefined ? item.id.split(".") : item.split(".");
-		var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]),
+		var uniqueIDPacket = game.def("Communication.VO::dUniqueID").Create(uniqueID[0], uniqueID[1]);
 		var spec = game.zone.getSpecialist(game.player.GetPlayerId(), uniqueIDPacket);
 		return spec;
 	} catch (e) {
