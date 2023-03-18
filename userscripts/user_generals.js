@@ -171,8 +171,10 @@ function _exudGeneralsMakeMenu()
 		var toolsItem = new air.NativeMenuItem(loca.GetText("ACL", "MilitarySpecialists"));
 		toolsItem.name = loca.GetText("ACL", "MilitarySpecialists");
 		
-		if (!_exudGeneralsSettings._exudGeneralsShortcuts)
+		if (!_exudGeneralsSettings._exudGeneralsShortcuts) {
+			toolsItem.data = { 'item': { 'onSelect': _exudGeneralsMenuHandler } };
 			toolsItem.addEventListener(air.Event.SELECT, _exudGeneralsMenuHandler);
+		}
 
 		toolsMenu.submenu.addItem(toolsItem);
 		
@@ -202,6 +204,7 @@ function _exudGeneralsRemakeMenu()
 			myMenuItem = new air.NativeMenuItem(loca.GetText("ACL", "MilitarySpecialists"));
 			myMenuItem.name = loca.GetText("ACL", "MilitarySpecialists");
 			myMenuItem.addEventListener(air.Event.SELECT, _exudGeneralsMenuHandler);
+			myMenuItem.data = { 'item': { 'onSelect': _exudGeneralsMenuHandler } };
 			toolsMenu.submenu.addItem(myMenuItem);
 			toolsMenu.submenu.setItemIndex(myMenuItem, Idx);
 		}
