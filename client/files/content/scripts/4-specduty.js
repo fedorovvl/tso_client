@@ -9,8 +9,12 @@ var dutyTitleIconByType = {
 }
 var dutyWindow;
 
-function specDutyMenuHandler(event) {
-	
+function specDutyMenuHandler(event)
+{
+	if(game.gi.isOnHomzone() == false) {
+		game.showAlert(getText('not_home'));
+		return;
+	}
 	dutyWindow = new Modal('dutyWindow', getImageTag('IntrepidExplorer') + ' ' + getText('dutymenuTitle') + '<span id="dutyCounter"/>');
 	dutyWindow.create();
 
@@ -49,7 +53,7 @@ function specDutyMenuHandler(event) {
 	game.getSpecialists().sort(0).forEach(function(item){
 		if(item.GetTask() == null) { return; }
 		var playerOwner = game.gi.GetPlayerName_string(item.getPlayerID());
-		var name = '{1} ({0})'.format(playerOwner, item.getName(false));
+		var name = item.getName(false);
 		var type = [1,2].indexOf(item.GetBaseType()) != -1 ? item.GetBaseType() : 3;
 		tabStat[type] = ++tabStat[type] || 1;
 		var task;
