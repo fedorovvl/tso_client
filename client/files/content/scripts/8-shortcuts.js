@@ -677,7 +677,9 @@ function shortcutsExport()
 		out += createTableRow([[6, "General"],[6, "Must have skills list"]], true);
 		$.each(genData, function(item) {
 			if(Object.keys(genData[item].skills) == 0) { return; }
-			out += createTableRow([[6, genData[item].name],[6, exportGenerateSkillsTable(genData[item].skills, genData[item].type), item.replace('.', '')]], false);
+			var skillTable = exportGenerateSkillsTable(genData[item].skills, genData[item].type);
+			if(skillTable == '') { return; }
+			out += createTableRow([[6, genData[item].name],[6, skillTable, item.replace('.', '')]], false);
 		});
 		shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;cursor:move;" }).html(out));
 		$('#' + shortcutsWindow.rawsId).modal({backdrop: "static"});
