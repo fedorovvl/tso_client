@@ -647,6 +647,7 @@ function shortcutsExport()
 		shortcutsWindow.settings(function() { 
 			var genData = shortcutsExportGetGens(exportedContent);
 			$.each(genData, function(item) {
+				delete genData[item].name;
 				if(Object.keys(genData[item].skills) == 0) { return; }
 				if(!shortcutscSpecialist.GetSpecialistDescriptionForType(genData[item].type).isTransportGeneral()) {
 					shortcutsSkipSkills.forEach(function(idx) { delete genData[item].skills[idx]; });
@@ -761,7 +762,7 @@ function shortcutsExportGetGens(data)
 	var result = { };
 	$.each(data, function(item) { 
 		$.each(data[item], function(spec) { 
-			result[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills };
+			result[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills, 'name': data[item][spec].name };
 		});
 	});
 	return result;
