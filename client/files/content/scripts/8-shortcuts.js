@@ -650,6 +650,8 @@ function shortcutsExport()
 				if(Object.keys(genData[item].skills) == 0) { return; }
 				if(!shortcutscSpecialist.GetSpecialistDescriptionForType(genData[item].type).isTransportGeneral()) {
 					shortcutsSkipSkills.forEach(function(idx) { delete genData[item].skills[idx]; });
+				} else {
+					[3,4,5].forEach(function(idx) { delete genData[item].skills[idx]; });
 				}
 				$('#' + shortcutsWindow.rawsId).find("div." + item.replace('.', '') + " input:not(:checked)").each(function(i, check) { 
 					delete genData[item].skills[check.id];
