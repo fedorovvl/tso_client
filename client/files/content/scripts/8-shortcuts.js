@@ -566,6 +566,10 @@ function shortcutsImportProceed(data)
 	shortcutsWindow.sFooter().find('.pull-left').hide();
 	var out = '';
 	var select = shortcutsImportMakeSelect();
+	if(shortcutsImported.description != '') {
+		out += '<h4>Description</h4>';
+		out += $('<textarea>', { 'style': 'width:100%;height:100px;background:none;', 'disabled': 'disabled' }).text(shortcutsImported.description).prop('outerHTML');
+	}
 	out += "<H4>Generals comparator</H4>" + createTableRow([[5, "General"],[1, "Match"],[6, "Your general"]], true);
 	$.each(shortcutsImported.generals, function(item) {
 		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).getName_string());
@@ -664,11 +668,12 @@ function shortcutsExport()
 					delete exportedContent[item][spec].name;
 				});
 			});
-			shortcutsExportFinal({ 'tree': dataToexport, 'content': exportedContent, 'generals': genData }); 
+			shortcutsExportFinal({ 'tree': dataToexport, 'content': exportedContent, 'generals': genData, 'description': shortcutsWindow.sBody().find('#description').val() }); 
 		}, '');
 		shortcutsWindow.sDialog().css("height", "90%");
 		shortcutsWindow.sTitle().html("Export status");
-		var out = '';
+		var out = '<h4>Description</h4>';
+		out += '<textarea maxlength=2000 id="description" style="width:100%;height:100px;background:none;"></textarea>';
 		if(skippedTemplates.length > 0) {
 			out += '<h4>Skipped templates</h4>';
 			out += createTableRow([[10, "Filename"],[2, "Reason"]], true);
@@ -676,6 +681,7 @@ function shortcutsExport()
 				out += createTableRow([[10, skippedTemplates[tmpl][0]],[2, skippedTemplates[tmpl][1]]], false);
 			}
 		}
+		
 		out += out == '' ? '' : '<h4>Generals options</h4>';
 		var genData = shortcutsExportGetGens(exportedContent);
 		out += createTableRow([[6, "General"],[6, "Must have skills list"]], true);
