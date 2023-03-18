@@ -568,8 +568,9 @@ function shortcutsImportProceed(data)
 	var select = shortcutsImportMakeSelect();
 	out += "<H4>Generals comparator</H4>" + createTableRow([[5, "General"],[1, "Match"],[6, "Your general"]], true);
 	$.each(shortcutsImported.generals, function(item) {
+		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).getName_string());
 		out += createTableRow([
-			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(shortcutsImported.generals[item].name).prop('outerHTML') + shortcutsImportShowSkills(shortcutsImported.generals[item].skills, shortcutsImported.generals[item].type)],
+			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(name).prop('outerHTML') + shortcutsImportShowSkills(shortcutsImported.generals[item].skills, shortcutsImported.generals[item].type)],
 			[1, "", 'match'],
 			[6, shortcutsImportFilterSelect(select, shortcutsImported.generals[item].type) + '<div class="skills" style="text-align: right;"/>', item]
 		], false);
@@ -758,7 +759,7 @@ function shortcutsExportGetGens(data)
 	var result = { };
 	$.each(data, function(item) { 
 		$.each(data[item], function(spec) { 
-			result[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills, 'name': data[item][spec].name };
+			result[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills };
 		});
 	});
 	return result;
