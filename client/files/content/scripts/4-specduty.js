@@ -1,4 +1,3 @@
-var dutyHideGuest = false;
 var dutyType = 1, dutyCounter = [];
 var dutySPECIALIST_TASK_TYPE = swmmo.getDefinitionByName("Enums::SPECIALIST_TASK_TYPES");
 var dutySpecTypes = { 'dutyExplorersBtn': 1,'dutyGeologistBtn': 2,'dutyGeneralsBtn': 3 };
@@ -23,16 +22,11 @@ function specDutyMenuHandler(event)
 		dutyWindow.Footer().prepend([
 			$('<button>').attr({ "id": "dutyExplorersBtn", "class": "btn btn-primary pull-left dutyExplorersBtn type1" }).text(loca.GetText("SPE", "Explorer")),
 			$('<button>').attr({ "id": "dutyGeologistBtn", "class": "btn btn-primary pull-left dutyGeologistBtn type2" }).text(loca.GetText("SPE", "Geologist")),
-			$('<button>').attr({ "id": "dutyGeneralsBtn", "class": "btn btn-primary pull-left dutyGeneralsBtn type3" }).text(loca.GetText("SPE", "General")),
-			$('<button>').attr({ "id": "dutydutyShowGuestBtn", "class": "btn btn-primary pull-left dutydutyShowGuestBtn" }).text(getText("dutyShowGuest")),
+			$('<button>').attr({ "id": "dutyGeneralsBtn", "class": "btn btn-primary pull-left dutyGeneralsBtn type3" }).text(loca.GetText("SPE", "General"))
 		]);
 		dutyWindow.withFooter('.dutyExplorersBtn, .dutyGeologistBtn, .dutyGeneralsBtn').click(function(event) {
 			dutyWindow.withHeader("img").prop('src', dutyTitleIconByType[this.id]);
 			dutyType = dutySpecTypes[this.id];
-			dutyRefreshView();
-		});
-		dutyWindow.withFooter('.dutydutyShowGuestBtn').click(function(event) {
-			dutyHideGuest = !dutyHideGuest;
 			dutyRefreshView();
 		});
 	}
@@ -97,7 +91,4 @@ function dutyRefreshView()
 	dutyWindow.withHeader('#dutyCounter').html(" ({0})".format(dutyCounter[dutyType]||0));
 	dutyWindow.withBody('div.row').find('.type'+dutyType).closest('div.row').show();
 	dutyWindow.withBody('div.row').find(':first:not(.type'+dutyType+')').closest('div.row').hide();
-	if(dutyHideGuest) {
-		dutyWindow.withBody('div.row').find(':first:not(.'+game.player.GetPlayerId()+')').closest('div.row').hide();
-	}
 }
