@@ -457,7 +457,7 @@ function shortcutsImport()
 		var hashed = data.hash;
 		delete data.hash;
 		if(!data.tree || !data.content || hash(JSON.stringify(data)) != hashed) {
-			showGameAlert(getText("bad_template"));
+			alert(getText("bad_template"));
 			return;
 		}
 		shortcutsImportProceed(data);
