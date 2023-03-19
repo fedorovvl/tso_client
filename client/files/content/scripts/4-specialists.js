@@ -29,6 +29,10 @@ var explorerDropSpec = [
   ]}
 ];
 
+jQuery.expr[':'].contains = function(a, i, m) {
+  return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+};
+
 function specExplorerMenuHandler(event)
 {
 	specSharedHandler(1);
@@ -109,7 +113,9 @@ function createSpecWindow()
 		});
 	});
 	const headerRow = createTableRow([
-			[4, loca.GetText("LAB","Name")],
+			[4, loca.GetText("LAB","Name") +  $('<input>', {
+				'type':'text', 'id':'specFilter', 'class': 'form-control', 'style': 'display: inline;width: 100px;float: right;'
+			}).prop('outerHTML')],
 			[3, utils.createSwitch('specTimeType', mainSettings.specDefTimeType)+'<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(mainSettings.specDefTimeType ? getText('spec_time_arrival') : getText('spec_time_normal'))],
 			[5, '', 'massSend']
 		], true);
@@ -129,6 +135,14 @@ function createSpecWindow()
 		var dataToSave = {};
 		$('#specModalData select').map(function() { dataToSave[$(this).attr('id')] = $(this).val(); });
 		specTemplates.save(dataToSave);
+	});
+	$('#specFilter').keyup(function(e) {
+		var val = $(e.target).val();
+		if(!val || val == ''){
+			$('#specModalData div.row:hidden').show();
+			return;
+		}
+		$('#specModalData div.row div:first-child:not(:contains('+val+'))').closest('div.row').hide();
 	});
 	$('#specModal .specLoadTemplate').click(function() { specTemplates.load(); });
 	$('#specModal .specSend').click(sendSpec);
