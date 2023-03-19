@@ -470,7 +470,7 @@ function shortcutsImportMakeSelect()
 	var select = $('<select>', { 'class': "form-control" });
 	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
 			if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
-			select.append($('<option>', { value: item.GetUniqueID().toKeyString(), id: item.GetType() }).text(item.getName(false).replace(/(<([^>]+)>)/gi, "")));
+			select.append($('<option>', { value: item.GetUniqueID().toKeyString(), id: item.GetType() }).text(item.getName(false).replace(/(<([^>]+)>)/gi, "") + " ({0})".format(item.GetUniqueID().toKeyString())));
 	});
 	return select;
 }
@@ -568,7 +568,10 @@ function shortcutsImportProceed(data)
 	var select = shortcutsImportMakeSelect();
 	if(shortcutsImported.description != '') {
 		out += '<h4>Description</h4>';
-		out += $('<textarea>', { 'style': 'width:100%;height:100px;background:none;', 'disabled': 'disabled' }).text(shortcutsImported.description).prop('outerHTML');
+		var urlRegex = /(https?:\/\/[^\s]+)/g;
+		shortcutsImported.description = shortcutsImported.description.replace(urlRegex, '<a href="$1">$1</a>');
+		shortcutsImported.description = shortcutsImported.description.replace(/\n/g, '<br>');
+		out += $('<div>', { 'class': "container-fluid", 'style': "width:100%;height:150px;border:1px solid;border-radius:5px;" }).html(shortcutsImported.description).prop('outerHTML');
 	}
 	out += "<H4>Generals comparator</H4>" + createTableRow([[5, "General"],[1, "Match"],[6, "Your general"]], true);
 	$.each(shortcutsImported.generals, function(item) {
@@ -580,6 +583,7 @@ function shortcutsImportProceed(data)
 		], false);
 	});
 	shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;" }).html(out));
+	shortcutsWindow.sBody().find('a').click(function(e) { e.preventDefault(); navigateToURL(this.href); });
 	shortcutsWindow.sBody().find('select').change(shortcutsImportMatch);
 	$('#' + shortcutsWindow.rawsId).modal({backdrop: "static"});
 }

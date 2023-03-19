@@ -335,6 +335,11 @@ function feedbackMenuHandler(event)
 	setTimeout(function() { w.withBody('#feedbackContent').focus() }, 1000);
 }
 
+function navigateToURL(url)
+{
+	air.navigateToURL(new air.URLRequest(url));
+}
+
 function openWikiHandler(event)
 {
 	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki"));
