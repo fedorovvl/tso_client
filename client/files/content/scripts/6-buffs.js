@@ -206,7 +206,7 @@ function getBuffStatus(data, zoneStatus)
 	if(bui == null) { return 'buff_not_exist'; }
 	if(bui.GetBuildingName_string() != data['buiName']) { return 'buff_wrong_name'; }
 	if(bui.productionBuff != null && checkBuffType(bui.productionBuff.GetBuffDefinition().GetName_string())) { return 'buff_buffed'; }
-	if(buffOnlyActive && !bui.IsProductionActive()) { return 'buff_notactive'; }
+	if(buffOnlyActive && (!bui.IsProductionActive() || bui.IsUpgradeInProgress())) { return 'buff_notactive'; }
 	return 'buff_ready';
 }
 
