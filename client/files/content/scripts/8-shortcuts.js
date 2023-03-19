@@ -454,13 +454,13 @@ function shortcutsRefreshRecursive(t, dim, depth)
 function shortcutsImport()
 {
 	var exportSource = new SaveLoadTemplate('short', function(data) {
-		if(!data.tree || !data.content) {
+		var hashed = data.hash;
+		delete data.hash;
+		if(!data.tree || !data.content || hash(JSON.stringify(data)) != hashed) {
 			showGameAlert(getText("bad_template"));
 			return;
 		}
-		try{
-			shortcutsImportProceed(data);
-		} catch(e) { debug(e); }
+		shortcutsImportProceed(data);
 	});
 	exportSource.load();
 }
@@ -724,6 +724,7 @@ function shortcutsExportFinal(data)
 	if($('#' + shortcutsWindow.rawsId).length > 0) {
 		$('#' + shortcutsWindow.rawsId).modal('hide');
 	}
+	data.hash = hash(JSON.stringify(data));
 	var file = air.File.documentsDirectory.resolvePath(data.tree.name + '_export.data');
 	file.save(JSON.stringify(data));
 }
