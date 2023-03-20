@@ -346,7 +346,7 @@ function shortcutsselectTextFile(type)
 { 
     var txtFilter = new air.FileFilter("Template", "*.*");
 	var root = new air.File();
-	root.nativePath = readLastDir(type == 'move' ? 'army' : type);
+	root.nativePath = readLastDir(type == 'move' ? 'battle' : type);
     root.browseForOpenMultiple("Open", new window.runtime.Array(txtFilter)); 
     root.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, function(event) {
 		var nametotype = { 'buff': 'u', 'bui': 'p', 'battle': 'b' };
