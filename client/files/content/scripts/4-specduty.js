@@ -25,7 +25,7 @@ function specDutyMenuHandler(event)
 			$('<button>').attr({ "id": "dutyGeneralsBtn", "class": "btn btn-primary pull-left dutyGeneralsBtn type3" }).text(loca.GetText("SPE", "General"))
 		]);
 		dutyWindow.withFooter('.dutyExplorersBtn, .dutyGeologistBtn, .dutyGeneralsBtn').click(function(event) {
-			dutyWindow.withHeader("img").prop('src', dutyTitleIconByType[this.id]);
+			dutyWindow.Title().find("img").prop('src', dutyTitleIconByType[this.id]);
 			dutyType = dutySpecTypes[this.id];
 			dutyRefreshView();
 		});

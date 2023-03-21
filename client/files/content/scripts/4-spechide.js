@@ -28,7 +28,7 @@ function hideSpecMenuHandler(event)
 		
 		w.withFooter('#dutyExplorersBtn, #dutyGeologistBtn, #dutyGeneralsBtn').click(function(event) {
 			hideSpecSelectedType = dutySpecTypes[this.id];
-			w.withHeader("img").prop('src', dutyTitleIconByType[this.id]);
+			w.Title().find("img").prop('src', dutyTitleIconByType[this.id]);
 			w.withBody('div.row').find('.type'+hideSpecSelectedType).closest('div.row').show();
 			w.withBody('div.row').find(':first:not(.type'+hideSpecSelectedType+')').closest('div.row').hide();
 		});
