@@ -579,6 +579,7 @@ function shortcutsImportData(data, path)
 
 function shortcutsImportTree(t, content, path)
 {
+	t.id += Math.floor(Math.random() * 1000) + 1;
 	$.each(t.items, function(i) { 
 		if(typeof t.items[i] == 'string') { return; }
 		if(!Array.isArray(t.items[i])) { 
