@@ -386,7 +386,7 @@ function shortcutsUpdateView()
 	shortcutsWindow.withBody('#shortcutsRows').html("");
 	var out = "";
 
-	shortcutsGetActive()&&shortcutsWindow.withFooter('#shortcutsExport').show();
+	shortcutsGetActive()&&shortcutsWindow.withFooter('#shortcutsExport').show()||shortcutsWindow.withFooter('#shortcutsExport').hide();
 	(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).forEach(function(i, idx) {
 		if(typeof i == 'object' && !Array.isArray(i)) { 
 			out += createTableRow([
