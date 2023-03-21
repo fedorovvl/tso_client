@@ -3,7 +3,6 @@ var buffEventTracker = game.getTracker('buff', buffApliedHandler),
 	buffRecordEnabled = false,
 	buffRecord, buffRecordFiltered,
 	buffSourceRecord = false,
-	buffOnlyActive = false,
 	buffsAvailable = {},
 	buffInProgress = false,
 	buffTemplates, buffVector;
@@ -57,10 +56,6 @@ function menuBuffsHandler(event)
 	}
 	out += '</div>';
 	$("#buffModalData").html(out);
-	$("#buffOnlyActive").change(function() {
-		buffOnlyActive = !buffOnlyActive;
-		menuBuffsHandler(null);
-	});
 	$("#buffModalData .close").click(function(e) { 
 		var grid = $(e.currentTarget).val();
 		buffRecordFiltered = buffRecordFiltered.filter(function(e) { return e.buiGrid != grid; });
@@ -129,9 +124,6 @@ function getBuffHTML()
 {
 	var result = '<p>{0} {1}</p>'.format(getText('buff_zoneowner'), buffRecord["zoneUser"]),
 		isZoneRight = true;
-	result += $('<div>', { 'class': "col-xs-12 col-sm-12 col-lg-12" }).html(createSwitch('buffOnlyActive', buffOnlyActive)).append(
-		$('<div>', { 'style': 'position: absolute;left: 55px;top: 1px;'}).html("Only active")
-	).prop('outerHTML');
 	if(buffRecord["zoneId"] != game.gi.mCurrentViewedZoneID) {
 		result += '<p><strong>' + getText('buff_not_your_zone') + '</strong></p>';
 		isZoneRight = false;
@@ -206,7 +198,7 @@ function getBuffStatus(data, zoneStatus)
 	if(bui == null) { return 'buff_not_exist'; }
 	if(bui.GetBuildingName_string() != data['buiName']) { return 'buff_wrong_name'; }
 	if(bui.productionBuff != null && checkBuffType(bui.productionBuff.GetBuffDefinition().GetName_string())) { return 'buff_buffed'; }
-	if(buffOnlyActive && (!bui.IsProductionActive() || bui.IsUpgradeInProgress())) { return 'buff_notactive'; }
+	if(mainSettings.buffOnlyActive && (!bui.IsProductionActive() || bui.IsUpgradeInProgress())) { return 'buff_notactive'; }
 	return 'buff_ready';
 }
 
