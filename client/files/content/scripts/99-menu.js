@@ -114,9 +114,6 @@ Menu.prototype = {
 	show:function(){
 		this.keybindings = { '115.true.false.false': { 'fn': shortcutsPickupAll } };
 		var menu = this.type == 'grouped' ? this.groupedMenu() : this.linearMenu();
-		if(isDebug) {
-			menu.push({ label: "SaveHTML", onSelect: menuSaveHandler });
-		}
 		menu.push({type: 'separator' });
 		menu.push({ label: loca.GetText("LAB", "ChatHelp"), name: 'Help', mnemonicIndex: 0, items: [
 			{ label: "Wiki", onSelect: openWikiHandler }, { label: "Discord (RU)", onSelect: openDiscordHandler },
