@@ -8,6 +8,8 @@ var shortcutsSkillsVector;
 var shortcutsTransportSkillsVector;
 var shortcutscSpecialist = game.def("Specialists::cSpecialist");
 var shortcutsImported;
+var shortcutsImportTransport = true;
+var shortcutsImportTotalGens = 0;
 var shortcutsTypesLang = {
 	'a ': loca.GetText("ACL", "PvPAttacker"),
 	'l ': loca.GetText("LAB","Army"),
@@ -521,12 +523,17 @@ function shortcutsImportFinal()
 		var oldId = $(item).closest('div').attr('class').split(' ').pop();
 		var re = new RegExp(oldId,"gi");
 		newContentString = newContentString.replace(re, item.value);
+		delete shortcutsImported.generals[oldId];
 	});
 	var newContent = JSON.parse(newContentString);
 	try
 	{
 		$.each(newContent, function(item) { 
 			$.each(newContent[item], function(spec) { 
+				if(shortcutsImported.generals[spec]) {
+					delete newContent[item][spec];
+					return;
+				}
 				var specialist = armyGetSpecialistFromID(spec);
 				newContent[item][spec].name = specialist.getName(false);
 				newContent[item][spec].skills = {};
@@ -534,6 +541,10 @@ function shortcutsImportFinal()
 					if(skill.getLevel() > 0) { newContent[item][spec].skills[index] = skill.getLevel(); }
 				});
 			});
+			if(Object.keys(newContent[item]) == 0) {
+				delete newContent[item];
+				return;
+			}
 		});
 	} catch (e) {
 		alert(getText("shortImportSmthWrong"));
@@ -541,7 +552,7 @@ function shortcutsImportFinal()
 	}
 	var file = new air.File(); 
 	file.addEventListener(air.Event.SELECT, function(event){
-		shortcutsImportTree(shortcutsImported.tree, file.nativePath);
+		shortcutsImportTree(shortcutsImported.tree, newContent, file.nativePath);
 		shortcutsImportData(newContent, file.nativePath);
 		(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push(shortcutsImported.tree);
 		$('#' + shortcutsWindow.rawsId).modal('hide');
@@ -566,37 +577,55 @@ function shortcutsImportData(data, path)
 	});
 }
 
-function shortcutsImportTree(t, path)
+function shortcutsImportTree(t, content, path)
 {
-	for (i in t.items) {
-		if(typeof t.items[i] == 'string') { continue; }
+	$.each(t.items, function(i) { 
+		if(typeof t.items[i] == 'string') { return; }
 		if(!Array.isArray(t.items[i])) { 
-			shortcutsImportTree(t.items[i], path);
-			continue;
+			shortcutsImportTree(t.items[i], content, path);
+			return;
+		}
+		if(!content[t.items[i][0].slice(0, -3)]) {
+			delete t.items[i];
+			return;
 		}
 		t.items[i][0] = "{0}\\{1}".format(path, t.items[i][0]);
-	}
+	});
 }
 
 function shortcutsImportProceed(data)
 {
 	shortcutsImported = data;
+	var urlRegex = /(https?:\/\/[^\s]+)/g;
+	shortcutsImported.description = shortcutsImported.description.replace(urlRegex, '<a href="$1">$1</a>');
+	shortcutsImported.description = shortcutsImported.description.replace(/\n/g, '<br>');
 	shortcutsWindow.settings(shortcutsImportFinal, 'modal-lg');
 	shortcutsWindow.sDialog().css("height", "90%");
-	shortcutsWindow.sTitle().html(getText("shortImportTitle") + " {0} ({1} {2})".format(data.tree.name, Object.keys(data.content).length, getText("shortImportTemplate")));
-	shortcutsWindow.sFooter().find('.pull-left').hide();
+	shortcutsWindow.sTitle().html("<center>{0} {1} ({2} {3})</center>".format(getText("shortImportTitle"), data.tree.name, Object.keys(data.content).length, getText("shortImportTemplate")));
+	shortcutsWindow.sFooter().find('.pull-left').addClass('btnSubmit').hide();
+	shortcutsWindow.sFooter().append($('<button>').attr({ "class": "btn btn-primary pull-left toggleTransport" }).text(getText("shortImportTransport")));
+	shortcutsWindow.sFooter().find('.toggleTransport').click(function() {
+		shortcutsImportTransport = !shortcutsImportTransport;
+		shortcutsImportGetData();
+	});
+	shortcutsImportGetData();
+	$('#' + shortcutsWindow.rawsId).modal({backdrop: "static"});
+}
+
+function shortcutsImportGetData()
+{
 	var out = '';
 	var select = shortcutsImportMakeSelect();
 	if(shortcutsImported.description != '') {
 		out += '<h4>{0}</h4>'.format(loca.GetText("QUL", "TutDetailsTab"));
-		var urlRegex = /(https?:\/\/[^\s]+)/g;
-		shortcutsImported.description = shortcutsImported.description.replace(urlRegex, '<a href="$1">$1</a>');
-		shortcutsImported.description = shortcutsImported.description.replace(/\n/g, '<br>');
 		out += $('<div>', { 'class': "container-fluid", 'style': "width:100%;height:150px;border:1px solid;border-radius:5px;" }).html(shortcutsImported.description).prop('outerHTML');
 	}
 	out += "<H4>{0}</H4>".format(getText("shortImportComparator")) + createTableRow([[5, loca.GetText("RES", "General")],[1, loca.GetText("LAB", "ProductionStatus")],[6, loca.GetText("QUL", "GuiDaiTheGoodGenerals")]], true);
+	shortcutsImportTotalGens = 0;
 	$.each(shortcutsImported.generals, function(item) {
+		if(!shortcutsImportTransport && shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).isTransportGeneral()) { return; }
 		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).getName_string());
+		shortcutsImportTotalGens++;
 		out += createTableRow([
 			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(name).prop('outerHTML') + shortcutsImportShowSkills(shortcutsImported.generals[item].skills, shortcutsImported.generals[item].type)],
 			[1, "", 'match'],
@@ -606,7 +635,6 @@ function shortcutsImportProceed(data)
 	shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;" }).html(out));
 	shortcutsWindow.sBody().find('a').click(function(e) { e.preventDefault(); navigateToURL(this.href); });
 	shortcutsWindow.sBody().find('select').change(shortcutsImportMatch);
-	$('#' + shortcutsWindow.rawsId).modal({backdrop: "static"});
 }
 
 function shortcutsImportShowSkills(skills, type)
@@ -655,10 +683,10 @@ function shortcutsImportMatch()
 	$(this).closest('div').find('.skills').html(resultSkills);
 	$(this).closest('div.row').find('.match').html(match ? 'ok' : 'fail');
 	var check = shortcutsWindow.sBody().find('div.match:contains(ok)');
-	if(check.length == Object.keys(shortcutsImported.generals).length) {
-		shortcutsWindow.sFooter().find('.pull-left').show();
+	if(check.length == shortcutsImportTotalGens) {
+		shortcutsWindow.sFooter().find('.btnSubmit').show();
 	} else {
-		shortcutsWindow.sFooter().find('.pull-left').hide();
+		shortcutsWindow.sFooter().find('.btnSubmit').hide();
 	}
 }
 
