@@ -27,6 +27,7 @@ function shortcutsMakeMenu()
 		{ label: loca.GetText("LAB","ToggleOptionsPanel"), mnemonicIndex: 0, onSelect: shortcutsAddHandler },
 		{ label: loca.GetText("LAB","UnloadUnits"), mnemonicIndex: 0, onSelect: shortcutsFreeAllUnits },
 		{ label: getText('shortcutsToStar'), mnemonicIndex: 0, onSelect: shortcutsReturnAll },
+		{ label: loca.GetText("LAB","Retreat"), mnemonicIndex: 0, onSelect: shortcutsRetreatAll },
 		{ label: loca.GetText("LAB", "WarehouseTab7"), mnemonicIndex: 0, onSelect: shortcutsPickupAll },
 		{ type: 'separator' }
 	];
@@ -210,6 +211,26 @@ function shortcutsPickupAll(event) {
     }
     showGameAlert(getText('command_sent'));
     queue.run();
+}
+
+function shortcutsRetreatAll()
+{
+	var queue = new TimedQueue(1000);
+	game.zone.GetSpecialists_vector().forEach(function(item){
+		if (game.player.GetPlayerId() == item.getPlayerID() && item.GetGeneralState() == 1){
+			queue.add(function(){ item.GetTask().Retreat(); });
+		}
+	});
+	if(queue.len() > 0)
+	{
+		queue.add(function(){ game.showAlert(loca.GetText("LAB", "GuildQuestCompleted")); });
+		queue.run();
+		if(battleTimedQueue) { 
+			battleTimedQueue.reset();
+			battleTimedQueue = null;
+		}
+		game.showAlert(getText('command_sent'));
+	}
 }
 
 function shortcutsFreeAllUnits()
