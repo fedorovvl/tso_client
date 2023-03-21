@@ -562,7 +562,7 @@ function shortcutsImportProceed(data)
 	shortcutsImported = data;
 	shortcutsWindow.settings(shortcutsImportFinal, 'modal-lg');
 	shortcutsWindow.sDialog().css("height", "90%");
-	shortcutsWindow.sTitle().html(getText("shortImport") + " {0} ({1} {2})".format(data.tree.name, Object.keys(data.content).length, getText("shortImportTemplate")));
+	shortcutsWindow.sTitle().html(getText("shortImportTitle") + " {0} ({1} {2})".format(data.tree.name, Object.keys(data.content).length, getText("shortImportTemplate")));
 	shortcutsWindow.sFooter().find('.pull-left').hide();
 	var out = '';
 	var select = shortcutsImportMakeSelect();
