@@ -518,10 +518,8 @@ function shortcutsImportMakeSelect()
 function shortcutsImportFilterSelect(select, type)
 {
 	var result = select.clone();
-	//result.find('option[id!="'+type+'"]').remove();
 	var filter = [ type ];
 	shortcutsGeneralsReplacement[type]&&(filter = filter.concat(shortcutsGeneralsReplacement[type]));
-	debug("filter for "+ type +" = "+JSON.stringify(filter));
 	result.find('option[id]').filterAttribute('id', filter, true).remove();
 	result.prepend($('<option>', { value: 0 }).text(loca.GetText("LAB", "Select")));
 	return result.find('option').length == 1 ? getText('NoData') : result.prop('outerHTML');
