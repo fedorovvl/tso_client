@@ -283,8 +283,9 @@ function shortcutsAddHandler(event)
 		shortcutsWindow.withHeader('').append($('<div>', { 'class': 'container-fluid' }).append([
 			createTableRow([
 				[2, getText('shortcutsFolder')],
-				[6, select],
-				[4, $('<center>').append($('<span>', { 'class': "shortcutsSaved", 'style': "display:none;" }).html("<b>{0}</b>".format(getText('shortcutsSaved')))) ]
+				[6, select ],
+				[1, $('<a>', { 'href': '#', 'class': 'renamePart' }).append(utils.getImage(new(game.def("GUI.Assets::gAssetManager_IconCombat3BonusTank"))().bitmapData))],
+				[3, $('<center>').append($('<span>', { 'class': "shortcutsSaved", 'style': "display:none;" }).html("<b>{0}</b>".format(getText('shortcutsSaved')))) ]
 			], true),
 			createTableRow([[3, loca.GetText("LAB", "Type")],[5, getText('shortcutsFilename')],[4, '']], true)
 		]));
@@ -342,8 +343,6 @@ function shortcutsAddHandler(event)
 		}
 		shortcutsselectTextFile(this.name); 
 	});
-	var sortOrder = {};
-	$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
 	shortcutsWindow.withFooter('.shortcutsSave').click(function(){
 		var active = shortcutsGetActive();
 		var sortOrder = {};
@@ -364,7 +363,14 @@ function shortcutsAddHandler(event)
 		shortcutsWindow.withHeader('.shortcutsSaved').fadeIn();
 		setTimeout(function() { shortcutsWindow.withHeader('.shortcutsSaved').fadeOut(); }, 1000);
 	});
-
+	shortcutsWindow.withHeader('.renamePart').click(function(){
+		var des = prompt("New folder name", '');
+		if(des == null || des == "") { return; }
+		shortcutsGetActive()&&(shortcutsGetActive().name = des);
+		var active = shortcutsGetActive().id;
+		shortcutsRefresh();
+		shortcutsWindow.withHeader("#shortcutsSelect").val(active).change();
+	});
 	shortcutsWindow.Body().html($('<div>', { 'id': 'shortcutsRows' }));
 	shortcutsRefresh();
 	shortcutsWindow.show();
@@ -402,8 +408,12 @@ function shortcutsUpdateView()
 	
 	shortcutsWindow.withBody('#shortcutsRows').html("");
 	var out = "";
-
-	shortcutsGetActive()&&shortcutsWindow.withFooter('#shortcutsExport').show()||shortcutsWindow.withFooter('#shortcutsExport').hide();
+	shortcutsWindow.withFooter('#shortcutsExport').hide();
+	shortcutsWindow.withHeader('.renamePart').hide();
+	if (shortcutsGetActive()) {
+		shortcutsWindow.withFooter('#shortcutsExport').show();
+		shortcutsWindow.withHeader('.renamePart').show();
+	}
 	(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).forEach(function(i, idx) {
 		if(typeof i == 'object' && !Array.isArray(i)) { 
 			out += createTableRow([
@@ -623,14 +633,16 @@ function shortcutsImportProceed(data)
 	shortcutsWindow.sDialog().css("height", "90%");
 	shortcutsWindow.sTitle().html("<center>{0} {1} ({2} {3})</center>".format(getText("shortImportTitle"), data.tree.name, Object.keys(data.content).length, getText("shortImportTemplate")));
 	shortcutsWindow.sFooter().find('.pull-left').addClass('btnSubmit').hide();
-	shortcutsWindow.sFooter().append($('<button>').attr({ "class": "btn btn-primary pull-left toggleTransport" }).text(getText("shortImportTransport")));
-	shortcutsWindow.sFooter().append($('<button>').attr({ "class": "btn btn-primary pull-left toggleSkills" }).text(getText("shortImportSkills")));
+	shortcutsWindow.sFooter().append($('<button>').attr({ "class": "btn btn-primary pull-left toggleTransport" }).text(!shortcutsImportTransport ? getText("shortImportTransportUse") : getText("shortImportTransportIgnore")));
+	shortcutsWindow.sFooter().append($('<button>').attr({ "class": "btn btn-primary pull-left toggleSkills" }).text(!shortcutsImportSkills ? getText("shortImportSkillsUse") : getText("shortImportSkillsIgnore")));
 	shortcutsWindow.sFooter().find('.toggleTransport').click(function() {
 		shortcutsImportTransport = !shortcutsImportTransport;
+		$(this).text(!shortcutsImportTransport ? getText("shortImportTransportUse") : getText("shortImportTransportIgnore"));
 		shortcutsImportGetData();
 	});
 	shortcutsWindow.sFooter().find('.toggleSkills').click(function() {
 		shortcutsImportSkills = !shortcutsImportSkills;
+		$(this).text(!shortcutsImportSkills ? getText("shortImportSkillsUse") : getText("shortImportSkillsIgnore"));
 		shortcutsImportGetData();
 	});
 	shortcutsImportGetData();
