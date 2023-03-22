@@ -9,6 +9,7 @@ var shortcutsTransportSkillsVector;
 var shortcutscSpecialist = game.def("Specialists::cSpecialist");
 var shortcutsImported;
 var shortcutsImportTransport = true;
+var shortcutsImportSkills = true;
 var shortcutsImportTotalGens = 0;
 var shortcutsTypesLang = {
 	'a ': loca.GetText("ACL", "PvPAttacker"),
@@ -18,6 +19,22 @@ var shortcutsTypesLang = {
 	'e ': loca.GetText("SPE", "Explorer"),
 	'b ': loca.GetText("LAB", "Buffs"),
 	'p ': loca.GetText("LAB", "Production"),
+};
+var shortcutsGeneralsReplacement = {
+	3: [ 33, 36, 7, 8, 11, 9, 13, 47 ],
+	7: [ 33, 36, 3, 8, 11, 9, 13, 47 ],
+	8: [ 33, 36, 3, 7, 11, 9, 13, 47 ],
+	9: [ 13, 47 ],
+	11: [ 9, 13, 47 ],
+	12: [ 54 ],
+	12: [ 27 ],
+	13: [ 47 ],
+	27: [ 12 ],
+	27: [ 54 ],
+	33: [ 36, 3, 7, 8, 11, 9, 13, 47 ],
+	36: [ 33, 3, 7, 8, 11, 9, 13, 47 ],
+	43: [ 57 ],
+	57: [ 43 ]
 };
 
 var shortcutsSettings = [];
@@ -501,7 +518,11 @@ function shortcutsImportMakeSelect()
 function shortcutsImportFilterSelect(select, type)
 {
 	var result = select.clone();
-	result.find('option[id!="'+type+'"]').remove();
+	//result.find('option[id!="'+type+'"]').remove();
+	var filter = [ type ];
+	shortcutsGeneralsReplacement[type]&&(filter = filter.concat(shortcutsGeneralsReplacement[type]));
+	debug("filter for "+ type +" = "+JSON.stringify(filter));
+	result.find('option[id]').filterAttribute('id', filter, true).remove();
 	result.prepend($('<option>', { value: 0 }).text(loca.GetText("LAB", "Select")));
 	return result.find('option').length == 1 ? getText('NoData') : result.prop('outerHTML');
 }
@@ -605,8 +626,13 @@ function shortcutsImportProceed(data)
 	shortcutsWindow.sTitle().html("<center>{0} {1} ({2} {3})</center>".format(getText("shortImportTitle"), data.tree.name, Object.keys(data.content).length, getText("shortImportTemplate")));
 	shortcutsWindow.sFooter().find('.pull-left').addClass('btnSubmit').hide();
 	shortcutsWindow.sFooter().append($('<button>').attr({ "class": "btn btn-primary pull-left toggleTransport" }).text(getText("shortImportTransport")));
+	shortcutsWindow.sFooter().append($('<button>').attr({ "class": "btn btn-primary pull-left toggleSkills" }).text(getText("shortImportSkills")));
 	shortcutsWindow.sFooter().find('.toggleTransport').click(function() {
 		shortcutsImportTransport = !shortcutsImportTransport;
+		shortcutsImportGetData();
+	});
+	shortcutsWindow.sFooter().find('.toggleSkills').click(function() {
+		shortcutsImportSkills = !shortcutsImportSkills;
 		shortcutsImportGetData();
 	});
 	shortcutsImportGetData();
@@ -666,7 +692,7 @@ function shortcutsImportMatch()
 	var spec = armyGetSpecialistFromID($(this).val());
 	var match = true;
 	var resultSkills = '';
-	if(spec != null) {
+	if(spec != null && shortcutsImportSkills) {
 		var skills = spec.getSkillTree().getItems_vector();
 		$.each(shortcutsImported.generals[compared].skills, function(index, item) {
 			var localMatch = true;
