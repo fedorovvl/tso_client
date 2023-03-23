@@ -614,6 +614,8 @@ const baseTranslation = {
 		"shortImportSmthWrong": "Algo salió mal, inténtalo de nuevo",
 		"shortImportDone": "Importe exitoso",
 		"shortImportTitle": "Importar",
+		"shortImportTransportUse": "Considerar intendentes",
+		"shortImportTransportIgnore": "Ignorar intendentes",
 		"shortImportTemplate": "plantilla(s)",
 		"shortImportComparator": "Comparador de plantillas",
 		"shortExportTitle": "Exportar",
@@ -637,7 +639,9 @@ const baseTranslation = {
 		"shortcutsWindow_help": "Informaci%C3%B3n-general#atajos",
 		"managerModal_help": "Informaci%C3%B3n-general#herramientas",
 		"feedbackWindow_help": "Informaci%C3%B3n-general#ayuda",
-		"nondefault_help": "Descripci%C3%B3n-de-Userscripts"
+		"nondefault_help": "Descripci%C3%B3n-de-Userscripts",
+		"shortImportSkillsUse": "Сonsiderar habilidades",
+		"shortImportSkillsIgnore": "Ignorar habilidades"
 	},
     "pl-pl": {
 		"btn_submit": "Wyślij",
