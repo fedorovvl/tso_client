@@ -344,7 +344,7 @@ function shortcutsAddHandler(event)
 		shortcutsselectTextFile(this.name); 
 	});
 	shortcutsWindow.withFooter('.shortcutsSave').click(function(){
-		$.each(shortcutsWindow.withBody('div.row .form-control'), function(i, item) { 
+		$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
 			if($(item).find('.form-control').length > 0) {
 				(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings)[i][1] = $(item).find('.form-control').val() || null;
 			}
