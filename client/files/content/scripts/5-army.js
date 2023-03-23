@@ -35,7 +35,6 @@ function armyResponderHandler(event, data)
 		armyUpdateProgress(0);
 		setTimeout(function() {
 			armyFreeInfo = {};
-			updateFreeArmyInfo();
 			armyUpdateProgress(-1);
 			armyWindow.withFooter("button").prop('disabled',false);
 			armyGetData();
