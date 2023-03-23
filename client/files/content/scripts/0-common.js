@@ -371,7 +371,7 @@ function openDonateTfHandler(event)
 function infoClickHandler(event)
 {
 	var help_url = getText(this.id + '_help');
-	if(/RES/.test(help_url)) { help_url = "nondefault_help"; }
+	if(/RES/.test(help_url)) { help_url = getText("nondefault_help"); }
 	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki/" + help_url));
 }
 
