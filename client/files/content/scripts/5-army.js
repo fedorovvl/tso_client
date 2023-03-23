@@ -96,10 +96,11 @@ function armyConvertTemplate(data)
 
 function armyMenuHandler(event)
 {
-	armyTemplates = new SaveLoadTemplate('army', function(data) {
+	armyTemplates = new SaveLoadTemplate('army', function(data, name) {
 		try{
 			armyPacket = armyConvertTemplate(data);
 			armyLoadData();
+			armyWindow.withHeader('.templateFile').html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 		} catch(e) {
 			game.chatMessage("Error loading " + e, 'army');
 		}
@@ -108,6 +109,7 @@ function armyMenuHandler(event)
 	armyPacketMatches = {};
 	armyWindow = new Modal('armyWindow', utils.getImageTag('icon_general.png', '45px') + ' ' + loca.GetText("LAB","Army"));
 	armyWindow.create();
+	armyWindow.withHeader('.templateFile').html('');
 	if(armyWindow.Title().find(".btn-wartime").length == 0) {
 		armyWindow.Title().append($('<button>').attr({ "class": "btn btn-wartime pull-right", 'style': 'position:relative;top:2px;left:-5px;' }).text(loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual")));
 		armyWindow.Title().find(".btn-wartime").click(battleMenuHandler);

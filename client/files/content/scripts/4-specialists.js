@@ -53,6 +53,7 @@ function specSharedHandler(type)
 		getImageTag(isGeologist ? 'icon_geologist.png' : 'icon_explorer.png'),
 		loca.GetText("SPE", isGeologist ? "Geologist" : "Explorer"))
 	);
+	$('#specModal .templateFile').html('');
 	if(game.gi.isOnHomzone() == false) {
 		game.showAlert(getText('not_home'));
 		return;
@@ -105,7 +106,8 @@ function specSharedHandler(type)
 
 function createSpecWindow()
 {
-	specTemplates = new SaveLoadTemplate('spec', function(data) {
+	specTemplates = new SaveLoadTemplate('spec', function(data, name) {
+		$("#specModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 		$('#specModalData select').val(0);
 		$.each(data, function(spec, val) { $('#' + spec.replace('expl-','')).val(val); });
 		$('#specModalData select').each(function(i, select){

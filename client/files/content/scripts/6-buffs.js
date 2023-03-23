@@ -11,7 +11,8 @@ function menuBuffsHandler(event)
 {
 	$("div[role='dialog']:not(#buffModal):visible").modal("hide");
 	createModalWindow('buffModal', getImageTag('ProductivityBuffLvl3', '45px') + ' '+loca.GetText("LAB", "Buffs"));
-	buffTemplates = new SaveLoadTemplate('buff', function(data) {
+	buffTemplates = new SaveLoadTemplate('buff', function(data, name) {
+		$("#buffModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 		buffRecord = data;
 		buffSourceRecord = false;
 		menuBuffsHandler(null);
@@ -32,10 +33,10 @@ function menuBuffsHandler(event)
 		});
 		$('#buffModal .buffSubmit').click(buffDoJob);
 	}
-
 	$('.buffSubmit, .buffReset, .buffSaveTemplate').attr('disabled', 'true');
 	var out = '<div class="container-fluid">';
 	if(!buffRecordEnabled && buffRecord == null) {
+		$("#buffModal .templateFile").html("");
 		out += '<strong>{0}</strong></p>{1}{2}'.format(
 			getText('buff_welcome'),
 			getText('buff_welcome_block'),
@@ -43,6 +44,7 @@ function menuBuffsHandler(event)
 		);
 	}
 	if(buffRecordEnabled) {
+		$("#buffModal .templateFile").html("");
 		out += $('<p>').append($('<h2>', { 'class': 'text-center' }).text(getText('buff_rec_progress'))).prop('outerHTML');
 		out += $('<button>', { 'class': 'btn btn-primary btn-lg btn-block', 'id': 'stopRecording' }).text(getText('buff_stop_record')).prop('outerHTML');
 	}

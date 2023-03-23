@@ -17,12 +17,13 @@ function battleMenuHandler(event)
 			game.showAlert(loca.GetText("ALT", "ServerOverstrained"));
 			return;
 		}
-		battleTemplates = new SaveLoadTemplate('battle', function(data) {
+		battleTemplates = new SaveLoadTemplate('battle', function(data, name) {
 			if(!data[Object.keys(data)[0]].grid) {
 				showGameAlert(getText("bad_template"));
 				return;
 			}
 			battlePacket = data;
+			battleWindow.withHeader('.templateFile').html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 			try{
 				battleLoadData();
 			} catch(e) {
@@ -48,6 +49,7 @@ function battleMenuHandler(event)
 				$('<button>').attr({ "class": "btn btn-primary loadMove" }).text(loca.GetText("LAB", "Move")).click(battleMove),
 			]);
 		}
+		battleWindow.withHeader('.templateFile').html("");
 		if($('#battleWindow .modal-content #armyDrop').length == 0) {
 			$('#battleWindow .modal-content').append($('<div>', { 'id': 'armyDrop' }));
 			battleDropdown(game.zone.mStreetDataMap.GetBuildings_vector().filter(function(e) { return e && e.IsReadyToIntercept(); }));

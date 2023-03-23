@@ -14,7 +14,8 @@ function menuBuildingHandler(event)
 	}
 	if($('#buildingModal .buildingSubmit').length === 0)
 	{
-		buildingTemplates = new SaveLoadTemplate('bui', function(data) {
+		buildingTemplates = new SaveLoadTemplate('bui', function(data, name) {
+			$("#buildingModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 			buildingRecord = data;
 			menuBuildingHandler(null);
 		});
@@ -40,6 +41,7 @@ function menuBuildingHandler(event)
 	$('.buildingSubmit, .buildingReset, .buildingSaveTemplate').attr('disabled', 'true');
 	var out = '<div class="container-fluid">';
 	if(!buildingRecordEnabled && buildingRecord == null) {
+		$("#buildingModal .templateFile").html("");
 		out += '<strong>{0}</strong></p>{1}{2}'.format(
 			getText('prod_welcome'),
 			getText('prod_welcome_block'),
@@ -47,6 +49,7 @@ function menuBuildingHandler(event)
 		);
 	}
 	if(buildingRecordEnabled) {
+		$("#buildingModal .templateFile").html("");
 		out += $('<p>').append($('<h2>', { 'class': 'text-center' }).text(getText('buff_rec_progress'))).prop('outerHTML');
 		out += $('<button>', { 'class': 'btn btn-primary btn-lg btn-block', 'id': 'buildingStopRecording' }).text(getText('buff_stop_record')).prop('outerHTML');
 	}
