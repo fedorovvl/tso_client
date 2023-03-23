@@ -344,17 +344,9 @@ function shortcutsAddHandler(event)
 		shortcutsselectTextFile(this.name); 
 	});
 	shortcutsWindow.withFooter('.shortcutsSave').click(function(){
-		var active = shortcutsGetActive();
-		var sortOrder = {};
-		$.each(shortcutsWindow.withBody('.close'), function(i, item) { sortOrder[$(item).val()] = i; });
-		if (active != null) {
-			active.items.sort(function(a,b) { return sortOrder[active.items.indexOf(a)] > sortOrder[active.items.indexOf(b)] ? 1 : -1; });
-		} else {
-			shortcutsSettings.sort(function(a,b) { return sortOrder[shortcutsSettings.indexOf(a)] > sortOrder[shortcutsSettings.indexOf(b)] ? 1 : -1; });
-		}
-		$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
+		$.each(shortcutsWindow.withBody('div.row .form-control'), function(i, item) { 
 			if($(item).find('.form-control').length > 0) {
-				(active && active.items || shortcutsSettings)[i][1] = $(item).find('.form-control').val() || null;
+				(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings)[i][1] = $(item).find('.form-control').val() || null;
 			}
 		});
 		settings.settings['shortcuts'] = [];
@@ -446,10 +438,20 @@ function shortcutsUpdateView()
 			shortcutsWindow.withHeader('#shortcutsSelect').val(actVal).change();
 		}
 	});
-	shortcutsWindow.withBody('.container-fluid').sortable();
+	shortcutsWindow.withBody('.container-fluid').sortable({
+		update: function( event, ui ) {
+			var prevIndex = $(ui.item).find('.close').val();
+			shortcutsMoveElement((shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings), prevIndex, ui.item.index());
+		}
+	});
 	shortcutsWindow.withBody('.folder').click(function(e){
 		shortcutsWindow.withHeader("#shortcutsSelect").val(this.id).change();
 	});
+}
+
+function shortcutsMoveElement(array, fromIndex, toIndex) {
+  const element = array.splice(fromIndex, 1)[0];
+  array = array.splice(toIndex, 0, element);
 }
 
 function shortcutsGetActive()
