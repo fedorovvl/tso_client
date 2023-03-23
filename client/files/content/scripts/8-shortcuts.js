@@ -290,80 +290,81 @@ function shortcutsAddHandler(event)
 			createTableRow([[3, loca.GetText("LAB", "Type")],[5, getText('shortcutsFilename')],[4, '']], true)
 		]));
 		shortcutsWindow.withHeader('#shortcutsSelect').change(shortcutsUpdateView);
-	}
-	var groupSelect = $('<div>', { 'class': 'btn-group dropup' }).append([
-		$('<button>').attr({ 
-			"id": "shortcutsAddItem",
-			"class": "btn btn-success shortcutsAddItem dropdown-toggle",
-			'aria-haspopup': 'true',
-			'style': 'margin-left: 4px;',
-			'aria-expanded': 'false',
-			'data-toggle': "dropdown"
-		}).text(getText('shortcutsAddItem')), 
-		$('<ul>', { 'class': 'dropdown-menu' }).append([
-			$('<li>').html($('<a>', {'href': '#', 'name': 'geo'}).text(shortcutsTypesLang['g '])),
-			$('<li>').html($('<a>', {'href': '#', 'name': 'expl'}).text(shortcutsTypesLang['e '])),
-			$('<li>').html($('<a>', {'href': '#', 'name': 'buff'}).text(shortcutsTypesLang['b '])),
-			$('<li>').html($('<a>', {'href': '#', 'name': 'bui'}).text(shortcutsTypesLang['p '])),
-			$('<li>').html($('<a>', {'href': '#', 'name': 'army'}).text(shortcutsTypesLang['l '])),
-			$('<li>').html($('<a>', {'href': '#', 'name': 'move'}).text(shortcutsTypesLang['m '])),
-			$('<li>').html($('<a>', {'href': '#', 'name': 'battle'}).text(shortcutsTypesLang['a '])),
-			$('<li>').html($('<a>', {'href': '#', 'name': 'sep'}).text(getText('shortcutsSeparator'))),
-			$('<li>').html($('<a>', {'href': '#', 'name': 'folder'}).text(getText('shortcutsFolder')))
-		])
-	]);
+	
+		var groupSelect = $('<div>', { 'class': 'btn-group dropup' }).append([
+			$('<button>').attr({ 
+				"id": "shortcutsAddItem",
+				"class": "btn btn-success shortcutsAddItem dropdown-toggle",
+				'aria-haspopup': 'true',
+				'style': 'margin-left: 4px;',
+				'aria-expanded': 'false',
+				'data-toggle': "dropdown"
+			}).text(getText('shortcutsAddItem')), 
+			$('<ul>', { 'class': 'dropdown-menu' }).append([
+				$('<li>').html($('<a>', {'href': '#', 'name': 'geo'}).text(shortcutsTypesLang['g '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'expl'}).text(shortcutsTypesLang['e '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'buff'}).text(shortcutsTypesLang['b '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'bui'}).text(shortcutsTypesLang['p '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'army'}).text(shortcutsTypesLang['l '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'move'}).text(shortcutsTypesLang['m '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'battle'}).text(shortcutsTypesLang['a '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'sep'}).text(getText('shortcutsSeparator'))),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'folder'}).text(getText('shortcutsFolder')))
+			])
+		]);
 
-	shortcutsWindow.Footer().prepend([
-		$('<button>').attr({ "id": "shortcutsSave", "class": "btn btn-primary pull-left shortcutsSave" }).text(loca.GetText("LAB","GuildSave")),
-		$('<button>').attr({ "id": "shortcutsExport","class": "btn btn-primary pull-left"}).text(getText("shortExportTitle")),
-		$('<button>').attr({ "id": "shortcutsImport","class": "btn btn-primary pull-left"}).text(getText("shortImportTitle")),
-		groupSelect
-	]);
-	shortcutsWindow.withFooter('#shortcutsExport').hide();
-	shortcutsWindow.withFooter('#shortcutsExport').click(shortcutsExport);
-	shortcutsWindow.withFooter('#shortcutsImport').click(shortcutsImport);
-	shortcutsWindow.withFooter('.dropdown-menu a').click(function() {
-		if(this.name == 'sep') {
-			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push('--s'+Date.now()+'p--');
-			shortcutsUpdateView();
-			return;
-		}
-		if(this.name == 'folder') {
-			var des = prompt("Folder name", '');
-			if(des == null || des == "") { return; }
-			var newid = Date.now();
-			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push({
-				'id' : newid,
-				'name' : des,
-				'items' : new Array()
-			});
-			shortcutsRefresh();
-			shortcutsWindow.withHeader("#shortcutsSelect").val(newid).change();
-			return;
-		}
-		shortcutsselectTextFile(this.name); 
-	});
-	shortcutsWindow.withFooter('.shortcutsSave').click(function(){
-		$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
-			if($(item).find('.form-control').length > 0) {
-				(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings)[i][1] = $(item).find('.form-control').val() || null;
+		shortcutsWindow.Footer().prepend([
+			$('<button>').attr({ "id": "shortcutsSave", "class": "btn btn-primary pull-left shortcutsSave" }).text(loca.GetText("LAB","GuildSave")),
+			$('<button>').attr({ "id": "shortcutsExport","class": "btn btn-primary pull-left"}).text(getText("shortExportTitle")),
+			$('<button>').attr({ "id": "shortcutsImport","class": "btn btn-primary pull-left"}).text(getText("shortImportTitle")),
+			groupSelect
+		]);
+		shortcutsWindow.withFooter('#shortcutsExport').hide();
+		shortcutsWindow.withFooter('#shortcutsExport').click(shortcutsExport);
+		shortcutsWindow.withFooter('#shortcutsImport').click(shortcutsImport);
+		shortcutsWindow.withFooter('.dropdown-menu a').click(function() {
+			if(this.name == 'sep') {
+				(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push('--s'+Date.now()+'p--');
+				shortcutsUpdateView();
+				return;
 			}
+			if(this.name == 'folder') {
+				var des = prompt("Folder name", '');
+				if(des == null || des == "") { return; }
+				var newid = Date.now();
+				(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push({
+					'id' : newid,
+					'name' : des,
+					'items' : new Array()
+				});
+				shortcutsRefresh();
+				shortcutsWindow.withHeader("#shortcutsSelect").val(newid).change();
+				return;
+			}
+			shortcutsselectTextFile(this.name); 
 		});
-		settings.settings['shortcuts'] = [];
-		storeSettings(shortcutsSettings, 'shortcuts');
-		shortcutsMakeMenu();
-		shortcutsWindow.withHeader('.shortcutsSaved').fadeIn();
-		setTimeout(function() { shortcutsWindow.withHeader('.shortcutsSaved').fadeOut(); }, 1000);
-	});
-	shortcutsWindow.withHeader('.renamePart').click(function(){
-		var des = prompt("New folder name", '');
-		if(des == null || des == "") { return; }
-		shortcutsGetActive()&&(shortcutsGetActive().name = des);
-		var active = shortcutsGetActive().id;
-		shortcutsRefresh();
-		shortcutsWindow.withHeader("#shortcutsSelect").val(active).change();
-	});
-	shortcutsWindow.Body().html($('<div>', { 'id': 'shortcutsRows' }));
+		shortcutsWindow.withFooter('.shortcutsSave').click(function(){
+			$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
+				if($(item).find('.form-control').length > 0) {
+					(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings)[i][1] = $(item).find('.form-control').val() || null;
+				}
+			});
+			settings.settings['shortcuts'] = [];
+			storeSettings(shortcutsSettings, 'shortcuts');
+			shortcutsMakeMenu();
+			shortcutsWindow.withHeader('.shortcutsSaved').fadeIn();
+			setTimeout(function() { shortcutsWindow.withHeader('.shortcutsSaved').fadeOut(); }, 1000);
+		});
+		shortcutsWindow.withHeader('.renamePart').click(function(){
+			var des = prompt("New folder name", '');
+			if(des == null || des == "") { return; }
+			shortcutsGetActive()&&(shortcutsGetActive().name = des);
+			var active = shortcutsGetActive().id;
+			shortcutsRefresh();
+			shortcutsWindow.withHeader("#shortcutsSelect").val(active).change();
+		});
+		shortcutsWindow.Body().html($('<div>', { 'id': 'shortcutsRows' }));
+	}
 	shortcutsRefresh();
 	shortcutsWindow.show();
 }
