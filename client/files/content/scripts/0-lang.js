@@ -533,7 +533,24 @@ const baseTranslation = {
 		"shortExportReasonBadFormat": "mauvais format",
 		"shortExportReasonError": "erreur",
 		"shortImportSkillsUse": "Сonsider les compétences",
-		"shortImportSkillsIgnore": "Ignorer les compétences"
+		"shortImportSkillsIgnore": "Ignorer les compétences",
+		"mainSettings_help": "Main-info",
+		"keybindsWindow_help": "Main-info",
+		"specModal_help": "Main-info#specialists",
+		"armyWindow_help": "Main-info",
+		"battleWindow_help": "Main-info",
+		"dutyWindow_help": "Main-info",
+		"hideSpecWindow_help": "Main-info",
+		"buffModal_help": "Main-info#buffs-f5",
+		"buildingModal_help": "Main-info#production-f7",
+		"timedModal_help": "Main-info#timed-production-f8",
+		"aucModal_help": "Main-info#shady-dealings-f6",
+		"shortcutsWindow_help": "Main-info",
+		"managerModal_help": "Main-info#tools",
+		"feedbackWindow_help": "Main-info",
+		"nondefault_help": "User-scripts-description",
+		"shortImportSkillsUse": "Сonsider skills",
+		"shortImportSkillsIgnore": "Ignore skills"
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -557,6 +574,7 @@ const baseTranslation = {
 		'buff_buffed' : 'ya potenciado',
 		'buff_not_buffed' : 'no potenciado',
 		'buff_ready': 'listo',
+		"buff_notactive": "inactivo",
 		'buff_used': 'Potenciadores que serán utilizados:',
 		'buff_rec_start': 'Grabación iniciada',
 		'buff_rec_stop': 'Grabación detenida',
@@ -694,6 +712,7 @@ const baseTranslation = {
 		"buff_not_buffed": "Premia nie przydzielona",
 		"buff_ready": "Premia gotowa",
 		"buff_used": "Użyte premie:",
+		"buff_notactive": "nieaktywny",
 		"buff_rec_start": "Rozpocznij nagrywanie",
 		"buff_rec_stop": "Zatrzymaj nagrywanie",
 		"buff_rec_progress": "Nagrywanie premii w toku!",
@@ -733,6 +752,8 @@ const baseTranslation = {
 		"expltemplates_desc": "Szablony Odkrywców: ",
 		"bufftemplates_desc": "Szablony premii: ",
 		"buitemplates_desc": "Szablony budynków: ",
+		'armytemplates_desc': 'Szablony armii: ',
+		'battletemplates_desc': 'Szablony bojowe: ',
 		"geodeftask_desc": "Domyślne zadanie Geologa",
 		"expldeftask_desc": "Domyślne zadanie Odkrywcy",
 		"spectimetype_desc": "Domyślne ustawienie kalkulacji czasu",
@@ -799,7 +820,11 @@ const baseTranslation = {
 		"shortcutsWindow_help": "Main-info",
 		"managerModal_help": "Main-info#tools",
 		"feedbackWindow_help": "Main-info",
-		"nondefault_help": "User-scripts-description"
+		"nondefault_help": "User-scripts-description",
+		"shortImportTransportUse": "Stosować transport",
+		"shortImportTransportIgnore": "Ignorowanie transportu",
+		"shortImportSkillsUse": "Rozważ umiejętności",
+		"shortImportSkillsIgnore": "Ignorowanie umiejętności"
 	},
 'pt-br': {
 		'btn_submit': 'Confirmar',
@@ -933,6 +958,10 @@ const baseTranslation = {
 		"shortcutsWindow_help": "Main-info",
 		"managerModal_help": "Main-info#tools",
 		"feedbackWindow_help": "Main-info",
-		"nondefault_help": "User-scripts-description"
+		"nondefault_help": "User-scripts-description",
+		"shortImportTransportUse": "Usar transporte",
+		"shortImportTransportIgnore": "Ignorar transporte",
+		"shortImportSkillsUse": "Сonsider competências",
+		"shortImportSkillsIgnore": "Ignorar competências"
 	}
 };
