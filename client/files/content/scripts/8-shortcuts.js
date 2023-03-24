@@ -115,18 +115,19 @@ function shortcutsMenuSelectedHandler(event)
 		var data = fileStream.readUTFBytes(file.size);
 		fileStream.close();
 		if (data == "") { return; }
-		shortcutsProceedFile(JSON.parse(data), filetype[1]);
+		shortcutsProceedFile(JSON.parse(data), filetype[1], file.name);
 	} catch(e) {
 		alert(getText("bad_template"));
 	}
 }
 
-function shortcutsProceedFile(data, type)
+function shortcutsProceedFile(data, type, name)
 {
 	switch(type) {
 		case 'l ':
 			armyMenuHandler(null);
 			armyPacket = armyConvertTemplate(data);
+			armyWindow.withHeader('.templateFile').html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 			armyLoadData();
 		break;
 		case 'm ':
@@ -143,6 +144,7 @@ function shortcutsProceedFile(data, type)
 			battleMenuHandler(null);
 			if(game.gi.isOnHomzone()) { return; }
 			battlePacket = data;
+			battleWindow.withHeader('.templateFile').html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 			battleLoadData();
 		break;
 		case 'e ':
@@ -157,14 +159,17 @@ function shortcutsProceedFile(data, type)
 			$('#specModalData select').each(function(i, select){
 				updateSpecTimeRow(select, $(select).val(), $(select).val());
 			});
+			$("#specModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 		break;
 		case 'b ':
 			buffRecord = data;
 			buffSourceRecord = false;
 			menuBuffsHandler(null);
+			$("#buffModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 		break;
 		case 'p ':
 			buildingRecord = data;
+			$("#buildingModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 			menuBuildingHandler(null);
 		break;
 	}
