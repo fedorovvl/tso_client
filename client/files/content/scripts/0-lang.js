@@ -411,7 +411,8 @@ const baseTranslation = {
 		"nondefault_help": "Benutzer Skript Beschreibung",
 		"shortImportSkillsUse": "Beachte Fähigkeiten",
 		"shortImportSkillsIgnore": "Ignoriere Fähigkeiten"
-	},'fr-fr': {
+	},
+	'fr-fr': {
 		'btn_submit': 'Soumettre',
 		'btn_reset': 'Remise à Zéro',
 		'btn_reload': 'Recharger',
@@ -508,7 +509,7 @@ const baseTranslation = {
 		"NoCollectibles": "Aucun objet de collection n'a été trouvé",
 		"buiFastCarousel": "Caroussel",
 		"buiFastLevel": "Niveau Max",
-		"buiFastdesc": "Type d'accès rapide au bâtiment"
+		"buiFastdesc": "Type d'accès rapide au bâtiment",
 		"buffonlyactive": "Uniquement actif",
 		"buffall": "Tous",
 		"buffactive_desc": "Fortifiants batiments",
