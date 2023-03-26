@@ -8,20 +8,12 @@ var battleTimedQueue;
 function battleMenuHandler(event)
 {
 	try {
-		if(game.gi.isOnHomzone()) {
-			game.showAlert(loca.GetText("MEL", "ExplorerDidNotFindEventZone"));
-			return;
-		}
 		if(battleTimedQueue && battleTimedQueue.index != battleTimedQueue.len())
 		{
 			game.showAlert(loca.GetText("ALT", "ServerOverstrained"));
 			return;
 		}
 		battleTemplates = new SaveLoadTemplate('battle', function(data, name) {
-			if(!data[Object.keys(data)[0]].grid) {
-				showGameAlert(getText("bad_template"));
-				return;
-			}
 			battlePacket = data;
 			battleWindow.withHeader('.templateFile').html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 			try{
@@ -33,21 +25,81 @@ function battleMenuHandler(event)
 		battlePacket = {};
 		battleWindow = new Modal('battleWindow', utils.getImageTag('SummerEvent2022Bundle1') + ' ' + loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual"));
 		battleWindow.create();
-		if(battleWindow.Title().find(".btn-army").length == 0) {
-			battleWindow.Title().append($('<button>').attr({ "class": "btn btn-army pull-right", 'style': 'position:relative;top:2px;left:-5px;' }).text(loca.GetText("LAB","Army")));
-			battleWindow.Title().find(".btn-army").click(armyMenuHandler);
+		if(battleWindow.withHeader("#army").length === 0)
+		{
+			battleWindow.withHeader("").append($('<div>', { id: "army" }));
 		}
+		updateFreeArmyInfo();
+		var groupSend = $('<div>', { 'class': 'btn-group dropup' }).append([
+			$('<button>').attr({ 
+				"id": "armySendGeneralsBtn",
+				"class": "btn btn-success armySendGeneralsBtn dropdown-toggle",
+				'aria-haspopup': 'true',
+				'aria-expanded': 'false',
+				'data-toggle': "dropdown"
+			}).text(loca.GetText("LAB", "Send")), 
+			$('<div>', { 'class': 'dropdown-menu' })
+		]);
 		if(battleWindow.withFooter(".armySaveTemplate").length == 0) {
 			battleWindow.Footer().prepend([
+				$('<div>').attr({ "class": "span12 text-center" }),
 				$('<button>').attr({ "class": "btn btn-primary pull-left armySaveTemplate" }).text(getText('save_template')).click(battleSaveDialog),
 				$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { battleTemplates.load(); }),
-				$('<button>').attr({ "class": "btn btn-primary directAttack" }).text(loca.GetText("ACL", "WinSmallMapsFast")).click(battleAttackDirect),
+				$('<button>').attr({ "class": "btn btn-primary directAttack" }).text(loca.GetText("ACL", "PvPAttacker")).click(battleAttackDirect),
 				$('<button>').attr({ "class": "btn btn-primary reset" }).text(getText('btn_reset')).click(function(){
 					battleGetData();
 				}),
 				$('<button>').attr({ "class": "btn btn-primary loadAttack" }).text(loca.GetText("ACL", "PvPAttacker")).click(battleAttack),
 				$('<button>').attr({ "class": "btn btn-primary loadMove" }).text(loca.GetText("LAB", "Move")).click(battleMove),
+				$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
+					var queue = new TimedQueue(1000);
+					var counter = 1, total = battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').length;
+					armyProgressCounter = total;
+					armyUpdateProgress(-1);
+					battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
+						var spec = armyGetSpecialistFromID(item);
+						if(!spec.HasUnits()) { 
+							total--;
+							armyProgressCounter--;
+							return;
+						}
+						var dRaiseArmyVO = new dRaiseArmyVODef();
+						dRaiseArmyVO.armyHolderSpecialistVO = spec.CreateSpecialistVOFromSpecialist();
+						queue.add(function(){ 
+							try {
+								armyUpdateProgress(Math.round(Math.round((100 * counter) / total) / 10) * 10 / 10);
+								game.gi.mClientMessages.SendMessagetoServer(1031, game.gi.mCurrentViewedZoneID, dRaiseArmyVO, armyResponder);
+								counter++;
+							} catch(e) { 
+								game.chatMessage("Error unloading " + e, 'army');
+							}
+						});
+					});
+					if(queue.len() > 0) {
+						queue.add(function(){ battleGetData(); }, 6000);
+						battleWindow.withFooter("button").prop('disabled',true);
+						queue.run();
+					}
+				}),
+				$('<button>').attr({ "class": "btn btn-success armySubmit" }).text(getText('armyLoad')).click(armyLoadGenerals),
+				$('<span>').html('&nbsp;'),
+				groupSend
 			]);
+		}
+		try {
+			var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
+			battleWindow.withFooter(".dropdown-menu").html($('<li>').html($('<a>', {'href': '#', 'value': '98'}).text(loca.GetText("LAB", "StarMenu"))));
+			if (game.gi.mCurrentPlayer.mIsAdventureZone){
+				battleWindow.withFooter(".dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': game.player.GetHomeZoneId()}).text(loca.GetText("LAB", "ReturnHome"))));
+			}
+			AdvManager.getAdventures().forEach(function(item){
+				if (item.zoneID !== game.gi.mCurrentViewedZoneID) {
+					battleWindow.withFooter(".dropdown-menu").append($('<li>').html($('<a>', {'href': '#', 'value': item.zoneID}).text((item.ownerPlayerID !== game.player.GetPlayerId() ? '*' : '') + loca.GetText("ADN", item.adventureName))));
+				}
+			});
+			battleWindow.withFooter(".dropdown-menu a").click(armyGeneralsSend);
+		} catch (error) {
+			alert("Err (retry): " + error.message);
 		}
 		battleWindow.withHeader('.templateFile').html("");
 		if($('#battleWindow .modal-content #armyDrop').length == 0) {
@@ -61,69 +113,29 @@ function battleMenuHandler(event)
 
 function battleSaveDialog()
 {
-	if(battleWindow.withBody('[type=checkbox]:checked').length == 0) { return; }
-	battleWindow.settings(battleSaveTemplate, '');
-	battleWindow.sDialog().css("height", "80%");
-	battleWindow.sTitle().html(loca.GetText("LAB", "ChangeSortingOrder"));
-	var out = '<div class="container-fluid" style="user-select: all;">';
-	var select = $('<select>').attr('class', 'form-control').append($('<option>', { value: 1000 }).text('1s'));
-	for(var i = 2; i < 301; i++) {
-		select.append($('<option>', { value: i * 1000 }).text(i+'s'));
-	}
-	var timeSelectRow = $(utils.createTableRow([[2, select.prop('outerHTML')]])).find("div:first");
-	battleWindow.withBody('[type=checkbox]:checked').each(function(i, item) {
-		var row = $(item).closest("div.row").clone();
-		row.find("div").slice(-1).remove();
-		row.find("[type=checkbox]").hide();
-		row.find("div:first").html(function(index,html){ return '&#8597;&nbsp;' + html.replace(/\&nbsp;/g,''); }).attr('class', function(i, c){
-			return c.replace(/4/g, '5');
-		});
-		row.find("div:last").attr('class', function(i, c){ return c.replace(/4/g, '5'); });
-		row.append(timeSelectRow);
-		out += row.prop('outerHTML');
-	});
-	battleWindow.sBody().html(out + '<div>');
-	if(battlePacket && Object.keys(battlePacket).length > 0) {
-		$.each(battlePacket, function(item) {
-			battleWindow.sBody().find('input[id="'+item+'"]').closest("div.row").find("select").val(battlePacket[item].time);
-		});
-		var keys = Object.keys(battlePacket);
-		var sorted = battleWindow.sBody().find("div.row").sort(function(a, b) {
-			return keys.indexOf($(a).find("[type=checkbox]").prop("id")) > keys.indexOf($(b).find("[type=checkbox]").prop("id")) ? 1 : -1;
-		});
-		battleWindow.sBody().find('.container-fluid').html(sorted);
-	}
-	battleWindow.sBody().find("#specOpen").click(battleShowGeneral);
-	battleWindow.sBody().find(".container-fluid").sortable();
-	$('#' + battleWindow.rawsId).modal({backdrop: "static"});
-}
-
-function battleSaveTemplate()
-{
 	try {
-		var sortOrder = {}, savePacket = {}, sortedPacket = {};
-		battleWindow.sBody().find('[type=checkbox]').each(function(i, item) { sortOrder[item.id] = { 'order': i, 'time': parseInt($(item).closest("div.row").find("select").val()) }; });
-		battleWindow.withBody('[type=checkbox]:checked').each(function(i, item) {
+		var sortOrder = {}, savePacket = {};
+		battleWindow.withBody('[type=checkbox]:not(.toggleSelect)').each(function(i, item) { 
+			var delay = $(item).closest("div.row").find("select").val();
+			sortOrder[item.id] = { 'order': i, 'time': parseInt(delay||1000) };
+		});
+		battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
 			var spec = armyGetSpecialistFromID(item.id);
 			savePacket[item.id] = { 
 				'grid': spec.GetGarrisonGridIdx(),
 				'name': spec.getName(false),
 				'order': sortOrder[item.id].order,
 				'time': sortOrder[item.id].time,
-				'skills': {},
+				'skills': armyInfo[item.id].skills,
+				'army': armyInfo[item.id].army,
 				'type': spec.GetType()
 			};
-			spec.getSkillTree().getItems_vector().forEach(function(skill, index){
-				if(skill.getLevel() > 0) { savePacket[item.id].skills[index] = skill.getLevel(); }
-			});
 			var grid = $(item).closest("div.row").find("button").val();
 			if(!grid || grid == 0 || grid == "0") { return; }
 			savePacket[item.id].target = parseInt(grid);
 			savePacket[item.id].targetName = $(item).closest("div.row").find("button").text();
 		});
-		Object.keys(savePacket).sort(function(a, b){ return savePacket[a].order - savePacket[b].order; }).forEach(function(key) { sortedPacket[key] = savePacket[key]; });
-		$('#' + battleWindow.rawsId).modal('hide');
-		if(Object.keys(savePacket).length > 0) { battleTemplates.save(sortedPacket); }
+		if(Object.keys(savePacket).length > 0) { battleTemplates.save(savePacket); }
 		battlePacket = {};
 	} catch (e) { alert("Error save " + e); }
 }
@@ -173,12 +185,14 @@ function battlecheckCanAttack(id, target)
 
 function battleLoadData()
 {
-	battleWindow.withFooter(".directAttack").hide();
+	updateFreeArmyInfo();
+	battleWindow.withFooter(".directAttack, .armyUnload, .armySendGeneralsBtn, .armySubmit").hide();
 	battleWindow.withFooter(".reset").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
-	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, getText('armyCurrentArmy')], [1, loca.GetText("LAB", "Objective")], [2, loca.GetText("LAB", "Attack")], [1, '#']], true);
+	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, loca.GetText("LAB","MilitaryHelp")], [1, loca.GetText("LAB", "Objective")], [2, loca.GetText("LAB", "Attack")], [1, '#']], true);
 	var canSubmitAttack = true, canSubmitMove = false, attackSubmitChecker = [];
 	battlePacket = battleLoadDataCheck(battlePacket);
+	var checkedPacket = armyLoadDataCheck(battlePacket);
 	$.each(battlePacket, function(item) { 
 		if(battlePacket[item].spec == null) {
 			out += utils.createTableRow([
@@ -188,9 +202,20 @@ function battleLoadData()
 			return;
 		}
 		var info = '';
-		battlePacket[item].spec.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
-			info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
-		});
+		if(!battlePacket[item].army) {
+			battlePacket[item].spec.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
+				info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
+			});
+		} else {
+			if(armyPacketMatches[item]) {
+				info += utils.getImage(new(game.def("SWMMO__embed_css_____data_src_gfx_embedded_buttons_checkmark_push_png_299060338"))().bitmapData, '24px');
+			} else {
+				info += utils.getImage(new(game.def("GUI.Assets::gAssetManager_ExpeditionStateAttention"))().bitmapData, '24px');
+			}
+			$.each(checkedPacket[item]['data'].army, function(res) {
+				info += utils.getImageTag(res) + ' ' + checkedPacket[item]["data"].army[res] + '&nbsp;';
+			});
+		}
 		out += utils.createTableRow([
 			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(battlePacket[item].spec.getIconID(), '24px', '24px') + ' ' + battlePacket[item].name], 
 			[4, info],
@@ -201,6 +226,21 @@ function battleLoadData()
 		if(!battlePacket[item].canSubmitAttack && battlePacket[item].target > 0) { canSubmitAttack = false; }
 		if(battlePacket[item].target > 0) { attackSubmitChecker.push(battlePacket[item].canSubmitAttack); }
 	});
+	if(Object.keys(checkedPacket.army).length > 0) {
+		out += '<br><p>'+loca.GetText("LAB","MilitaryHelp") + '</p>';
+		out += utils.createTableRow([[7, loca.GetText("LAB", "Name")], [2, loca.GetText("LAB", "Requires")], [2, loca.GetText("LAB", "Available")], [1, loca.GetText("LAB", "ProductionStatus")]], true);
+		$.each(checkedPacket.army, function(item) {
+			var aStatus = armyFreeInfo[item] >= checkedPacket.army[item];
+			out += utils.createTableRow([
+				[7, loca.GetText("RES", item)], 
+				[2, checkedPacket.army[item]],
+				[2, armyFreeInfo[item] ? armyFreeInfo[item] : 0],
+				[1, aStatus ? 'OK' : 'FAIL', aStatus ? "buffReady" : "buffNotReady"]]);
+		});
+		if(checkedPacket.canSubmit) {
+			battleWindow.withFooter(".armySubmit").show();
+		}
+	}
 	battleWindow.Body().html(out + '<div>');
 	if(canSubmitAttack && attackSubmitChecker.indexOf(false) == -1 && attackSubmitChecker.length > 0) { battleWindow.withFooter(".loadAttack").show(); }
 	if(canSubmitMove) { battleWindow.withFooter(".loadMove").show(); }
@@ -254,8 +294,9 @@ function battleAttackDirect()
 		var spec = armyGetSpecialistFromID(item.id);
 		var grid = $(item).closest("div.row").find("button").val();
 		if(!grid || grid == 0 || grid == "0") { return; }
+		var delay = parseInt($(item).closest("div.row").find("select").val());
 		if(game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(grid).GetStreetGridEntry(), spec.GetGarrisonGridIdx(), null, true).pathLenX10000 != 0) {
-			battleTimedQueue.add(function(){ battleSendGeneral(spec, spec.getName(false), grid, 5, grid); });
+			battleTimedQueue.add(function(){ battleSendGeneral(spec, spec.getName(false), grid, 5, grid); }, delay);
 		}
 	});
 	if(battleTimedQueue.len() > 0) {
@@ -302,9 +343,11 @@ function battleDropdown(data)
 	});
 	var tabs = $('<ul>', { 'class': 'nav nav-pills nav-justified', 'style': 'width: 65%;' });
 	var tabcontent = $('<div>', { 'class': 'tab-content' });
+	var first = true;
 	Object.keys(buttonsBySector).sort().forEach(function(v, i) {
-		tabs.append($('<li>', { 'class': v == 1 ? 'active' : '' }).append($('<a>', { 'data-toggle': 'tab', 'href': '#menu'+v }).text(v)));
-		tabcontent.append($('<div>', { 'class': 'tab-pane fade' + (v == 1 ? ' in active' : ''), 'id': 'menu' + v }).append(buttonsBySector[v].join('')));
+		tabs.append($('<li>', { 'class': first ? 'active' : '' }).append($('<a>', { 'data-toggle': 'tab', 'href': '#menu'+v }).text(v)));
+		tabcontent.append($('<div>', { 'class': 'tab-pane fade' + (first ? ' in active' : ''), 'id': 'menu' + v }).append(buttonsBySector[v].join('')));
+		first = false;
 	});
 	groupSendItems.append([tabs, tabcontent]);
 	groupSend.append(groupSendItems);
@@ -317,27 +360,35 @@ function battleDropdown(data)
 
 function battleGetData()
 {
-	battleWindow.withFooter(".loadAttack, .loadMove, .reset, .directAttack").hide();
+	armyUpdateProgress(-1);
+	battleWindow.withFooter(".loadAttack, .loadMove, .reset, .directAttack, .armySubmit, .armyReset").hide();
+	battleWindow.withFooter(".armyUnload, .armySendGeneralsBtn").show();
 	var html = '<div class="container-fluid" style="user-select: all;">';
-	html += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, getText('armyCurrentArmy')], [4, loca.GetText("LAB", "Attack")]], true);
+	html += utils.createTableRow([[4, $('<input>', { 'type': 'checkbox', 'class': 'toggleSelect' }).prop('outerHTML') + '&nbsp;&nbsp;' + loca.GetText("LAB", "Name")], [4, getText('armyCurrentArmy')], [3, loca.GetText("LAB", "Attack")], [1, '#']], true);
+	var select = $('<select>').attr('class', 'form-control').append($('<option>', { value: 1000 }).text('1s'));
+	for(var i = 2; i < 301; i++) {
+		select.append($('<option>', { value: i * 1000 }).text(i+'s'));
+	}
 	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
 		try {
 			if(!armySPECIALIST_TYPE.IsGeneral(item.GetType()) || item.getPlayerID() != game.player.GetPlayerId()) { return; }
 			if(item == null || typeof item == 'undefined' || item.GetTask() != null) { return; }
 			var info = '';
 			var uniqId = item.GetUniqueID().toKeyString();
-			item.GetArmy().GetSquadsCollection_vector().sort(game.def("MilitarySystem::cSquad").SortByCombatPriority).forEach(function(squad){
-				info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
+			$.each(armyInfo[uniqId].army, function(item) {
+				info += utils.getImageTag(item) + ' ' + armyInfo[uniqId].army[item] + '&nbsp;';
 			});
 			if (item.GetGarrisonGridIdx() > 0) {
 				html += utils.createTableRow([
-					[4, '<input type="checkbox" id="' + uniqId + '" />&nbsp;' + $(getImageTag(item.getIconID(), '24px', '24px')).css("cursor", "pointer").attr({ "id": "specOpen", 'name': item.GetGarrisonGridIdx() }).prop('outerHTML') + ' ' + item.getName(false)], 
+					[4, '&#8597;&nbsp;<input type="checkbox" id="' + uniqId + '" />&nbsp;' + $(getImageTag(item.getIconID(), '24px', '24px')).css("cursor", "pointer").attr({ "id": "specOpen", 'name': item.GetGarrisonGridIdx() }).prop('outerHTML') + ' ' + item.getName(false)], 
 					[4, info],
-					[4, (item.HasUnits() ? $("<button>", { "class": "btn btn-sm btn-success", "style": 'height: 28px;', 'id': uniqId }).text(loca.GetText("LAB", "Select")).prop("outerHTML") + '&nbsp;&nbsp;'    + $(getImageTag("accuracy.png", '24px', '24px')).css("cursor", "pointer").attr({ "id": "specOpen" }).prop("outerHTML") : ''), 'armySelect']]);
+					[3, (item.HasUnits() && !item.GetSpecialistDescription().isTransportGeneral() ? $("<button>", { "class": "btn btn-sm btn-success", "style": 'height: 28px;', 'id': uniqId }).text(loca.GetText("LAB", "Select")).prop("outerHTML") + '&nbsp;' + $(getImageTag("accuracy.png", '24px', '24px')).css("cursor", "pointer").attr({ "id": "specOpen" }).prop("outerHTML") : ''), 'armySelect'],
+					[1, item.HasUnits() && !item.GetSpecialistDescription().isTransportGeneral() ? select.clone() : '']
+				]);
 			} else {
 				html += utils.createTableRow([
-					[4, '<input type="checkbox" id="' + uniqId + '" />&nbsp;' + getImageTag(item.getIconID(), '24px', '24px') + ' ' + item.getName(false)], 
-					[8, getImageTag("Star", '24px', '24px')]]);
+					[4, '&#8597;&nbsp;<input type="checkbox" id="' + uniqId + '" />&nbsp;' + getImageTag(item.getIconID(), '20px', '20px') + ' ' + item.getName(false)], 
+					[8, getImageTag("Star", '20px', '20px')]]);
 			}
 		} catch(e) {}
 	});
@@ -348,22 +399,28 @@ function battleGetData()
 				battleWindow.withBody('button[id="'+item+'"]').text(battleTruncateName(battlePacket[item].targetName, 25)).val(battlePacket[item].target);
 				battleWindow.withBody('button[id="'+item+'"]').closest('div').addClass(battlecheckCanAttack(item, battlePacket[item].target) ? "buffReady" : "buffNotReady");
 			}
+			battleWindow.withBody('input[id="'+item+'"]').closest("div.row").find("select").val(battlePacket[item].time);
 			battleWindow.withBody('input[id="'+item+'"]').prop("checked", true);
 		});
+		var keys = Object.keys(battlePacket);
+		battleWindow.withBody("div.row").sort(function(a, b) {
+			var aVal = $(a).find("[type=checkbox]").prop("id");
+			var bVal = $(b).find("[type=checkbox]").prop("id");
+			if(keys.indexOf(aVal) == -1 || keys.indexOf(bVal) == -1) { return 0; }
+			return keys.indexOf(aVal) > keys.indexOf(bVal) ? 1 : -1;
+		}).appendTo(battleWindow.withBody('.container-fluid'));
 	}
+	battleWindow.withBody(".container-fluid").sortable();
 	battleWindow.withBody("button").click(function(e){
 		battleSearchFor = this.id;
 		e.stopPropagation();
 		$("#battleWindow .dropdown-toggle").dropdown('toggle');
 	});
-	battleWindow.withBody(".armySelect").css("overflow", "visible");
-	battleWindow.withBody(".armySelect > div").css("overflow", "visible");
 	battleWindow.Dialog().find(".dropdown-menu button").click(function() {
 		battleWindow.withBody('button[id="'+battleSearchFor+'"]').text(battleTruncateName($(this).val(), 25)).val(this.id);
+		battleWindow.withBody('button[id="'+battleSearchFor+'"]').closest('div').removeClass( [ "buffReady", "buffNotReady" ] );
 		if(this.id > 0) {
 			battleWindow.withBody('button[id="'+battleSearchFor+'"]').closest('div').addClass(battlecheckCanAttack(battleSearchFor, this.id) ? "buffReady" : "buffNotReady");
-		} else {
-			battleWindow.withBody('button[id="'+battleSearchFor+'"]').closest('div').removeClass( [ "buffReady", "buffNotReady" ] );
 		}
 		var count = battleWindow.withBody('button').closest('div .buffReady, .buffNotReady').length;
 		battleWindow.withFooter('.directAttack').css('display', count > 0 && count == battleWindow.withBody('button').closest('div .buffReady').length ? '' : 'none');
@@ -376,9 +433,14 @@ function battleGetData()
 	});
 	battleWindow.Dialog().find('.dropdown').on('show.bs.dropdown', function () {
 		$("#battleWindow .modal-header, .modal-body, .modal-footer").css("opacity", 0);
+		battleWindow.Dialog().find('.modal-content:eq(0)').css('box-shadow', 'none');
 	});
 	battleWindow.Dialog().find('.dropdown').on('hide.bs.dropdown', function () {
 		$("#battleWindow .modal-header, .modal-body, .modal-footer").css("opacity", 1);
+		battleWindow.Dialog().find('.modal-content:eq(0)').css('box-shadow', '');
+	});
+	battleWindow.withBody(".toggleSelect").change(function() {
+		battleWindow.withBody('input[type="checkbox"]').prop("checked", this.checked);
 	});
 	battleWindow.withBody("#specOpen").click(battleShowGeneral);
 	var count = battleWindow.withBody('button').closest('div .buffReady, .buffNotReady').length;

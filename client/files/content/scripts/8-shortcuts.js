@@ -125,11 +125,6 @@ function shortcutsProceedFile(data, type, name)
 {
 	switch(type) {
 		case 'l ':
-			armyMenuHandler(null);
-			armyPacket = armyConvertTemplate(data);
-			armyWindow.withHeader('.templateFile').html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
-			armyLoadData();
-		break;
 		case 'm ':
 		case 'a ':
 			if(game.gi.isOnHomzone()) {
