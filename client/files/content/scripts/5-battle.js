@@ -290,7 +290,7 @@ function battleMove(direct)
 function battleAttackDirect()
 {
 	battleTimedQueue = new TimedQueue(1000);
-	battleWindow.withBody('[type=checkbox]').each(function(i, item) {
+	battleWindow.withBody('[type=checkbox]:not(.toggleSelect)').each(function(i, item) {
 		var spec = armyGetSpecialistFromID(item.id);
 		var grid = $(item).closest("div.row").find("button").val();
 		if(!grid || grid == 0 || grid == "0") { return; }

@@ -137,7 +137,6 @@ function shortcutsProceedFile(data, type, name)
 				return;
 			}
 			battleMenuHandler(null);
-			if(game.gi.isOnHomzone()) { return; }
 			battlePacket = data;
 			battleWindow.withHeader('.templateFile').html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 			battleLoadData();
