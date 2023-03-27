@@ -127,10 +127,6 @@ function shortcutsProceedFile(data, type, name)
 		case 'l ':
 		case 'm ':
 		case 'a ':
-			if(game.gi.isOnHomzone()) {
-				game.showAlert(loca.GetText("MEL", "ExplorerDidNotFindEventZone"));
-				return;
-			}
 			if(battleTimedQueue && battleTimedQueue.index != battleTimedQueue.len())
 			{
 				game.showAlert(loca.GetText("ALT", "ServerOverstrained"));

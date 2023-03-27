@@ -7,13 +7,10 @@ var armySpecTaskDef = swmmo.getDefinitionByName("Communication.VO::dStartSpecial
 var armySpecTravelDef = swmmo.getDefinitionByName("Specialists::cSpecialistTask_TravelToStarMenu");
 var armyServices = swmmo.getDefinitionByName("com.bluebyte.tso.service::ServiceManager").getInstance();
 var armyResponder = game.createResponder(armyResponderHandler, armyResponderHandler);
-var armyPacket = {};
 var armyPacketMatches = {};
 var armyInfo = {};
 var armyFreeInfo = {};
 var armyProgressCounter = 0;
-var armyWindow;
-var armyTemplates;
 var armyProgress = [
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_BuildQueueTempSlotTimeLeftIcon"))().bitmapData) + ' 5s',
 	utils.getImage(new(game.def("GUI.Assets::gAssetManager_WinConditionHealthBar1"))().bitmapData),
