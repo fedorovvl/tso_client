@@ -4,8 +4,11 @@ var battleSearchFor;
 var battlePacket;
 var battleTemplates;
 var battleTimedQueue;
-var battleOkStatus = utils.getImage(new(game.def("SWMMO__embed_css_____data_src_gfx_embedded_buttons_checkmark_push_png_299060338"))().bitmapData, '24px');
-var battleFailStatus = utils.getImage(new(game.def("GUI.Assets::gAssetManager_ExpeditionStateAttention"))().bitmapData, '24px');
+var battleOkStatus = $('<img>', { 'src': 'images/863_GUI.Assets.gAssetManager_AchievementCompletedCheckedIcon.png' }).prop('outerHTML');
+var battleFailStatus = utils.getImage(new(game.def("GUI.Assets::gAssetManager_ExpeditionStateAttention"))().bitmapData, 'auto', '24px');
+var battleSearchIcon = utils.getImage(new(game.def("GUI.Assets::gAssetManager_SearchBtnIcon"))().bitmapData, 'auto', '24px');
+var battleMoveToStar = $('<img>', { 'src': 'images/1143_GUI.Assets.gAssetManager_ReturnToStarIcon.png' }).prop('outerHTML');
+var battleMoveToGrid = $('<img>', { 'src': 'images/1632_GUI.Assets.gAssetManager_UnloadTroopsIcon.png' }).prop('outerHTML');
 
 function battleMenuHandler(event)
 {
@@ -216,8 +219,8 @@ function battleLoadData()
 		out += utils.createTableRow([
 			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + gStatus + getImageTag(battlePacket[item].spec.getIconID(), '24px', '24px') + ' ' + battlePacket[item].name], 
 			[4, info],
-			[1, battlePacket[item].grid > 0 ? battlePacket[item].grid : 'star', battlePacket[item].canMove ? "buffReady" : battlePacket[item].onSameGrid ? "specSamegrid" : "buffNotReady"],
-			[2, battlePacket[item].target > 0 ? battlePacket[item].targetName : '', !battlePacket[item].target ? '' : battlePacket[item].canSubmitAttack ? "buffReady" : "buffNotReady"],
+			[1, (battlePacket[item].canMove || battlePacket[item].onSameGrid ? battleOkStatus : battleFailStatus) + (battlePacket[item].grid > 0 ? battleMoveToGrid : battleMoveToStar), battlePacket[item].canMove ? "buffReady" : battlePacket[item].onSameGrid ? "specSamegrid" : "buffNotReady"],
+			[2, (!battlePacket[item].target ? '' : battlePacket[item].canSubmitAttack ? battleOkStatus : battleFailStatus) + (battlePacket[item].target > 0 ? battlePacket[item].targetName : ''), !battlePacket[item].target ? '' : battlePacket[item].canSubmitAttack ? "buffReady" : "buffNotReady"],
 			[1, (battlePacket[item].time / 1000) + 's']]);
 		if(battlePacket[item].canSubmitMove) { canSubmitMove = true; }
 		if(!battlePacket[item].canSubmitAttack && battlePacket[item].target > 0) { canSubmitAttack = false; }
@@ -379,7 +382,7 @@ function battleGetData()
 				html += utils.createTableRow([
 					[4, '&#8597;&nbsp;<input type="checkbox" id="' + uniqId + '" />&nbsp;' + $(getImageTag(item.getIconID(), '24px', '24px')).css("cursor", "pointer").attr({ "id": "specOpen", 'name': item.GetGarrisonGridIdx() }).prop('outerHTML') + ' ' + item.getName(false)], 
 					[4, info],
-					[3, (item.HasUnits() && !item.GetSpecialistDescription().isTransportGeneral() ? $("<button>", { "class": "btn btn-sm btn-success", "style": 'height: 28px;', 'id': uniqId }).text(loca.GetText("LAB", "Select")).prop("outerHTML") + '&nbsp;' + $(getImageTag("accuracy.png", '24px', '24px')).css("cursor", "pointer").attr({ "id": "specOpen" }).prop("outerHTML") : ''), 'armySelect'],
+					[3, (item.HasUnits() && !item.GetSpecialistDescription().isTransportGeneral() ? $("<button>", { "class": "btn btn-sm btn-success", "style": 'height: 28px;', 'id': uniqId }).text(loca.GetText("LAB", "Select")).prop("outerHTML") + '&nbsp;' + $(battleSearchIcon).css("cursor", "pointer").attr({ "id": "specOpen" }).prop("outerHTML") : ''), 'armySelect'],
 					[1, item.HasUnits() && !item.GetSpecialistDescription().isTransportGeneral() ? select.clone() : '']
 				]);
 			} else {
