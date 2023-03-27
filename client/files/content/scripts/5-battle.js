@@ -4,6 +4,8 @@ var battleSearchFor;
 var battlePacket;
 var battleTemplates;
 var battleTimedQueue;
+var battleOkStatus = utils.getImage(new(game.def("SWMMO__embed_css_____data_src_gfx_embedded_buttons_checkmark_push_png_299060338"))().bitmapData, '24px');
+var battleFailStatus = utils.getImage(new(game.def("GUI.Assets::gAssetManager_ExpeditionStateAttention"))().bitmapData, '24px');
 
 function battleMenuHandler(event)
 {
@@ -205,17 +207,14 @@ function battleLoadData()
 				info += utils.getImageTag(squad.GetType()) + ' ' + squad.GetAmount() + '&nbsp;';
 			});
 		} else {
-			if(armyPacketMatches[item]) {
-				info += utils.getImage(new(game.def("SWMMO__embed_css_____data_src_gfx_embedded_buttons_checkmark_push_png_299060338"))().bitmapData, '24px');
-			} else {
-				info += utils.getImage(new(game.def("GUI.Assets::gAssetManager_ExpeditionStateAttention"))().bitmapData, '24px');
-			}
+			info += armyPacketMatches[item] ? battleOkStatus : battleFailStatus;
 			$.each(checkedPacket[item]['data'].army, function(res) {
 				info += utils.getImageTag(res) + ' ' + checkedPacket[item]["data"].army[res] + '&nbsp;';
 			});
 		}
+		var gStatus = checkedPacket[item].gStatus ? battleOkStatus : battleFailStatus;
 		out += utils.createTableRow([
-			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + getImageTag(battlePacket[item].spec.getIconID(), '24px', '24px') + ' ' + battlePacket[item].name], 
+			[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + gStatus + getImageTag(battlePacket[item].spec.getIconID(), '24px', '24px') + ' ' + battlePacket[item].name], 
 			[4, info],
 			[1, battlePacket[item].grid > 0 ? battlePacket[item].grid : 'star', battlePacket[item].canMove ? "buffReady" : battlePacket[item].onSameGrid ? "specSamegrid" : "buffNotReady"],
 			[2, battlePacket[item].target > 0 ? battlePacket[item].targetName : '', !battlePacket[item].target ? '' : battlePacket[item].canSubmitAttack ? "buffReady" : "buffNotReady"],
