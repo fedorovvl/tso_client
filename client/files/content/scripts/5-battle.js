@@ -403,7 +403,10 @@ function battleGetData()
 			battleWindow.withBody('input[id="'+item+'"]').prop("checked", true);
 		});
 		var keys = Object.keys(battlePacket);
-		battleWindow.withBody("div.row").sort(function(a, b) {
+		battleWindow.withBody("div.row:gt(0)").sort(function(a, b) {
+			return $(a).find('[type=checkbox]').is(':checked') ? -1 : 1;
+		}).appendTo(battleWindow.withBody('.container-fluid'));
+		battleWindow.withBody("div.row:gt(0)").sort(function(a, b) {
 			var aVal = $(a).find("[type=checkbox]").prop("id");
 			var bVal = $(b).find("[type=checkbox]").prop("id");
 			if(keys.indexOf(aVal) == -1 || keys.indexOf(bVal) == -1) { return 0; }
