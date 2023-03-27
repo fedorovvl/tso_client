@@ -46,9 +46,7 @@ function battleMenuHandler(event)
 				$('<button>').attr({ "class": "btn btn-primary pull-left armySaveTemplate" }).text(getText('save_template')).click(battleSaveDialog),
 				$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { battleTemplates.load(); }),
 				$('<button>').attr({ "class": "btn btn-primary directAttack" }).text(loca.GetText("ACL", "PvPAttacker")).click(battleAttackDirect),
-				$('<button>').attr({ "class": "btn btn-primary reset" }).text(getText('btn_reset')).click(function(){
-					battleGetData();
-				}),
+				$('<button>').attr({ "class": "btn btn-primary reset" }).text(loca.GetText("LAB", "CloseDetails")).click(battleGetData),
 				$('<button>').attr({ "class": "btn btn-primary loadAttack" }).text(loca.GetText("ACL", "PvPAttacker")).click(battleAttack),
 				$('<button>').attr({ "class": "btn btn-primary loadMove" }).text(loca.GetText("LAB", "Move")).click(battleMove),
 				$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
@@ -405,8 +403,7 @@ function battleGetData()
 		var keys = Object.keys(battlePacket);
 		battleWindow.withBody("div.row:gt(0)").sort(function(a, b) {
 			return $(a).find('[type=checkbox]').is(':checked') ? -1 : 1;
-		}).appendTo(battleWindow.withBody('.container-fluid'));
-		battleWindow.withBody("div.row:gt(0)").sort(function(a, b) {
+		}).sort(function(a, b) {
 			var aVal = $(a).find("[type=checkbox]").prop("id");
 			var bVal = $(b).find("[type=checkbox]").prop("id");
 			if(keys.indexOf(aVal) == -1 || keys.indexOf(bVal) == -1) { return 0; }
