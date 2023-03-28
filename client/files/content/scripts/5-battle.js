@@ -38,8 +38,6 @@ function battleMenuHandler(event)
 			$('<button>').attr({ 
 				"id": "armySendGeneralsBtn",
 				"class": "btn btn-success armySendGeneralsBtn dropdown-toggle",
-				'aria-haspopup': 'true',
-				'aria-expanded': 'false',
 				'data-toggle': "dropdown"
 			}).text(loca.GetText("LAB", "Send")), 
 			$('<div>', { 'class': 'dropdown-menu' })
