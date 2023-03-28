@@ -87,6 +87,7 @@ function battleMenuHandler(event)
 				$('<span>').html('&nbsp;'),
 				groupSend
 			]);
+			battleWindow.withFooter('[data-toggle="tooltip"]').tooltip({container: 'body'});
 		}
 		try {
 			var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
@@ -104,7 +105,6 @@ function battleMenuHandler(event)
 			alert("Err (retry): " + error.message);
 		}
 		battleWindow.withHeader('.templateFile').html("");
-		battleWindow.withFooter('[data-toggle="tooltip"]').tooltip({container: 'body'});
 		if($('#battleWindow .modal-content #armyDrop').length == 0) {
 			$('#battleWindow .modal-content').append($('<div>', { 'id': 'armyDrop' }));
 			battleDropdown(game.zone.mStreetDataMap.GetBuildings_vector().filter(function(e) { return e && e.IsReadyToIntercept(); }));
