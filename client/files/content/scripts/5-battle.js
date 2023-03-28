@@ -50,9 +50,9 @@ function battleMenuHandler(event)
 				$('<button>').attr({ "class": "btn btn-primary pull-left armySaveTemplate" }).text(getText('save_template')).click(battleSaveDialog),
 				$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { battleTemplates.load(); }),
 				$('<button>').attr({ "class": "btn btn-primary directAttack" }).text(loca.GetText("ACL", "PvPAttacker")).click(battleAttackDirect),
-				$('<button>').attr({ "class": "btn btn-primary reset" }).text(loca.GetText("LAB", "CloseDetails")).click(battleGetData),
-				$('<button>').attr({ "class": "btn btn-primary loadAttack" }).text(loca.GetText("ACL", "PvPAttacker")).click(battleAttack),
-				$('<button>').attr({ "class": "btn btn-primary loadMove" }).text(loca.GetText("LAB", "Move")).click(battleMove),
+				$('<button>').attr({ "class": "btn btn-primary reset", 'data-toggle': "tooltip", 'data-placement': "top", 'title': loca.GetText("LAB", "CloseDetails") }).html($('<img>', { 'src': 'images/918_GUI.Assets.gAssetManager_BackIcon.png' })).click(battleGetData),
+				$('<button>').attr({ "class": "btn btn-primary loadAttack", 'data-toggle': "tooltip", 'data-placement': "top", 'title': loca.GetText("ACL", "PvPAttacker") }).html($('<img>', { 'src': 'images/1647_GUI.Assets.gAssetManager_ButtonIconFindWildZone.png' })).click(battleAttack),
+				$('<button>').attr({ "class": "btn btn-primary loadMove", 'data-toggle': "tooltip", 'data-placement': "top", 'title': loca.GetText("LAB", "Move") }).html($('<img>', { 'src': 'images/1648_GUI.Assets.gAssetManager_ButtonIconTrumpet.png' })).click(battleMove),
 				$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
 					var queue = new TimedQueue(1000);
 					var counter = 1, total = battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').length;
@@ -83,7 +83,7 @@ function battleMenuHandler(event)
 						queue.run();
 					}
 				}),
-				$('<button>').attr({ "class": "btn btn-success armySubmit" }).text(getText('armyLoad')).click(armyLoadGenerals),
+				$('<button>').attr({ "class": "btn btn-success armySubmit", 'data-toggle': "tooltip", 'data-placement': "top", 'title': getText('armyLoad') }).html($('<img>', { 'src': 'images/1213_GUI.Assets.gAssetManager_ButtonIconUnitSwitchToOld.png' })).click(armyLoadGenerals),
 				$('<span>').html('&nbsp;'),
 				groupSend
 			]);
@@ -104,6 +104,7 @@ function battleMenuHandler(event)
 			alert("Err (retry): " + error.message);
 		}
 		battleWindow.withHeader('.templateFile').html("");
+		battleWindow.withFooter('[data-toggle="tooltip"]').tooltip({container: 'body'});
 		if($('#battleWindow .modal-content #armyDrop').length == 0) {
 			$('#battleWindow .modal-content').append($('<div>', { 'id': 'armyDrop' }));
 			battleDropdown(game.zone.mStreetDataMap.GetBuildings_vector().filter(function(e) { return e && e.IsReadyToIntercept(); }));
@@ -188,7 +189,7 @@ function battlecheckCanAttack(id, target)
 function battleLoadData()
 {
 	updateFreeArmyInfo();
-	battleWindow.withFooter(".directAttack, .armyUnload, .armySendGeneralsBtn, .armySubmit").hide();
+	battleWindow.withFooter(".directAttack, .armyUnload, .armySubmit").hide();
 	battleWindow.withFooter(".reset").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, loca.GetText("LAB","MilitaryHelp")], [1, loca.GetText("LAB", "Objective")], [2, loca.GetText("LAB", "Attack")], [1, '#']], true);

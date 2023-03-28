@@ -99,8 +99,9 @@ function armyGeneralsSend(e)
 	{
 		var queue = new TimedQueue(1000);
 		var OptionSelected = $(e.target).attr('value');
-		battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
-			var spec = armyGetSpecialistFromID(item);
+		var source = battleWindow.withBody('[type=checkbox]').length > 0 ? battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)') : battleWindow.withBody('.close');
+		source.each(function(i, item) {
+			var spec = armyGetSpecialistFromID(item.id ? item : $(item).val());
 			if(spec == null) { return; }
 			if (OptionSelected == '98') {
 				if(spec.GetGarrisonGridIdx() > 0) {
