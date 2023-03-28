@@ -87,7 +87,7 @@ function battleMenuHandler(event)
 				$('<span>').html('&nbsp;'),
 				groupSend
 			]);
-			battleWindow.withFooter('[data-toggle="tooltip"]').tooltip({container: 'body'});
+			battleWindow.withFooter('[data-toggle="tooltip"]').tooltip();
 		}
 		try {
 			var AdvManager = swmmo.getDefinitionByName("com.bluebyte.tso.adventure.logic::AdventureManager").getInstance();
