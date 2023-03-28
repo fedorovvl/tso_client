@@ -34,7 +34,6 @@ function battleMenuHandler(event)
 		{
 			battleWindow.withHeader("").append($('<div>', { id: "army" }));
 		}
-		updateFreeArmyInfo();
 		var groupSend = $('<div>', { 'class': 'btn-group dropup' }).append([
 			$('<button>').attr({ 
 				"id": "armySendGeneralsBtn",
@@ -360,6 +359,7 @@ function battleDropdown(data)
 
 function battleGetData()
 {
+	updateFreeArmyInfo();
 	armyUpdateProgress(-1);
 	battleWindow.withFooter(".loadAttack, .loadMove, .reset, .directAttack, .armySubmit, .armyReset").hide();
 	battleWindow.withFooter(".armyUnload, .armySendGeneralsBtn").show();
