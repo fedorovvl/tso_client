@@ -164,7 +164,11 @@ function armyLoadGenerals(direct)
 		}
 		var dRaiseArmyVO = new dRaiseArmyVODef();
 		var spec = armyGetSpecialistFromID(item);
-		if(spec == null) { return; }
+		if(spec == null) { 
+			total--;
+			armyProgressCounter--;
+			return;
+		}
 		dRaiseArmyVO.armyHolderSpecialistVO = spec.CreateSpecialistVOFromSpecialist();
 		$.each(battlePacket[item].army, function(res) {
 			var dResourceVO = new dResourceVODef();
