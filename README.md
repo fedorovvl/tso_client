@@ -7,7 +7,7 @@
 
 The Settlers Online Windows portable client
 
-Check [WIKI](https://github.com/fedorovvl/tso_client/wiki) for detailed info
+Check [WIKI](https://github.com/fedorovvl/tso_client/wiki) for detailed info.
 
 Support:
 
