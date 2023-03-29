@@ -71,6 +71,7 @@ function hideSpecHandler(event)
 				item.SetPlayerID(game.player.GetPlayerId());
 			}
 		});
+		game.gi.isOnHomzone()&&setFilterHandler(mainSettings.defFilter);
 	} catch (e) {}
 }
 
