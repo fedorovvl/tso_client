@@ -52,6 +52,7 @@ function battleMenuHandler(event)
 				$('<button>').attr({ "class": "btn btn-primary loadAttack", 'data-toggle': "tooltip", 'data-placement': "top", 'title': loca.GetText("ACL", "PvPAttacker") }).html($('<img>', { 'src': 'images/1647_GUI.Assets.gAssetManager_ButtonIconFindWildZone.png' })).click(battleAttack),
 				$('<button>').attr({ "class": "btn btn-primary loadMove", 'data-toggle': "tooltip", 'data-placement': "top", 'title': loca.GetText("LAB", "Move") }).html($('<img>', { 'src': 'images/1648_GUI.Assets.gAssetManager_ButtonIconTrumpet.png' })).click(battleMove),
 				$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
+					battleWindow.withFooter('[data-toggle="tooltip"]').tooltip( "close" );
 					var queue = new TimedQueue(1000);
 					var counter = 1, total = battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').length;
 					armyProgressCounter = total;
@@ -187,6 +188,7 @@ function battlecheckCanAttack(id, target)
 function battleLoadData()
 {
 	updateFreeArmyInfo();
+	battleWindow.withFooter('[data-toggle="tooltip"]').tooltip( "close" );
 	battleWindow.withFooter(".directAttack, .armyUnload, .armySubmit").hide();
 	battleWindow.withFooter(".reset").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
@@ -360,6 +362,7 @@ function battleGetData()
 {
 	updateFreeArmyInfo();
 	armyUpdateProgress(-1);
+	battleWindow.withFooter('[data-toggle="tooltip"]').tooltip( "close" );
 	battleWindow.withFooter(".loadAttack, .loadMove, .reset, .directAttack, .armySubmit, .armyReset").hide();
 	battleWindow.withFooter(".armyUnload, .armySendGeneralsBtn").show();
 	var html = '<div class="container-fluid" style="user-select: all;">';
