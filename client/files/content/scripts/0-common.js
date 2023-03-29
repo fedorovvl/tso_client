@@ -268,7 +268,7 @@ function mainSettingsHandler(event)
 			reloadScripts(null);
 			shortcutsMakeMenu();
 		}
-		setFilterHandler(mainSettings.defFilter);
+		game.gi.isOnHomzone()&&setFilterHandler(mainSettings.defFilter);
 		dtf.setDateTimePattern(mainSettings.dtfFormat); 
 		w.hide();
 	}));
