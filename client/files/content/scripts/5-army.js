@@ -154,7 +154,7 @@ function armySendGeneralToStar(spec)
 function armyLoadGenerals(direct)
 {
 	direct = typeof direct === "boolean" ? direct : false;
-	battleWindow.withFooter('[data-toggle="tooltip"]').tooltip( "close" );
+	battleWindow.withFooter('[data-toggle="tooltip"]').tooltip( "hide" );
 	var queue = new TimedQueue(1000);
 	var counter = 1, total = Object.keys(battlePacket).length;
 	armyProgressCounter = total;
