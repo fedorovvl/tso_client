@@ -232,6 +232,7 @@ function armyLoadDataCheck(data)
 		if(!aStatus) { result.canSubmit = false; }
 	});
 	if(Object.keys(requiredArmy).length == 0 && !canFree) { result.canSubmit = false; }
+	result.canFree = canFree;
 	return result;
 }
 

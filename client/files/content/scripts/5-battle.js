@@ -237,9 +237,9 @@ function battleLoadData()
 				[2, armyFreeInfo[item] ? armyFreeInfo[item] : 0],
 				[1, aStatus ? 'OK' : 'FAIL', aStatus ? "buffReady" : "buffNotReady"]]);
 		});
-		if(checkedPacket.canSubmit) {
-			battleWindow.withFooter(".armySubmit").show();
-		}
+	}
+	if((Object.keys(checkedPacket.army).length > 0 && checkedPacket.canSubmit) || checkedPacket.canFree) {
+		battleWindow.withFooter(".armySubmit").show();
 	}
 	battleWindow.Body().html(out + '<div>');
 	if(canSubmitAttack && attackSubmitChecker.indexOf(false) == -1 && attackSubmitChecker.length > 0) { battleWindow.withFooter(".loadAttack").show(); }
