@@ -6,7 +6,7 @@ var mainSettings = {
 	geoDefTask: 0,
 	explDefTask: 0,
 	specDefTimeType: false,
-	defFilter: 'none',
+	defFilter: 'unset',
 	dtfFormat: "MM-dd HH:mm",
 	forcegc: true,
 	sortOrder: 6,
@@ -136,7 +136,7 @@ function mainSettingsHandler(event)
 		return mainSettings.buffOnlyActive ? getText('buffonlyactive') : getText('buffall');
 	};
 	var createFilterDrop = function(){
-		const filters = ["none","snownowater","snowlight","snow","oven","doomsday","night","desert","tropical","blackandwhite","spooky","snow_medium","tundra","darkershadow","magicsepia"];
+		const filters = ["unset", "none","snownowater","snowlight","snow","oven","doomsday","night","desert","tropical","blackandwhite","spooky","snow_medium","tundra","darkershadow","magicsepia"];
 		var select = $('<select>', { 'class': 'form-control defFilter' });
 		for(var i in filters) {
 			select.append($('<option>', { value: filters[i] }).text(filters[i]));
@@ -283,7 +283,7 @@ function toggleForceGC()
 
 function setFilterHandler(filter, init)
 {
-	if(init && filter == 'none') { return; }
+	if((init && filter == 'none') || filter == "unset") { return; }
 	game.def("defines").CLIENT_FILTER = true;
 	game.def("gGfxResource").applyFilter(filter, game.gi);
 	game.def("defines").CLIENT_FILTER = false;
