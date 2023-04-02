@@ -206,7 +206,7 @@ function multiSelectSpec()
 function massChangeSpecDropdown()
 {
 	var selected = $( "#specMassChange" ).val();
-	$('#specModalData select').each(function(i, select){
+	$('#specModalData select:visible').each(function(i, select){
 		$(select).val(selected);
 		if($(select).val() == undefined)
 			$(select).val(0);
