@@ -581,6 +581,9 @@ function shortcutsImportFinal()
 	file.addEventListener(air.Event.SELECT, function(event){
 		shortcutsImportTree(shortcutsImported.tree, newContent, file.nativePath);
 		shortcutsImportData(newContent, file.nativePath);
+		if(shortcutsImported.description != '') {
+			shortcutsImportData({ 'README.txt': shortcutsImported.description.replace(/\n/g, '\r\n') }, file.nativePath);
+		}
 		(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push(shortcutsImported.tree);
 		$('#' + shortcutsWindow.rawsId).modal('hide');
 		var actVal = shortcutsWindow.withHeader('#shortcutsSelect').val();
@@ -625,8 +628,8 @@ function shortcutsImportProceed(data)
 {
 	shortcutsImported = data;
 	var urlRegex = /(https?:\/\/[^\s]+)/g;
-	shortcutsImported.description = shortcutsImported.description.replace(urlRegex, '<a href="$1">$1</a>');
-	shortcutsImported.description = shortcutsImported.description.replace(/\n/g, '<br>');
+	shortcutsImported.descriptionHtml = shortcutsImported.description.replace(urlRegex, '<a href="$1">$1</a>');
+	shortcutsImported.descriptionHtml = shortcutsImported.descriptionHtml.replace(/\n/g, '<br>');
 	shortcutsWindow.settings(shortcutsImportFinal, 'modal-lg');
 	shortcutsWindow.sDialog().css("height", "90%");
 	shortcutsWindow.sTitle().html("<center>{0} {1} ({2} {3})</center>".format(getText("shortImportTitle"), data.tree.name, Object.keys(data.content).length, getText("shortImportTemplate")));
@@ -653,7 +656,7 @@ function shortcutsImportGetData()
 	var select = shortcutsImportMakeSelect();
 	if(shortcutsImported.description != '') {
 		out += '<h4>{0}</h4>'.format(loca.GetText("QUL", "TutDetailsTab"));
-		out += $('<div>', { 'class': "container-fluid", 'style': "width:100%;height:150px;border:1px solid;border-radius:5px;" }).html(shortcutsImported.description).prop('outerHTML');
+		out += $('<div>', { 'class': "container-fluid", 'style': "width:100%;height:150px;border:1px solid;border-radius:5px;" }).html(shortcutsImported.descriptionHtml).prop('outerHTML');
 	}
 	out += "<H4>{0}</H4>".format(getText("shortImportComparator")) + createTableRow([[5, loca.GetText("RES", "General")],[1, loca.GetText("LAB", "ProductionStatus")],[6, loca.GetText("QUL", "GuiDaiTheGoodGenerals")]], true);
 	shortcutsImportTotalGens = 0;
