@@ -242,6 +242,7 @@ function battleLoadData()
 		battleWindow.withFooter(".armySubmit").show();
 	}
 	battleWindow.Body().html(out + '<div>');
+	battleWindow.withFooter('.armySaveTemplate').hide();
 	if(canSubmitAttack && attackSubmitChecker.indexOf(false) == -1 && attackSubmitChecker.length > 0) { battleWindow.withFooter(".loadAttack").show(); }
 	if(canSubmitMove) { battleWindow.withFooter(".loadMove").show(); }
 	battleWindow.withBody(".close").click(function(e) { 
@@ -361,6 +362,7 @@ function battleDropdown(data)
 function battleGetData()
 {
 	updateFreeArmyInfo();
+	battleWindow.withFooter('.armySaveTemplate').show();
 	armyUpdateProgress(-1);
 	battleWindow.withFooter('[data-toggle="tooltip"]').tooltip( "hide" );
 	battleWindow.withFooter(".loadAttack, .loadMove, .reset, .directAttack, .armySubmit, .armyReset").hide();
