@@ -563,6 +563,7 @@ function shortcutsImportFinal()
 				}
 				var specialist = armyGetSpecialistFromID(spec);
 				newContent[item][spec].name = specialist.getName(false);
+				newContent[item][spec].type = specialist.GetType();
 				newContent[item][spec].skills = {};
 				specialist.getSkillTree().getItems_vector().forEach(function(skill, index){
 					if(skill.getLevel() > 0) { newContent[item][spec].skills[index] = skill.getLevel(); }
