@@ -1,5 +1,5 @@
 
-var shortcutsTypes = { '[b]': 'a ', '[a]': 'l ', '[m]': 'm ', '[g]': 'g ', '[e]': 'e ', '[u]': 'b ', '[p]': 'p ' };
+var shortcutsTypes = { '[b]': 'a ', '[a]': 'l ', '[m]': 'm ', '[g]': 'g ', '[e]': 'e ', '[u]': 'b ', '[p]': 'p ', '[d]': 'd ', '[u]': 'u ', '[s]': 's ' };
 var shortcutsWindow;
 var shortcutsLRUItem;
 var shortcutsMustHaveSkills = [3,8,9,12,13,19];
@@ -19,6 +19,9 @@ var shortcutsTypesLang = {
 	'e ': loca.GetText("SPE", "Explorer"),
 	'b ': loca.GetText("LAB", "Buffs"),
 	'p ': loca.GetText("LAB", "Production"),
+	'd ': loca.GetText("LAB", "Details"),
+	'u ': loca.GetText("LAB","UnloadUnits"),
+	's ': getText('shortcutsToStar'),
 };
 var shortcutsGeneralsReplacement = {
 	3: [ 33, 36, 7, 8, 11, 9, 13, 47 ],
@@ -62,11 +65,23 @@ function shortcutsGenMenuRecursive(item, m)
 			return;
 		}
 		if(Array.isArray(data)) {
-			var label = "{0}. [{1}] {2}".format(
-				idx,
-				shortcutsTypesLang[shortcutsStripType(data[0])[1]], data[1] == null ? shortcutsStripType(data[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : data[1].replace(/_/g, "[UNDERSCORE]")
-			);
-			m.push({ label: label, mnemonicIndex: 0, name: data[0], onSelect: shortcutsMenuSelectedHandler });
+			switch(shortcutsStripType(data[0])[1]) {
+				case 'd ':
+					m.push({ label: "{0}. {1}".format(idx, data[1]), enabled: false });
+				break;
+				case 'u ':
+					m.push({ label: "{0}. [{1}] {2}".format(idx, loca.GetText("LAB", "Commands"), loca.GetText("LAB","UnloadUnits")), mnemonicIndex: 0, onSelect: shortcutsFreeAllUnits });
+				break;
+				case 's ':
+					m.push({ label: "{0}. [{1}] {2}".format(idx, loca.GetText("LAB", "Commands"), getText('shortcutsToStar')), mnemonicIndex: 0, onSelect: shortcutsReturnAll });
+				break;
+				default:
+					var label = "{0}. [{1}] {2}".format(
+						idx,
+						shortcutsTypesLang[shortcutsStripType(data[0])[1]], data[1] == null ? shortcutsStripType(data[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : data[1].replace(/_/g, "[UNDERSCORE]")
+					);
+					m.push({ label: label, mnemonicIndex: 0, name: data[0], onSelect: shortcutsMenuSelectedHandler });
+			}
 			return;
 		}
 		var s = { label: data.name.replace(/_/g, "[UNDERSCORE]"), mnemonicIndex: 0, items: [] };
@@ -77,11 +92,23 @@ function shortcutsGenMenuRecursive(item, m)
 			if(/--s[0-9]+p--/.test(i)) {
 				s.items.push({ type: 'separator' });
 			} else {
-				var label = "{0}. [{1}] {2}".format(
-					index,
-					shortcutsTypesLang[shortcutsStripType(i[0])[1]], i[1] == null ? shortcutsStripType(i[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : i[1].replace(/_/g, "[UNDERSCORE]")
-				);
-				s.items.push({ label: label, mnemonicIndex: 0, name: i[0], onSelect: shortcutsMenuSelectedHandler });
+				switch(shortcutsStripType(i[0])[1]) {
+					case 'd ':
+						s.items.push({ label: "{0}. {1}".format(index, i[1]), enabled: false });
+					break;
+					case 'u ':
+						s.items.push({ label: "{0}. [{1}] {2}".format(index, loca.GetText("LAB", "Commands"), loca.GetText("LAB","UnloadUnits")), mnemonicIndex: 0, onSelect: shortcutsFreeAllUnits });
+					break;
+					case 's ':
+						s.items.push({ label: "{0}. [{1}] {2}".format(index, loca.GetText("LAB", "Commands"), getText('shortcutsToStar')), mnemonicIndex: 0, onSelect: shortcutsReturnAll });
+					break;
+					default:
+						var label = "{0}. [{1}] {2}".format(
+							index,
+							shortcutsTypesLang[shortcutsStripType(i[0])[1]], i[1] == null ? shortcutsStripType(i[0])[0].split("\\").pop().replace(/_/g, "[UNDERSCORE]") : i[1].replace(/_/g, "[UNDERSCORE]")
+						);
+						s.items.push({ label: label, mnemonicIndex: 0, name: i[0], onSelect: shortcutsMenuSelectedHandler });
+				}
 			}
 		});
 		m.push(s);
@@ -303,6 +330,9 @@ function shortcutsAddHandler(event)
 				$('<li>').html($('<a>', {'href': '#', 'name': 'army'}).text(shortcutsTypesLang['l '])),
 				$('<li>').html($('<a>', {'href': '#', 'name': 'move'}).text(shortcutsTypesLang['m '])),
 				$('<li>').html($('<a>', {'href': '#', 'name': 'battle'}).text(shortcutsTypesLang['a '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'descr'}).text(shortcutsTypesLang['d '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'unload'}).text(shortcutsTypesLang['u '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'star'}).text(shortcutsTypesLang['s '])),
 				$('<li>').html($('<a>', {'href': '#', 'name': 'sep'}).text(getText('shortcutsSeparator'))),
 				$('<li>').html($('<a>', {'href': '#', 'name': 'folder'}).text(getText('shortcutsFolder')))
 			])
@@ -318,25 +348,32 @@ function shortcutsAddHandler(event)
 		shortcutsWindow.withFooter('#shortcutsExport').click(shortcutsExport);
 		shortcutsWindow.withFooter('#shortcutsImport').click(shortcutsImport);
 		shortcutsWindow.withFooter('.dropdown-menu a').click(function() {
-			if(this.name == 'sep') {
-				(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push('--s'+Date.now()+'p--');
-				shortcutsUpdateView();
-				return;
+			switch(this.name) {
+				case 'sep':
+					(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push('--s'+Date.now()+'p--');
+					shortcutsUpdateView();
+				break;
+				case 'descr':
+				case 'unload':
+				case 'star':
+					(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push([Date.now() + "[{0}]".format(this.name.charAt(0)), null]);
+					shortcutsUpdateView();
+				break;
+			    case 'folder':
+					var des = prompt("Folder name", '');
+					if(des == null || des == "") { return; }
+					var newid = Date.now();
+					(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push({
+						'id' : newid,
+						'name' : des,
+						'items' : new Array()
+					});
+					shortcutsRefresh();
+					shortcutsWindow.withHeader("#shortcutsSelect").val(newid).change();
+				break;
+				default:
+					shortcutsselectTextFile(this.name); 
 			}
-			if(this.name == 'folder') {
-				var des = prompt("Folder name", '');
-				if(des == null || des == "") { return; }
-				var newid = Date.now();
-				(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push({
-					'id' : newid,
-					'name' : des,
-					'items' : new Array()
-				});
-				shortcutsRefresh();
-				shortcutsWindow.withHeader("#shortcutsSelect").val(newid).change();
-				return;
-			}
-			shortcutsselectTextFile(this.name); 
 		});
 		shortcutsWindow.withFooter('.shortcutsSave').click(function(){
 			$.each(shortcutsWindow.withBody('div.row'), function(i, item) { 
@@ -417,12 +454,30 @@ function shortcutsUpdateView()
 			], false);
 		} else {
 			var typename = shortcutsStripType(i[0].split("\\").pop());
-			out += createTableRow([
-				[3, '&#8597;&nbsp;&nbsp;' + shortcutsTypesLang[typename[1]]],
-				[4, typename[0]],
-				[3, $('<input>', { 'type': 'text', 'class': 'form-control', 'style': 'background:none;color:white;', 'value': i[1] == null ? '' : i[1] })],
-				[2, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
-			], false);
+			switch(typename[1]) {
+				case 'd ':
+					out += createTableRow([
+						[3, '&#8597;&nbsp;&nbsp;' + shortcutsTypesLang[typename[1]]],
+						[8, $('<input>', { 'type': 'text', 'class': 'form-control', 'style': 'background:none;color:white;', 'value': i[1] == null ? '' : i[1] })],
+						[1, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
+					], false);
+				break;
+				case 'u ':
+				case 's ':
+					out += createTableRow([
+						[3, '&#8597;&nbsp;&nbsp;' + loca.GetText("LAB", "Commands")],
+						[8, shortcutsTypesLang[typename[1]]],
+						[1, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
+					], false);
+				break;
+				default:
+					out += createTableRow([
+						[3, '&#8597;&nbsp;&nbsp;' + shortcutsTypesLang[typename[1]]],
+						[4, typename[0]],
+						[3, $('<input>', { 'type': 'text', 'class': 'form-control', 'style': 'background:none;color:white;', 'value': i[1] == null ? '' : i[1] })],
+						[2, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
+					], false);
+			}
 		}
 	});
 	shortcutsWindow.withBody('#shortcutsRows').html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;cursor:move;" }).html(out));
