@@ -1,5 +1,5 @@
 
-var shortcutsTypes = { '[b]': 'a ', '[a]': 'l ', '[m]': 'm ', '[g]': 'g ', '[e]': 'e ', '[u]': 'b ', '[p]': 'p ', '[d]': 'd ', '[u]': 'u ', '[s]': 's ' };
+var shortcutsTypes = { '[b]': 'a ', '[a]': 'l ', '[m]': 'm ', '[g]': 'g ', '[e]': 'e ', '[u]': 'b ', '[p]': 'p ', '[d]': 'd ', '[f]': 'f ', '[s]': 's ' };
 var shortcutsWindow;
 var shortcutsLRUItem;
 var shortcutsMustHaveSkills = [3,8,9,12,13,19];
@@ -20,7 +20,7 @@ var shortcutsTypesLang = {
 	'b ': loca.GetText("LAB", "Buffs"),
 	'p ': loca.GetText("LAB", "Production"),
 	'd ': loca.GetText("LAB", "Details"),
-	'u ': loca.GetText("LAB","UnloadUnits"),
+	'f ': loca.GetText("LAB","UnloadUnits"),
 	's ': getText('shortcutsToStar'),
 };
 var shortcutsGeneralsReplacement = {
@@ -69,7 +69,7 @@ function shortcutsGenMenuRecursive(item, m)
 				case 'd ':
 					m.push({ label: "{0}. {1}".format(idx, data[1]), enabled: false });
 				break;
-				case 'u ':
+				case 'f ':
 					m.push({ label: "{0}. [{1}] {2}".format(idx, loca.GetText("LAB", "Commands"), loca.GetText("LAB","UnloadUnits")), mnemonicIndex: 0, onSelect: shortcutsFreeAllUnits });
 				break;
 				case 's ':
@@ -96,7 +96,7 @@ function shortcutsGenMenuRecursive(item, m)
 					case 'd ':
 						s.items.push({ label: "{0}. {1}".format(index, i[1]), enabled: false });
 					break;
-					case 'u ':
+					case 'f ':
 						s.items.push({ label: "{0}. [{1}] {2}".format(index, loca.GetText("LAB", "Commands"), loca.GetText("LAB","UnloadUnits")), mnemonicIndex: 0, onSelect: shortcutsFreeAllUnits });
 					break;
 					case 's ':
@@ -331,7 +331,7 @@ function shortcutsAddHandler(event)
 				$('<li>').html($('<a>', {'href': '#', 'name': 'move'}).text(shortcutsTypesLang['m '])),
 				$('<li>').html($('<a>', {'href': '#', 'name': 'battle'}).text(shortcutsTypesLang['a '])),
 				$('<li>').html($('<a>', {'href': '#', 'name': 'descr'}).text(shortcutsTypesLang['d '])),
-				$('<li>').html($('<a>', {'href': '#', 'name': 'unload'}).text(shortcutsTypesLang['u '])),
+				$('<li>').html($('<a>', {'href': '#', 'name': 'funload'}).text(shortcutsTypesLang['f '])),
 				$('<li>').html($('<a>', {'href': '#', 'name': 'star'}).text(shortcutsTypesLang['s '])),
 				$('<li>').html($('<a>', {'href': '#', 'name': 'sep'}).text(getText('shortcutsSeparator'))),
 				$('<li>').html($('<a>', {'href': '#', 'name': 'folder'}).text(getText('shortcutsFolder')))
@@ -354,7 +354,7 @@ function shortcutsAddHandler(event)
 					shortcutsUpdateView();
 				break;
 				case 'descr':
-				case 'unload':
+				case 'funload':
 				case 'star':
 					(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push([Date.now() + "[{0}]".format(this.name.charAt(0)), null]);
 					shortcutsUpdateView();
@@ -462,7 +462,7 @@ function shortcutsUpdateView()
 						[1, $('<button>', { 'type': 'button', 'class': 'close', 'value': idx }).html($('<span>').html('&times;'))],
 					], false);
 				break;
-				case 'u ':
+				case 'f ':
 				case 's ':
 					out += createTableRow([
 						[3, '&#8597;&nbsp;&nbsp;' + loca.GetText("LAB", "Commands")],
