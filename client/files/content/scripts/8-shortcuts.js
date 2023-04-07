@@ -580,9 +580,9 @@ function shortcutsImportFinal()
 	var file = new air.File(); 
 	file.addEventListener(air.Event.SELECT, function(event){
 		shortcutsImportTree(shortcutsImported.tree, newContent, file.nativePath);
-		shortcutsImportData(newContent, file.nativePath);
+		shortcutsImportData(newContent, file.nativePath, false);
 		if(shortcutsImported.description != '') {
-			shortcutsImportData({ 'README.txt': shortcutsImported.description.replace(/\n/g, '\r\n') }, file.nativePath);
+			shortcutsImportData({ 'README.txt': shortcutsImported.description.replace(/\n/g, '\r\n') }, file.nativePath, true);
 		}
 		(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push(shortcutsImported.tree);
 		$('#' + shortcutsWindow.rawsId).modal('hide');
@@ -596,13 +596,17 @@ function shortcutsImportFinal()
 	file.browseForDirectory("Select a destination directory"); 
 }
 
-function shortcutsImportData(data, path)
+function shortcutsImportData(data, path, raw)
 {
 	$.each(data, function(item) {
 		var file = new air.File("file:///" + path + "\\" + item),
 			fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.WRITE);
-		fileStream.writeUTFBytes(JSON.stringify(data[item], null, " "));
+		if(!raw) {
+			fileStream.writeUTFBytes(JSON.stringify(data[item], null, " "));
+		} else {
+			fileStream.writeUTFBytes(data[item]);
+		}
 		fileStream.close();
 	});
 }
