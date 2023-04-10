@@ -676,11 +676,18 @@ function shortcutsImportTree(t, content, path)
 			shortcutsImportTree(t.items[i], content, path);
 			return;
 		}
-		if(!content[t.items[i][0].slice(0, -3)]) {
-			delete t.items[i];
-			return;
+		switch(shortcutsStripType(t.items[i][0])[1]) {
+			case 'd ':
+			case 'f ':
+			case 's ':
+			    return;
+			default:
+				if(!content[t.items[i][0].slice(0, -3)]) {
+					delete t.items[i];
+					return;
+				}
+				t.items[i][0] = "{0}\\{1}".format(path, t.items[i][0]);
 		}
-		t.items[i][0] = "{0}\\{1}".format(path, t.items[i][0]);
 	});
 }
 
