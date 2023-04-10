@@ -885,14 +885,21 @@ function shortcutsExportTree(t, content, skipped)
 				return false;
 			continue;
 		}
-		var data = shortcutsExportGetTemplateData(t.items[i][0].slice(0, -3));
-		if(typeof data == 'object') {
-			var file = t.items[i][0].split("\\").pop();
-			content[file.slice(0, -3)] = data;
-			t.items[i][0] = file;
-		} else {
-			skipped.push([t.items[i][0].slice(0, -3), data]);
-			delete t.items[i];
+		switch(shortcutsStripType(t.items[i][0])[1]) {
+			case 'd ':
+			case 'f ':
+			case 's ':
+			    continue;
+			default:
+				var data = shortcutsExportGetTemplateData(t.items[i][0].slice(0, -3));
+				if(typeof data == 'object') {
+					var file = t.items[i][0].split("\\").pop();
+					content[file.slice(0, -3)] = data;
+					t.items[i][0] = file;
+				} else {
+					skipped.push([t.items[i][0].slice(0, -3), data]);
+					delete t.items[i];
+				}
 		}
 	}
 	t.items = t.items.filter(function(e) { return e != null; });
