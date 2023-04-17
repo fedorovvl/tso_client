@@ -368,6 +368,10 @@ function openDiscordDEHandler(event)
 {
 	air.navigateToURL(new air.URLRequest("https://discord.gg/rm6kmzhPg2"));
 }
+function openDiscordESHandler(event)
+{
+	air.navigateToURL(new air.URLRequest("https://discord.gg/Gkt2DYtUyn"));
+}
 function openDonateHandler(event)
 {
 	air.navigateToURL(new air.URLRequest("https://ko-fi.com/sirris"));
