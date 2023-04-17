@@ -137,7 +137,7 @@ namespace client
         {
             get
             {
-                return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), tso_folder);
+                return Path.IsPathRooted(tso_folder) ? tso_folder : System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), tso_folder);
             }
         }
         private const string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
