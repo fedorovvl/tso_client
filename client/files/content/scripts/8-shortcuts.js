@@ -130,8 +130,13 @@ function shortcutsMenuSelectedHandler(event)
 	}
 	shortcutsLRUItem = event.target;
 	shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
+	shortcutsMenuSelectedRetryHandler(event.target.name, 0);
+}
+
+function shortcutsMenuSelectedRetryHandler(file, count)
+{
 	try {
-		var filetype = shortcutsStripType(event.target.name);
+		var filetype = shortcutsStripType(file);
 		var file = new air.File(filetype[0]);
 		if(!file.exists) {
 			alert(getText("bad_template"));
@@ -144,7 +149,11 @@ function shortcutsMenuSelectedHandler(event)
 		if (data == "") { return; }
 		shortcutsProceedFile(JSON.parse(data), filetype[1], file.name);
 	} catch(e) {
-		alert(getText("bad_template"));
+		if(count > 3) {
+			alert(getText("bad_template"));
+		} else {
+			shortcutsMenuSelectedRetryHandler(file, ++count);
+		}
 	}
 }
 
