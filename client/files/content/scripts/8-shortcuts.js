@@ -612,10 +612,11 @@ function shortcutsImportFinal()
 	var newContentString = JSON.stringify(shortcutsImported.content);
 	shortcutsWindow.sBody().find('select').each(function(i, item) {
 		var oldId = $(item).closest('div').attr('class').split(' ').pop();
-		var re = new RegExp(oldId,"gi");
-		newContentString = newContentString.replace(re, item.value);
+		var re = new RegExp(oldId + '"',"gi");
+		newContentString = newContentString.replace(re, item.value + '_imprt"');
 		delete shortcutsImported.generals[oldId];
 	});
+	newContentString = newContentString.replace(/_imprt/gi, "");
 	var newContent = JSON.parse(newContentString);
 	try
 	{
