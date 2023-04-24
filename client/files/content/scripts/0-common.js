@@ -145,7 +145,7 @@ function mainSettingsHandler(event)
 		return select.prop('outerHTML');
 	};
 	var createDateFormatterDrop = function(){
-		const formats = ['M-d H:m','d-M H:m','MM-dd HH:mm','dd-MM-yyyy hh:mm','yyyy-MM-dd HH:mm'];
+		const formats = ['M-d H:m','d-M H:m','MM-dd HH:mm','dd-MM-yyyy hh:mm','yyyy-MM-dd HH:mm','dd-MM-yyyy HH:mm'];
 		var select = $('<select>', { 'class': 'form-control dtfFormat' });
 		for(var i in formats) {
 			select.append($('<option>', { value: formats[i] }).text(formats[i]));
