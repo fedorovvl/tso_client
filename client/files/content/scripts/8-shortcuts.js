@@ -23,6 +23,13 @@ var shortcutsTypesLang = {
 	'f ': loca.GetText("LAB","UnloadUnits"),
 	's ': getText('shortcutsToStar'),
 };
+var moduleToName = {
+	'battle': { name: loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual"), type: '[m]' },
+	'expl': { name: loca.GetText("SPE", "Explorer"), type: '[e]' },
+	'geo': { name: loca.GetText("SPE", "Geologist"), type: '[g]' },
+	'buff': { name: loca.GetText("LAB", "Buffs"), type: '[u]' },
+	'bui': { name: loca.GetText("LAB", "Production"), type: '[p]' }
+};
 var shortcutsGeneralsReplacement = {
 	3: [ 33, 36, 7, 8, 11, 9, 13, 47 ],
 	7: [ 33, 36, 3, 8, 11, 9, 13, 47 ],
@@ -147,7 +154,7 @@ function shortcutsMenuSelectedRetryHandler(file, count)
 		var data = fileStream.readUTFBytes(file.size);
 		fileStream.close();
 		if (data == "") { return; }
-		shortcutsProceedFile(JSON.parse(data), filetype[1], file.name);
+		shortcutsProceedFile(JSON.parse(data), filetype[1], file.name, filetype[0]);
 	} catch(e) {
 		if(count > 3) {
 			alert(getText("bad_template"));
@@ -157,12 +164,14 @@ function shortcutsMenuSelectedRetryHandler(file, count)
 	}
 }
 
-function shortcutsProceedFile(data, type, name)
+function shortcutsProceedFile(data, type, name, fullPath)
 {
+	var module = '';
 	switch(type) {
 		case 'l ':
 		case 'm ':
 		case 'a ':
+			module = 'battle';
 			if(battleTimedQueue && battleTimedQueue.index != battleTimedQueue.len())
 			{
 				game.showAlert(loca.GetText("ALT", "ServerOverstrained"));
@@ -180,6 +189,7 @@ function shortcutsProceedFile(data, type, name)
 				return;
 			}
 			specSharedHandler(type == 'e ' ? 1 : 2);
+			module = type == 'e ' ? 'expl' : 'geo';
 			$('#specModalData select').val(0);
 			$.each(data, function(spec, val) { $('#' + spec.replace('expl-','')).val(val); });
 			$('#specModalData select').each(function(i, select){
@@ -188,17 +198,21 @@ function shortcutsProceedFile(data, type, name)
 			$("#specModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 		break;
 		case 'b ':
+			module = 'buff';
 			buffRecord = data;
 			buffSourceRecord = false;
 			menuBuffsHandler(null);
 			$("#buffModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 		break;
 		case 'p ':
+			module = 'bui';
 			buildingRecord = data;
 			$("#buildingModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
 			menuBuildingHandler(null);
 		break;
 	}
+	lruTemplate[module]=lruTemplate[module]||new LRUCache(mainSettings.lruCacheSize);
+	lruTemplate[module].put(Date.now(), fullPath);
 }
 
 function shortcutsReturnAll()

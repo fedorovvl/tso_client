@@ -24,6 +24,7 @@ var Menu = function(type){
 				{ label: loca.GetText("LAB", "Update"), mnemonicIndex: 0, keyCode: 113, onSelect: menuZoneRefreshHandler},
 				{ label: 'Debug window', onSelect: menuDebugHandler}
 			]},
+			{ label: "LRU", name: 'LRU', mnemonicIndex: 0, items: [] },
 			{ label: loca.GetText("LAB", "Specialists"), mnemonicIndex: 0, items: [
 				{ label: loca.GetText("SPE", "Explorer"), mnemonicIndex: 0, keyCode: 114, onSelect: specExplorerMenuHandler },
 				{ label: loca.GetText("SPE", "Geologist"), mnemonicIndex: 0, keyCode: 115, onSelect: specGeologistMenuHandler },
