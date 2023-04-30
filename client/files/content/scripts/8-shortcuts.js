@@ -588,6 +588,7 @@ function shortcutsImport()
 		}
 		shortcutsImportProceed(data);
 	});
+	exportSource.skipLRU = true;
 	exportSource.load();
 }
 
