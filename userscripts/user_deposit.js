@@ -39,7 +39,7 @@ var _exudDepositVieweLang = {
 
 const _exudDepositViewerAssetsNames = [ "Corn", "Fish", "IronOre", "Coal", "Stone", "Marble", "Granite",
 					"Meat", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "Water" ,
-					"HalloweenResource", "ValentinesFlower"
+					"HalloweenResource", "ValentinesFlower", "HardCurrency"
 					];
 
 extendBaseLang(_exudDepositVieweLang, 'exudDepositVieweLang');
