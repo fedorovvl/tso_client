@@ -32,6 +32,7 @@ function updateLRUMenu()
 {
 	var m = [];
 	$.each(lruTemplate, function(type) { 
+		if(!moduleToName[type]) { return; }
 		m.push({ label: moduleToName[type].name + '↓', enabled: false });
 		m.push({ label: moduleToName[type].name + ' → ' + loca.GetText("LAB", "ReplayBattle"), name: type, onSelect: LRULoadLast });
 		[].concat(lruTemplate[type].tracker).reverse().forEach(function(key) { 
