@@ -36,12 +36,6 @@
 			if(p["version"]) { version = p["version"]; }
 			if(p["clientconfig"]) { settingsFile = unescape(p["clientconfig"]); }
 			convertSettings();
-			var fixInterval = setInterval(function(){ 
-				if(swmmo.getDefinitionByName("global").eventLoadingScreen == "NewCatergory_Content") {
-					swmmo.getDefinitionByName("global").eventLoadingScreen = "UNDEFINED";
-				}
-			}, 10);
-			setTimeout(function(){ clearInterval(fixInterval); }, 5000);
 		  });
 		  loadInterval = setInterval(function(){ 
 			if(!swmmo.getDefinitionByName("globalFlash").gui.GetDefaultGuiElementsLoaded()) { return; }
