@@ -133,7 +133,8 @@ function getBuffHTML()
 	result += createTableRow([
 			[1, '#'],
 			[4, loca.GetText("LAB", 'Name')],
-			[5, loca.GetText("LAB", 'Buff')],
+			[1, loca.GetText("LAB", 'GuildLevel')],
+			[4, loca.GetText("LAB", 'Buff')],
 			[2, loca.GetText("LAB", 'ProductionStatus')]
 	], true);
 	buffRecordFiltered = [];
@@ -149,7 +150,8 @@ function getBuffHTML()
 		result += createTableRow([
 			[1, data['buiGrid']],
 			[4, loca.GetText("BUI", data['buiName'])],
-			[5, loca.GetText("RES", data['buffName'])],
+			[1, getBuiLevel(data)],
+			[4, loca.GetText("RES", data['buffName'])],
 			[2, getText(status) + '<button type="button" class="close" value="'+data['buiGrid']+'"><span>&times;</span></button>', (status == 'buff_ready') ? "buffReady" : "buffNotReady"]
 		]);
 	});
@@ -191,6 +193,13 @@ function buffApliedHandler(event){
 function checkBuffType(type)
 {
 	return availableBuffTypes.filter(function(item) { return type.indexOf(item); }).length > 0;
+}
+
+function getBuiLevel(data)
+{
+	var bui = game.zone.GetBuildingFromGridPosition(data['buiGrid']);
+	if(bui == null) { return 0; }
+	return bui.GetUpgradeLevel();
 }
 
 function getBuffStatus(data, zoneStatus)
