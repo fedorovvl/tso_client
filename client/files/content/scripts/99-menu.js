@@ -104,7 +104,7 @@ var Menu = function(type){
 		];
 	};
 	this.linearMenu = function(){
-		var e=[],r=this.groupedMenu();for(var i in r)if(r[i].items&&"Tools"!=r[i].name&&"Shortcuts"!=r[i].name)for(var n in r[i].items)e.push(r[i].items[n]);else e.push(r[i]);return e;
+		var e=[],r=this.groupedMenu();for(var i in r)if(r[i].items&&"Tools"!=r[i].name&&"Shortcuts"!=r[i].name&&"LRU"!=r[i].name)for(var n in r[i].items)e.push(r[i].items[n]);else e.push(r[i]);return e;
 	};
 	this.type = type;
 	this.nativeMenu = null;
