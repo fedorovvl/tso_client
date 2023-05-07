@@ -15,6 +15,16 @@ function keybindsRefreshCurrent()
 			}
 		}
 	});
+	$.each(keybindsCurrentBinds, function(item) {
+		if(keybindsCurrentBinds[item].length > 1) {
+			keybindsCurrentBinds[item] = keybindsCurrentBinds[item].reduce(function(result, elem) { 
+				if(result.filter(function(itm) { return itm[1] == elem[1]; }).length == 0) { 
+					result.push(elem);
+				} 
+				return result; 
+			}, []);
+		}
+	});
 }
 
 function keybindsRefreshRecursive(t, dim, depth, result)
