@@ -492,7 +492,7 @@ TimedQueue.prototype = {
 		var e = this;
 		e.stamp = Date.now() + delay;
 		e.inId = setInterval(function() {
-			if(Date.now() > e.stamp) {
+			if(Date.now() >= e.stamp) {
 				clearInterval(e.inId);
 				e.next();
 			}
