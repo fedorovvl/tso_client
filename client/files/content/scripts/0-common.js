@@ -499,7 +499,7 @@ TimedQueue.prototype = {
 		}, 50);
 	},
     reset: function() {
-        "number" == typeof this.inId && clearTimeout(this.inId), this.index = 0
+        "number" == typeof this.inId && clearInterval(this.inId), this.index = 0
     }
 };
 
