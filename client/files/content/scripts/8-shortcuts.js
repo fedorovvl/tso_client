@@ -217,12 +217,13 @@ function shortcutsProceedFile(data, type, name, fullPath)
 
 function shortcutsReturnAll(event)
 {
-	if(shortcutsLRUItem) {
-		shortcutsLRUItem.label = shortcutsLRUItem.label.slice(2);
+	if(event != null) {
+		if(shortcutsLRUItem) {
+			shortcutsLRUItem.label = shortcutsLRUItem.label.slice(2);
+		}
+		shortcutsLRUItem = event.target;
+		shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
 	}
-	shortcutsLRUItem = event.target;
-	shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
-	
 	var queue = new TimedQueue(1000);
 	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 		if (game.player.GetPlayerId() == item.getPlayerID() && 
@@ -305,12 +306,13 @@ function shortcutsRetreatAll()
 
 function shortcutsFreeAllUnits(event)
 {
-	if(shortcutsLRUItem) {
-		shortcutsLRUItem.label = shortcutsLRUItem.label.slice(2);
+	if(event != null) {
+		if(shortcutsLRUItem) {
+			shortcutsLRUItem.label = shortcutsLRUItem.label.slice(2);
+		}
+		shortcutsLRUItem = event.target;
+		shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
 	}
-	shortcutsLRUItem = event.target;
-	shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
-	
 	var queue = new TimedQueue(1000);
 	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 		if (game.player.GetPlayerId() == item.getPlayerID() && 
