@@ -18,7 +18,12 @@ LRUCache.prototype.put = function (key, value)
 
     this.store[key] = value;
     this.tracker.push(key);
-	updateLRUMenu();
+	try {
+		updateLRUMenu();
+	} catch (e) {
+		alert("LRU exception" + e);
+		debug(e);
+	}
 };
 
 function LRULoadLast(event)
