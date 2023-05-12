@@ -146,7 +146,7 @@ function shortcutsMenuSelectedRetryHandler(file, count)
 		var filetype = shortcutsStripType(file);
 		var file = new air.File(filetype[0]);
 		if(!file.exists) {
-			alert(getText("bad_template"));
+			alert(getText("bad_template") + '(not exists)');
 			return;
 		}
 		var fileStream = new air.FileStream();
@@ -157,7 +157,7 @@ function shortcutsMenuSelectedRetryHandler(file, count)
 		shortcutsProceedFile(JSON.parse(data), filetype[1], file.name, filetype[0]);
 	} catch(e) {
 		if(count > 3) {
-			alert(getText("bad_template"));
+			alert(getText("bad_template") + '(retry)');
 		} else {
 			shortcutsMenuSelectedRetryHandler(file, ++count);
 		}
