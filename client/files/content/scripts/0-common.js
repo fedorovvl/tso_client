@@ -764,7 +764,9 @@ SaveLoadTemplate.prototype = {
 };
 
 /* ColorPicker */
-
+function f() {
+	$(".kolorPicker").removeAttr("style"), $("#kolorPicker").unwrap(), $(".kolorPicker-wrapper").remove(), $("#kolorPicker").remove(), $(".kolorPickerUI").remove(), $(".kolorPicker").parent().removeAttr("style"), $("body").unbind("click.kp")
+}
 $(document).on("click", ".kolorPicker", function() {
     var e, r;
     $("body").bind("click.kp", function(e) {
