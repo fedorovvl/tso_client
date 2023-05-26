@@ -214,19 +214,15 @@ function managerProceed() {
                 fileStream.writeUTFBytes(data);
                 fileStream.close();
                 delete result[fileName];
-                if (Object.keys(result).length === 0) {
-                    finishProceed();
-                }
             });
         }
     }
 
-    if (Object.keys(result).length === 0) {
-        finishProceed();
-    }
+    finishProceed();
 }
 
 function finishProceed() {
+	settings.settings["scripts"] = {};
 	settings.store(enabledScripts, "scripts");
     reloadScripts(null);
     setTimeout(scriptsManagerWindow, 1000);

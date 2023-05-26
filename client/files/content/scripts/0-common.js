@@ -5,7 +5,9 @@ var lruTemplate = {};
 var mainSettings = {
 	menuStyle: 'grouped',
 	geoDefTask: 0,
+	geoDefTaskByType: {},
 	explDefTask: 0,
+	explDefTaskByType: {},
 	specDefTimeType: false,
 	defFilter: 'unset',
 	persistFilter: false,
@@ -273,6 +275,7 @@ function mainSettingsHandler(event)
 	});
 	w.withBody('#persistFilter').change(function(e) { mainSettings.persistFilter = $(e.target).is(':checked'); });
 	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
+		settings.settings["global"] = {};
 		settings.store(mainSettings);
 		if(menu.type != mainSettings.menuStyle) {
 			menu.type = mainSettings.menuStyle;
@@ -573,10 +576,16 @@ Modal.prototype = {
     hide: function() {
         $(this.id).modal('hide');
     },
+    shide: function() {
+        $(this.sId).modal('hide');
+    },
     show: function() {
         $("div[role='dialog']:not(" + this.id + "):visible")
             .modal("hide"), $(this.id + ':not(:visible)')
             .modal({ backdrop: "static" })
+    },
+    sshow: function() {
+        $(this.sId + ':not(:visible)').modal({ backdrop: "static" })
     },
     create: function() {
         !($(this.id)
@@ -606,6 +615,16 @@ Modal.prototype = {
                     .remove()
             }))
     },
+	addSettingsButton: function(callback) {
+		if(this.withHeader('#openSettings').length == 0) {
+			$('<img>', {
+				'src': 'images/icon_settings.png',
+				'id': 'openSettings',
+				'style': 'display:inline;cursor:pointer;'
+			}).insertAfter(this.withHeader('a'));
+			this.withHeader('#openSettings').click(callback);
+		}
+	},
     settings: function(t, i) {
         !($(this.sId)
             .length > 0) && ($("#dummyModal")

@@ -1,4 +1,7 @@
 var specTemplates;
+var specWindow;
+var specType = 0;
+var specLoadCounter = 0;
 var geoDropSpec = [
 	{ 'val': '0', 'text': loca.GetText("LAB", "Cancel"), 'req': 0 },
 	{ 'val': '0,0', 'text': loca.GetText("TOT", "FindDepositStone"), 'req': 0 },
@@ -35,25 +38,102 @@ jQuery.expr[':'].contains = function(a, i, m) {
 
 function specExplorerMenuHandler(event)
 {
-	specSharedHandler(1);
+	try {
+		specSharedHandler(1);
+	} catch (e) {
+		if(specLoadCounter > 3) {
+			alert(getText("feedbackerror") + '(retry)');
+		} else {
+			specLoadCounter++;
+			specExplorerMenuHandler(null);
+		}
+	}
 }
 
 function specGeologistMenuHandler(event)
 {
-	specSharedHandler(2);
+	try {
+		specSharedHandler(2);
+	} catch (e) {
+		if(specLoadCounter > 3) {
+			alert(getText("feedbackerror") + '(retry)');
+		} else {
+			specLoadCounter++;
+			specGeologistMenuHandler(null);
+		}
+	}
+}
+
+function specGetTypesForType()
+{
+	var spec = game.def("Specialists::cSpecialist");
+	var result = {};
+	for(i = 0; i < 100; i++) {
+		var def = spec.GetSpecialistDescriptionForType(i);
+		if (def != null && def.getBaseType() == specType) {
+			result[i] = def.getName_string();
+		}
+	}
+	return result;
+}
+
+function specSettingsSave()
+{
+	var result = {};
+	specWindow.sData().find("div[class*='specdef_']").each(function(i, item) {
+		var type = $(item).attr('class').split(' ').pop();
+		var value = $(item).children('select').val();
+		if(value != 0 && value != mainSettings.geoDefTask && value != mainSettings.explDefTask) {
+			result[type.split("_").pop()] = value;
+		}
+	});
+	if(specType == 2) {
+		mainSettings.geoDefTaskByType = result;
+	} else {
+		mainSettings.explDefTaskByType = result;
+	}
+	settings.settings["global"] = {};
+	settings.store(mainSettings);
+	specWindow.shide();
+	if(specType == 2) {
+		specGeologistMenuHandler(null);
+	} else {
+		specExplorerMenuHandler(null);
+	}
+}
+
+function specSettings()
+{
+	specWindow.settings(specSettingsSave, '');
+	specWindow.sDialog().css("height", "80%");
+	var html = '<div class="container-fluid" style="user-select: all;">';
+	html += utils.createTableRow([[10, getText(specType == 2 ? 'geodeftask_desc' : 'expldeftask_desc')], [2, '']], true);
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
+	$.each(specGetTypesForType(), function(type, name) {
+		html += utils.createTableRow([
+			[6, getImageTag("icon_" + armySPECIALIST_TYPE.toString(type).toLowerCase() + ".png", '8%')  + loca.GetText("SPE", name)], 
+			[6, specType == 2 ? createGeologistDropdown(0, 0, true) : createExplorerDropdown(0, 0, 0, true), 'specdef_'+type]
+		]);
+	});
+	specWindow.sData().html(html + '<div>');
+	$.each(mainSettings.geoDefTaskByType, function(type, value) { specWindow.sData().find('.specdef_'+type).children('select').val(value); });
+	$.each(mainSettings.explDefTaskByType, function(type, value) { specWindow.sData().find('.specdef_'+type).children('select').val(value); });
+	specWindow.sshow();
 }
 
 function specSharedHandler(type)
 {
 	const isExplorer = type === 1,
 		isGeologist = type === 2;
-	$( "div[role='dialog']:not(#specModal):visible").modal("hide");
-	createModalWindow('specModal', '');
-	$("#specModal .modal-title").html("{0} {1}".format(
+	specType = type;
+	specWindow = new Modal("specModal", "", false);
+	specWindow.create();
+	specWindow.Title().html("{0} {1}".format(
 		getImageTag(isGeologist ? 'icon_geologist.png' : 'icon_explorer.png'),
 		loca.GetText("SPE", isGeologist ? "Geologist" : "Explorer"))
 	);
-	$('#specModal .templateFile').html('');
+	specWindow.addSettingsButton(specSettings);
+	specWindow.withHeader('.templateFile').html('');
 	if(game.gi.isOnHomzone() == false) {
 		game.showAlert(getText('not_home'));
 		return;
@@ -61,10 +141,9 @@ function specSharedHandler(type)
 	$('#specModal .specSaveTemplate').length === 0 && createSpecWindow();
 	specTemplates.setModule(isExplorer ? 'expl' : 'geo');
 	const playerLevel = game.player.GetPlayerLevel();
-    var out = '<div class="container-fluid">', isThereAnySpec = false, specialistsUniqueId;
+    var out = '<div class="container-fluid">', isThereAnySpec = false;
 	game.getSpecialists().sort(specNameSorter).forEach(function(item){
 		if (item.GetTask() != null || item.GetBaseType() != type || item.getPlayerID() == -1) { return; }
-		specialistsUniqueId = item.GetUniqueID();
 		isThereAnySpec = true;
 		if(isExplorer) {
 			var skills = [];
@@ -75,7 +154,7 @@ function specSharedHandler(type)
 		out += createTableRow([
 			[4, getImageTag(item.getIconID(), '8%') + item.getName(false), 'name'],
 			[3, '&nbsp;'],
-			[5, isExplorer ? createExplorerDropdown(specialistsUniqueId, skills[39], skills[40], false, true) : createGeologistDropdown(specialistsUniqueId, playerLevel, false, true)]
+			[5, isExplorer ? createExplorerDropdown(item, skills[39], skills[40], false, true) : createGeologistDropdown(item, playerLevel, false, true)]
 		]);
 	});
 	if(!isThereAnySpec) {
@@ -101,7 +180,8 @@ function specSharedHandler(type)
 			}
 		}
 	});
-	$('#specModal:not(:visible)').modal({backdrop: "static"});
+	specLoadCounter = 0;
+	specWindow.show();
 }
 
 function createSpecWindow()
@@ -150,26 +230,31 @@ function createSpecWindow()
 	$('#specModal .specSend').click(sendSpec);
 }
 
+
 function createGeologistDropdown(id, level, mass, def)
 {
-	var select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
+	var select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.GetUniqueID().uniqueID1, id.GetUniqueID().uniqueID2) }).attr('class', 'form-control');
+	var geoType = !mass ? id.GetType() : null;
 	$.each(geoDropSpec, function(i, item){
+		isSelected = def && ((!mass && mainSettings.geoDefTaskByType[geoType] != undefined && mainSettings.geoDefTaskByType[geoType] == item.val) || mainSettings.geoDefTask == item.val);
 		if(level >= item.req || mass)
-			select.append($('<option>', { value: item.val, selected: def && mainSettings.geoDefTask == item.val ? 'selected' : false }).text(item.text));
+			select.append($('<option>', { value: item.val, selected: isSelected ? 'selected' : false }).text(item.text));
 	});
 	return select.prop("outerHTML");
 }
 
 function createExplorerDropdown(id, art, bean, mass, def)
 {
-	var select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.uniqueID1, id.uniqueID2) }).attr('class', 'form-control');
+	var select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.GetUniqueID().uniqueID1, id.GetUniqueID().uniqueID2) }).attr('class', 'form-control');
+	var explType = !mass ? id.GetType() : null;
 	select.append($('<option>', { value: '0' }).text(loca.GetText("LAB", "Cancel")));
 	const playerLevel = game.player.GetPlayerLevel();
 	$.each(explorerDropSpec, function(i, optgroup){
 		var group = $('<optgroup>', { label: optgroup.label });
 		$.each(optgroup.data, function(n, item){
+			isSelected = def && ((!mass && mainSettings.explDefTaskByType[explType] != undefined && mainSettings.explDefTaskByType[explType] == item.val) || mainSettings.explDefTask == item.val);
 			if(mass || (item.req[0] && art) || (item.req[1] && bean) || (!item.req[0] && !item.req[1] && playerLevel >= item.req[2]))
-				group.append($('<option>', { value: item.val, selected: def && mainSettings.explDefTask == item.val ? 'selected' : false }).text(item.text));
+				group.append($('<option>', { value: item.val, selected: isSelected ? 'selected' : false }).text(item.text));
 		});
 		select.append(group);
 	});
