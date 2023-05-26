@@ -42,7 +42,7 @@ function specExplorerMenuHandler(event)
 		specSharedHandler(1);
 	} catch (e) {
 		if(specLoadCounter > 3) {
-			alert(getText("feedbackerror") + '(retry)');
+			alert(getText("feedbackerror") + '(retry)' + e);
 		} else {
 			specLoadCounter++;
 			specExplorerMenuHandler(null);
@@ -56,7 +56,7 @@ function specGeologistMenuHandler(event)
 		specSharedHandler(2);
 	} catch (e) {
 		if(specLoadCounter > 3) {
-			alert(getText("feedbackerror") + '(retry)');
+			alert(getText("feedbackerror") + '(retry)' + e);
 		} else {
 			specLoadCounter++;
 			specGeologistMenuHandler(null);
