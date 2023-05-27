@@ -42,6 +42,7 @@ function specExplorerMenuHandler(event)
 		specSharedHandler(1);
 	} catch (e) {
 		if(specLoadCounter > 3) {
+			debug(e);
 			alert(getText("feedbackerror") + '(retry)' + e);
 		} else {
 			specLoadCounter++;
@@ -56,6 +57,7 @@ function specGeologistMenuHandler(event)
 		specSharedHandler(2);
 	} catch (e) {
 		if(specLoadCounter > 3) {
+			debug(e);
 			alert(getText("feedbackerror") + '(retry)' + e);
 		} else {
 			specLoadCounter++;
@@ -116,6 +118,9 @@ function specSettings()
 		]);
 	});
 	specWindow.sData().html(html + '<div>');
+	specWindow.sData().find('select').each(function(i, item) { 
+		$(item).find('option:first').text("{0} -> {1}".format(loca.GetText("ACL", "BuffAdventuresGeneral"), loca.GetText("LAB", "ToggleOptionsPanel")));
+	});
 	$.each(mainSettings.geoDefTaskByType, function(type, value) { specWindow.sData().find('.specdef_'+type).children('select').val(value); });
 	$.each(mainSettings.explDefTaskByType, function(type, value) { specWindow.sData().find('.specdef_'+type).children('select').val(value); });
 	specWindow.sshow();
