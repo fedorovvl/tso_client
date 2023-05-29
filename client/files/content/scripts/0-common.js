@@ -199,7 +199,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('deffilter_desc')], [6, createFilterDrop()]]);
 	html += utils.createTableRow([[9, "{0} {1}".format(loca.GetText("LAB", "Filter"), loca.GetText("QUL", "TutFreeHomezone3"))], [3, createSwitch('persistFilter', mainSettings.persistFilter)]]);
 	html += utils.createTableRow([[6, getText('dateformat_desc')], [6, createDateFormatterDrop()]]);
-	html += utils.createTableRow([[6, 'LRU cache size'], [6, createLruDrop()]]);
+	html += utils.createTableRow([[6, getText('lru_desc')], [6, createLruDrop()]]);
 	html += utils.createTableRow([[9, getText('geotemplates_desc') + getDefFolder('geolastDir')], [3, createButton('geolastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('expltemplates_desc') + getDefFolder('expllastDir')], [3, createButton('expllastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('bufftemplates_desc') + getDefFolder('bufflastDir')], [3, createButton('bufflastDir', loca.GetText("LAB", "Select"))]]);
@@ -226,9 +226,9 @@ function mainSettingsHandler(event)
 		[6, getText('buffactive_desc')], 
 		[6, createSwitch('buffOnlyActive', mainSettings.buffOnlyActive) + '<div style="position: absolute;left: 55px;top: 1px;" id="buffOnlyActiveLang">{0}</div>'.format(getBuffOnlyActive())]
 	]);
-	html += utils.createTableRow([[9, "Highlight"], [3, createSwitch('highlight', mainSettings.highlight)]]);
-	html += utils.createTableRow([[6, "Highlight color"], [6, '<input type="text" value="'+mainSettings.highlightColor+'" id="highlightColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([[6, "Highlight glow color"], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
+	html += utils.createTableRow([[6, getText('highlight_desc')], [6, createSwitch('highlight', mainSettings.highlight) + '<div style="position: absolute;left: 55px;top: 1px;">{0}</div>'.format(getText('highlight_reboot'))]]);
+	html += utils.createTableRow([[6, getText('highlightColor_desc')], [6, '<input type="text" value="'+mainSettings.highlightColor+'" id="highlightColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
+	html += utils.createTableRow([[6, getText('highlightGlow_desc')], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	w.Body().html(html + '<div>');
 	w.withBody('div.row').addClass('nohide');
 	w.withBody('.kolorPicker').change(function() {
