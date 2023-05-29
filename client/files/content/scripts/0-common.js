@@ -27,6 +27,7 @@ var mainSettings = {
 	highlightGlowColor: '#ffffff'
 };
 var highlightTracker = game.getTracker('highlightTracker', highlightModifyFrame);
+var scaleFactor = game.def("global").mGraphicScaleFactor;
 
 function reloadScripts(event)
 {
@@ -303,11 +304,11 @@ function mainSettingsHandler(event)
 function highlightDrawCircle()
 {
 	var circle = new window.runtime.flash.display.Shape();
-	var whiteGlow = new window.runtime.flash.filters.GlowFilter(mainSettings.highlightGlowColor.replace('#', '0x'), 0.8, 30, 30, 2, 2, true, false);
+	var whiteGlow = new window.runtime.flash.filters.GlowFilter(mainSettings.highlightGlowColor.replace('#', '0x'), 0.8, 30 * scaleFactor, 30 * scaleFactor, 2, 2, true, false);
 	circle.graphics.clear();
 	circle.graphics.lineStyle(2,0x000000);
 	circle.graphics.beginFill(mainSettings.highlightColor.replace('#', '0x'));
-	circle.graphics.drawCircle(42,42,40);
+	circle.graphics.drawCircle(42 * scaleFactor, 42 * scaleFactor, 40 * scaleFactor);
 	circle.graphics.endFill();
 	circle.filters = [whiteGlow];
 	var bitmapData = new air.BitmapData(90, 90, true, 0x00000000);
@@ -319,8 +320,8 @@ function highlightModifyFrame(data)
 {
 	var frame = (data.data ? data.data : data).getSubtypeCalculated(0).frameList_vector[0];
 	frame.setOriginalBitmap(highlightCircle);
-	frame.size_u = 90;
-	frame.size_v = 90;
+	frame.size_u = 90 + (90 * scaleFactor);
+	frame.size_v = 90 + (90 * scaleFactor);
 	frame.setScaledBitmapHeight(90);
 	frame.setScaledBitmapWidth(90);
 }
