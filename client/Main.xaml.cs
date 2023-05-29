@@ -83,7 +83,6 @@ namespace client
             "--login - set login",
             "--fastlogin - use saved token and client boot arg. Read wiki carefully before use it!",
             "--password - set password",
-            "--collect - autoconfirm ubicollect check",
             "--autologin - allows to start client with login/password from setting.dat",
             "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro] - changes the game interface language.",
             "--window [fullscreen|maximized] - initital game window size",
@@ -451,36 +450,12 @@ namespace client
             }
             error.Text = string.Empty;
             this.Visibility = System.Windows.Visibility.Hidden;
-            bool collections = (cmd["collect"] != null) ? true : false;
-            if (!auto && Process.GetProcessesByName("UbiCollect").Length > 0 && !collections)
-            {
-                MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show(Servers.getTrans("collecttip"), Servers.getTrans("collect"), System.Windows.MessageBoxButton.YesNo);
-                if (messageBoxResult == MessageBoxResult.Yes)
-                {
-                    collections = true;
-                }
-            }
             login log = new login() { Owner = ((null == e) ? null : this), username = login.Text, password = password.Password, region = _region, WindowStartupLocation = ((null == e) ? System.Windows.WindowStartupLocation.CenterScreen : System.Windows.WindowStartupLocation.CenterOwner) };
             log.ShowDialog();
             if (log.DialogResult == true)
             {
                 _cookies = log.Cookies;
                 var tsoUrl = HttpUtility.ParseQueryString(log.Ver);
-                if (collections)
-                {
-                    if (Process.GetProcessesByName("UbiCollect").Length == 0)
-                    {
-                        MessageBoxResult messageBox = MessageBox.Show("--collect provided but no active ubicollect.exe found. Enable anyway?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                        if (messageBox == MessageBoxResult.Yes)
-                        {
-                            tsoUrl.Set("s", "http://127.0.0.1:9000/https://ubistatic-a.akamaihd.net/0018/live");
-                        }
-                    }
-                    else
-                    {
-                        tsoUrl.Set("s", "http://127.0.0.1:9000/https://ubistatic-a.akamaihd.net/0018/live");
-                    }
-                }
                 if (!string.IsNullOrEmpty(lang))
                     tsoUrl.Set("lang", lang);
                 if (cmd["window"] != null)
