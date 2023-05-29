@@ -420,7 +420,12 @@ const baseTranslation = {
 		"feedbackWindow_help": "Allgemeine-Informationen#Feedback-und-Anregungen",
 		"nondefault_help": "Benutzer Skript Beschreibung",
 		"shortImportSkillsUse": "Beachte Fähigkeiten",
-		"shortImportSkillsIgnore": "Ignoriere Fähigkeiten"
+		"shortImportSkillsIgnore": "Ignoriere Fähigkeiten",
+		"lru_desc": "Vorlagenverlauf Anzahl",
+		"highlight_desc": "Sammlungen hervorheben",
+		"highlightColor_desc": "Sammlungen Kreis Grundfarbe",
+		"highlightGlow_desc": "Sammlungen Kreis hervorheben Farbe",
+		"highlight_reboot": "Neustart erforderlich"
 	},
 	'fr-fr': {
 		'btn_submit': 'Soumettre',
