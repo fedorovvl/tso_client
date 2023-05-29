@@ -422,9 +422,9 @@ const baseTranslation = {
 		"shortImportSkillsUse": "Beachte Fähigkeiten",
 		"shortImportSkillsIgnore": "Ignoriere Fähigkeiten",
 		"lru_desc": "Vorlagenverlauf Anzahl",
-		"highlight_desc": "Sammlungen hervorheben",
+		"highlight_desc": "Sammlungen hervorheben (markieren)",
 		"highlightColor_desc": "Sammlungen Kreis Grundfarbe",
-		"highlightGlow_desc": "Sammlungen Kreis hervorheben Farbe",
+		"highlightGlow_desc": "Sammlungen Kreis Farbe (eingesammelt)",
 		"highlight_reboot": "Neustart erforderlich"
 	},
 	'fr-fr': {
