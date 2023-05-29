@@ -2,6 +2,7 @@ var forcegcIntervalId = null;
 var enabledScripts = {};
 var buiFastAccess = [];
 var lruTemplate = {};
+var highlightCircle;
 var mainSettings = {
 	menuStyle: 'grouped',
 	geoDefTask: 0,
@@ -20,8 +21,12 @@ var mainSettings = {
 	buiFastAccessType: 0,
 	buffOnlyActive: false,
 	changeTemplateFolder: true,
-	lruCacheSize: 3
+	lruCacheSize: 3,
+	highlight: true,
+	highlightColor: '#ff0000',
+	highlightGlowColor: '#ffffff'
 };
+var highlightTracker = game.getTracker('highlightTracker', highlightModifyFrame);
 
 function reloadScripts(event)
 {
@@ -221,6 +226,9 @@ function mainSettingsHandler(event)
 		[6, getText('buffactive_desc')], 
 		[6, createSwitch('buffOnlyActive', mainSettings.buffOnlyActive) + '<div style="position: absolute;left: 55px;top: 1px;" id="buffOnlyActiveLang">{0}</div>'.format(getBuffOnlyActive())]
 	]);
+	html += utils.createTableRow([[9, "Highlight"], [3, createSwitch('highlight', mainSettings.highlight)]]);
+	html += utils.createTableRow([[6, "Highlight color"], [6, '<input type="text" value="'+mainSettings.highlightColor+'" id="highlightColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
+	html += utils.createTableRow([[6, "Highlight glow color"], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	w.Body().html(html + '<div>');
 	w.withBody('div.row').addClass('nohide');
 	w.withBody('.kolorPicker').change(function() {
@@ -236,7 +244,6 @@ function mainSettingsHandler(event)
 			case 'statusColorSameGrid':
 				document.styleSheets[0].insertRule(".specSamegrid{background-color:"+this.value+";}", document.styleSheets[0].rules.length);
 			break;
-			
 		}
 	});
 	w.withBody('.kolorPicker').change();
@@ -274,6 +281,7 @@ function mainSettingsHandler(event)
 		toggleForceGC();
 	});
 	w.withBody('#persistFilter').change(function(e) { mainSettings.persistFilter = $(e.target).is(':checked'); });
+	w.withBody('#highlight').change(function(e) { mainSettings.highlight = $(e.target).is(':checked'); });	
 	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
 		settings.settings["global"] = {};
 		settings.store(mainSettings);
@@ -283,11 +291,52 @@ function mainSettingsHandler(event)
 			reloadScripts(null);
 			shortcutsMakeMenu();
 		}
+		highlightCircle = highlightDrawCircle();
+		highlightProceed(true);
 		game.gi.isOnHomzone()&&setFilterHandler(mainSettings.defFilter);
 		dtf.setDateTimePattern(mainSettings.dtfFormat); 
 		w.hide();
 	}));
 	w.show();
+}
+
+function highlightDrawCircle()
+{
+	var circle = new window.runtime.flash.display.Shape();
+	var whiteGlow = new window.runtime.flash.filters.GlowFilter(mainSettings.highlightGlowColor.replace('#', '0x'), 0.8, 30, 30, 2, 2, true, false);
+	circle.graphics.clear();
+	circle.graphics.lineStyle(2,0x000000);
+	circle.graphics.beginFill(mainSettings.highlightColor.replace('#', '0x'));
+	circle.graphics.drawCircle(42,42,40);
+	circle.graphics.endFill();
+	circle.filters = [whiteGlow];
+	var bitmapData = new air.BitmapData(90, 90, true, 0x00000000);
+	bitmapData.draw(circle);
+	return bitmapData;
+}
+
+function highlightModifyFrame(data)
+{
+	var frame = (data.data ? data.data : data).getSubtypeCalculated(0).frameList_vector[0];
+	frame.setOriginalBitmap(highlightCircle);
+	frame.size_u = 90;
+	frame.size_v = 90;
+	frame.setScaledBitmapHeight(90);
+	frame.setScaledBitmapWidth(90);
+}
+
+function highlightProceed(isUpdate)
+{
+	if(!mainSettings.highlight) { return; }
+	var collectionsManager = swmmo.getDefinitionByName("Collections::CollectionsManager").getInstance();
+	game.def("global").buildingGroup.mGOList_vector.filter(function(item) { return collectionsManager.getBuildingIsCollectible(item.mGfxResourceListName_string); }).forEach(function(item) {
+		if(!isUpdate) {
+			item.mFileName_string = "building_lib/o_firewood_hut_01.png";
+			item.addPropertyObserver("LOADING_DONE", highlightTracker);
+		} else {
+			highlightModifyFrame(item);
+		}
+	});
 }
 
 function toggleForceGC()
@@ -837,6 +886,8 @@ $.extend(mainSettings, settings.read());
 setFilterHandler(mainSettings.defFilter);
 dtf.setDateTimePattern(mainSettings.dtfFormat);
 if(mainSettings.forcegc) { toggleForceGC(); }
+highlightCircle = highlightDrawCircle();
+highlightProceed(false);
 $.extend(enabledScripts, settings.read(null, "scripts"));
 document.styleSheets[0].insertRule(".buffReady{background-color:"+mainSettings.statusColorOk+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
 document.styleSheets[0].insertRule(".buffNotReady{background-color:"+mainSettings.statusColorFail+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
