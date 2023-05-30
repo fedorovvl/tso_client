@@ -511,7 +511,6 @@ var TimedQueue = function(delay) {
 	this.index = 0, 
 	this.defaultDelay = delay || 1000, 
 	this.stamp = 0,
-	this.debugstamp = 0,
 	this.inId = void 0
 };
 TimedQueue.prototype = {
@@ -536,8 +535,6 @@ TimedQueue.prototype = {
             current = this.queue[targetIndex],
             next = this.queue[this.index];
 		if(current) {
-			var timeleft = Date.now() - e.debugstamp;
-			game.chatMessage("delay was "+current.delay+". real delay "+timeleft+"ms. diff "+(timeleft-current.delay), 'timer');
 			current.fn();
 			if(next) {
 				e.tick(next.delay || this.defaultDelay);
@@ -547,7 +544,6 @@ TimedQueue.prototype = {
 	tick: function(delay) {
 		var e = this;
 		e.stamp = Date.now() + delay;
-		e.debugstamp = Date.now();
 		e.inId = setInterval(function() {
 			if(Date.now() >= e.stamp) {
 				clearInterval(e.inId);
