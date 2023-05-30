@@ -702,7 +702,12 @@ const baseTranslation = {
 		"feedbackWindow_help": "Informaci%C3%B3n-general#ayuda",
 		"nondefault_help": "Descripci%C3%B3n-de-Userscripts",
 		"shortImportSkillsUse": "Сonsiderar habilidades",
-		"shortImportSkillsIgnore": "Ignorar habilidades"
+		"shortImportSkillsIgnore": "Ignorar habilidades",
+		"lru_desc": "Nº historial de plantillas (LRU)",
+		"highlight_desc": "Destacar coleccionables",
+		"highlightColor_desc": "Color destacado principal",
+		"highlightGlow_desc": "Color destacado de brillo",
+		"highlight_reboot": "Se requiere un reinicio"
 	},
     "pl-pl": {
 		"btn_submit": "Wyślij",
