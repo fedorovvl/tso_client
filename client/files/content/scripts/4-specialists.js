@@ -134,7 +134,7 @@ function specGeoGetDepleted()
 		if(depletedBui == null) { return; }
 		var name = depletedBui.GetBuildingName_string().replace("MineDepletedDeposit", '');
 		if(specGeoDepletedValidRes.indexOf(name) >= 0) {
-			result[name] = result[name] + 1 || 0; 
+			result[name] = result[name] + 1 || 1; 
 		}
 	}); 
 	return result;
