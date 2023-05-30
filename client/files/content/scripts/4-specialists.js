@@ -2,6 +2,7 @@ var specTemplates;
 var specWindow;
 var specType = 0;
 var specLoadCounter = 0;
+var specGeoDepletedValidRes = ['Stone','Marble','GoldOre','BronzeOre','IronOre','TitaniumOre','Coal','Salpeter','Granite'];
 var geoDropSpec = [
 	{ 'val': '0', 'text': loca.GetText("LAB", "Cancel"), 'req': 0 },
 	{ 'val': '0,0', 'text': loca.GetText("TOT", "FindDepositStone"), 'req': 0 },
@@ -126,6 +127,18 @@ function specSettings()
 	specWindow.sshow();
 }
 
+function specGeoGetDepleted()
+{
+	var result = {}; 
+	game.getBuildings().filter(function(item) { return item.GetBuildingName_string().indexOf("MineDepleted") >= 0; }).forEach(function(item) { 
+		var name = item.GetBuildingName_string().replace("MineDepletedDeposit", '');
+		if(specGeoDepletedValidRes[name]) {
+			result[name] = result[name] + 1 || 0; 
+		}
+	}); 
+	return result;
+}
+
 function specSharedHandler(type)
 {
 	const isExplorer = type === 1,
@@ -165,6 +178,17 @@ function specSharedHandler(type)
 	if(!isThereAnySpec) {
 		game.showAlert(getText(isGeologist ? 'no_free_geo' : 'no_free_expl'));
 		return;
+	}
+	specWindow.withHeader('.depletedInfo').html('');
+	if(isGeologist) {
+		var depletedData = specGeoGetDepleted();
+		if(Object.keys(depletedData).length > 0) {
+			var deplHtml = loca.GetText("MEL", "DepositDepleted") + ':&nbsp;&nbsp;';
+			$.each(depletedData, function(res, count) {
+				deplHtml += getImageTag(res, '23px', '23px') + ' ' + count + '&nbsp;&nbsp;';
+			});
+			specWindow.withHeader('.depletedInfo').html(deplHtml);
+		}
 	}
 	$("#specModal .massSend").html(isGeologist ? createGeologistDropdown(1, 1, true) : createExplorerDropdown(null, true, true, true));
 	$("#specModalData").html(out + '</div>');
@@ -206,7 +230,7 @@ function createSpecWindow()
 			[3, utils.createSwitch('specTimeType', mainSettings.specDefTimeType)+'<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(mainSettings.specDefTimeType ? getText('spec_time_arrival') : getText('spec_time_normal'))],
 			[5, '', 'massSend']
 		], true);
-	$("#specModal .modal-header").append([$('<br/>'), $('<div>', {'class': 'container-fluid'}).html(headerRow)]);
+	$("#specModal .modal-header").append([$('<br/>'), $('<div>', {'class': 'depletedInfo text-center'}), $('<div>', {'class': 'container-fluid'}).html(headerRow)]);
 	$("#specTimeType").change(function(){
 		$('#specModalData select').each(function(i, select){
 			updateSpecTimeRow(select, $(select).val(), $(select).val());
