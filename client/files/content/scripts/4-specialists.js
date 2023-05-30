@@ -132,7 +132,7 @@ function specGeoGetDepleted()
 	var result = {}; 
 	game.getBuildings().filter(function(item) { return item.GetBuildingName_string().indexOf("MineDepleted") >= 0; }).forEach(function(item) { 
 		var name = item.GetBuildingName_string().replace("MineDepletedDeposit", '');
-		if(specGeoDepletedValidRes[name]) {
+		if(specGeoDepletedValidRes.indexOf(name) >= 0) {
 			result[name] = result[name] + 1 || 0; 
 		}
 	}); 
