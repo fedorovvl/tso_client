@@ -564,8 +564,13 @@ const baseTranslation = {
 		"managerModal_help": "Main-info#tools",
 		"feedbackWindow_help": "Main-info",
 		"nondefault_help": "User-scripts-description",
-		"shortImportSkillsUse": "Сonsider skills",
-		"shortImportSkillsIgnore": "Ignore skills"
+		"shortImportSkillsUse": "Сonsidérer skills",
+		"shortImportSkillsIgnore": "Ignorer skills",
+		"lru_desc": "Profondeur historique des modèles (LRU)",
+		"highlight_desc": "Surbrillance collectibles",
+		"highlightColor_desc": "couleur intérieure boule",
+		"highlightGlow_desc": "Couleur extérieure boule",
+		"highlight_reboot": "Redémarrage requis"
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
