@@ -141,7 +141,8 @@ const baseTranslation = {
 		"highlight_desc": "Collections highlight",
 		"highlightColor_desc": "Highlight ball main color",
 		"highlightGlow_desc": "Highlight ball glow color",
-		"highlight_reboot": "Restart required"
+		"highlight_reboot": "Restart required",
+		"highlightSize_desc": "Highlight ball size"
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -283,7 +284,8 @@ const baseTranslation = {
 		"highlight_desc": "Подсветка коллекций",
 		"highlightColor_desc": "Основной цвет шара подсветки",
 		"highlightGlow_desc": "Цвет обводки шара подсветки",
-		"highlight_reboot": "Требуется рестарт"
+		"highlight_reboot": "Требуется рестарт",
+		"highlightSize_desc": "Размер шара подсветки"
 	},
 	'de-de': {
 		'btn_submit': 'Senden',

@@ -23,6 +23,7 @@ var mainSettings = {
 	changeTemplateFolder: true,
 	lruCacheSize: 3,
 	highlight: true,
+	highlightSize: 45,
 	highlightColor: '#ff0000',
 	highlightGlowColor: '#ffffff'
 };
@@ -170,6 +171,14 @@ function mainSettingsHandler(event)
 		}
 		return select.prop('outerHTML');
 	}
+	var createHighlightSizeDrop = function(){
+		var select = $('<select>', { 'class': 'form-control hSize' });
+		const num = [45,55,65,75];
+		for(var i in num) {
+			select.append($('<option>', { value: num[i] }).text(num[i]));
+		}
+		return select.prop('outerHTML');
+	}
 	var createButton = function(id, text) {
 		return $('<button>', { 
 			'style': 'cursor: pointer;text-decoration:none;color:#000;height: 20px;padding: 0px;',
@@ -228,6 +237,7 @@ function mainSettingsHandler(event)
 		[6, createSwitch('buffOnlyActive', mainSettings.buffOnlyActive) + '<div style="position: absolute;left: 55px;top: 1px;" id="buffOnlyActiveLang">{0}</div>'.format(getBuffOnlyActive())]
 	]);
 	html += utils.createTableRow([[6, getText('highlight_desc')], [6, createSwitch('highlight', mainSettings.highlight) + '<div style="position: absolute;left: 55px;top: 1px;">{0}</div>'.format(getText('highlight_reboot'))]]);
+	html += utils.createTableRow([[6, getText('highlightSize_desc')], [6, createHighlightSizeDrop()]]);
 	html += utils.createTableRow([[6, getText('highlightColor_desc')], [6, '<input type="text" value="'+mainSettings.highlightColor+'" id="highlightColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('highlightGlow_desc')], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	w.Body().html(html + '<div>');
@@ -262,6 +272,7 @@ function mainSettingsHandler(event)
 	w.withBody('.defFilter').val(mainSettings.defFilter).change(function(e) { mainSettings.defFilter = $(e.target).val(); });
 	w.withBody('.dtfFormat').val(mainSettings.dtfFormat).change(function(e) { mainSettings.dtfFormat = $(e.target).val(); });
 	w.withBody('.lruSize').val(mainSettings.lruCacheSize).change(function(e) { mainSettings.lruCacheSize = parseInt($(e.target).val()); });
+	w.withBody('.hSize').val(mainSettings.highlightSize).change(function(e) { mainSettings.highlightSize = parseInt($(e.target).val()); });
 	w.withBody('.geoMass select').val(mainSettings.geoDefTask).change(function(e) { mainSettings.geoDefTask = $(e.target).val(); });
 	w.withBody('.explMass select').val(mainSettings.explDefTask).change(function(e) { mainSettings.explDefTask = $(e.target).val(); });
 	w.withBody('#specDefTimeType').change(function(e) {
@@ -308,10 +319,11 @@ function highlightDrawCircle()
 	circle.graphics.clear();
 	circle.graphics.lineStyle(2,0x000000);
 	circle.graphics.beginFill(mainSettings.highlightColor.replace('#', '0x'));
-	circle.graphics.drawCircle(42 * scaleFactor, 42 * scaleFactor, 40 * scaleFactor);
+	circle.graphics.drawCircle(2 + (mainSettings.highlightSize * scaleFactor), 2 + (mainSettings.highlightSize * scaleFactor), mainSettings.highlightSize * scaleFactor);
+	//circle.graphics.drawRect(5, 5, 70 * scaleFactor, 70 * scaleFactor);
 	circle.graphics.endFill();
 	circle.filters = [whiteGlow];
-	var bitmapData = new air.BitmapData(90, 90, true, 0x00000000);
+	var bitmapData = new air.BitmapData(5 + (mainSettings.highlightSize * 2), 5 + (mainSettings.highlightSize * 2), true, 0x00000000);
 	bitmapData.draw(circle);
 	return bitmapData;
 }
@@ -320,8 +332,8 @@ function highlightModifyFrame(data)
 {
 	var frame = (data.data ? data.data : data).getSubtypeCalculated(0).frameList_vector[0];
 	frame.setOriginalBitmap(highlightCircle);
-	frame.size_u = 90 + (90 * scaleFactor);
-	frame.size_v = 90 + (90 * scaleFactor);
+	frame.size_u = 95 + mainSettings.highlightSize;
+	frame.size_v = 95 + mainSettings.highlightSize;
 	frame.setScaledBitmapHeight(90);
 	frame.setScaledBitmapWidth(90);
 }
