@@ -549,8 +549,6 @@ const baseTranslation = {
 		"shortExportReasonEmpty": "vide",
 		"shortExportReasonBadFormat": "mauvais format",
 		"shortExportReasonError": "erreur",
-		"shortImportSkillsUse": "Сonsider les compétences",
-		"shortImportSkillsIgnore": "Ignorer les compétences",
 		"mainSettings_help": "Main-info",
 		"keybindsWindow_help": "Main-info",
 		"specModal_help": "Main-info#specialists",
@@ -812,7 +810,7 @@ const baseTranslation = {
 		"NoCollectibles": "Nie znaleziono żadnych przedmiotów",
 		"buiFastCarousel": "Karuzela",
 		"buiFastLevel": "Maks. poziom",
-		"buiFastdesc": "Fast building access type",
+		"buiFastdesc": "Typ szybkiego dostępu do budynków",
 		"buffonlyactive": "Tylko aktywne",
 		"buffall": "Wszystko",
 		"buffactive_desc": "Premiuj budynki",
@@ -851,7 +849,13 @@ const baseTranslation = {
 		"shortImportTransportUse": "Stosować transport",
 		"shortImportTransportIgnore": "Ignorowanie transportu",
 		"shortImportSkillsUse": "Rozważ umiejętności",
-		"shortImportSkillsIgnore": "Ignorowanie umiejętności"
+		"shortImportSkillsIgnore": "Ignorowanie umiejętności",
+		"lru_desc": "Ile szablonów pamiętać (LRU)",
+		"highlight_desc": "Podświetlanie kolekcji",
+		"highlightColor_desc": "Główny kolor kulki",
+		"highlightGlow_desc": "Kolor kulki po podświetleniu",
+		"highlight_reboot": "Wymagany restart",
+		"highlightSize_desc": "Rozmiar kulki do kolekcji"
 	},
 'pt-br': {
 		'btn_submit': 'Confirmar',
