@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="adview" />
+    <item type="id" name="filename" />
+    <item type="id" name="filepath" />
+    <item type="id" name="filecheck" />
+    <item type="id" name="file_save_panel" />
+    <item type="id" name="file_save_label" />
+    <item type="id" name="file_save_button" />
+    <item type="id" name="file_save_name" />
+    <item type="id" name="list" />
+    <item type="id" name="empty" />
+    <item type="id" name="button_ok" />
+    <item type="id" name="button_cancel" />
+    <item type="id" name="Header" />
+    <item type="id" name="ROW1" />
+    <item type="id" name="WarningImage" />
+    <item type="id" name="ROW2" />
+    <item type="id" name="ServerName" />
+    <item type="id" name="Line1" />
+    <item type="id" name="Footer" />
+    <item type="id" name="CertificateDetails" />
+    <item type="id" name="Line2" />
+    <item type="id" name="TrustQuestion" />
+    <item type="id" name="NeutralButton" />
+    <item type="id" name="NegativeButton" />
+    <item type="id" name="PositiveButton" />
+</resources>

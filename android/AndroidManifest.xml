@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="23" android:compileSdkVersionCodename="6.0-2438415" android:installLocation="preferExternal" package="air.Tsoclient" platformBuildVersionCode="27" platformBuildVersionName="8.1.0">
+    <application android:hardwareAccelerated="false" android:icon="@mipmap/icon" android:label="@string/app_name">
+        <activity android:configChanges="fontScale|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize" android:label="@string/app_name" android:launchMode="singleTask" android:name=".AppEntry" android:screenOrientation="user" android:theme="@style/Theme.NoShadow" android:windowSoftInputMode="adjustResize|stateHidden">
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="*" android:pathPattern=".*" android:scheme="tso"/>
+            </intent-filter>
+            <meta-data android:name="embeddedFonts" android:value="false"/>
+            <meta-data android:name="namespaceVersion" android:value="32.0"/>
+            <meta-data android:name="aspectRatio" android:value="landscape"/>
+            <meta-data android:name="autoOrients" android:value="false"/>
+            <meta-data android:name="fullScreen" android:value="true"/>
+            <meta-data android:name="uniqueappversionid" android:value="08908f2a-633f-4252-b3c8-513259967ca8"/>
+            <meta-data android:name="initialcontent" android:value="client.swf"/>
+            <meta-data android:name="containsVideo" android:value="false"/>
+            <meta-data android:name="webContentsDebuggingEnabled" android:value="false"/>
+            <meta-data android:name="disableMediaCodec" android:value="false"/>
+        </activity>
+        <provider android:authorities="air.Tsoclient.provider" android:exported="false" android:grantUriPermissions="true" android:name="com.adobe.air.CameraUIProvider">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/provider_paths"/>
+        </provider>
+    </application>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+</manifest>

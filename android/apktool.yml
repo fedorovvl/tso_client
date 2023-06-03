@@ -1,0 +1,28 @@
+!!brut.androlib.meta.MetaInfo
+apkFileName: client.apk
+compressionType: false
+doNotCompress:
+- assets/META-INF/AIR/extensions/com.adobe.Vibration/library.swf
+- assets/META-INF/AIR/extensions/com.adobe.Vibration/META-INF/ANE/Android-ARM/library.swf
+- png
+- gif
+- res/raw/debuginfo
+- res/raw/rgba8888
+isFrameworkApk: false
+packageInfo:
+  forcedPackageId: '127'
+  renameManifestPackage: null
+sdkInfo:
+  minSdkVersion: '14'
+  targetSdkVersion: '27'
+sharedLibrary: false
+sparseResources: true
+unknownFiles: {}
+usesFramework:
+  ids:
+  - 1
+  tag: null
+version: 2.6.0
+versionInfo:
+  versionCode: '3002'
+  versionName: Blabla

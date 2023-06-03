@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="application_name">Adobe AIR</string>
+    <string name="flash_browser_plugin">Flash Plugin</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_continue">Continue</string>
+    <string name="button_yes">Yes</string>
+    <string name="button_no">No</string>
+    <string name="app_name">Tsoclient</string>
+    <string name="IDA_APP_WAITING_DEBUGGER_TITLE"><u>Adobe AIR: Waiting for Connection</u></string>
+    <string name="IDA_APP_UNABLE_LISTEN_ERROR"><u>Adobe AIR: Listening for Port</u></string>
+    <string name="IDA_APP_WAITING_DEBUGGER_WARNING"><u>The AIR application is waiting for the debugger to make a connection. This may take up to %d seconds.</u></string>
+    <string name="IDA_APP_DEBUGGER_TIMEOUT_INFO">Unable to connect to the debugger.</string>
+    <string name="app_version">APP_VERSION</string>
+    <string name="button_install">Continue</string>
+    <string name="button_exit">Exit</string>
+    <string name="file_save_as">Save As:</string>
+    <string name="file_download">Download</string>
+    <string name="file_upload">Upload</string>
+    <string name="audio_files">Audio Files</string>
+    <string name="image_files">Image Files</string>
+    <string name="video_files">Video Files</string>
+    <string name="button_ok">OK</string>
+    <string name="empty_file_list">No files were found.</string>
+    <string name="title_adobe_air"><b>Adobe AIR</b></string>
+    <string name="text_runtime_required">"This application requires Adobe AIR.
+
+"</string>
+    <string name="text_install_runtime">To continue, install Adobe AIR on this device.</string>
+    <string name="text_runtime_on_external_storage">To continue, either install Adobe AIR on this device or exit this application and mount the SD card containing Adobe AIR before re-launching.</string>
+    <string name="text_gamepreview_loading">Loading...</string>
+    <string name="text_gamepreview_loading_error">Could not load the Game.</string>
+    <string name="text_install_gamepreview_app">Install Now</string>
+    <string name="text_air_missing_header">Adobe AIR required</string>
+    <string name="text_air_missing_text">You need to install Adobe AIR for the game preview to work.</string>
+    <string name="button_install_air_from_playstore">Install from Play Store.</string>
+    <string name="text_dont_show_again">"Don't show this again."</string>
+    <string name="IDA_CURL_SSL_SECURITY_WARNING">Security Warning</string>
+    <string name="IDA_CURL_INTERFACE_THISSESS">Trust for Session</string>
+    <string name="IDA_CURL_INTERFACE_NOSESS">Cancel</string>
+    <string name="IDA_CURL_INTERFACE_OK">Ok</string>
+    <string name="IDA_CURL_INTERFACE_UNVERSER_2">The server that the application is connecting to is unverified.</string>
+    <string name="IDA_CURL_INTERFACE_ALLSESS">Trust Always</string>
+    <string name="IDA_CURL_INTERFACE_SERVER"><b>Server:</b></string>
+    <string name="IDA_CURL_INTERFACE_TRUSTSER">Trust this server and make the connection?</string>
+    <string name="IDA_CURL_INTERFACE_CNAME_MSG">The name of the server (%1$s) does not match the name on the certificate (%2$s). Trust this server and continue?</string>
+    <string name="IDA_CURL_INTERFACE_VIEW_CERT"><u>View Certificate</u></string>
+    <string name="IDA_CURL_INTERFACE_CERTIFICATE_DETAILS_TITLE"><u>Certificate Details</u></string>
+    <string name="IDA_CERTIFICATE_DETAILS"><b>Certificate:</b>"
+ 
+ "<b><u>Issued To:</u></b>"
+ Common Name:
+ %1$s
+ 
+ Organization:
+ %2$s
+ 
+ Organizational Unit:
+ %3$s
+ 
+ "<b><u>Issued by:</u></b>"
+ Common Name:
+ %4$s
+ 
+ Organization:
+ %5$s
+ 
+ Organizational Unit:
+ %6$s
+ 
+ "<b><u>Validity:</u></b>"
+ Issued On:
+ %7$s
+ 
+ Expires On:
+ %8$s "</string>
+</resources>

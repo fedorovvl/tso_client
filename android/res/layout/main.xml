@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:padding="10.0px" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout android:id="@id/file_save_panel" android:layout_width="fill_parent" android:layout_height="wrap_content"
+      xmlns:android="http://schemas.android.com/apk/res/android">
+        <TextView android:id="@id/file_save_label" android:paddingRight="5.0px" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/file_save_as" android:layout_centerVertical="true" />
+        <Button android:id="@id/file_save_button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/button_ok" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+        <EditText android:textColor="#ff000000" android:id="@id/file_save_name" android:background="@android:drawable/editbox_background" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_toLeftOf="@id/file_save_button" android:layout_toRightOf="@id/file_save_label" android:layout_centerVertical="true" android:inputType="text" />
+    </RelativeLayout>
+    <LinearLayout android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent"
+      xmlns:android="http://schemas.android.com/apk/res/android">
+        <ExpandableListView android:id="@id/list" android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_weight="1.0" />
+        <TextView android:textStyle="bold" android:gravity="center" android:id="@id/empty" android:layout_width="fill_parent" android:layout_height="fill_parent" android:text="@string/empty_file_list" />
+    </LinearLayout>
+</LinearLayout>

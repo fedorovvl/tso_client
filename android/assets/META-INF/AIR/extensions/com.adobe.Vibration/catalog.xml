@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding ="utf-8"?>
+<swc xmlns="http://www.adobe.com/flash/swccatalog/9">
+  <versions>
+    <swc version="1.2" />
+    <flex version="4.5.0" build="20135" minimumSupportedVersion="3.0.0" />
+  </versions>
+  <features>
+    <feature-script-deps />
+    <feature-files />
+  </features>
+  <libraries>
+    <library path="library.swf">
+      <script name="com/adobe/nativeExtensions/Vibration" mod="1315553217000" signatureChecksum="2599699281" >
+        <def id="com.adobe.nativeExtensions:Vibration" /> 
+        <dep id="trace" type="e" /> 
+        <dep id="flash.external:ExtensionContext" type="e" /> 
+        <dep id="flash.external:ExtensionContext" type="s" /> 
+        <dep id="AS3" type="n" /> 
+        <dep id="Object" type="i" /> 
+      </script>
+      <script name="_910027990fd012b7c846f19c1b82be6c58bde62e695c1d52d1a439de2a09b4e4_flash_display_Sprite" mod="1315553764217" signatureChecksum="623802927" >
+        <def id="_910027990fd012b7c846f19c1b82be6c58bde62e695c1d52d1a439de2a09b4e4_flash_display_Sprite" /> 
+        <dep id="flash.system:Security" type="e" /> 
+        <dep id="AS3" type="n" /> 
+        <dep id="flash.display:Sprite" type="i" /> 
+      </script>
+      <digests>
+        <digest type="SHA-256" signed="false" value="94ba996bf9d8db5f2fb0a362156a3d142b58f9b582bc33edb4d770d8a8e3b067"   />
+      </digests>
+    </library>
+  </libraries>
+  <files>
+  </files>
+</swc>
