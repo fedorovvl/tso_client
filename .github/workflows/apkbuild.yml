@@ -1,0 +1,33 @@
+name: APKBuild
+
+on:
+  push:
+    paths:
+    - 'client.swf'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build_apk:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Copy SWF
+      run: cp client.swf android/assets
+    - name: Build APK
+      working-directory: android
+      run: java -jar -Duser.language=en -Dfile.encoding=UTF8 apktool.jar b .
+    - name: Sign app APK
+      working-directory: android
+      run: jarsigner -verbose -keystore sign.keystore -storepass qwerty dist/client.apk abc.keystore
+    - uses: actions/upload-artifact@v3
+      with:
+       name: client
+       path: android/dist/client.apk
