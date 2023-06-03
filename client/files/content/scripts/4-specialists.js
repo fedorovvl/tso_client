@@ -266,10 +266,11 @@ function createGeologistDropdown(id, level, mass, def)
 	var select = $('<select>', { id: mass ? 'specMassChange' : "{0}_{1}".format(id.GetUniqueID().uniqueID1, id.GetUniqueID().uniqueID2) }).attr('class', 'form-control');
 	var geoType = !mass ? id.GetType() : null;
 	$.each(geoDropSpec, function(i, item){
-		isSelected = def && ((!mass && mainSettings.geoDefTaskByType[geoType] != undefined && mainSettings.geoDefTaskByType[geoType] == item.val) || mainSettings.geoDefTask == item.val);
 		if(level >= item.req || mass)
-			select.append($('<option>', { value: item.val, selected: isSelected ? 'selected' : false }).text(item.text));
+			select.append($('<option>', { value: item.val }).text(item.text));
 	});
+	var defSelected = def && !mass && mainSettings.geoDefTaskByType[geoType] != undefined ? mainSettings.geoDefTaskByType[geoType] : mass ? 0 : mainSettings.geoDefTask;
+	defSelected!="0"&&select.find('option[value="'+defSelected+'"]').attr('selected','selected');
 	return select.prop("outerHTML");
 }
 
@@ -282,12 +283,13 @@ function createExplorerDropdown(id, art, bean, mass, def)
 	$.each(explorerDropSpec, function(i, optgroup){
 		var group = $('<optgroup>', { label: optgroup.label });
 		$.each(optgroup.data, function(n, item){
-			isSelected = def && ((!mass && mainSettings.explDefTaskByType[explType] != undefined && mainSettings.explDefTaskByType[explType] == item.val) || mainSettings.explDefTask == item.val);
 			if(mass || (item.req[0] && art) || (item.req[1] && bean) || (!item.req[0] && !item.req[1] && playerLevel >= item.req[2]))
-				group.append($('<option>', { value: item.val, selected: isSelected ? 'selected' : false }).text(item.text));
+				group.append($('<option>', { value: item.val }).text(item.text));
 		});
 		select.append(group);
 	});
+	var defSelected = def && !mass && mainSettings.explDefTaskByType[explType] != undefined ? mainSettings.explDefTaskByType[explType] : mass ? 0 : mainSettings.explDefTask;
+	defSelected!="0"&&select.find('option[value="'+defSelected+'"]').attr('selected','selected');
 	return select.prop("outerHTML");
 }
 
