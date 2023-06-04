@@ -379,7 +379,7 @@ function menuFilterHandler(event)
 
 function menuZoneRefreshHandler(event)
 {
-	game.gi.mClientMessages.SendMessagetoServer(1037, game.gi.mCurrentViewedZoneID, null);
+	game.gi.mClientMessages.SendMessagetoServer(1001, game.gi.mCurrentViewedZoneID, null);
 	showGameAlert(getText('command_sent'));
 }
 
