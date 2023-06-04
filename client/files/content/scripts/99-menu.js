@@ -22,7 +22,19 @@ var Menu = function(type){
 						{ label: "magicsepia", name: "magicsepia", onSelect: menuFilterHandler }
 				]},
 				{ label: loca.GetText("LAB", "Update"), mnemonicIndex: 0, keyCode: 113, onSelect: menuZoneRefreshHandler},
-				{ label: 'Debug window', onSelect: menuDebugHandler}
+				{ label: 'Debug', items: [
+					{ label: "Toggle introspector", onSelect: menuDebugHandler },
+					{ label: "Toggle showIsoGrid", onSelect: menuDebugShowHandler },
+					{ label: "Toggle showIsoDebugGrid", onSelect: menuDebugShowHandler },
+					{ label: "Toggle showBackgroundGrid", onSelect: menuDebugShowHandler },
+					{ label: "Toggle showBuildingDebugGrid", onSelect: menuDebugShowHandler },
+					{ label: "Toggle showCollectibleBuildingDebugGrid", onSelect: menuDebugShowHandler },
+					{ label: "Toggle showBlockingGrid", onSelect: menuDebugShowHandler },
+					{ label: "Toggle showSectorGrid", onSelect: menuDebugShowHandler },
+					{ label: "Toggle showDepositMap", onSelect: menuDebugShowHandler },
+					{ label: "Toggle showLandingFields", onSelect: menuDebugShowHandler },
+					{ label: "Toggle showWatchAreas", onSelect: menuDebugShowHandler },
+				]}
 			]},
 			{ label: "LRU", name: 'LRU', mnemonicIndex: 0, items: [] },
 			{ label: loca.GetText("LAB", "Specialists"), mnemonicIndex: 0, items: [

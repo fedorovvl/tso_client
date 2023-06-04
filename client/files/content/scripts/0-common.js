@@ -399,6 +399,23 @@ function menuDebugHandler(event)
 	}
 }
 
+function menuDebugShowHandler(event)
+{
+	var comm = event.target.label.split(" ").pop();
+	switch(comm) {
+		case "showDepositMap": game.gi.showDepositMap = !game.gi.showDepositMap; break;
+		case "showIsoGrid": game.gi.showIsoGrid = !game.gi.showIsoGrid; break;
+		case "showIsoDebugGrid": game.gi.showIsoDebugGrid = !game.gi.showIsoDebugGrid; break;
+		case "showBuildingDebugGrid": game.gi.showBuildingDebugGrid = !game.gi.showBuildingDebugGrid; break;
+		case "showBlockingGrid": game.gi.showBlockingGrid = !game.gi.showBlockingGrid; break;
+		case "showSectorGrid": game.gi.showSectorGrid = !game.gi.showSectorGrid; break;
+		case "showLandingFields": game.gi.showLandingFields = !game.gi.showLandingFields; break;
+		case "showCollectibleBuildingDebugGrid": game.gi.showCollectibleBuildingDebugGrid = !game.gi.showCollectibleBuildingDebugGrid; break;
+		case "showBackgroundGrid": game.gi.showBackgroundGrid = !game.gi.showBackgroundGrid; break;
+		case "showWatchAreas": game.gi.showWatchAreas = !game.gi.showWatchAreas; break;
+	}
+}
+
 function feedbackMenuHandler(event)
 {
 	var w = new Modal('feedbackWindow', utils.getImageTag('ValentineAdventureRewardBoostConditional', '45px') + ' ' + getText('feedbacktitle'));
