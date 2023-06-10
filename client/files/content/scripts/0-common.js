@@ -369,7 +369,18 @@ function highlightProceed(isUpdate)
 {
 	if(!mainSettings.highlight) { return; }
 	var collectionsManager = swmmo.getDefinitionByName("Collections::CollectionsManager").getInstance();
-	game.def("global").buildingGroup.mGOList_vector.filter(function(item) { return collectionsManager.getBuildingIsCollectible(item.mGfxResourceListName_string); }).forEach(function(item) {
+	var advCollections = [
+		"a_exhausted_well_01",
+		"ancient_tomb",
+		"a_reed_01",
+		"a_skeleton_02",
+		"coop_ruinAncientLibrary_01",
+		"ruinAncientLibrary_01",
+		"ruinAncientLibrary_02_a",
+		"ruinAncientLibrary_02_b",
+		"ruinAncientLibrary_02"
+	];
+	game.def("global").buildingGroup.mGOList_vector.filter(function(item) { return collectionsManager.getBuildingIsCollectible(item.mGfxResourceListName_string) || advCollections.indexOf(item.mGfxResourceListName_string) >= 0; }).forEach(function(item) {
 		if(!isUpdate) {
 			item.mFileName_string = "building_lib/o_firewood_hut_01.png";
 			item.addPropertyObserver("LOADING_DONE", highlightTracker);
