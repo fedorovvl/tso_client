@@ -25,7 +25,9 @@ var mainSettings = {
 	highlight: true,
 	highlightSize: 45,
 	highlightColor: '#ff0000',
-	highlightGlowColor: '#ffffff'
+	highlightGlowColor: '#ffffff',
+	chatFontSize: 12,
+	chatPanelWidth: 350
 };
 var highlightTracker = game.getTracker('highlightTracker', highlightModifyFrame);
 var scaleFactor = game.def("global").mGraphicScaleFactor;
@@ -171,6 +173,21 @@ function mainSettingsHandler(event)
 		}
 		return select.prop('outerHTML');
 	}
+	var createChatFontDrop = function(){
+		var select = $('<select>', { 'class': 'form-control chatFontSize' });
+		const num = [12,14,16,18,20];
+		for(var i in num) {
+			select.append($('<option>', { value: num[i] }).text(num[i]));
+		}
+		return select.prop('outerHTML');
+	}
+	var createChatWidthDrop = function(){
+		var select = $('<select>', { 'class': 'form-control chatWidth' });
+		for(var i=350; i < 600; i+=10) {
+			select.append($('<option>', { value: i }).text(i + 'px'));
+		}
+		return select.prop('outerHTML');
+	}
 	var createHighlightSizeDrop = function(){
 		var select = $('<select>', { 'class': 'form-control hSize' });
 		const num = [45,55,65,75];
@@ -240,6 +257,8 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('highlightSize_desc')], [6, createHighlightSizeDrop()]]);
 	html += utils.createTableRow([[6, getText('highlightColor_desc')], [6, '<input type="text" value="'+mainSettings.highlightColor+'" id="highlightColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('highlightGlow_desc')], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
+	html += utils.createTableRow([[6, "Chat panel width"], [6, createChatWidthDrop()]]);
+	html += utils.createTableRow([[6, "Chat font size"], [6, createChatFontDrop()]]);
 	w.Body().html(html + '<div>');
 	w.withBody('div.row').addClass('nohide');
 	w.withBody('.kolorPicker').change(function() {
@@ -272,6 +291,14 @@ function mainSettingsHandler(event)
 	w.withBody('.defFilter').val(mainSettings.defFilter).change(function(e) { mainSettings.defFilter = $(e.target).val(); });
 	w.withBody('.dtfFormat').val(mainSettings.dtfFormat).change(function(e) { mainSettings.dtfFormat = $(e.target).val(); });
 	w.withBody('.lruSize').val(mainSettings.lruCacheSize).change(function(e) { mainSettings.lruCacheSize = parseInt($(e.target).val()); });
+	w.withBody('.chatFontSize').val(mainSettings.chatFontSize).change(function(e) { 
+		mainSettings.chatFontSize = parseInt($(e.target).val());
+		game.def("defines").CHAT_FONT_SIZE = mainSettings.chatFontSize;
+	});
+	w.withBody('.chatWidth').val(mainSettings.chatPanelWidth).change(function(e) { 
+		mainSettings.chatPanelWidth = parseInt($(e.target).val());
+		swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
+	});
 	w.withBody('.hSize').val(mainSettings.highlightSize).change(function(e) { mainSettings.highlightSize = parseInt($(e.target).val()); });
 	w.withBody('.geoMass select').val(mainSettings.geoDefTask).change(function(e) { mainSettings.geoDefTask = $(e.target).val(); });
 	w.withBody('.explMass select').val(mainSettings.explDefTask).change(function(e) { mainSettings.explDefTask = $(e.target).val(); });
@@ -918,3 +945,5 @@ $.extend(enabledScripts, settings.read(null, "scripts"));
 document.styleSheets[0].insertRule(".buffReady{background-color:"+mainSettings.statusColorOk+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
 document.styleSheets[0].insertRule(".buffNotReady{background-color:"+mainSettings.statusColorFail+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
 document.styleSheets[0].insertRule(".specSamegrid{background-color:"+mainSettings.statusColorSameGrid+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
+game.def("defines").CHAT_FONT_SIZE = mainSettings.chatFontSize;
+swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
