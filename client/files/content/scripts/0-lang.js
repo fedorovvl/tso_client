@@ -435,7 +435,11 @@ const baseTranslation = {
 		"highlight_desc": "Sammlungen hervorheben (markieren)",
 		"highlightColor_desc": "Sammlungen Kreis Grundfarbe",
 		"highlightGlow_desc": "Sammlungen Kreis Farbe (eingesammelt)",
-		"highlight_reboot": "Neustart erforderlich"
+		"highlight_reboot": "Neustart erforderlich",
+		"chatpanelwidth_desc": "Chat Fensterlänge",
+		"chatfontsize_desc": "Chat Schriftgröße",
+		"starmenurows_desc": "Sternmenü Reihenanzahl",
+		"starmenucols_desc": "Sternmenü Spaltenanzahl"
 	},
 	'fr-fr': {
 		'btn_submit': 'Soumettre',
