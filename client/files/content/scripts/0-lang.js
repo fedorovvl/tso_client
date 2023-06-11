@@ -142,7 +142,11 @@ const baseTranslation = {
 		"highlightColor_desc": "Highlight ball main color",
 		"highlightGlow_desc": "Highlight ball glow color",
 		"highlight_reboot": "Restart required",
-		"highlightSize_desc": "Highlight ball size"
+		"highlightSize_desc": "Highlight ball size",
+		"chatpanelwidth_desc": "Chat panel width",
+		"chatfontsize_desc": "Chat font size",
+		"starmenurows_desc": "StarMenu rows count",
+		"starmenucols_desc": "StarMenu cols count"
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -285,7 +289,11 @@ const baseTranslation = {
 		"highlightColor_desc": "Основной цвет шара подсветки",
 		"highlightGlow_desc": "Цвет обводки шара подсветки",
 		"highlight_reboot": "Требуется рестарт",
-		"highlightSize_desc": "Размер шара подсветки"
+		"highlightSize_desc": "Размер шара подсветки",
+		"chatpanelwidth_desc": "Размер панели чата",
+		"chatfontsize_desc": "Размер шрифта чата",
+		"starmenurows_desc": "Кол-во строк в Звездном меню",
+		"starmenucols_desc": "Кол-во столбцов в Звездном меню"
 	},
 	'de-de': {
 		'btn_submit': 'Senden',

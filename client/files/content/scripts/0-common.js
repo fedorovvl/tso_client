@@ -27,7 +27,9 @@ var mainSettings = {
 	highlightColor: '#ff0000',
 	highlightGlowColor: '#ffffff',
 	chatFontSize: 12,
-	chatPanelWidth: 350
+	chatPanelWidth: 350,
+	starColsCount: 9,
+	starRowsCount: 4
 };
 var highlightTracker = game.getTracker('highlightTracker', highlightModifyFrame);
 var scaleFactor = game.def("global").mGraphicScaleFactor;
@@ -188,6 +190,22 @@ function mainSettingsHandler(event)
 		}
 		return select.prop('outerHTML');
 	}
+	var createStarColsDrop = function(){
+		var select = $('<select>', { 'class': 'form-control starCols' });
+		// += 57
+		for(var i=9; i < 20; i++) {
+			select.append($('<option>', { value: i }).text(i));
+		}
+		return select.prop('outerHTML');
+	}
+	var createStarRowsDrop = function(){
+		var select = $('<select>', { 'class': 'form-control starRows' });
+		// += 70
+		for(var i=4; i < 15; i++) {
+			select.append($('<option>', { value: i }).text(i));
+		}
+		return select.prop('outerHTML');
+	}
 	var createHighlightSizeDrop = function(){
 		var select = $('<select>', { 'class': 'form-control hSize' });
 		const num = [45,55,65,75];
@@ -257,8 +275,10 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('highlightSize_desc')], [6, createHighlightSizeDrop()]]);
 	html += utils.createTableRow([[6, getText('highlightColor_desc')], [6, '<input type="text" value="'+mainSettings.highlightColor+'" id="highlightColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('highlightGlow_desc')], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([[6, "Chat panel width"], [6, createChatWidthDrop()]]);
-	html += utils.createTableRow([[6, "Chat font size"], [6, createChatFontDrop()]]);
+	html += utils.createTableRow([[6, getText('chatpanelwidth_desc')], [6, createChatWidthDrop()]]);
+	html += utils.createTableRow([[6, getText('chatfontsize_desc')], [6, createChatFontDrop()]]);
+	html += utils.createTableRow([[6, getText('starmenurows_desc')], [6, createStarRowsDrop()]]);
+	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
 	w.Body().html(html + '<div>');
 	w.withBody('div.row').addClass('nohide');
 	w.withBody('.kolorPicker').change(function() {
@@ -299,6 +319,8 @@ function mainSettingsHandler(event)
 		mainSettings.chatPanelWidth = parseInt($(e.target).val());
 		swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
 	});
+	w.withBody('.starCols').val(mainSettings.starColsCount).change(function(e) { mainSettings.starColsCount = parseInt($(e.target).val()); });
+	w.withBody('.starRows').val(mainSettings.starRowsCount).change(function(e) { mainSettings.starRowsCount = parseInt($(e.target).val()); });
 	w.withBody('.hSize').val(mainSettings.highlightSize).change(function(e) { mainSettings.highlightSize = parseInt($(e.target).val()); });
 	w.withBody('.geoMass select').val(mainSettings.geoDefTask).change(function(e) { mainSettings.geoDefTask = $(e.target).val(); });
 	w.withBody('.explMass select').val(mainSettings.explDefTask).change(function(e) { mainSettings.explDefTask = $(e.target).val(); });
@@ -333,7 +355,10 @@ function mainSettingsHandler(event)
 		highlightCircle = highlightDrawCircle();
 		highlightProceed(true);
 		game.gi.isOnHomzone()&&setFilterHandler(mainSettings.defFilter);
-		dtf.setDateTimePattern(mainSettings.dtfFormat); 
+		dtf.setDateTimePattern(mainSettings.dtfFormat);
+		// star menu
+		swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
+		swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);
 		w.hide();
 	}));
 	w.show();
@@ -380,7 +405,13 @@ function highlightProceed(isUpdate)
 		"ruinAncientLibrary_02_b",
 		"ruinAncientLibrary_02"
 	];
-	game.def("global").buildingGroup.mGOList_vector.filter(function(item) { return collectionsManager.getBuildingIsCollectible(item.mGfxResourceListName_string) || advCollections.indexOf(item.mGfxResourceListName_string) >= 0; }).forEach(function(item) {
+	game.def("global").buildingGroup.mGOList_vector.filter(function(item) {
+		try {
+			return collectionsManager.getBuildingIsCollectible(item.mGfxResourceListName_string) || advCollections.indexOf(item.mGfxResourceListName_string) >= 0; 
+		} catch (e) {
+			return false;
+		}
+	}).forEach(function(item) {
 		if(!isUpdate) {
 			item.mFileName_string = "building_lib/o_firewood_hut_01.png";
 			item.addPropertyObserver("LOADING_DONE", highlightTracker);
@@ -958,3 +989,5 @@ document.styleSheets[0].insertRule(".buffNotReady{background-color:"+mainSetting
 document.styleSheets[0].insertRule(".specSamegrid{background-color:"+mainSettings.statusColorSameGrid+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
 game.def("defines").CHAT_FONT_SIZE = mainSettings.chatFontSize;
 swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
+swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
+swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);
