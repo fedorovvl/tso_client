@@ -1003,6 +1003,6 @@ if(!advZone) {
 swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
 swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);
 if(experimental && !advZone) {
-	var experimentalVisitTracker = game.getTracker('experimentalVisitTracker', explTrackerHandler);
+	var experimentalVisitTracker = game.getTracker('experimentalVisitTracker', experimentalVisitHandler);
 	game.gi.channels.ZONE.addPropertyObserver("CLIENT_VISIT_ZONE", experimentalVisitTracker);
 }
