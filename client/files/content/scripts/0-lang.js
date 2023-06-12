@@ -435,7 +435,11 @@ const baseTranslation = {
 		"highlight_desc": "Sammlungen hervorheben (markieren)",
 		"highlightColor_desc": "Sammlungen Kreis Grundfarbe",
 		"highlightGlow_desc": "Sammlungen Kreis Farbe (eingesammelt)",
-		"highlight_reboot": "Neustart erforderlich"
+		"highlight_reboot": "Neustart erforderlich",
+		"chatpanelwidth_desc": "Chat Fensterlänge",
+		"chatfontsize_desc": "Chat Schriftgröße",
+		"starmenurows_desc": "Sternmenü Reihenanzahl",
+		"starmenucols_desc": "Sternmenü Spaltenanzahl"
 	},
 	'fr-fr': {
 		'btn_submit': 'Soumettre',
@@ -718,9 +722,14 @@ const baseTranslation = {
 		"shortImportSkillsIgnore": "Ignorar habilidades",
 		"lru_desc": "Nº historial de plantillas (LRU)",
 		"highlight_desc": "Destacar coleccionables",
-		"highlightColor_desc": "Color destacado principal",
-		"highlightGlow_desc": "Color destacado de brillo",
-		"highlight_reboot": "Se requiere un reinicio"
+		"highlightColor_desc": "Coleccionables - Color",
+		"highlightGlow_desc": "Coleccionables - Brillo",
+		"highlightSize_desc": "Coleccionables - Tamaño",
+		"highlight_reboot": "Se requiere un reinicio",
+		"chatpanelwidth_desc": "Chat - Anchura",
+		"chatfontsize_desc": "Chat - Tamaño de fuente",
+		"starmenurows_desc": "Menú estrella - Filas",
+		"starmenucols_desc": "Menú estrella - Columnas"
 	},
     "pl-pl": {
 		"btn_submit": "Wyślij",
