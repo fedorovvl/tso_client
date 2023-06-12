@@ -276,7 +276,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('highlightColor_desc')], [6, '<input type="text" value="'+mainSettings.highlightColor+'" id="highlightColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('highlightGlow_desc')], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('chatpanelwidth_desc')], [6, createChatWidthDrop()]]);
-	html += utils.createTableRow([[6, getText('chatfontsize_desc')], [6, createChatFontDrop()]]);
+	html += utils.createTableRow([[6, getText('chatfontsize_desc')], [2, createChatFontDrop()], [4, getText('highlight_reboot')]]);
 	html += utils.createTableRow([[6, getText('starmenurows_desc')], [6, createStarRowsDrop()]]);
 	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
 	w.Body().html(html + '<div>');
@@ -448,7 +448,7 @@ function menuFilterHandler(event)
 
 function menuZoneRefreshHandler(event)
 {
-	game.gi.mClientMessages.SendMessagetoServer(1001, game.gi.mCurrentViewedZoneID, null);
+	game.gi.mClientMessages.SendMessagetoServer(1037, game.gi.mCurrentViewedZoneID, null);
 	showGameAlert(getText('command_sent'));
 }
 
