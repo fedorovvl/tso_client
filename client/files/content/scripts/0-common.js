@@ -421,6 +421,15 @@ function highlightProceed(isUpdate)
 	});
 }
 
+function experimentalVisitHandler(event, data)
+{
+	if(event.data < 0) {
+		runNewApplication(game.def("mx.messaging::FlexClient").getInstance().id, game.def("defines").CLIENT_AUTHRANDOM, event.data);
+	} else {
+		game.gi.visitZone(event.data);
+	}
+}
+
 function toggleForceGC()
 {
 	if(!forcegcIntervalId) {
@@ -988,6 +997,12 @@ document.styleSheets[0].insertRule(".buffReady{background-color:"+mainSettings.s
 document.styleSheets[0].insertRule(".buffNotReady{background-color:"+mainSettings.statusColorFail+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
 document.styleSheets[0].insertRule(".specSamegrid{background-color:"+mainSettings.statusColorSameGrid+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
 game.def("defines").CHAT_FONT_SIZE = mainSettings.chatFontSize;
-swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
+if(!advZone) {
+	swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
+}
 swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
 swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);
+if(experimental && !advZone) {
+	var experimentalVisitTracker = game.getTracker('experimentalVisitTracker', explTrackerHandler);
+	game.gi.channels.ZONE.addPropertyObserver("CLIENT_VISIT_ZONE", experimentalVisitTracker);
+}

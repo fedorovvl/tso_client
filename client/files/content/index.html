@@ -10,7 +10,7 @@
 	<script type="text/javascript" src="jquery-ui.min.js"></script>
 	<script type="text/javascript" src="lru_cache.js"></script>
 	<script type="text/javascript"> 
-		var swmmo,loca,assets,globalFlash,gameLang,loadInterval,game,menu,utils,version = null,
+		var swmmo,loca,assets,globalFlash,gameLang,loadInterval,game,menu,utils,rawArgs,experimental = false,advZone = false,version = null,
 			dtf=new window.runtime.flash.globalization.DateTimeFormatter("en-US"),settings,settingsFile="settings.json",isDebug=!1;
 
 		window.onload = function(){ 
@@ -18,8 +18,46 @@
 		   loader.contentLoaderInfo.addEventListener(air.Event.COMPLETE, loadCompleteHandler)
 		   loader.load(new air.URLRequest("client.swf"));
 		   window.nativeWindow.stage.getChildAt(0).paintsDefaultBackground=false;
-		} 
+		}
 
+		function runNewApplication(flexid, randomauth, zoneid)
+		{
+			updateApplication();
+			var nativeProcessStartupInfo = new window.runtime.flash.desktop.NativeProcessStartupInfo();
+			var file = air.File.applicationDirectory.resolvePath("client.exe");
+			nativeProcessStartupInfo.executable = file;
+			var processArgs = new window.runtime.Vector["<String>"]();
+			processArgs[0] = rawArgs + "&flexid={0}&authrandom={1}&zoneid={2}".format(flexid, randomauth, zoneid);
+			debug(processArgs[0]);
+			nativeProcessStartupInfo.arguments = processArgs;
+			process = new window.runtime.flash.desktop.NativeProcess();
+			process.start(nativeProcessStartupInfo);
+		}
+		
+		function updateApplication()
+		{
+			var file = new air.File("file:///" + air.File.applicationDirectory.resolvePath("META-INF/AIR/application.xml").nativePath);
+			var fileStream = new air.FileStream();
+			fileStream.open(file, air.FileMode.UPDATE);
+			var data = fileStream.readUTFBytes(file.size);
+			var re = new RegExp('<id>TSO-(.+)</id>',"gi");
+			data = data.replace(re, '<id>TSO-'+makeNewTSOid(5)+'</id>');
+			fileStream.position = 0;
+			fileStream.truncate();
+			fileStream.writeUTFBytes(data);
+			fileStream.close();
+		}
+
+		function makeNewTSOid(length)
+		{
+			var result = '';
+			const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+			for(i = 0; i < length; i++) {
+				result += characters.charAt(Math.floor(Math.random() * 26));
+			}
+			return result;
+		}
+		
 		function loadCompleteHandler(event)
 		{
 		  swmmo = event.target.content;
@@ -29,12 +67,23 @@
 		  window.nativeWindow.stage.addEventListener(window.runtime.flash.events.KeyboardEvent.KEY_DOWN, stageKeyDownListener);
 		  air.NativeApplication.nativeApplication.addEventListener("invoke", function(event) {
 			var p={};
+			rawArgs = event.arguments[0];
 			event.arguments[0].replace(/[?&]+([^=&]+)=([^&]*)/gi, function(s,k,v){p[k]=v})
 			if(p["window"] && p["window"] == "fullscreen") { window.nativeWindow.stage.displayState = "fullScreenInteractive"; }
 			if(p["window"] && p["window"] == "maximized") { window.nativeWindow.maximize(); }
 			if(p["debug"]) { isDebug = true; }
 			if(p["version"]) { version = p["version"]; }
 			if(p["clientconfig"]) { settingsFile = unescape(p["clientconfig"]); }
+			if(p["authrandom"]) { swmmo.getDefinitionByName("defines").CLIENT_AUTHRANDOM = p["authrandom"];	}
+			if(p["flexid"]) { swmmo.getDefinitionByName("mx.messaging::FlexClient").getInstance().id = p["flexid"];	}
+			if(p["zoneid"]) { 
+				advZone = true;
+				swmmo.getDefinitionByName("defines").CLIENT_ZONEID = p["zoneid"];
+			}
+			if(p["experimental"]) { 	
+				experimental = true;
+				swmmo.getDefinitionByName("defines").CLIENT_EXPERIMENTAL = 1;
+			}
 			convertSettings();
 		  });
 		  loadInterval = setInterval(function(){ 
@@ -42,6 +91,22 @@
 			loca = swmmo.getDefinitionByName("GUI.Loca::cLocaManager").GetInstance();
 			assets = swmmo.getDefinitionByName("GUI.Assets::gAssetManager");
 			globalFlash = swmmo.getDefinitionByName("globalFlash");
+			if(advZone) {
+				swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarCenter.getChildByName("toggleFrindsList").visible = false;
+				swmmo.application.GAMESTATE_ID_ACTIONBAR.setConstraintValue("bottom", 0);
+				swmmo.application.GAMESTATE_ID_CHAT_PANEL.visible = false;
+				swmmo.application.blueFireComponent.width = swmmo.application.GAMESTATE_ID_CHAT_PANEL.width = 0;
+				for(i = 0; i < swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarLeft.numChildren; i++) { swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarLeft.getChildAt(i).visible = false;	}
+				for(i = 0; i < swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarRight.numChildren; i++) { swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarRight.getChildAt(i).visible = false; }
+				for(i = 0; i < swmmo.application.GAMESTATE_ID_AVATAR.numChildren; i++) { swmmo.application.GAMESTATE_ID_AVATAR.getChildAt(i).visible = false; }
+				swmmo.application.GAMESTATE_ID_AVATAR.getChildByName("btnQuestBook").visible = true;
+				swmmo.application.GAMESTATE_ID_AVATAR.getChildByName("btnQuestBook").setConstraintValue("right", 110);
+				swmmo.application.GAMESTATE_ID_AVATAR.getChildByName("btnQuestBook").setConstraintValue("left", 7);
+				swmmo.application.GAMESTATE_ID_AVATAR.getChildByName("btnQuestBook").setConstraintValue("bottom", 700);
+				swmmo.application.GAMESTATE_ID_AVATAR.getChildByName("btnQuestBook").setConstraintValue("top", 4);
+				globalFlash.gui.mQuestHintPointer.GetGUIElement().setConstraintValue("top", 10);
+				globalFlash.gui.mQuestHintPointer.GetGUIElement().setConstraintValue("left", 75);
+			}
 			alertItem = swmmo.getDefinitionByName("GUI.Components.ItemRenderer::AvatarMessageItemRenderer");
 			gameLang = combineSameLang(loca.getSelectedLanguage());
 			document.title += ' (' + swmmo.getDefinitionByName("global").gameworld + ')';
