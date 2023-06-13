@@ -135,7 +135,7 @@ Menu.prototype = {
 			{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler }, { type: 'separator' },
 			{ label: getText('feedbacktitle'), onSelect: feedbackMenuHandler }
 		]});
-		menu.push({ label: 'v' + version, enabled: false });
+		menu.push({ label: 'v' + version + (experimental ? "-Ex" : ""), enabled: false });
 		menu.push({ label: '', name: 'memusage', enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;
