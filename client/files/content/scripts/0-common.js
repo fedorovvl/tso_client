@@ -458,6 +458,11 @@ function menuFilterHandler(event)
 function menuZoneRefreshHandler(event)
 {
 	game.gi.mClientMessages.SendMessagetoServer(1037, game.gi.mCurrentViewedZoneID, null);
+	if(!advZone && experimental) {
+		var dGetFriendsVO = new (game.def("Communication.VO::dGetFriendsVO"))();
+		dGetFriendsVO.version = game.def("defines").VERSION_NR;
+		game.gi.mClientMessages.SendMessagetoServer(1014, game.gi.mCurrentViewedZoneID, dGetFriendsVO);
+	}
 	showGameAlert(getText('command_sent'));
 }
 
