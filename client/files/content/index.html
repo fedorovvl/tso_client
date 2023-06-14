@@ -93,7 +93,7 @@
 			loca = swmmo.getDefinitionByName("GUI.Loca::cLocaManager").GetInstance();
 			assets = swmmo.getDefinitionByName("GUI.Assets::gAssetManager");
 			globalFlash = swmmo.getDefinitionByName("globalFlash");
-			if(advZone) {
+			if(expZone != null) {
 				swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarCenter.getChildByName("toggleFrindsList").visible = false;
 				swmmo.application.GAMESTATE_ID_ACTIONBAR.setConstraintValue("bottom", 0);
 				swmmo.application.GAMESTATE_ID_CHAT_PANEL.visible = false;
