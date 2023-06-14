@@ -423,9 +423,12 @@ function highlightProceed(isUpdate)
 
 function experimentalVisitHandler(event, data)
 {
+	game.chatMessage("Request zone visit " + event.data, 'exp');
 	if(event.data < 0) {
+		game.chatMessage("Run new application", 'exp');
 		runNewApplication(game.def("mx.messaging::FlexClient").getInstance().id, game.def("defines").CLIENT_AUTHRANDOM, event.data);
 	} else {
+		game.chatMessage("Normal visit", 'exp');
 		game.gi.visitZone(event.data);
 	}
 }
