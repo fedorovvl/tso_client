@@ -461,7 +461,7 @@ function menuFilterHandler(event)
 function menuZoneRefreshHandler(event)
 {
 	game.gi.mClientMessages.SendMessagetoServer(1037, game.gi.mCurrentViewedZoneID, null);
-	if(!advZone && experimental) {
+	if(expZone == null && experimental) {
 		var dGetFriendsVO = new (game.def("Communication.VO::dGetFriendsVO"))();
 		dGetFriendsVO.version = game.def("defines").VERSION_NR;
 		game.gi.mClientMessages.SendMessagetoServer(1014, game.gi.mCurrentViewedZoneID, dGetFriendsVO);
@@ -1005,12 +1005,12 @@ document.styleSheets[0].insertRule(".buffReady{background-color:"+mainSettings.s
 document.styleSheets[0].insertRule(".buffNotReady{background-color:"+mainSettings.statusColorFail+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
 document.styleSheets[0].insertRule(".specSamegrid{background-color:"+mainSettings.statusColorSameGrid+";color:#000;border-radius:5px;}", document.styleSheets[0].rules.length);
 game.def("defines").CHAT_FONT_SIZE = mainSettings.chatFontSize;
-if(!advZone) {
+if(expZone == null) {
 	swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
 }
 swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
 swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);
-if(experimental && !advZone) {
+if(experimental && expZone == null) {
 	var experimentalVisitTracker = game.getTracker('experimentalVisitTracker', experimentalVisitHandler);
 	game.gi.channels.ZONE.addPropertyObserver("CLIENT_VISIT_ZONE", experimentalVisitTracker);
 }
