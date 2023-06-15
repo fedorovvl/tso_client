@@ -61,6 +61,9 @@ function hideSpecMenuHandler(event)
 
 function hideSpecHandler(event)
 {
+	if(experimental && expZone != null) {
+		game.gi.mRequirements.miscRequirements_vector["GarrisonSwitchButton"].requirements[0].fulfilled = true;
+	}
 	try{
 		game.zone.GetSpecialists_vector().forEach(function(item){
 			if(item.GetUniqueID().toKeyString() in specHideVector && item.getPlayerID() != -1) {
