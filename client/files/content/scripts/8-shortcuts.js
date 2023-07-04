@@ -156,11 +156,11 @@ function shortcutsMenuSelectedRetryHandler(file_path, count)
 		if (data == "") { return; }
 		shortcutsProceedFile(JSON.parse(data), filetype[1], file.name, filetype[0]);
 	} catch(e) {
+		debug(e);
 		if(count > 3) {
 			alert(getText("bad_template") + '(retry)');
-			debug(file_path);
-			debug(e);
 		} else {
+			
 			shortcutsMenuSelectedRetryHandler(file_path, ++count);
 		}
 	}
