@@ -158,6 +158,7 @@ function shortcutsMenuSelectedRetryHandler(file, count)
 	} catch(e) {
 		if(count > 3) {
 			alert(getText("bad_template") + '(retry)');
+			debug(e);
 		} else {
 			shortcutsMenuSelectedRetryHandler(file, ++count);
 		}
