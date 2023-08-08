@@ -1,4 +1,5 @@
 var specTemplates;
+var specSettingsTemplates;
 var specWindow;
 var specType = 0;
 var specLoadCounter = 0;
@@ -110,7 +111,10 @@ function specSettings()
 	specWindow.settings(specSettingsSave, '');
 	specWindow.sDialog().css("height", "80%");
 	var html = '<div class="container-fluid" style="user-select: all;">';
-	html += utils.createTableRow([[10, getText(specType == 2 ? 'geodeftask_desc' : 'expldeftask_desc')], [2, '']], true);
+	html += utils.createTableRow([
+		[10, getText(specType == 2 ? 'geodeftask_desc' : 'expldeftask_desc')],
+		[2, $('<a>', { href: '#', text: getText('btn_reset'), 'class': 'settingsreset' })]
+	], true);
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
 	$.each(specGetTypesForType(), function(type, name) {
 		html += utils.createTableRow([
@@ -122,8 +126,24 @@ function specSettings()
 	specWindow.sData().find('select').each(function(i, item) { 
 		$(item).find('option:first').text("{0} -> {1}".format(loca.GetText("ACL", "BuffAdventuresGeneral"), loca.GetText("LAB", "ToggleOptionsPanel")));
 	});
+	specWindow.sData().find('.settingsreset').click(function(){
+		specWindow.sData().find('select').val(0);
+	});
 	$.each(mainSettings.geoDefTaskByType, function(type, value) { specWindow.sData().find('.specdef_'+type).children('select').val(value); });
 	$.each(mainSettings.explDefTaskByType, function(type, value) { specWindow.sData().find('.specdef_'+type).children('select').val(value); });
+	specWindow.sFooter().find('.pull-left').removeClass('pull-left');
+	specWindow.sFooter().prepend([
+		$('<button>').attr({ "class": "btn btn-primary pull-left specSettingsSaveTemplate" }).text(getText('save_template')),
+		$('<button>').attr({ "class": "btn btn-primary pull-left specSettingsLoadTemplate" }).text(getText('load_template')).click(function() { specSettingsTemplates.load(); })
+	]);
+	specWindow.sFooter().find('.specSettingsSaveTemplate').click(function(){
+		var dataToSave = { type: 'specsettings', data: {}};
+		specWindow.sData().find('select').map(function() { 
+			var id = $(this).closest('div').attr('class').split(' ').pop().split("_").pop();
+			dataToSave['data'][id] = $(this).val();
+		});
+		specSettingsTemplates.save(dataToSave);
+	});
 	specWindow.sshow();
 }
 
@@ -223,6 +243,13 @@ function createSpecWindow()
 		$('#specModalData select').each(function(i, select){
 			updateSpecTimeRow(select, $(select).val(), $(select).val());
 		});
+	});
+	specSettingsTemplates = new SaveLoadTemplate('specSettings', function(data, name) {
+		if(!data.type || data.type != 'specsettings') {
+			alert(getText('bad_template'));
+			return;
+		}
+		$.each(data.data, function(type, val) {	specWindow.sData().find('div.specdef_'+type+' select').val(val); });
 	});
 	const headerRow = createTableRow([
 			[4, loca.GetText("LAB","Name") +  $('<input>', {
