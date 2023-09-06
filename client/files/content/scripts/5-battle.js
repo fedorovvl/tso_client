@@ -262,6 +262,7 @@ function battleAttack(direct)
 		battleTimedQueue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].targetName, 5, battlePacket[item].target); }, battlePacket[item].time);
 	});
 	if(battleTimedQueue.len() > 0) {
+		battleTimedQueue.add(function(){ game.showAlert(loca.GetText("LAB", "GuildQuestCompleted")); });
 		battleTimedQueue.run();
 		if(!direct) { battleWindow.hide(); }
 		showGameAlert(getText('command_sent'));
@@ -282,6 +283,7 @@ function battleMove(direct)
 		}
 	});
 	if(battleTimedQueue.len() > 0) {
+		battleTimedQueue.add(function(){ game.showAlert(loca.GetText("LAB", "GuildQuestCompleted")); });
 		battleTimedQueue.run();
 		if(!direct) { battleWindow.hide(); }
 		showGameAlert(getText('command_sent'));
@@ -301,6 +303,7 @@ function battleAttackDirect()
 		}
 	});
 	if(battleTimedQueue.len() > 0) {
+		battleTimedQueue.add(function(){ game.showAlert(loca.GetText("LAB", "GuildQuestCompleted")); });
 		battleTimedQueue.run();
 		battleWindow.hide();
 		showGameAlert(getText('command_sent'));
