@@ -151,9 +151,9 @@ function battleSendGeneral(spec, name, targetName, type, target)
 		stask.uniqueID = spec.GetUniqueID();
 		stask.subTaskID = 0;
 		swmmo.application.mGameInterface.SendServerAction(95, type, target, 0, stask);
-		game.chatMessage("({0}/{1}) {2} {3} {4}".format(battleTimedQueue.index, battleTimedQueue.len(), name.replace(/(<([^>]+)>)/gi, ""), (type == 5 ? ' x ' : ' > '), targetName), 'battle');
+		game.chatMessage("({0}/{1}) {2} {3} {4}".format(battleTimedQueue.index, battleTimedQueue.len() - 1, name.replace(/(<([^>]+)>)/gi, ""), (type == 5 ? ' x ' : ' > '), targetName), 'battle');
 	}
-	catch (error) { }
+	catch (error) { debug(error); }
 }
 
 function battleLoadDataCheck(data)
