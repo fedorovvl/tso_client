@@ -61,7 +61,7 @@ function hideSpecMenuHandler(event)
 
 function hideSpecHandler(event)
 {
-	if(experimental && expZone != null) {
+	if(expZone != null) {
 		game.gi.mRequirements.miscRequirements_vector["GarrisonSwitchButton"].requirements[0].fulfilled = true;
 	}
 	try{
