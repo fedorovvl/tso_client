@@ -29,10 +29,16 @@ var mainSettings = {
 	chatFontSize: 12,
 	chatPanelWidth: 350,
 	starColsCount: 9,
-	starRowsCount: 4
+	starRowsCount: 4,
+	experimental: false
 };
 var highlightTracker = game.getTracker('highlightTracker', highlightModifyFrame);
 var scaleFactor = game.def("global").mGraphicScaleFactor;
+
+function toggleExperimental()
+{
+	swmmo.getDefinitionByName("defines").CLIENT_EXPERIMENTAL = !swmmo.getDefinitionByName("defines").CLIENT_EXPERIMENTAL;
+}
 
 function reloadScripts(event)
 {
@@ -259,7 +265,7 @@ function mainSettingsHandler(event)
 		[6, createSwitch('specDefTimeType', mainSettings.specDefTimeType) + '<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getDefTimeType())]
 	]);
 	html += utils.createTableRow([[6, getText('sortorder_desc')], [6, sortNameSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[9, getText('forcegc_desc')], [3, createSwitch('forcegc', mainSettings.forcegc)]]);
+	html += utils.createTableRow([[6, getText('forcegc_desc')], [6, createSwitch('forcegc', mainSettings.forcegc)]]);
 	html += utils.createTableRow([[6, getText('okfieldcolor_desc')], [6, '<input type="text" value="'+mainSettings.statusColorOk+'" id="statusColorOk" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('failfieldcolor_desc')], [6, '<input type="text" value="'+mainSettings.statusColorFail+'" id="statusColorFail" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('samefieldcolor_desc')], [6, '<input type="text" value="'+mainSettings.statusColorSameGrid+'" id="statusColorSameGrid" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
@@ -279,6 +285,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('chatfontsize_desc')], [2, createChatFontDrop()], [4, getText('highlight_reboot')]]);
 	html += utils.createTableRow([[6, getText('starmenurows_desc')], [6, createStarRowsDrop()]]);
 	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
+	html += utils.createTableRow([[6, 'Experimental multi-windows'], [6, createSwitch('experimental', mainSettings.experimental)]]);
 	w.Body().html(html + '<div>');
 	w.withBody('div.row').addClass('nohide');
 	w.withBody('.kolorPicker').change(function() {
@@ -343,6 +350,10 @@ function mainSettingsHandler(event)
 	});
 	w.withBody('#persistFilter').change(function(e) { mainSettings.persistFilter = $(e.target).is(':checked'); });
 	w.withBody('#highlight').change(function(e) { mainSettings.highlight = $(e.target).is(':checked'); });	
+	w.withBody('#experimental').change(function(e) { 
+		mainSettings.experimental = $(e.target).is(':checked');
+		toggleExperimental();
+	});	
 	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
 		settings.settings["global"] = {};
 		settings.store(mainSettings);
@@ -461,7 +472,7 @@ function menuFilterHandler(event)
 function menuZoneRefreshHandler(event)
 {
 	game.gi.mClientMessages.SendMessagetoServer(1037, game.gi.mCurrentViewedZoneID, null);
-	if(expZone == null && experimental) {
+	if(expZone == null && mainSettings.experimental) {
 		var dGetFriendsVO = new (game.def("Communication.VO::dGetFriendsVO"))();
 		dGetFriendsVO.version = game.def("defines").VERSION_NR;
 		game.gi.mClientMessages.SendMessagetoServer(1014, game.gi.mCurrentViewedZoneID, dGetFriendsVO);
@@ -1010,7 +1021,8 @@ if(expZone == null) {
 }
 swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
 swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);
-if(experimental && expZone == null) {
+if(expZone == null) {
+	mainSettings.experimental&&toggleExperimental();
 	var experimentalVisitTracker = game.getTracker('experimentalVisitTracker', experimentalVisitHandler);
 	game.gi.channels.ZONE.addPropertyObserver("CLIENT_VISIT_ZONE", experimentalVisitTracker);
 }

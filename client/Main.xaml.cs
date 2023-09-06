@@ -261,8 +261,6 @@ namespace client
                 upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
                 string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
-                if (cmd["experimental"] != null)
-                    swf_filename = "client_experimental.swf";
                 if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
@@ -464,8 +462,6 @@ namespace client
                     tsoUrl.Set("window", cmd["window"]);
                 if (debug)
                     tsoUrl.Set("debug", "true");
-                if(cmd["experimental"] != null)
-                    tsoUrl.Set("experimental", "true");
                 if (cmd["clientconfig"] != null)
                     tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim() == "NICKNAME" ? string.Format("{0}.json", log.nickName) : cmd["clientconfig"].Trim());
                 string tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString().Replace("bb=https", "bb=http").Replace(":443", ""), Servers._servers[_region].domain);

@@ -48,6 +48,7 @@ var Menu = function(type){
 				{ label: loca.GetText("LAB", "Buffs"), mnemonicIndex: 0, keyCode: 116, onSelect: menuBuffsHandler },
 				{ label: loca.GetText("LAB", "Production"), mnemonicIndex: 0, keyCode: 118, onSelect: menuBuildingHandler },
 				{ label: getText('prod_timed'), mnemonicIndex: 0, keyCode: 119, onSelect: TimedMenuHandler },
+				{ label: loca.GetText("LAB", "BlackMarketAuction"), mnemonicIndex: 0, keyCode: 117, onSelect: menuAuctionHandler },
 				{ label: loca.GetText("LAB", "Visit"), mnemonicIndex: 0, items: [
 					{ label: loca.GetText("LAB", "Specialbuildings"), mnemonicIndex: 0, items: [
 						{ label: loca.GetText("BUI", "ProvisionHouse"), name: "ProvisionHouse", onSelect: buiFastAccessMenuHandler },
@@ -106,7 +107,6 @@ var Menu = function(type){
 					]}
 				]}
 			]},
-			{ label: loca.GetText("LAB", "BlackMarketAuction"), mnemonicIndex: 0, keyCode: 117, onSelect: menuAuctionHandler },
 			{ label: getText('shortcutsTitle'), name: 'Shortcuts', mnemonicIndex: 0 },
 			{ label: loca.GetText("RES", "Tool"), name: 'Tools', mnemonicIndex: 0, items: [
 				{label: loca.GetText("LAB", "Update"), onSelect: reloadScripts },
@@ -135,7 +135,7 @@ Menu.prototype = {
 			{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler }, { type: 'separator' },
 			{ label: getText('feedbacktitle'), onSelect: feedbackMenuHandler }
 		]});
-		menu.push({ label: 'v' + version + (experimental ? "-Ex" : ""), enabled: false });
+		menu.push({ label: 'v' + version + (mainSettings.experimental ? "-Ex" : ""), enabled: false });
 		menu.push({ label: '', name: 'memusage', enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;

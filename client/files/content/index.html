@@ -10,7 +10,7 @@
 	<script type="text/javascript" src="jquery-ui.min.js"></script>
 	<script type="text/javascript" src="lru_cache.js"></script>
 	<script type="text/javascript"> 
-		var swmmo,loca,assets,globalFlash,gameLang,loadInterval,game,menu,utils,rawArgs,experimental = false,version = null,
+		var swmmo,loca,assets,globalFlash,gameLang,loadInterval,game,menu,utils,rawArgs,version = null,
 			dtf=new window.runtime.flash.globalization.DateTimeFormatter("en-US"),settings,settingsFile="settings.json",isDebug=!1;
 		var expZone=null,expAuth,expFlex;
 		window.onload = function(){ 
@@ -77,12 +77,10 @@
 			if(p["authrandom"]) { expAuth = p["authrandom"]; }
 			if(p["flexid"]) { expFlex = p["flexid"]; }
 			if(p["zoneid"]) { expZone = p["zoneid"]; }
-			if(p["experimental"]) { experimental = true; }
 			convertSettings();
 		  });
 		  loadInterval = setInterval(function(){ 
 		    try {
-				if(experimental) { swmmo.getDefinitionByName("defines").CLIENT_EXPERIMENTAL = 1; }
 				if(expZone != null) {
 				  swmmo.getDefinitionByName("defines").CLIENT_AUTHRANDOM = expAuth;
 				  swmmo.getDefinitionByName("mx.messaging::FlexClient").getInstance().id = expFlex;
