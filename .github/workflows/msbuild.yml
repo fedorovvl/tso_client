@@ -27,7 +27,13 @@ jobs:
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
-
+      
+    - name: Declare variables
+      shell: bash
+      run: |
+        echo "sha_short=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
+        sed -i "s/#TESTTAG#/${sha_short}/g" ${{env.GITHUB_WORKSPACE}}/client/Main.xaml.cs
+        
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=x86 ${{env.SOLUTION_FILE_PATH}}
