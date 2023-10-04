@@ -47,6 +47,7 @@ namespace client
         private string _langRun;
         private string _langExit;
         private string _langRemember;
+        private static string extraVersion = "#TESTTAG#";
         public string appversion
         {
             get { return "1.5.6.3"; }
@@ -481,7 +482,8 @@ namespace client
             Doc.SelectSingleNode("/adobe:application/adobe:id", ns).InnerText = "TSO-" + RandomString;
             Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + nickname;
             Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
-            System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}", argString, appversion));
+            extraVersion = extraVersion != "#TESTTAG#"  ? "-" + extraVersion : "";
+            System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}{2}", argString, appversion, extraVersion));
             try
             {
                 App.Current.Shutdown(1);
