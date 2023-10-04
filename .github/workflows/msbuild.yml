@@ -32,7 +32,7 @@ jobs:
       shell: bash
       run: |
         echo "sha_short=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
-        sed -i "s/#TESTTAG#/${sha_short}/g" ${{env.GITHUB_WORKSPACE}}/client/Main.xaml.cs
+        sed -i "s/#TESTTAG#/${sha_short}/g" client/Main.xaml.cs
         
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
