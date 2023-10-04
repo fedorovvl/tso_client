@@ -482,7 +482,7 @@ namespace client
             Doc.SelectSingleNode("/adobe:application/adobe:id", ns).InnerText = "TSO-" + RandomString;
             Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + nickname;
             Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
-            extraVersion = extraVersion.Replace("#TESTTAG#", "");
+            extraVersion = extraVersion.Replace(string.Format("#{0}#", "TESTTAG"), "");
             System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}{2}", argString, appversion, extraVersion));
             try
             {
