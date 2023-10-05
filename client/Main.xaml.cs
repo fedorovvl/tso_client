@@ -50,7 +50,7 @@ namespace client
         private static string extraVersion = "#TESTTAG#";
         public string appversion
         {
-            get { return "1.5.6.3"; }
+            get { return "1.5.6.4"; }
         }
         public string langLogin
         {
