@@ -10,9 +10,10 @@
 	<script type="text/javascript" src="jquery-ui.min.js"></script>
 	<script type="text/javascript" src="lru_cache.js"></script>
 	<script type="text/javascript"> 
-		var swmmo,loca,assets,globalFlash,gameLang,loadInterval,game,menu,utils,rawArgs,version = null,
-			dtf=new window.runtime.flash.globalization.DateTimeFormatter("en-US"),settings,settingsFile="settings.json",isDebug=!1;
-		var expZone=null,expAuth,expFlex;
+
+		var swmmo,loca,assets,notifications,notificationManager,globalFlash,gameLang,loadInterval,loadInterval2,game,menu,utils,rawArgs,version = null,
+			dtf=new window.runtime.flash.globalization.DateTimeFormatter("en-US"),expZone=null,expAuth,expFlex,settings,settingsFile="settings.json",isDebug=!1;
+
 		window.onload = function(){ 
 		   var loader = new air.Loader(); 
 		   loader.contentLoaderInfo.addEventListener(air.Event.COMPLETE, loadCompleteHandler)
@@ -58,10 +59,32 @@
 			return result;
 		}
 		
+		function loadNotificationsHandler(event)
+		{
+			notifications = event.target.content;
+			window.nativeWindow.stage.addChild( notifications ); 
+			loadInterval2 = setInterval(function(){
+				if(notifications.application != null) {
+					clearInterval(loadInterval2);
+					for(i = 0; i< window.nativeWindow.stage.numChildren; i++){
+						if(window.nativeWindow.stage.getChildAt(i).currentLabel == "Main") {
+							window.nativeWindow.stage.removeChildAt(i);
+							var notificationManagerDef = notifications.getDefinitionByName("com.charlesbihis.engine.notification::NotificationManager");
+							notificationManager = new notificationManagerDef("images/dark.swf", "images/Icon2.png", "images/Icon4.png", "images/drop.mp3", 2, "auto");
+							break;
+						}
+					}
+				}
+			}, 100);
+		}
+		
 		function loadCompleteHandler(event)
 		{
 		  swmmo = event.target.content;
 		  window.nativeWindow.stage.addChild( swmmo ); 
+		  var loader = new air.Loader(); 
+		  loader.contentLoaderInfo.addEventListener(air.Event.COMPLETE, loadNotificationsHandler)
+		  loader.load(new air.URLRequest("toast.swf"));
 		  window.nativeWindow.stage.addEventListener(air.Event.RESIZE, onResize);
 		  window.nativeWindow.addEventListener("displayStateChange", onResize);
 		  window.nativeWindow.stage.addEventListener(window.runtime.flash.events.KeyboardEvent.KEY_DOWN, stageKeyDownListener);
@@ -126,7 +149,7 @@
 		function convertSettings(){var e=new air.File("file:///"+air.File.applicationDirectory.resolvePath(settingsFile).nativePath);if(e.exists){var t=new air.FileStream;try{t.open(e,"read");var i=t.readUTFBytes(1);"{"!=i&&(t.position=0,i=JSON.parse(t.readUTF()),t.close(),t.open(e,"write"),t.writeUTFBytes(JSON.stringify(i,null,"  "))),t.close()}catch(r){}}}
 		function combineSameLang(e){return 0==e.indexOf("en")?"en-uk":0==e.indexOf("es")?"es-es":e}
 		function onResize(event) { swmmo.setActualSize(window.nativeWindow.stage.stageWidth, window.nativeWindow.stage.stageHeight); }
-		var Game=function(e){this.gi=e,this.player=e.mCurrentPlayer,this.zone=e.mCurrentPlayerZone,this.quests=e.mNewQuestManager,this.trackers={},this.questCallbacks=e.mQuestClientCallbacks};Game.prototype={def:function(e,t){var n=swmmo.getDefinitionByName(e);return t?new n:n},chatMessage:function(e,t){t=t||"main",globalFlash.gui.mChatPanel.PutMessageToChannelWithoutServer("news",new window.runtime.Date,"Client [{0}]".format(t),e,!1,!1)},getBuildings:function(e){if((e=e||1)>5)return null;try{return this.zone.mStreetDataMap.GetBuildings_vector()}catch(t){return this.getBuildings(++e)}},getSpecialists:function(e){if((e=e||1)>5)return null;try{return this.zone.GetSpecialists_vector()}catch(t){return this.getSpecialists(++e)}},getBuffs:function(e){if((e=e||1)>5)return null;try{return this.player.getAvailableBuffs_vector()}catch(t){return this.getBuffs(++e)}},getResources:function(e){if((e=e||1)>5)return null;try{return this.zone.GetResources(this.player)}catch(t){return this.getResources(++e)}},createResponder:function(e,t){return new(this.def("ServerState::ResponderSimple"))(e,t)},showAlert:function(e){var t=this.def("GUI.Components.ItemRenderer::AvatarMessageItemRenderer",!0);swmmo.getDefinitionByName("globalFlash").gui.mAvatarMessageList.mClientMessages.addChild(t),t.headlineLabel.text="Client",t.messageBody.text=e,t.image.source=assets.GetBitmap("1-Up.png")},getTracker:function(r,e){return this.trackers[r]||(this.trackers[r]=new window.runtime.ClientBuff,this.trackers[r].addEventListener("buffApply",e)),this.trackers[r]}};
+		var Game=function(e){this.gi=e,this.player=e.mCurrentPlayer,this.zone=e.mCurrentPlayerZone,this.quests=e.mNewQuestManager,this.trackers={},this.questCallbacks=e.mQuestClientCallbacks};Game.prototype={def:function(e,t){var n=swmmo.getDefinitionByName(e);return t?new n:n},chatMessage:function(e,t){t=t||"main",globalFlash.gui.mChatPanel.PutMessageToChannelWithoutServer("news",new window.runtime.Date,"Client [{0}]".format(t),e,!1,!1)},getBuildings:function(e){if((e=e||1)>5)return null;try{return this.zone.mStreetDataMap.GetBuildings_vector()}catch(t){return this.getBuildings(++e)}},getSpecialists:function(e){if((e=e||1)>5)return null;try{return this.zone.GetSpecialists_vector()}catch(t){return this.getSpecialists(++e)}},getBuffs:function(e){if((e=e||1)>5)return null;try{return this.player.getAvailableBuffs_vector()}catch(t){return this.getBuffs(++e)}},getResources:function(e){if((e=e||1)>5)return null;try{return this.zone.GetResources(this.player)}catch(t){return this.getResources(++e)}},createResponder:function(e,t){return new(this.def("ServerState::ResponderSimple"))(e,t)},showAlert:function(e){var t=this.def("GUI.Components.ItemRenderer::AvatarMessageItemRenderer",!0);swmmo.getDefinitionByName("globalFlash").gui.mAvatarMessageList.mClientMessages.addChild(t),t.headlineLabel.text="Client",t.messageBody.text=e,t.image.source=assets.GetBitmap("1-Up.png"),notificationManager.show("Client!", e, null)},getTracker:function(r,e){return this.trackers[r]||(this.trackers[r]=new window.runtime.ClientBuff,this.trackers[r].addEventListener("buffApply",e)),this.trackers[r]}};
 	</script>
 </head> 
 <body style="background-color:transparent;">
