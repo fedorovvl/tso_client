@@ -109,10 +109,10 @@ function getRoomNameLoca(room, group)
 
 function notificationHandler(event)
 {
-	debug(event.data);
 	if(window.nativeWindow.active || !notifySettings.enabled) { return; }
 	if(!event.data.text) { return; }
 	if(notifySettings.news && event.data.room == "news") { return notificationShow(event.data.text); }
+	if(!notifySettings.news && event.data.room == "news") { return; }
 	var bbmsg = event.data.getExtension("bbmsg");
 	if((notifySettings.mentionGroup && notificationPattern.test(event.data.text)) || !event.data.groupMessage) { 
 		return notificationShow(loca.GetText("LAB", getRoomNameLoca(event.data.room)) + "\n" + bbmsg.mPlayerName + ": " + event.data.text);
