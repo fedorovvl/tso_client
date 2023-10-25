@@ -84,7 +84,7 @@ function notificationSettingsHandler(event)
 	w.withBody('#mentionGroup').change(function(e) { notifySettings.mentionGroup = $(e.target).is(':checked'); });
 	
 	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
-		notifySettings.mentionWords = w.withBody('#mentionWords').val().split(",").filter(function(n){ return n; }).map(function(n) { return n.trim(); });;
+		notifySettings.mentionWords = w.withBody('#mentionWords').val().split(",").filter(function(n){ return n; });
 		settings.settings["notify"] = {};
 		settings.store(notifySettings, "notify");
 		setupNotifications();
