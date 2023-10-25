@@ -7,6 +7,7 @@ var notifySettings = {
 	compact: false,
 	mentionGroup: true,
 	mentionWords: [],
+	newsCustom: false,
 	news: false
 };
 var notificationTracker = game.getTracker('tsochat', notificationHandler);
@@ -60,6 +61,7 @@ function notificationSettingsHandler(event)
 	html += utils.createTableRow([[9, 'Compact'], [3, createSwitch('compact', notifySettings.compact)]]);
 	html += utils.createTableRow([[3, ''],[6, createButton('test', "Test notification")],[3, '']]);
 	html += utils.createTableRow([[9, 'News chat trigger'], [3, createSwitch('news', notifySettings.news)]]);
+	html += utils.createTableRow([[9, 'Custom words news channel'], [3, createSwitch('newsCustom', notifySettings.newsCustom)]]);
 	html += utils.createTableRow([[9, 'Group chat mention trigger'], [3, createSwitch('mentionGroup', notifySettings.mentionGroup)]]);
 	html += utils.createTableRow([[3, 'Custom words trigger'], [9, '<input type="text" value="'+notifySettings.mentionWords.join(", ")+'" id="mentionWords" class="form-control">']]);
 	
@@ -78,6 +80,7 @@ function notificationSettingsHandler(event)
 	w.withBody('#compact').change(function(e) { notifySettings.compact = $(e.target).is(':checked'); });
 	w.withBody('#sound').change(function(e) { notifySettings.sound = $(e.target).is(':checked'); });
 	w.withBody('#news').change(function(e) { notifySettings.news = $(e.target).is(':checked'); });
+	w.withBody('#newsCustom').change(function(e) { notifySettings.newsCustom = $(e.target).is(':checked'); });
 	w.withBody('#mentionGroup').change(function(e) { notifySettings.mentionGroup = $(e.target).is(':checked'); });
 	
 	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
@@ -88,6 +91,11 @@ function notificationSettingsHandler(event)
 		w.hide();
 	}));
 	w.show();
+}
+
+function notificationLast5Handler(event)
+{
+	notificationManager.replayLatestFiveUpdates();
 }
 
 function notificationShow(message)
@@ -114,6 +122,9 @@ function notificationHandler(event)
 	if(window.nativeWindow.active || !notifySettings.enabled) { return; }
 	if(!event.data.text) { return; }
 	if(notifySettings.news && event.data.room == "news") { return notificationShow(event.data.text); }
+	if(notifySettings.newsCustom && notifySettings.mentionWords.length > 0 && notifySettings.mentionWords.some(function(word) { var t = new RegExp(word,"gi"); return t.test(event.data.text); })) {
+		return notificationShow(event.data.text);
+	}
 	if(!notifySettings.news && event.data.room == "news") { return; }
 	var bbmsg = event.data.getExtension("bbmsg");
 	if((notifySettings.mentionGroup && notificationPattern.test(event.data.text)) || !event.data.groupMessage) { 
