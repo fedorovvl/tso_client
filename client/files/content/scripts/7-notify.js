@@ -6,7 +6,7 @@ var notifySettings = {
 	theme: 'dark',
 	compact: false,
 	mentionGroup: true,
-	mentionWords: {},
+	mentionWords: [],
 	news: false
 };
 var notificationTracker = game.getTracker('tsochat', notificationHandler);
@@ -60,7 +60,8 @@ function notificationSettingsHandler(event)
 	html += utils.createTableRow([[9, 'Compact'], [3, createSwitch('compact', notifySettings.compact)]]);
 	html += utils.createTableRow([[3, ''],[6, createButton('test', "Test notification")],[3, '']]);
 	html += utils.createTableRow([[9, 'News chat trigger'], [3, createSwitch('news', notifySettings.news)]]);
-	html += utils.createTableRow([[9, 'Group chat mention trigger'], [3, createSwitch('mentionGroup', notifySettings.news)]]);
+	html += utils.createTableRow([[9, 'Group chat mention trigger'], [3, createSwitch('mentionGroup', notifySettings.mentionGroup)]]);
+	html += utils.createTableRow([[3, 'Custom words trigger'], [9, '<input type="text" value="'+notifySettings.mentionWords.join(", ")+'" id="mentionWords" class="form-control">']]);
 	
 	w.Body().html(html + '<div>');
 	w.withBody('div.row').addClass('nohide');
@@ -80,6 +81,7 @@ function notificationSettingsHandler(event)
 	w.withBody('#mentionGroup').change(function(e) { notifySettings.mentionGroup = $(e.target).is(':checked'); });
 	
 	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
+		notifySettings.mentionWords = w.withBody('#mentionWords').val().split(",").filter(function(n){ return n; }).map(function(n) { return n.trim(); });;
 		settings.settings["notify"] = {};
 		settings.store(notifySettings, "notify");
 		setupNotifications();
@@ -117,9 +119,16 @@ function notificationHandler(event)
 	if((notifySettings.mentionGroup && notificationPattern.test(event.data.text)) || !event.data.groupMessage) { 
 		return notificationShow(loca.GetText("LAB", getRoomNameLoca(event.data.room)) + "\n" + bbmsg.mPlayerName + ": " + event.data.text);
 	}
+	if(notifySettings.mentionWords.length > 0 && notifySettings.mentionWords.some(function(word) { var t = new RegExp(word,"gi"); return t.test(event.data.text); })) {
+		return notificationShow(loca.GetText("LAB", getRoomNameLoca(event.data.room)) + "\n" + bbmsg.mPlayerName + ": " + event.data.text);
+	}
 }
 
 
 //init
 $.extend(notifySettings, settings.read(null, "notify"));
+// typefix
+if(Object.prototype.toString.call(notifySettings.mentionWords) == "[object Object]") {
+	notifySettings.mentionWords = [];
+}
 setupNotifications();
