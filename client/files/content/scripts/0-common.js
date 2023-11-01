@@ -30,8 +30,14 @@ var mainSettings = {
 	chatPanelWidth: 350,
 	starColsCount: 9,
 	starRowsCount: 4,
-	experimental: false
+	experimental: false,
+	useCustomChatCSS: false, 
+	chatCSS: { 
+		'bbmsg': '#8CA8FF', 'modmsg': '#E5CD2D', 'communityleadmsg': '#99ff99', 'globaltstamp': '#7FFF7F', 'globalsender': '#00FF33', 'globalmsg': '#E2E2E2', 'globalownname': '#FF8644', 'globalimportant': '#E2E2E2', 'findcooptstamp': '#00FF33', 'findcoopsender': '#00FF33', 'findcoopmsg': '#E2E2E2', 'findcoopownname': '#FF8644', 'findcoopimportant': '#E2E2E2', 'tradetstamp': '#00FF33', 'tradesender': '#00FF33', 'trademsg': '#E2E2E2', 'tradeownname': '#FF9347', 'tradeimportant': '#E2E2E2', 'helptstamp': '#00FF33', 'helpsender': '#00FF33', 'helpmsg': '#E2E2E2', 'helpownname': '#FF9347', 'helpimportant': '#E2E2E2', 'newststamp': '#FFFF00', 'newssender': '#FFFF00', 'newsmsg': '#FFFF00', 'newsimportant': '#FFFF00', 'newsownname': '#FF9347', 'guildtstamp': '#7FFF7F', 'guildsender': '#7FFF7F', 'guildmsg': '#7FFF7F', 'guildownname': '#7FFF7F', 'guildimportant': '#7FFF7F', 'officerststamp': '#7FFF7F', 'officerssender': '#7FFF7F', 'officersmsg': '#7FFF7F', 'officersownname': '#7FFF7F', 'officersimportant': '#7FFF7F', 'whispertstamp': '#FC68FF', 'whispersender': '#FC68FF', 'whispermsg': '#FC68FF', 'whisperownname': '#FF9347', 'whisperimportant': '#FC68FF', 'cooptstamp': '#00FF33', 'coopsender': '#00FF33', 'coopmsg': '#E2E2E2', 'coopownname': '#FF8644' 
+	}
 };
+var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
+
 var highlightTracker = game.getTracker('highlightTracker', highlightModifyFrame);
 var scaleFactor = game.def("global").mGraphicScaleFactor;
 
@@ -230,7 +236,26 @@ function mainSettingsHandler(event)
 	w.size = '';
 	w.create();
 	var html = '<div class="container-fluid" style="user-select: all;">';
+	var tabs = $('<ul>', { 'class': 'nav nav-pills nav-justified', 'style': 'width: 100%' });
+	var tabcontent = $('<div>', { 'class': 'tab-content' });
+	tabs.append($('<li>', { 'class': 'active' }).append($('<a>', { 'data-toggle': 'tab', 'href': '#menumain' }).text(loca.GetText("ACL", "BuffAdventuresGeneral"))));
+	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menutemplates' }).text("Templates")));
+	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menuui' }).text("UI")));
+	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menunotify' }).text("Notifications")));
+	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menuchat' }).text("Chat")));
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
+	var themeSelector = $('<select>', { 'class': 'form-control theme' });
+	themeSelector.append([$('<option>', { 'value': 'dark' }).text("Dark"), $('<option>', { 'value': 'light' }).text("Light")]);
+	var positionSelector = $('<select>', { 'class': 'form-control position' });
+	positionSelector.append([
+		$('<option>', { 'value': 'auto' }).text('auto'),
+		$('<option>', { 'value': 'topLeft' }).text('topLeft'),
+		$('<option>', { 'value': 'topRight' }).text('topRight'),
+		$('<option>', { 'value': 'bottomLeft' }).text('bottomLeft'),
+		$('<option>', { 'value': 'bottomRight' }).text('bottomRight')
+	]);
+	var timeSelector = $('<select>', { 'class': 'form-control displayTime' });
+	timeSelector.append([$('<option>', { 'value': 3 }).text('3'), $('<option>', { 'value': 5 }).text('5'), $('<option>', { 'value': 7 }).text('7'), $('<option>', { 'value': 10 }).text('10')]);
 	var menuStyleSelector = $('<select>', { 'class': 'form-control menuStyle' });
 	menuStyleSelector.append([
 		$('<option>', { 'value': 'grouped' }).text(getText('menustyle_grouped')),
@@ -248,9 +273,28 @@ function mainSettingsHandler(event)
 	]);
 	html += utils.createTableRow([[6, getText('menustyle_desc')], [6, menuStyleSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('deffilter_desc')], [6, createFilterDrop()]]);
-	html += utils.createTableRow([[9, "{0} {1}".format(loca.GetText("LAB", "Filter"), loca.GetText("QUL", "TutFreeHomezone3"))], [3, createSwitch('persistFilter', mainSettings.persistFilter)]]);
+	html += utils.createTableRow([[6, "{0} {1}".format(loca.GetText("LAB", "Filter"), loca.GetText("QUL", "TutFreeHomezone3"))], [6, createSwitch('persistFilter', mainSettings.persistFilter)]]);
 	html += utils.createTableRow([[6, getText('dateformat_desc')], [6, createDateFormatterDrop()]]);
 	html += utils.createTableRow([[6, getText('lru_desc')], [6, createLruDrop()]]);
+	html += utils.createTableRow([
+		[6, getText('spectimetype_desc')], 
+		[6, createSwitch('specDefTimeType', mainSettings.specDefTimeType) + '<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getDefTimeType())]
+	]);
+	html += utils.createTableRow([[6, getText('sortorder_desc')], [6, sortNameSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('forcegc_desc')], [6, createSwitch('forcegc', mainSettings.forcegc)]]);
+	html += utils.createTableRow([
+		[6, getText('buiFastdesc')], 
+		[6, createSwitch('buiFastAccessType', mainSettings.buiFastAccessType == 0 ? false : true) + '<div style="position: absolute;left: 55px;top: 1px;" id="buiFastAccessTypeLang">{0}</div>'.format(getBuiFastAccessType())]
+	]);
+	html += utils.createTableRow([
+		[6, getText('buffactive_desc')], 
+		[6, createSwitch('buffOnlyActive', mainSettings.buffOnlyActive) + '<div style="position: absolute;left: 55px;top: 1px;" id="buffOnlyActiveLang">{0}</div>'.format(getBuffOnlyActive())]
+	]);
+	html += utils.createTableRow([[6, 'Experimental multi-windows'], [6, createSwitch('experimental', mainSettings.experimental)]]);
+
+	tabcontent.append($('<div>', { 'class': 'tab-pane fade in active', 'id': 'menumain' }).append(html + '</div>'));
+	var html = '<div class="container-fluid" style="user-select: all;">';
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
 	html += utils.createTableRow([[9, getText('geotemplates_desc') + getDefFolder('geolastDir')], [3, createButton('geolastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('expltemplates_desc') + getDefFolder('expllastDir')], [3, createButton('expllastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('bufftemplates_desc') + getDefFolder('bufflastDir')], [3, createButton('bufflastDir', loca.GetText("LAB", "Select"))]]);
@@ -260,37 +304,49 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('dontchangefolder_desc')], [3, createSwitch('changeTemplateFolder', mainSettings.changeTemplateFolder)]]);
 	html += utils.createTableRow([[6, getText('geodeftask_desc')], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
 	html += utils.createTableRow([[6, getText('expldeftask_desc')], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
-	html += utils.createTableRow([
-		[6, getText('spectimetype_desc')], 
-		[6, createSwitch('specDefTimeType', mainSettings.specDefTimeType) + '<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getDefTimeType())]
-	]);
-	html += utils.createTableRow([[6, getText('sortorder_desc')], [6, sortNameSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[6, getText('forcegc_desc')], [6, createSwitch('forcegc', mainSettings.forcegc)]]);
+	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menutemplates' }).append(html+'</div>'));
+	var html = '<div class="container-fluid" style="user-select: all;">';
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
 	html += utils.createTableRow([[6, getText('okfieldcolor_desc')], [6, '<input type="text" value="'+mainSettings.statusColorOk+'" id="statusColorOk" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('failfieldcolor_desc')], [6, '<input type="text" value="'+mainSettings.statusColorFail+'" id="statusColorFail" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('samefieldcolor_desc')], [6, '<input type="text" value="'+mainSettings.statusColorSameGrid+'" id="statusColorSameGrid" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([
-		[6, getText('buiFastdesc')], 
-		[6, createSwitch('buiFastAccessType', mainSettings.buiFastAccessType == 0 ? false : true) + '<div style="position: absolute;left: 55px;top: 1px;" id="buiFastAccessTypeLang">{0}</div>'.format(getBuiFastAccessType())]
-	]);
-	html += utils.createTableRow([
-		[6, getText('buffactive_desc')], 
-		[6, createSwitch('buffOnlyActive', mainSettings.buffOnlyActive) + '<div style="position: absolute;left: 55px;top: 1px;" id="buffOnlyActiveLang">{0}</div>'.format(getBuffOnlyActive())]
-	]);
 	html += utils.createTableRow([[6, getText('highlight_desc')], [6, createSwitch('highlight', mainSettings.highlight) + '<div style="position: absolute;left: 55px;top: 1px;">{0}</div>'.format(getText('highlight_reboot'))]]);
 	html += utils.createTableRow([[6, getText('highlightSize_desc')], [6, createHighlightSizeDrop()]]);
 	html += utils.createTableRow([[6, getText('highlightColor_desc')], [6, '<input type="text" value="'+mainSettings.highlightColor+'" id="highlightColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('highlightGlow_desc')], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
-	html += utils.createTableRow([[6, getText('chatpanelwidth_desc')], [6, createChatWidthDrop()]]);
-	html += utils.createTableRow([[6, getText('chatfontsize_desc')], [2, createChatFontDrop()], [4, getText('highlight_reboot')]]);
 	html += utils.createTableRow([[6, getText('starmenurows_desc')], [6, createStarRowsDrop()]]);
 	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
-	html += utils.createTableRow([[6, 'Experimental multi-windows'], [6, createSwitch('experimental', mainSettings.experimental)]]);
-	w.Body().html(html + '<div>');
+	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menuui' }).append(html+'</div>'));
+	var html = '<div class="container-fluid" style="user-select: all;">';
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
+	html += utils.createTableRow([[9, 'Enabled'], [3, createSwitch('enabled', notifySettings.enabled)]]);
+	html += utils.createTableRow([[6, 'Theme'], [6, themeSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, 'Display time'], [6, timeSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, 'Position'], [6, positionSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[9, 'Sound'], [3, createSwitch('sound', notifySettings.sound)]]);
+	html += utils.createTableRow([[9, 'Compact'], [3, createSwitch('compact', notifySettings.compact)]]);
+	html += utils.createTableRow([[3, ''],[6, createButton('testnotify', "Test notification")],[3, '']]);
+	html += utils.createTableRow([[9, 'News chat trigger'], [3, createSwitch('news', notifySettings.news)]]);
+	html += utils.createTableRow([[9, 'Custom words news channel'], [3, createSwitch('newsCustom', notifySettings.newsCustom)]]);
+	html += utils.createTableRow([[9, 'Group chat mention trigger'], [3, createSwitch('mentionGroup', notifySettings.mentionGroup)]]);
+	html += utils.createTableRow([[3, 'Custom words trigger'], [9, '<input type="text" value="'+notifySettings.mentionWords.join(", ")+'" id="mentionWords" class="form-control">']]);
+	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menunotify' }).append(html+'</div>'));
+	var html = '<div class="container-fluid" style="user-select: all;">';
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
+	html += utils.createTableRow([[6, getText('chatpanelwidth_desc')], [6, createChatWidthDrop()]]);
+	html += utils.createTableRow([[6, getText('chatfontsize_desc')], [2, createChatFontDrop()], [4, getText('highlight_reboot')]]);
+	html += utils.createTableRow([[6, "Use custom chat CSS"], [6, createSwitch('useCustomChatCSS', mainSettings.useCustomChatCSS)]]);
+	$.each(mainSettings.chatCSS, function(k, v) {
+		html += utils.createTableRow([[6, k], [6, '<input type="text" value="'+v+'" id="'+k+'" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
+	});
+	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menuchat' }).append(html+'</div>'));
+	w.Body().html(tabs.prop("outerHTML") + '<br>' + tabcontent.prop("outerHTML"));
 	w.withBody('div.row').addClass('nohide');
+	w.withBody('.nav-justified > li').css("width", "20%");
 	w.withBody('.kolorPicker').change(function() {
 		$(this).closest('div').find('span').css('background-color', this.value);
-		mainSettings[this.id] = this.value;
+		if(mainSettings[this.id]) {	mainSettings[this.id] = this.value; }
+		if(mainSettings.chatCSS[this.id]) {	mainSettings.chatCSS[this.id] = this.value; }
 		switch(this.id) {
 			case 'statusColorOk':
 				document.styleSheets[0].insertRule(".buffReady{background-color:"+this.value+";}", document.styleSheets[0].rules.length);
@@ -306,6 +362,12 @@ function mainSettingsHandler(event)
 	w.withBody('.kolorPicker').change();
 	w.withBody('button').click(function(e) { 
 		var id = $(e.target).attr('id');
+		if(id == 'testnotify') {
+			setupNotifications();
+			var title = notifySettings.compact ? loca.GetText("SD2", "ChangeSkinBuffMason") : game.gw + ' - ' + game.playerName;
+			notificationManager.show(title, loca.GetText("SD2", "ChangeSkinBuffMason"), "images/Icon2.png", null, notifySettings.compact);
+			return;
+		}
 		var file = new air.File(); 
 		file.addEventListener(air.Event.SELECT, function(event){
 			mainSettings[id] = file.nativePath;
@@ -354,6 +416,18 @@ function mainSettingsHandler(event)
 		mainSettings.experimental = $(e.target).is(':checked');
 		toggleExperimental();
 	});	
+	w.withBody('#useCustomChatCSS').change(function(e) {	
+		mainSettings.useCustomChatCSS = $(e.target).is(':checked');
+	});
+	w.withBody('.theme').val(notifySettings.theme).change(function(e) { notifySettings.theme = $(e.target).val(); });
+	w.withBody('.position').val(notifySettings.position).change(function(e) { notifySettings.position = $(e.target).val(); });
+	w.withBody('.displayTime').val(notifySettings.displayTime).change(function(e) { notifySettings.displayTime = $(e.target).val(); });
+	w.withBody('#enabled').change(function(e) { notifySettings.enabled = $(e.target).is(':checked'); });
+	w.withBody('#compact').change(function(e) { notifySettings.compact = $(e.target).is(':checked'); });
+	w.withBody('#sound').change(function(e) { notifySettings.sound = $(e.target).is(':checked'); });
+	w.withBody('#news').change(function(e) { notifySettings.news = $(e.target).is(':checked'); });
+	w.withBody('#newsCustom').change(function(e) { notifySettings.newsCustom = $(e.target).is(':checked'); });
+	w.withBody('#mentionGroup').change(function(e) { notifySettings.mentionGroup = $(e.target).is(':checked'); });
 	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
 		settings.settings["global"] = {};
 		settings.store(mainSettings);
@@ -363,6 +437,13 @@ function mainSettingsHandler(event)
 			reloadScripts(null);
 			shortcutsMakeMenu();
 		}
+		if(mainSettings.useCustomChatCSS == true) {
+			var cssFinal = chatCSSTemplate;
+			$.each(mainSettings.chatCSS, function(k, v) { cssFinal = cssFinal.replace('#'+k, 'color: ' + v); });
+			var sheet = new window.runtime.flash.text.StyleSheet();
+			sheet.parseCSS(cssFinal);
+			game.def("GUI.Components.ItemRenderer::CustomChatMessage").setStyleSheet(sheet);
+		}
 		highlightCircle = highlightDrawCircle();
 		highlightProceed(true);
 		game.gi.isOnHomzone()&&setFilterHandler(mainSettings.defFilter);
@@ -370,6 +451,10 @@ function mainSettingsHandler(event)
 		// star menu
 		swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
 		swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);
+		notifySettings.mentionWords = w.withBody('#mentionWords').val().split(",").filter(function(n){ return n; });
+		settings.settings["notify"] = {};
+		settings.store(notifySettings, "notify");
+		setupNotifications();
 		w.hide();
 	}));
 	w.show();
@@ -984,7 +1069,7 @@ $(document).on("click", ".kolorPicker", function() {
             r[i] += "</tbody></table>"
         }
         return r[0]
-    }()), $("li#0").addClass("kolorpicker-palette-select"), $(r).css("z-index", "10"), $(".kolorPicker-wrapper .kolorPicker").focus(), $("<div/>").attr("class", "kolorPickerUI").appendTo("body"))
+    }()), $("li#0").addClass("kolorpicker-palette-select"), $(".kolorPicker-wrapper .kolorPicker").focus(), $("<div/>").attr("class", "kolorPickerUI").appendTo("body"))
 });
 $(document).on("input", ".kolorPicker", function() {
     "#" != $(this).val().charAt(0) && $(this).val("#" + $(this).val()), /^#[0-9A-Fa-f]*$/.test($(this).val()) || $(this).val(""), $(this).val().length > 7 && $(this).val(""), 0 != $(this).val().length && ($(this).val().length = 7) && $(this).change()
@@ -1018,6 +1103,13 @@ document.styleSheets[0].insertRule(".specSamegrid{background-color:"+mainSetting
 game.def("defines").CHAT_FONT_SIZE = mainSettings.chatFontSize;
 if(expZone == null) {
 	swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
+}
+if(mainSettings.useCustomChatCSS == true) {
+	var cssFinal = chatCSSTemplate;
+	$.each(chatCSS.css, function(k, v) { cssFinal = cssFinal.replace('#'+k, 'color: ' + v); });
+	var sheet = new window.runtime.flash.text.StyleSheet();
+	sheet.parseCSS(cssFinal);
+	game.def("GUI.Components.ItemRenderer::CustomChatMessage").setStyleSheet(sheet);
 }
 swmmo.application.GAMESTATE_ID_STAR_MENU.width = 557 + (mainSettings.starColsCount - 9 > 0 ? (mainSettings.starColsCount - 9) * 57 : 0);
 swmmo.application.GAMESTATE_ID_STAR_MENU.height = 400 + (mainSettings.starRowsCount - 4 > 0 ? (mainSettings.starRowsCount - 4) * 70 : 0);

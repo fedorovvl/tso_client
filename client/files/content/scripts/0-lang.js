@@ -155,7 +155,7 @@ const baseTranslation = {
 		'btn_fix': 'Исправить',
 		'manager_mismatch': 'отличается',
 		'load_template': 'Загрузить шаблон' ,
-		'save_template': 'Сохранить как шаблон',
+		'save_template': 'Сохранить шаблон',
 		'command_sent': 'Команда отправлена',
 		'no_free_expl': 'Нет свободных исследователей',
 		'no_free_geo': 'Нет свободных геологов',
