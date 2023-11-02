@@ -1106,7 +1106,7 @@ if(expZone == null) {
 }
 if(mainSettings.useCustomChatCSS == true) {
 	var cssFinal = chatCSSTemplate;
-	$.each(chatCSS.css, function(k, v) { cssFinal = cssFinal.replace('#'+k, 'color: ' + v); });
+	$.each(mainSettings.chatCSS, function(k, v) { cssFinal = cssFinal.replace('#'+k, 'color: ' + v); });
 	var sheet = new window.runtime.flash.text.StyleSheet();
 	sheet.parseCSS(cssFinal);
 	game.def("GUI.Components.ItemRenderer::CustomChatMessage").setStyleSheet(sheet);
