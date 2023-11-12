@@ -34,12 +34,22 @@ var mainSettings = {
 	useCustomChatCSS: false, 
 	chatCSS: { 
 		'bbmsg': '#8CA8FF', 'modmsg': '#E5CD2D', 'communityleadmsg': '#99ff99', 'globaltstamp': '#7FFF7F', 'globalsender': '#00FF33', 'globalmsg': '#E2E2E2', 'globalownname': '#FF8644', 'globalimportant': '#E2E2E2', 'findcooptstamp': '#00FF33', 'findcoopsender': '#00FF33', 'findcoopmsg': '#E2E2E2', 'findcoopownname': '#FF8644', 'findcoopimportant': '#E2E2E2', 'tradetstamp': '#00FF33', 'tradesender': '#00FF33', 'trademsg': '#E2E2E2', 'tradeownname': '#FF9347', 'tradeimportant': '#E2E2E2', 'helptstamp': '#00FF33', 'helpsender': '#00FF33', 'helpmsg': '#E2E2E2', 'helpownname': '#FF9347', 'helpimportant': '#E2E2E2', 'newststamp': '#FFFF00', 'newssender': '#FFFF00', 'newsmsg': '#FFFF00', 'newsimportant': '#FFFF00', 'newsownname': '#FF9347', 'guildtstamp': '#7FFF7F', 'guildsender': '#7FFF7F', 'guildmsg': '#7FFF7F', 'guildownname': '#7FFF7F', 'guildimportant': '#7FFF7F', 'officerststamp': '#7FFF7F', 'officerssender': '#7FFF7F', 'officersmsg': '#7FFF7F', 'officersownname': '#7FFF7F', 'officersimportant': '#7FFF7F', 'whispertstamp': '#FC68FF', 'whispersender': '#FC68FF', 'whispermsg': '#FC68FF', 'whisperownname': '#FF9347', 'whisperimportant': '#FC68FF', 'cooptstamp': '#00FF33', 'coopsender': '#00FF33', 'coopmsg': '#E2E2E2', 'coopownname': '#FF8644' 
-	}
+	},
+	infoBarResources: ["Tool", "Coin", "Plank", "RealPlank", "Stone", "Marble"]
 };
 var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
 
 var highlightTracker = game.getTracker('highlightTracker', highlightModifyFrame);
 var scaleFactor = game.def("global").mGraphicScaleFactor;
+var ResourceGroupToWarehouseTab = { 
+	"CL1": "WarehouseTab1",
+	"CL2": "WarehouseTab2",
+	"CL3": "WarehouseTab3",
+	"CL4": "WarehouseTab4",
+	"CL5": "WarehouseTab8",
+	"Collectibles": "WarehouseTab7",
+	"Event": "WarehouseTab6"
+};
 
 function toggleExperimental()
 {
@@ -163,6 +173,23 @@ function mainSettingsHandler(event)
 	var getBuffOnlyActive = function(){
 		return mainSettings.buffOnlyActive ? getText('buffonlyactive') : getText('buffall');
 	};
+	var createResourceDrop = function(){
+		var sortedResources = {};
+		resources.GetResources_Vector().sort(function(a, b) { return a.group_string > b.group_string ? 1 : -1; }).forEach(function(item) {
+			if(item.group_string == "DEF_MODE") { return; }
+			var group = item.group_string == "" ? "Collectibles": item.group_string;
+			(sortedResources[group] = sortedResources[group] ? sortedResources[group] : []).push({ name: item.name_string, loca: loca.GetText("RES", item.name_string) });
+		});
+		var select = $('<select>', { 'class': 'form-control' });
+		$.each(ResourceGroupToWarehouseTab, function(key, label) {
+			var group = $('<optgroup>', { label: loca.GetText("LAB", label) });
+			sortedResources[key].forEach(function(item) { 
+				group.append($('<option>', { value: item.name }).text(item.loca));
+			});
+			select.append(group);
+		});
+		return select;
+	}
 	var createFilterDrop = function(){
 		const filters = ["unset", "none","snownowater","snowlight","snow","oven","doomsday","night","desert","tropical","blackandwhite","spooky","snow_medium","tundra","darkershadow","magicsepia"];
 		var select = $('<select>', { 'class': 'form-control defFilter' });
@@ -316,6 +343,10 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('highlightGlow_desc')], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('starmenurows_desc')], [6, createStarRowsDrop()]]);
 	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
+	var resDrop = createResourceDrop();
+	for(var i = 1; i < 7; i++) {
+		html += utils.createTableRow([[6, "Info bar resource " + i], [6, resDrop.clone().attr("id", "InfoBarRes_" + i).prop('outerHTML')]]);
+	}
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menuui' }).append(html+'</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
@@ -374,6 +405,14 @@ function mainSettingsHandler(event)
 			w.withBody('.' + id).html(file.nativePath);
 		}); 
 		file.browseForDirectory("Select a directory"); 
+	});
+	for(var i = 1; i < 7; i++) {
+		var slot = i - 1;
+		w.withBody('#InfoBarRes_' + i).val(mainSettings.infoBarResources[slot]);
+	}
+	w.withBody("select[id^='InfoBar']").change(function(e) { 
+		var slot = $(e.target).attr('id').slice(-1) - 1;
+		mainSettings.infoBarResources[slot] = $(e.target).val();
 	});
 	w.withBody('.menuStyle').val(mainSettings.menuStyle).change(function(e) { mainSettings.menuStyle = $(e.target).val(); });
 	w.withBody('.sortOrder').val(mainSettings.sortOrder).change(function(e) { mainSettings.sortOrder = parseInt($(e.target).val()); });
@@ -455,6 +494,7 @@ function mainSettingsHandler(event)
 		settings.settings["notify"] = {};
 		settings.store(notifySettings, "notify");
 		setupNotifications();
+		setupInfoBar();
 		w.hide();
 	}));
 	w.show();
@@ -661,6 +701,16 @@ function infoClickHandler(event)
 	var help_url = getText(this.id + '_help');
 	if(/RES/.test(help_url)) { help_url = getText("nondefault_help"); }
 	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki/" + help_url));
+}
+
+function setupInfoBar()
+{
+	var defines = game.def("defines");
+	for(var i = 0; i < mainSettings.infoBarResources.length; i++) {
+		var slot = i + 1;
+		defines["INFO_RESOURCE_" + slot] = mainSettings.infoBarResources[i];
+		swmmo.application.GAMESTATE_ID_INFO_BAR["resourceIcon" + slot].source = assets.GetResourceIcon(mainSettings.infoBarResources[i]);
+	}
 }
 
 function feedbackSendMessage(e) {
@@ -1103,6 +1153,7 @@ document.styleSheets[0].insertRule(".specSamegrid{background-color:"+mainSetting
 game.def("defines").CHAT_FONT_SIZE = mainSettings.chatFontSize;
 if(expZone == null) {
 	swmmo.application.blueFireComponent.width = mainSettings.chatPanelWidth;
+	setupInfoBar();
 }
 if(mainSettings.useCustomChatCSS == true) {
 	var cssFinal = chatCSSTemplate;
