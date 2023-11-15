@@ -180,7 +180,7 @@ function mainSettingsHandler(event)
 			var group = item.group_string == "" ? "Collectibles": item.group_string;
 			(sortedResources[group] = sortedResources[group] ? sortedResources[group] : []).push({ name: item.name_string, loca: loca.GetText("RES", item.name_string) });
 		});
-		var select = $('<select>', { 'class': 'form-control' });
+		var select = $('<select>', { 'class': 'form-control', 'position': 'absolute', 'size': 1 });
 		$.each(ResourceGroupToWarehouseTab, function(key, label) {
 			var group = $('<optgroup>', { label: loca.GetText("LAB", label) });
 			sortedResources[key].forEach(function(item) { 
@@ -414,6 +414,7 @@ function mainSettingsHandler(event)
 		var slot = $(e.target).attr('id').slice(-1) - 1;
 		mainSettings.infoBarResources[slot] = $(e.target).val();
 	});
+	w.withBody("select[id^='InfoBar']").click(function(e) { this.size=(this.size!=1)?1:10; });
 	w.withBody('.menuStyle').val(mainSettings.menuStyle).change(function(e) { mainSettings.menuStyle = $(e.target).val(); });
 	w.withBody('.sortOrder').val(mainSettings.sortOrder).change(function(e) { mainSettings.sortOrder = parseInt($(e.target).val()); });
 	w.withBody('.defFilter').val(mainSettings.defFilter).change(function(e) { mainSettings.defFilter = $(e.target).val(); });
