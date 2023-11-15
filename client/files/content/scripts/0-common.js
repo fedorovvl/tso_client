@@ -345,28 +345,28 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
 	var resDrop = createResourceDrop();
 	for(var i = 1; i < 7; i++) {
-		html += utils.createTableRow([[6, "Info bar resource " + i], [6, resDrop.clone().attr("id", "InfoBarRes_" + i).prop('outerHTML')]]);
+		html += utils.createTableRow([[6, getText('infobarresource_desc') + i], [6, resDrop.clone().attr("id", "InfoBarRes_" + i).prop('outerHTML')]]);
 	}
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menuui' }).append(html+'</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
-	html += utils.createTableRow([[9, 'Enabled'], [3, createSwitch('enabled', notifySettings.enabled)]]);
-	html += utils.createTableRow([[6, 'Theme'], [6, themeSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[6, 'Display time'], [6, timeSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[9, getText('enabled_desc')], [3, createSwitch('enabled', notifySettings.enabled)]]);
+	html += utils.createTableRow([[6, getText('theme_desc')], [6, themeSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText('displaytime_desc')], [6, timeSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, 'Position'], [6, positionSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[9, 'Sound'], [3, createSwitch('sound', notifySettings.sound)]]);
+	html += utils.createTableRow([[9, getText('sound_desc')], [3, createSwitch('sound', notifySettings.sound)]]);
 	html += utils.createTableRow([[9, 'Compact'], [3, createSwitch('compact', notifySettings.compact)]]);
 	html += utils.createTableRow([[3, ''],[6, createButton('testnotify', "Test notification")],[3, '']]);
-	html += utils.createTableRow([[9, 'News chat trigger'], [3, createSwitch('news', notifySettings.news)]]);
-	html += utils.createTableRow([[9, 'Custom words news channel'], [3, createSwitch('newsCustom', notifySettings.newsCustom)]]);
-	html += utils.createTableRow([[9, 'Group chat mention trigger'], [3, createSwitch('mentionGroup', notifySettings.mentionGroup)]]);
-	html += utils.createTableRow([[3, 'Custom words trigger'], [9, '<input type="text" value="'+notifySettings.mentionWords.join(", ")+'" id="mentionWords" class="form-control">']]);
+	html += utils.createTableRow([[9, getText('newschattrigger_desc')], [3, createSwitch('news', notifySettings.news)]]);
+	html += utils.createTableRow([[9, getText('customwordsnewschannel_desc')], [3, createSwitch('newsCustom', notifySettings.newsCustom)]]);
+	html += utils.createTableRow([[9, getText('groupchatmentiontrigger_desc')], [3, createSwitch('mentionGroup', notifySettings.mentionGroup)]]);
+	html += utils.createTableRow([[3, getText('customwordstrigger_desc')], [9, '<input type="text" value="'+notifySettings.mentionWords.join(", ")+'" id="mentionWords" class="form-control">']]);
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menunotify' }).append(html+'</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
 	html += utils.createTableRow([[6, getText('chatpanelwidth_desc')], [6, createChatWidthDrop()]]);
 	html += utils.createTableRow([[6, getText('chatfontsize_desc')], [2, createChatFontDrop()], [4, getText('highlight_reboot')]]);
-	html += utils.createTableRow([[6, "Use custom chat CSS"], [6, createSwitch('useCustomChatCSS', mainSettings.useCustomChatCSS)]]);
+	html += utils.createTableRow([[6, getText('usecustomchatcss_desc')], [6, createSwitch('useCustomChatCSS', mainSettings.useCustomChatCSS)]]);
 	$.each(mainSettings.chatCSS, function(k, v) {
 		html += utils.createTableRow([[6, k], [6, '<input type="text" value="'+v+'" id="'+k+'" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	});
