@@ -146,7 +146,18 @@ const baseTranslation = {
 		"chatpanelwidth_desc": "Chat panel width",
 		"chatfontsize_desc": "Chat font size",
 		"starmenurows_desc": "StarMenu rows count",
-		"starmenucols_desc": "StarMenu cols count"
+		"starmenucols_desc": "StarMenu cols count",
+		// news translation
+		"infobarresource_desc" : "Info bar resource ",
+		"enabled_desc" : "Enabled",
+		"theme_desc" : "Theme",
+		"displaytime_desc" : "Display time",
+		"sound_desc" : "Sound",
+		"usecustomchatcss_desc" : "Use custom chat CSS",
+		"newschattrigger_desc" : "News chat trigger",
+		"customwordsnewschannel_desc" : "Custom words news channel",
+		"groupchatmentiontrigger_desc" : "Group chat mention trigger",
+		"customwordstrigger_desc" : "Custom words trigger"
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -582,7 +593,23 @@ const baseTranslation = {
 		"highlight_desc": "Surbrillance collectibles",
 		"highlightColor_desc": "couleur intérieure boule",
 		"highlightGlow_desc": "Couleur extérieure boule",
-		"highlight_reboot": "Redémarrage requis"
+		"highlight_reboot": "Redémarrage requis",
+		"highlightSize_desc": "Taille de la boule",
+		"chatpanelwidth_desc": "Largeur du chat",
+		"chatfontsize_desc": "Taille police chat",
+		"starmenurows_desc": "Nombre ligne étoile",
+		"starmenucols_desc": "Nombre colonne étoile",
+		// New translation
+		"infobarresource_desc" : "Barre de ressources",
+		"enabled_desc" : "Autoriser",
+		"theme_desc" : "Thème",
+		"displaytime_desc" : "Temps d'affichage",
+		"sound_desc" : "son",
+		"usecustomchatcss_desc" : "Utiliser la personnalisation des chats",
+		"newschattrigger_desc" : "nouveau déclencheur de chat",
+		"customwordsnewschannel_desc" : "mot personalisé nouveau canal",
+		"groupchatmentiontrigger_desc" : "Déclencheur mention de groupe de chat",
+		"customwordstrigger_desc" : "Mots déclencheurs"
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
