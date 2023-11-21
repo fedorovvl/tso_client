@@ -1,4 +1,6 @@
 // Test PR
+var battelBombactive = true;
+
 var battleEnemiesDrop;
 var battleWindow;
 var battleSearchFor;
@@ -465,4 +467,35 @@ function battleShowGeneral()
 	if(!this.name) { game.gi.SelectBuilding(game.zone.mStreetDataMap.GetBuildingByGridPos(grid)); }
 	$("#battleWindow, #battleWindowsettings").css("opacity", 0);
 	setTimeout(function() { $("#battleWindow, #battleWindowsettings").css("opacity", 1); }, 1500);
+}
+function sendBuffPacketAT_test(buffId, grid)
+{
+
+			var BuffGefunden = false;		
+			var MyBuffID;
+			var buffVector = [];
+			buffVector = game.getBuffs();
+			buffVector.forEach(function(data){
+				if(data.GetBuffDefinition().GetName_string() == buffId) { 
+
+					BuffGefunden = true;
+					MyBuffID = data.GetUniqueId();
+
+				} 
+			});
+		
+
+				if(BuffGefunden)
+				{
+					game.showAlert("Buffe: " + buffId + " | ID: " + MyBuffID);
+					game.gi.SendServerAction(61, 0, grid, 0, MyBuffID);
+					
+				}
+				else
+				{
+					game.showAlert("Buff nicht gefunden im Stern");
+				}
+					
+      
+
 }
