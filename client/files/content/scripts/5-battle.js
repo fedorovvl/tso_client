@@ -1,4 +1,4 @@
-// Test PR
+// MyFirstPullRequest
 var battelBombactive = true;
 
 var battleEnemiesDrop;
@@ -126,7 +126,7 @@ function battleSaveDialog()
 		});
 		battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
 			var spec = armyGetSpecialistFromID(item.id);
-			if (!spec) {
+			if (!spec && battelBombactive) {
 				savePacket[item.id] = { 
 					'id': item.id,
 					'order': sortOrder[item.id].order,
@@ -173,7 +173,7 @@ function battleLoadDataCheck(data)
 	game.gi.mMouseCursor.SetCursorEditMode(86);
 	$.each(data, function(item) { 
 		var spec = armyGetSpecialistFromID(item);
-		if (!spec) {
+		if (!spec && battelBombactive) {
 			data[item].item = item
 			data[item].canAttack = true; // battlecheckCanAttack(item.id, data[item].target) && data[item].onSameGrid;
 			data[item].canSubmitAttack = true ;//data[item].canAttack && data[item].target > 0;
@@ -197,7 +197,7 @@ function battlecheckCanAttack(id, target)
 {
 	
 	var spec = typeof id == 'object' ? id : armyGetSpecialistFromID(id);
-	if(!spec) { return target; }
+	if(!spec && battelBombactive) { return target; }
 	return target 	> 0 && 
 	
 			spec.GetTask() == null && 
@@ -285,7 +285,7 @@ function battleAttack(direct)
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canAttack) { return; }
 		var spec = armyGetSpecialistFromID(item);
-		if (!spec){
+		if (!spec && battelBombactive){
 			battleTimedQueue.add(function(){
 				  sendBuffPacketAT_test( battlePacket[item].id , battlePacket[item].target ); }, battlePacket[item].time);
 		} else {
@@ -307,7 +307,7 @@ function battleMove(direct)
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canMove) { return; }
 		var spec = armyGetSpecialistFromID(item);
-		if (!spec){
+		if (!spec && battelBombactive){
 /* 			battleTimedQueue.add(function(){
 				  sendBuffPacketAT_test( item.id , grid ); }, delay); */
 		}
@@ -334,7 +334,7 @@ function battleAttackDirect()
 		var grid = $(item).closest("div.row").find("button").val();
 		if(!grid || grid == 0 || grid == "0") { return; }
 		var delay = parseInt($(item).closest("div.row").find("select").val());
-		if (!spec){
+		if (!spec && battelBombactive){
 			battleTimedQueue.add(function(){
 				  sendBuffPacketAT_test( item.id , grid ); }, delay);
 		}
