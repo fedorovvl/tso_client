@@ -49,7 +49,7 @@ function menuBuffsHandler(event)
 		out += $('<button>', { 'class': 'btn btn-primary btn-lg btn-block', 'id': 'stopRecording' }).text(getText('buff_stop_record')).prop('outerHTML');
 	}
 	if(!buffRecordEnabled && buffRecord != null) {
-		buffVector = game.player.getAvailableBuffs_vector();
+		buffVector = game.gi.mCurrentPlayer.getAvailableBuffs_vector();
 		out += getBuffHTML() + getBuffsAvailableHTML() + '<br><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">' + getText('buff_record_more') + '</button>';
 		if(buffRecordFiltered.length > 0){
 			$('.buffSubmit').attr('disabled', false);

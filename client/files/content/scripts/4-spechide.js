@@ -37,7 +37,7 @@ function hideSpecMenuHandler(event)
 		w.withHeader('').append('<div class="container-fluid"><br>' + utils.createTableRow([[6, loca.GetText("LAB", "Name")], [3, "UniqueID"], [3, loca.GetText("LAB", "GuildOnlineLast24")]], true) + '</div>');
 	}
 	var html = '<div class="container-fluid" style="user-select: all;">';
-	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
 		var type = [1,2].indexOf(item.GetBaseType()) != -1 ? item.GetBaseType() : 3;
 		html += utils.createTableRow([
 			[6, getImageTag(item.getIconID(), '24px', '24px') + ' ' + item.getName(false), 'type'+type], 
@@ -65,7 +65,7 @@ function hideSpecHandler(event)
 		game.gi.mRequirements.miscRequirements_vector["GarrisonSwitchButton"].requirements[0].fulfilled = true;
 	}
 	try{
-		game.zone.GetSpecialists_vector().forEach(function(item){
+		game.gi.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 			if(item.GetUniqueID().toKeyString() in specHideVector && item.getPlayerID() != -1) {
 				item.SetPlayerID(-1);
 				return true;
