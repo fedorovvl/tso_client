@@ -142,7 +142,7 @@ function specNameSorter(a, b)
 
 function buiFastAccessMenuHandler(event) {
 	try {
-		var vector = game.zone.mStreetDataMap.getBuildingsByName_vector(event.target.name);
+		var vector = game.gi.mCurrentPlayerZone.mStreetDataMap.getBuildingsByName_vector(event.target.name);
 		if(!vector) { return true; }
 		if(mainSettings.buiFastAccessType == 1) {
 			vector.sort(function(a, b) { return a.GetUpgradeLevel() > b.GetUpgradeLevel() ? -1 : 1; });

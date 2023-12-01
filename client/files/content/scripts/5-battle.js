@@ -106,7 +106,7 @@ function battleMenuHandler(event)
 		battleWindow.withHeader('.templateFile').html("");
 		if($('#battleWindow .modal-content #armyDrop').length == 0) {
 			$('#battleWindow .modal-content').append($('<div>', { 'id': 'armyDrop' }));
-			battleDropdown(game.zone.mStreetDataMap.GetBuildings_vector().filter(function(e) { return e && e.IsReadyToIntercept(); }));
+			battleDropdown(game.gi.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().filter(function(e) { return e && e.IsReadyToIntercept(); }));
 		}
 		battleGetData();
 		battleWindow.show();
@@ -150,7 +150,7 @@ function battleSendGeneral(spec, name, targetName, type, target)
 		var stask = new armySpecTaskDef();
 		stask.uniqueID = spec.GetUniqueID();
 		stask.subTaskID = 0;
-		swmmo.application.mGameInterface.SendServerAction(95, type, target, 0, stask);
+		game.gi.SendServerAction(95, type, target, 0, stask);
 		game.chatMessage("({0}/{1}) {2} {3} {4}".format(battleTimedQueue.index, battleTimedQueue.len() - 1, name.replace(/(<([^>]+)>)/gi, ""), (type == 5 ? ' x ' : ' > '), targetName), 'battle');
 	}
 	catch (error) { debug(error); }
@@ -376,7 +376,7 @@ function battleGetData()
 	for(var i = 2; i < 301; i++) {
 		select.append($('<option>', { value: i * 1000 }).text(i+'s'));
 	}
-	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
 		try {
 			if(!armySPECIALIST_TYPE.IsGeneral(item.GetType()) || item.getPlayerID() != game.player.GetPlayerId()) { return; }
 			if(item == null || typeof item == 'undefined' || item.GetTask() != null) { return; }

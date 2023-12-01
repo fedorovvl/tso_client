@@ -169,9 +169,9 @@ function buffApliedHandler(event){
 		var zoneUser = game.player.GetPlayerName_string();
 		if(game.gi.isOnHomzone() == false) {
 			try{
-				zoneUser = globalFlash.gui.mFriendsList.GetFriendById(swmmo.application.mGameInterface.mCurrentViewedZoneID).username;
+				zoneUser = globalFlash.gui.mFriendsList.GetFriendById(game.gi.mCurrentViewedZoneID).username;
 			} catch(e) {
-				zoneUser = globalFlash.gui.mFriendsList.GetGuildMemberById(swmmo.application.mGameInterface.mCurrentViewedZoneID).username;
+				zoneUser = globalFlash.gui.mFriendsList.GetGuildMemberById(game.gi.mCurrentViewedZoneID).username;
 			}
 		}
 		buffRecord = { 

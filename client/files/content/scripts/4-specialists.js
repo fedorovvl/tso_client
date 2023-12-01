@@ -150,7 +150,7 @@ function specSettings()
 function specGeoGetDepleted()
 {
 	var result = {}; 
-	game.getBuildings().filter(function(bui) { return bui != null && bui.GetBuildingName_string().indexOf("MineDepleted") >= 0; }).forEach(function(depletedBui) { 
+	game.gi.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().filter(function(bui) { return bui != null && bui.GetBuildingName_string().indexOf("MineDepleted") >= 0; }).forEach(function(depletedBui) { 
 		if(depletedBui == null) { return; }
 		var name = depletedBui.GetBuildingName_string().replace("MineDepletedDeposit", '');
 		if(specGeoDepletedValidRes.indexOf(name) >= 0) {
@@ -181,7 +181,7 @@ function specSharedHandler(type)
 	specTemplates.setModule(isExplorer ? 'expl' : 'geo');
 	const playerLevel = game.player.GetPlayerLevel();
     var out = '<div class="container-fluid">', isThereAnySpec = false;
-	game.getSpecialists().sort(specNameSorter).forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
 		if (item.GetTask() != null || item.GetBaseType() != type || item.getPlayerID() == -1) { return; }
 		isThereAnySpec = true;
 		if(isExplorer) {
@@ -364,7 +364,7 @@ function getTaskDurationText(spec_id, task_id)
 		task = getTaskInfo(cat_id[0], cat_id[1]);
 	spec_id = spec_id.split("_");
 	var uniqueID = game.def("Communication.VO::dUniqueID").Create(spec_id[0], spec_id[1]),
-		spec = game.zone.getSpecialist(swmmo.application.mGameInterface.mCurrentViewedZoneID, uniqueID),
+		spec = game.zone.getSpecialist(game.gi.mCurrentViewedZoneID, uniqueID),
 		calculatedTime = task.duration,
 		vectorIndex;
 	spec.getSkillTree().getItems_vector().concat(spec.skills.getItems_vector()).forEach(function(skill) {

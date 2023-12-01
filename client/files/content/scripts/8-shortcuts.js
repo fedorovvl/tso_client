@@ -227,7 +227,7 @@ function shortcutsReturnAll(event)
 		shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
 	}
 	var queue = new TimedQueue(1000);
-	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 		if (game.player.GetPlayerId() == item.getPlayerID() && 
 		    armySPECIALIST_TYPE.IsGeneral(item.GetType()) && 
 			item.GetGarrisonGridIdx() > 0  && !item.IsInUse() && !item.isTravellingAway())
@@ -258,7 +258,7 @@ function shortcutsPickupAll(event) {
 		});
     }
 
-    game.zone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
+    game.gi.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
         if (item === null) { return; }
         itemGOContainer = item.GetGOContainer();
         if (
@@ -289,7 +289,7 @@ function shortcutsPickupAll(event) {
 function shortcutsRetreatAll()
 {
 	var queue = new TimedQueue(1000);
-	game.zone.GetSpecialists_vector().forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 		if (game.player.GetPlayerId() == item.getPlayerID() && item.GetGeneralState() == 1){
 			queue.add(function(){ item.GetTask().Retreat(); });
 		}
@@ -316,7 +316,7 @@ function shortcutsFreeAllUnits(event)
 		shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
 	}
 	var queue = new TimedQueue(1000);
-	swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 		if (game.player.GetPlayerId() == item.getPlayerID() && 
 		    armySPECIALIST_TYPE.IsGeneral(item.GetType()) && 
 			item.GetGarrisonGridIdx() > 0  && item.HasUnits() && !item.IsInUse() && !item.isTravellingAway())
@@ -611,7 +611,7 @@ function shortcutsImport()
 function shortcutsImportMakeSelect()
 {
 	var select = $('<select>', { 'class': "form-control" });
-	game.zone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().sort(specNameSorter).forEach(function(item){
 			if(!armySPECIALIST_TYPE.IsGeneralOrAdmiral(item.GetType()) || item.getPlayerID() == -1) { return; }
 			select.append($('<option>', { value: item.GetUniqueID().toKeyString(), id: item.GetType() }).text(item.getName(false).replace(/(<([^>]+)>)/gi, "") + " ({0})".format(item.GetUniqueID().toKeyString())));
 	});

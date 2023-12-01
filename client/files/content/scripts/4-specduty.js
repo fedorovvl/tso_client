@@ -44,7 +44,7 @@ function specDutyMenuHandler(event)
 	dutyWindow.withFooter('.dutyExplorersBtn, .dutyGeologistBtn').attr("disabled", game.gi.mCurrentPlayer.mIsAdventureZone);
 	var out = '';
 	var tabStat = [], listSpec = [];
-	game.getSpecialists().sort(0).forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().sort(0).forEach(function(item){
 		if(item.GetTask() == null) { return; }
 		var playerOwner = game.gi.GetPlayerName_string(item.getPlayerID());
 		var name = item.getName(false);

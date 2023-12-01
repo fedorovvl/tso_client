@@ -61,7 +61,7 @@ function updateFreeArmyInfo(direct)
 		armyCategory[cat] += utils.getImageTag(item.GetType(), '20px') + ' ' + item.GetAmount() + '&nbsp;';
 		armyFreeInfo[item.GetType()] = item.GetAmount();
 	});
-	game.zone.GetSpecialists_vector().forEach(function(item){
+	game.gi.mCurrentPlayerZone.GetSpecialists_vector().forEach(function(item){
 		try {
 			if(!armySPECIALIST_TYPE.IsGeneral(item.GetType()) || item.getPlayerID() != game.player.GetPlayerId()) { return; }
 			if(item == null || typeof item == 'undefined' || item.GetTask() != null) { return; }
@@ -143,8 +143,8 @@ function armySendGeneralToStar(spec)
 		var stask = new armySpecTaskDef();
 		stask.uniqueID = spec.GetUniqueID();
 		stask.subTaskID = 0;
-		swmmo.application.mGameInterface.SendServerAction(95,12,swmmo.application.mGameInterface.mCurrentCursor.GetGridPosition(),0,stask);
-		spec.SetTask(new armySpecTravelDef(swmmo.application.mGameInterface,spec,0,12));
+		game.gi.SendServerAction(95,12,game.gi.mCurrentCursor.GetGridPosition(),0,stask);
+		spec.SetTask(new armySpecTravelDef(game.gi,spec,0,12));
 	}
 	catch (error) {
 		alert("Send to star error : " + error.message);

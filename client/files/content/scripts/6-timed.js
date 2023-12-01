@@ -1,5 +1,4 @@
 var timedEnum = swmmo.getDefinitionByName("Enums::TIMED_PRODUCTION_TYPE"),
-	timedbuildings = game.getBuildings(),
 	timedqueue, timedbuilding, timedtypes = [], timedfailures = 0;
 
 function TimedMenuHandler(event)
@@ -20,7 +19,7 @@ function TimedMenuHandler(event)
 				[3, getText('prod_finish')]
 		], true);
 		if(timedtypes.length === 0) {
-			timedbuildings.forEach(function(item){
+			game.gi.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().forEach(function(item){
 				if(item.productionQueue == null) { return; }
 				if(timedtypes.indexOf(item.productionType) == -1) { timedtypes.push(item.productionType); }
 			});
