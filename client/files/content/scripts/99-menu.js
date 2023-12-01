@@ -113,11 +113,36 @@ var Menu = function(type){
 				{label: loca.GetText("LAB", "Update"), onSelect: reloadScripts },
 				{label: loca.GetText("LAB", "ToggleOptionsPanel"), onSelect: scriptsManager },
 				{type: 'separator' }
-			]}
+			]},
+			{ type: 'separator' },
+			{ label: loca.GetText("LAB", "ChatHelp"), name: 'Help', mnemonicIndex: 0, items: [
+				{ label: "Wiki", onSelect: openWikiHandler },
+				{ label: "Discord (RU)", onSelect: openDiscordHandler },
+				{ label: "Discord (EN)", onSelect: openDiscordENHandler },
+				{ label: "Discord (DE)", onSelect: openDiscordDEHandler },
+				{ label: "Discord (ES)", onSelect: openDiscordESHandler },
+				{ type: 'separator' },
+				{ label: "Donate (Ko-fi)", onSelect: openDonateHandler },
+				{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler },
+				{ type: 'separator' },
+				{ label: getText('feedbacktitle'), onSelect: feedbackMenuHandler }
+			]},
+			{ label: 'v' + version + (mainSettings.experimental ? "-Ex" : ""), enabled: false },
+			{ label: '', name: 'memusage', enabled: false }
 		];
 	};
+	this.linearSkip = ['LRU', 'Shortcuts', 'Tools', 'Help'];
 	this.linearMenu = function(){
-		var e=[],r=this.groupedMenu();for(var i in r)if(r[i].items&&"Tools"!=r[i].name&&"Shortcuts"!=r[i].name&&"LRU"!=r[i].name)for(var n in r[i].items)e.push(r[i].items[n]);else e.push(r[i]);return e;
+		var result = [],
+		    menu   = this.groupedMenu();
+		for(var i in menu) {
+			if(menu[i].items && this.linearSkip.indexOf(menu[i].name) == -1) {
+				for(var n in menu[i].items) {
+					result.push(menu[i].items[n]);
+				}
+			} else { result.push(menu[i]); }
+		}
+		return result;
 	};
 	this.type = type;
 	this.nativeMenu = null;
@@ -127,17 +152,6 @@ Menu.prototype = {
 	show:function(){
 		this.keybindings = { '115.true.false.false': { 'fn': shortcutsPickupAll } };
 		var menu = this.type == 'grouped' ? this.groupedMenu() : this.linearMenu();
-		menu.push({type: 'separator' });
-		menu.push({ label: loca.GetText("LAB", "ChatHelp"), name: 'Help', mnemonicIndex: 0, items: [
-			{ label: "Wiki", onSelect: openWikiHandler }, { label: "Discord (RU)", onSelect: openDiscordHandler },
-			{ label: "Discord (EN)", onSelect: openDiscordENHandler }, { label: "Discord (DE)", onSelect: openDiscordDEHandler },
-			{ label: "Discord (ES)", onSelect: openDiscordESHandler },
-			{ type: 'separator' }, { label: "Donate (Ko-fi)", onSelect: openDonateHandler },
-			{ label: "Donate (Tinkoff RU)", onSelect: openDonateTfHandler }, { type: 'separator' },
-			{ label: getText('feedbacktitle'), onSelect: feedbackMenuHandler }
-		]});
-		menu.push({ label: 'v' + version + (mainSettings.experimental ? "-Ex" : ""), enabled: false });
-		menu.push({ label: '', name: 'memusage', enabled: false });
 		air.ui.Menu.setAsMenu(air.ui.Menu.createFromJSON(menu), true);
 		this.nativeMenu = window.nativeWindow.menu;
 		swmmo.application.isoengine.contextMenu = window.nativeWindow.menu;
