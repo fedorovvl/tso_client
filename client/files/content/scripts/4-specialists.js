@@ -277,10 +277,8 @@ function createSpecWindow()
 	});
 	$('#specFilter').keyup(function(e) {
 		var val = $(e.target).val();
-		if(!val || val == ''){
-			$('#specModalData div.row:hidden').show();
-			return;
-		}
+		$('#specModalData div.row:hidden').show();
+		if(!val || val == ''){ return; }
 		$('#specModalData div.row div:first-child:not(:contains('+val+'))').closest('div.row').hide();
 	});
 	$('#specModal .specLoadTemplate').click(function() { specTemplates.load(); });
