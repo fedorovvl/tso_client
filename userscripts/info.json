@@ -54,5 +54,12 @@
       "longDesc":"Simple script to show used building licenses",
       "author":"SirriS",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3834537"
+   },
+   "user_building_expansion.js":{
+      "name":"Building expansion",
+      "shortDesc":"Building expansion via templates",
+      "longDesc":"Building expansion via templates with load and save function, as well as a friendly UI with max level limit for expansion",
+      "author":"A-Calc Development (PiTi) | In co-operation with Test_Siedler#3694",
+	  "url": ""
    }
 }
