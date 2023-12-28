@@ -8,7 +8,7 @@
 /////////////Do you like my work and want to support me? https://www.paypal.com/paypalme/ACalcDevelopment///////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-addToolsMenuItem(loca.GetText("ALT","UpgradeBuilding"), SearchArchitecturesHandler, 120, true);
+addToolsMenuItem(loca.GetText("ALT","UpgradeBuilding"), SearchArchitecturesHandler);
 var _searchArchitecturesViewerModalInitialized = false;
 
 
@@ -113,10 +113,10 @@ function SearchArchitecturesHandler(event) {
     $('<label><input type="checkbox" id="searchDestroyableArchitecturesOnly"> &thinsp;'+ loca.GetText("LAB","Search") + ': '+ loca.GetText("HIL","Help_window_destroyable_mountains_0") + '&emsp; </label>'
     ).appendTo('#searchArchitecturesSelectFound');
     $('#searchArchitecturesModal .modal-header').append('<br><div class="container-fluid">' + createTableRow([
-        [5, 'Name'],
-        [3, 'Buff'],
+        [5, loca.GetText("LAB", "Name")],
+        [3, loca.GetText("LAB", "Buffs")],
         [1, ''],
-        [2, 'Status'],
+        [2, loca.GetText("LAB", "Status")],
         [1, ''],
     ], true) + '</div>');
     $('#searchArchitecturesModal #searchArchitecturesFind').keyup(function (e) {
