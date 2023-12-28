@@ -61,5 +61,13 @@
       "longDesc":"Building expansion via templates with load and save function, as well as a friendly UI with max level limit for expansion",
       "author":"PiTi_TestSiedler",
 	  "url": ""
+   },
+   "user_zoneBuff.js":{
+      "name":"ZoneBuffs",
+      "shortDesc":"ZoneBuffs",
+      "longDesc":"ZoneBuffs via templates with load and save function, as well as a friendly UI",
+      "author":"PiTi_TestSiedler",
+	  "url": ""
    }
+	
 }
