@@ -231,7 +231,7 @@ function ZoneBuffForClientArray(zoneBuffArray_input) {
 		buffVector = game.getBuffs();
 		buffVector.forEach(function(data){
 			if(data.GetBuffDefinition().GetName_string() == zoneBuff) {
-				air.Introspector.Console.log(data);
+				//air.Introspector.Console.log(data);
 				BuffGefunden = true;
 				MyBuffID = data.GetUniqueId();
 			}
