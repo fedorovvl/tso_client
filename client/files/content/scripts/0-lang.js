@@ -146,7 +146,18 @@ const baseTranslation = {
 		"chatpanelwidth_desc": "Chat panel width",
 		"chatfontsize_desc": "Chat font size",
 		"starmenurows_desc": "StarMenu rows count",
-		"starmenucols_desc": "StarMenu cols count"
+		"starmenucols_desc": "StarMenu cols count",
+		// news translation
+		"infobarresource_desc" : "Info bar resource ",
+		"enabled_desc" : "Enabled",
+		"theme_desc" : "Theme",
+		"displaytime_desc" : "Display time",
+		"sound_desc" : "Sound",
+		"usecustomchatcss_desc" : "Use custom chat CSS",
+		"newschattrigger_desc" : "News chat trigger",
+		"customwordsnewschannel_desc" : "Custom words news channel",
+		"groupchatmentiontrigger_desc" : "Group chat mention trigger",
+		"customwordstrigger_desc" : "Custom words trigger"
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -582,7 +593,23 @@ const baseTranslation = {
 		"highlight_desc": "Surbrillance collectibles",
 		"highlightColor_desc": "couleur intérieure boule",
 		"highlightGlow_desc": "Couleur extérieure boule",
-		"highlight_reboot": "Redémarrage requis"
+		"highlight_reboot": "Redémarrage requis",
+		"highlightSize_desc": "Taille de la boule",
+		"chatpanelwidth_desc": "Largeur du chat",
+		"chatfontsize_desc": "Taille police chat",
+		"starmenurows_desc": "Nombre ligne étoile",
+		"starmenucols_desc": "Nombre colonne étoile",
+		// New translation
+		"infobarresource_desc" : "Barre de ressources",
+		"enabled_desc" : "Autoriser",
+		"theme_desc" : "Thème",
+		"displaytime_desc" : "Temps d'affichage",
+		"sound_desc" : "son",
+		"usecustomchatcss_desc" : "Utiliser la personnalisation des chats",
+		"newschattrigger_desc" : "nouveau déclencheur de chat",
+		"customwordsnewschannel_desc" : "mot personalisé nouveau canal",
+		"groupchatmentiontrigger_desc" : "Déclencheur mention de groupe de chat",
+		"customwordstrigger_desc" : "Mots déclencheurs"
 	},
 	'es-es': {
 		'btn_submit': 'Enviar',
@@ -688,7 +715,7 @@ const baseTranslation = {
 		"okfieldcolor_desc": "COLOR: Ok",
 		"failfieldcolor_desc": "COLOR: Error",
 		"forcegc_desc": "Forzar el uso de 'Flash GarbageCollector'",
-		"dontchangefolder_desc": "Cambiar directorios al guardar plantilla en carpeta distinta",
+		"dontchangefolder_desc": "Actualizar directorio al guardar plantilla en carpeta nueva",
 		"shortImportSmthWrong": "Algo salió mal, inténtalo de nuevo",
 		"shortImportDone": "Importe exitoso",
 		"shortImportTitle": "Importar",
@@ -729,7 +756,17 @@ const baseTranslation = {
 		"chatpanelwidth_desc": "Chat - Anchura",
 		"chatfontsize_desc": "Chat - Tamaño de fuente",
 		"starmenurows_desc": "Menú estrella - Filas",
-		"starmenucols_desc": "Menú estrella - Columnas"
+		"starmenucols_desc": "Menú estrella - Columnas",
+		"infobarresource_desc" : "Barra superior - Recurso ",
+		"enabled_desc" : "Activo",
+		"theme_desc" : "Modo (oscuro/claro)",
+		"displaytime_desc" : "Tiempo de muestra",
+		"sound_desc" : "Sonido",
+		"usecustomchatcss_desc" : "Activar personalización del chat",
+		"newschattrigger_desc" : "Notificar chat de noticias",
+		"customwordsnewschannel_desc" : "Notificar palabras personalizadas chat de noticias",
+		"groupchatmentiontrigger_desc" : "Notificar mención en chat de grupo",
+		"customwordstrigger_desc" : "Palabras personalizadas"
 	},
     "pl-pl": {
 		"btn_submit": "Wyślij",
