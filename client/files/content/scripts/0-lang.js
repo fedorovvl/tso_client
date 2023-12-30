@@ -715,7 +715,7 @@ const baseTranslation = {
 		"okfieldcolor_desc": "COLOR: Ok",
 		"failfieldcolor_desc": "COLOR: Error",
 		"forcegc_desc": "Forzar el uso de 'Flash GarbageCollector'",
-		"dontchangefolder_desc": "Cambiar directorios al guardar plantilla en carpeta distinta",
+		"dontchangefolder_desc": "Actualizar directorio al guardar plantilla en carpeta nueva",
 		"shortImportSmthWrong": "Algo salió mal, inténtalo de nuevo",
 		"shortImportDone": "Importe exitoso",
 		"shortImportTitle": "Importar",
@@ -757,6 +757,16 @@ const baseTranslation = {
 		"chatfontsize_desc": "Chat - Tamaño de fuente",
 		"starmenurows_desc": "Menú estrella - Filas",
 		"starmenucols_desc": "Menú estrella - Columnas"
+		"infobarresource_desc" : "Barra superior - Recurso ",
+		"enabled_desc" : "Activo",
+		"theme_desc" : "Modo (oscuro/claro)",
+		"displaytime_desc" : "Tiempo de muestra",
+		"sound_desc" : "Sonido",
+		"usecustomchatcss_desc" : "Activar personalización del chat",
+		"newschattrigger_desc" : "Notificar chat de noticias",
+		"customwordsnewschannel_desc" : "Notificar palabras personalizadas chat de noticias",
+		"groupchatmentiontrigger_desc" : "Notificar mención en chat de grupo",
+		"customwordstrigger_desc" : "Palabras personalizadas"
 	},
     "pl-pl": {
 		"btn_submit": "Wyślij",
