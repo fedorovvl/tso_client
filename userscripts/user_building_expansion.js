@@ -13,8 +13,8 @@ var _searchArchitecturesViewerModalInitialized = false;
 
 
 const UNDEFINED_TEXT = '[undefined text]',
-    MAXLEVEL = 7,
-	MAXLEVEL2 = 7,
+    MAXLEVEL = 12,
+    MAXLEVEL2 = 12,
     ALLLEVELS = 1,
     DEBUG = false;
 var searchString = '',
