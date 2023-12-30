@@ -756,7 +756,7 @@ const baseTranslation = {
 		"chatpanelwidth_desc": "Chat - Anchura",
 		"chatfontsize_desc": "Chat - Tamaño de fuente",
 		"starmenurows_desc": "Menú estrella - Filas",
-		"starmenucols_desc": "Menú estrella - Columnas"
+		"starmenucols_desc": "Menú estrella - Columnas",
 		"infobarresource_desc" : "Barra superior - Recurso ",
 		"enabled_desc" : "Activo",
 		"theme_desc" : "Modo (oscuro/claro)",
