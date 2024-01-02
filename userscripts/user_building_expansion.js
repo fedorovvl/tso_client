@@ -14,7 +14,7 @@ var _searchArchitecturesViewerModalInitialized = false;
 
 const UNDEFINED_TEXT = '[undefined text]',
     MAXLEVEL = 12,
-    MAXLEVEL2 = 12,
+	MAXLEVEL2 = 12,
     ALLLEVELS = 1,
     DEBUG = false;
 var searchString = '',
@@ -41,6 +41,10 @@ $.extend(user_building_extension_settings, settings.read(null, 'UpgradeBuilding'
 maxUpgradeLevel = user_building_extension_settings.maxUpgradeLevelSetting;
 
 function SearchArchitecturesHandler(event) {
+	if(game.gi.isOnHomzone() == false) {
+		game.showAlert(getText('not_home'));
+		return;
+	}
     $('div[role="dialog"]:not(#searchArchitecturesModal):visible').modal('hide');
     if (!_searchArchitecturesViewerModalInitialized)
         $('#searchArchitecturesModal').remove();
@@ -386,6 +390,3 @@ function upgradeBuildingForClientArray(buildingArray_input) {
 	buildingArray = [];
 	game.showAlert(getText('command_sent'));
 }
-
-
-
