@@ -357,9 +357,9 @@ function buildMine(buildArray_input) {
 
     $.each(buildArray_local, function (i, item) {
         if (CurrentQueueFree > 0) {
-            CurrentQueueFree--;
             var building_built = game.zone.GetBuildingFromGridPosition(item.buiGrid);
             if (building_built == null && game.gi.isOnHomzone()) {
+		CurrentQueueFree--;
                 x.add(function () {
                     game.gi.SendServerAction(50, item.buiMineType, item.buiGrid, 0, null);
                     game.showAlert("Building: " + loca.GetText("RES", item.buiRessName));
