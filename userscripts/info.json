@@ -68,5 +68,12 @@
       "longDesc":"ZoneBuffs via templates with load and save function, as well as a friendly UI",
       "author":"PiTi_TestSiedler",
 	  "url": ""
+   },
+   "user_mine_rebuild.js":{
+      "name":"MinesRebuild",
+      "shortDesc":"MinesRebuild",
+      "longDesc":"Mines can be rebuild via templates with load and save function, as well as a friendly UI",
+      "author":"PiTi_TestSiedler",
+	  "url": ""
    }
 }
