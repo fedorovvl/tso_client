@@ -359,7 +359,6 @@ function buildMine(buildArray_input) {
         if (CurrentQueueFree > 0) {
             CurrentQueueFree--;
             var building_built = game.zone.GetBuildingFromGridPosition(item.buiGrid);
-			air.Introspector.Console.log(building_built);
             if (building_built == null && game.gi.isOnHomzone()) {
                 x.add(function () {
                     game.gi.SendServerAction(50, item.buiMineType, item.buiGrid, 0, null);
