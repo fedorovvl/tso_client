@@ -190,7 +190,7 @@ function DepositDepletedGetData() {
 				var buildingInfo = '(' + loca.GetText("LAB", "DetailsDeposit") + ')';
                 var building_built = game.zone.GetBuildingFromGridPosition(item.GetGrid());
 				if ( building_built !== null ){
-					buildingInfo = "(Mine bereits auf Vorkommen)";
+					buildingInfo = "(Mine already on deposit)";
 				}
                 checkboxU = '<input type="checkbox" id="_upgrade_' + item.GetGrid() + '" />'.format(item.GetGrid());
                 
