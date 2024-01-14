@@ -11,7 +11,7 @@
 addToolsMenuItem(loca.GetText("HIL", "Help_window_zonebuffs_0"), SearchZoneBuffHandler);
 var _searchZoneBuffViewerModalInitialized = false;
 
-var searchString = '';
+var searchStringZB = '';
 var zoneBuffArray = [];
 var zoneBuffArraySave = [];
 var zoneBuffArrayLoad = [];
@@ -35,9 +35,9 @@ function SearchZoneBuffHandler(event) {
                  }
              }
                 if (isBuffInArray) {
-                    $('#_upgrade_' + item.zonebuffname).prop('checked', true);
+                    $('#_Zonenbuffs_' + item.zonebuffname).prop('checked', true);
                     if (isBuffInArray) {
-                        $('#_upgrade_' + item.zonebuffname).prop('checked', true);
+                        $('#_Zonenbuffs_' + item.zonebuffname).prop('checked', true);
                         if (zoneBuffArray.indexOf(item.zonebuffname) === -1) {
                             zoneBuffArray.push(item.zonebuffname);
                         }
@@ -55,7 +55,7 @@ function SearchZoneBuffHandler(event) {
         'id': 'searchZoneBuffFind',
         'class': 'form-control',
         'style': 'display: inline;width: 300px;',
-        'value': searchString
+        'value': searchStringZB
     }).appendTo('#searchZoneBuffSelectFound');
     $('<label>&emsp</label>').appendTo('#searchZoneBuffSelectFound');
    
@@ -65,13 +65,13 @@ function SearchZoneBuffHandler(event) {
                 [3, loca.GetText("LAB", "Status")]
             ], true) + '</div>');
     $('#searchZoneBuffModal #searchZoneBuffFind').keyup(function (e) {
-        searchString = $(e.target).val();
-        if (!searchString || searchString == "") {
+        searchStringZB = $(e.target).val();
+        if (!searchStringZB || searchStringZB == "") {
             $('#searchZoneBuffModalData .container-fluid div:hidden').show();
             return;
         }
         $('#searchZoneBuffModalData .container-fluid .row').each(function (i, item) {
-            if ($(item.firstChild).text().toUpperCase().indexOf(searchString.toUpperCase()) == -1) {
+            if ($(item.firstChild).text().toUpperCase().indexOf(searchStringZB.toUpperCase()) == -1) {
                 $(item).hide();
             } else {
                 $(item).show();
@@ -144,7 +144,7 @@ function _updateZoneBuffModalData() {
     var ZoneBuffList = _getZoneBuffList();
     $('#searchZoneBuffModalData').html(_searchZoneBuffModal(ZoneBuffList));
     $('#searchZoneBuffModalData .container-fluid .row').each(function (i, item) {
-        if ($(item.firstChild).text().toUpperCase().indexOf(searchString.toUpperCase()) == -1) {
+        if ($(item.firstChild).text().toUpperCase().indexOf(searchStringZB.toUpperCase()) == -1) {
             $(item).hide();
         } else {
             $(item).show();
@@ -179,16 +179,16 @@ function _searchZoneBuffModal(ZoneBuffList) {
     var out = '<div class="container-fluid">';
     try {
          ZoneBuffList.forEach(function (item) {
-                checkboxU = '<input type="checkbox" id="_upgrade_' + item.zonebuffname + '" />'.format(item.zonebuffname);
+                _checkboxZonenbuffs_ = '<input type="checkbox" id="_Zonenbuffs_' + item.zonebuffname + '" />'.format(item.zonebuffname);
 
                 out += createTableRow([
                         [5, loca.GetText("RES", item.zonebuffname)],
                         [4, item.zoneBuffamount],
-						[3, checkboxU ]
+						[3, _checkboxZonenbuffs_ ]
                     ]);
 
-                $(document).on('click', '#_upgrade_' + item.zonebuffname, function () {
-                    var isChecked = $('#_upgrade_' + item.zonebuffname ).prop('checked');
+                $(document).on('click', '#_Zonenbuffs_' + item.zonebuffname, function () {
+                    var isChecked = $('#_Zonenbuffs_' + item.zonebuffname ).prop('checked');
 
                     if (zoneBuffArray.indexOf(item.zonebuffname) === -1 && isChecked) {
                         zoneBuffArray.push(item.zonebuffname);
