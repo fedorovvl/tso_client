@@ -17,7 +17,7 @@ const UNDEFINED_TEXT = '[undefined text]',
 	MAXLEVEL2 = 12,
     ALLLEVELS = 1,
     DEBUG = false;
-var searchString = '',
+var searchStringUpgrade = '',
     searchLevel = 1,
     destroyableOnlyShow = false,
     improvableOnlyShow = true;
@@ -65,9 +65,9 @@ function SearchArchitecturesHandler(event) {
 				}
 			} 
 			if (isGridInArray) {
-				$('#_upgrade_' + item.building.GetGrid()).prop('checked', true);
+				$('#_upgradeBuilding_' + item.building.GetGrid()).prop('checked', true);
 				if (isGridInArray) {
-					$('#_upgrade_' + item.building.GetGrid()).prop('checked', true);
+					$('#_upgradeBuilding_' + item.building.GetGrid()).prop('checked', true);
 					if (buildingArray.indexOf(item.building) === -1) {
 						buildingArray.push(item.building);
 					}
@@ -109,7 +109,7 @@ function SearchArchitecturesHandler(event) {
 	
     $('<input>', {
         'type': 'text', 'id': 'searchArchitecturesFind', 'class': 'form-control',
-        'style': 'display: inline;width: 300px;', 'value': searchString
+        'style': 'display: inline;width: 300px;', 'value': searchStringUpgrade
     }).appendTo('#searchArchitecturesSelectFound');
     $('<label>&emsp</label>').appendTo('#searchArchitecturesSelectFound');
     $('<label><input type="checkbox" id="searchImprovableArchitecturesOnly"> &thinsp;'+ loca.GetText("LAB","Search") + ': '+ loca.GetText("ALT","UpgradeBuilding") + '&emsp; </label>'
@@ -124,13 +124,13 @@ function SearchArchitecturesHandler(event) {
         [1, ''],
     ], true) + '</div>');
     $('#searchArchitecturesModal #searchArchitecturesFind').keyup(function (e) {
-        searchString = $(e.target).val();
-        if (!searchString || searchString == "") {
+        searchStringUpgrade = $(e.target).val();
+        if (!searchStringUpgrade || searchStringUpgrade == "") {
             $('#searchArchitecturesModalData .container-fluid div:hidden').show();
             return;
         }
         $('#searchArchitecturesModalData .container-fluid .row').each(function (i, item) {
-            if ($(item.firstChild).text().toUpperCase().indexOf(searchString.toUpperCase()) == -1) {
+            if ($(item.firstChild).text().toUpperCase().indexOf(searchStringUpgrade.toUpperCase()) == -1) {
                 $(item).hide();
             } else {
                 $(item).show();
@@ -223,7 +223,7 @@ function _updateArchitecturesModalData() {
         });
     });
     $('#searchArchitecturesModalData .container-fluid .row').each(function (i, item) {
-        if ($(item.firstChild).text().toUpperCase().indexOf(searchString.toUpperCase()) == -1) {
+        if ($(item.firstChild).text().toUpperCase().indexOf(searchStringUpgrade.toUpperCase()) == -1) {
             $(item).hide();
         } else {
             $(item).show();
@@ -314,7 +314,7 @@ function _searchArchitecturesModal(buildingList) {
                 [12, '<b>' + firstItem.locName + '</b>' + (DEBUG ? ' <sup>' + firstItem.name + '</sup>' : '')],
             ]);
             buildingList[key].sort(_compareArchitecturesByLevel).forEach(function (item) {
-                checkboxU = '<input type="checkbox" id="_upgrade_' +  item.building.GetGrid()  + '" />'.format(item.building);
+                _checkboxupgradBuilding_ = '<input type="checkbox" id="_upgradeBuilding_' +  item.building.GetGrid()  + '" />'.format(item.building);
                 if (counter == buildingCount) {
                     prefix = '&#9492;';
                 }
@@ -331,15 +331,15 @@ function _searchArchitecturesModal(buildingList) {
                     ],
                     [3, (itemStatus == '' ? ' ' : ' <span style="color:LightGray;font-style:italic;">') +
                         '<small>' + item.buff + '</small>' + (itemStatus == '' ? '' : '</span>')],
-                    [1, item.isUpgradeAllowed ?  checkboxU : ''],
+                    [1, item.isUpgradeAllowed ?  _checkboxupgradBuilding_ : ''],
                     [2, '<span style="color:LightGray;font-style:italic;"><small>' + itemStatus + '</small></span>'],
                     [1, item.goto]
                 ]);
                 
 
 				
-				$(document).on('click', '#_upgrade_'+ item.building.GetGrid(), function () {
-					var isChecked = $('#_upgrade_' + item.building.GetGrid()).prop('checked');
+				$(document).on('click', '#_upgradeBuilding_'+ item.building.GetGrid(), function () {
+					var isChecked = $('#_upgradeBuilding_' + item.building.GetGrid()).prop('checked');
 
 					if (buildingArray.indexOf(item.building) === -1 && isChecked) {
 						buildingArray.push(item.building);

@@ -34,17 +34,17 @@ function DepositDepletedMenuHandler(event) {
         $("#DepositDepletedModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
         buildArrayLoad = data;
         DepositAll.forEach(function (item) {
-        var isBuffInArray = false;
+        var isMineInArray = false;
         for (var i = 0; i < buildArrayLoad.length; i++) {
              if (buildArrayLoad[i].buiGrid === item.GetGrid()) {
-                  isBuffInArray = true;
+                  isMineInArray = true;
                   break;
                  }
              }
-                if (isBuffInArray) {
-                    $('#_upgrade_' + item.GetGrid()).prop('checked', true);
-                    if (isBuffInArray) {
-                        $('#_upgrade_' + item.GetGrid()).prop('checked', true);
+                if (isMineInArray) {
+                    $('#_RebuildMines_' + item.GetGrid()).prop('checked', true);
+                    if (isMineInArray) {
+                        $('#_RebuildMines_' + item.GetGrid()).prop('checked', true);
                         if (buildArray.indexOf(item.GetGrid()) === -1) {
                             buildArray.push(item);
                         }
@@ -52,17 +52,17 @@ function DepositDepletedMenuHandler(event) {
                 }
             });
 		DepletedAll.forEach(function (item) {
-        var isBuffInArray = false;
+        var isMineInArray = false;
         for (var i = 0; i < buildArrayLoad.length; i++) {
              if (buildArrayLoad[i].buiGrid === item.Item.GetGrid()) {
-                  isBuffInArray = true;
+                  isMineInArray = true;
                   break;
                  }
              }
-                if (isBuffInArray) {
-                    $('#_upgrade_' + item.Item.GetGrid()).prop('checked', true);
-                    if (isBuffInArray) {
-                        $('#_upgrade_' + item.Item.GetGrid()).prop('checked', true);
+                if (isMineInArray) {
+                    $('#_RebuildMines_' + item.Item.GetGrid()).prop('checked', true);
+                    if (isMineInArray) {
+                        $('#_RebuildMines_' + item.Item.GetGrid()).prop('checked', true);
                         if (buildArray.indexOf(item.Item.GetGrid()) === -1) {
                             buildArray.push(item.Item);
                         }
@@ -192,7 +192,7 @@ function DepositDepletedGetData() {
 				if ( building_built !== null ){
 					buildingInfo = "(Mine already on deposit)";
 				}
-                checkboxU = '<input type="checkbox" id="_upgrade_' + item.GetGrid() + '" />'.format(item.GetGrid());
+                _checkboxRebuildMines_ = '<input type="checkbox" id="_RebuildMines_' + item.GetGrid() + '" />'.format(item.GetGrid());
                 
 				//document.getElementById('buildPOS_' + item.grid).addEventListener('click', function () { _GoTo(item.grid, item.building); });
 				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOS_' + item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
@@ -201,7 +201,7 @@ function DepositDepletedGetData() {
                             [4, loca.GetText("RES", item.GetName_string()) + ' '+  buildingInfo],
                             [2, item.GetAmount()],
 							[2, item.GetGrid()],
-							[3, checkboxU],
+							[3, _checkboxRebuildMines_],
 							[1, '<div style="text-align: right;">' +  buildingGoto + '</div>']
                         ], false));
             } catch (e) {
@@ -211,9 +211,9 @@ function DepositDepletedGetData() {
 			{
 				document.getElementById("buildPOS_" + item.GetGrid()).addEventListener("click",function() {_GoTo(item.GetGrid());});
 			}			
-            $(document).on('click', '#_upgrade_' + item.GetGrid(), function () {
+            $(document).on('click', '#_RebuildMines_' + item.GetGrid(), function () {
 				
-                var isChecked = $('#_upgrade_' + item.GetGrid()).prop('checked');
+                var isChecked = $('#_RebuildMines_' + item.GetGrid()).prop('checked');
 				
                 if (buildArray.indexOf(item) === -1 && isChecked) {
                     buildArray.push(item);
@@ -248,14 +248,14 @@ function DepositDepletedGetData() {
         try {
             var IconMap = "";
             if (i.Item.GetGrid() > 0)
-				checkboxU = '<input type="checkbox" id="_upgrade_' + i.Item.GetGrid() + '" />'.format(i.Item.GetGrid());
+				_checkboxRebuildMines_ = '<input type="checkbox" id="_RebuildMines_' + i.Item.GetGrid() + '" />'.format(i.Item.GetGrid());
 				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOS_' +  i.Item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
                     $('#DepositDepletedResult').append(
                         createTableRow([
                                 [4, loca.GetText("BUI", i.Item.GetBuildingName_string()) + (i.Resource == "" ? "" : " (" + i.Resource + ")")],
                                 [2, ""],
 								[2, i.Item.GetGrid()],
-								[3, checkboxU],
+								[3, _checkboxRebuildMines_],
 								[1, '<div style="text-align: right;">' +  buildingGoto + '</div>']
                             ], false));
         } catch (e) {}
@@ -263,8 +263,8 @@ function DepositDepletedGetData() {
 		{
 			document.getElementById("buildPOS_" + i.Item.GetGrid()).addEventListener("click",function() {_GoTo(i.Item.GetGrid());});
 		}
-		$(document).on('click', '#_upgrade_' + i.Item.GetGrid(), function () {
-                var isChecked = $('#_upgrade_' + i.Item.GetGrid()).prop('checked');
+		$(document).on('click', '#_RebuildMines_' + i.Item.GetGrid(), function () {
+                var isChecked = $('#_RebuildMines_' + i.Item.GetGrid()).prop('checked');
 
                 if (buildArray.indexOf(i.Item) === -1 && isChecked) {
                     buildArray.push(i.Item);
@@ -336,17 +336,22 @@ function buildMine(buildArray_input) {
 	
     $.each(buildArray_input, function (i, item) {
 
-            if (item.GetGrid() !== undefined && buildArray_input.indexOf(item.GetGrid()) === -1) {
-			var buildingName = (item.GetBuildingName_string !== undefined) ? item.GetBuildingName_string() : item.GetName_string();
-				
-				if (buildingName !== undefined) {
-					buildArray_local.push({
-						buiGrid: item.GetGrid(),
-						buiRessName: buildingName,
-						buiMineType: mapItemToNumber(buildingName)
-					});
+			try
+			{
+				var a = item.GetGrid();
+				if (item.GetGrid() !== undefined && buildArray_input.indexOf(item.GetGrid()) === -1) {
+				var buildingName = (item.GetBuildingName_string !== undefined) ? item.GetBuildingName_string() : item.GetName_string();
+					
+					if (buildingName !== undefined) {
+						buildArray_local.push({
+							buiGrid: item.GetGrid(),
+							buiRessName: buildingName,
+							buiMineType: mapItemToNumber(buildingName)
+						});
+					}
 				}
 			}
+			catch(e){}
     });
 
     $.each(swmmo.application.mGameInterface.mHomePlayer.mBuildQueue.GetQueue_vector(), function (i, GetQueue) {
