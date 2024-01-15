@@ -217,7 +217,7 @@ function _updateArchitecturesModalData() {
     keys.sort().forEach(function (key) {
         buildingList[key].forEach(function (item) {
             if (item.goto != '')
-                document.getElementById('buildPOS_' + item.grid).addEventListener(
+                document.getElementById('buildPOSUpgrade_' + item.grid).addEventListener(
                     'click', function () { _buildingViewerGoTo(item.grid, item.building); }
                 );
         });
@@ -243,7 +243,7 @@ function _getArchitecturesList() {
         var buildingGoto = '';
         if (grid > 0)
             buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace(
-                '<img', '<img id="buildPOS_' + grid + '"'
+                '<img', '<img id="buildPOSUpgrade_' + grid + '"'
             ).replace('style="', 'style="cursor: pointer;');
         var name = item.GetBuildingName_string();
         if (
