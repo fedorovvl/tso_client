@@ -194,8 +194,8 @@ function DepositDepletedGetData() {
 				}
                 _checkboxRebuildMines_ = '<input type="checkbox" id="_RebuildMines_' + item.GetGrid() + '" />'.format(item.GetGrid());
                 
-				//document.getElementById('buildPOS_' + item.grid).addEventListener('click', function () { _GoTo(item.grid, item.building); });
-				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOS_' + item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
+				//document.getElementById('buildPOSMine_' + item.grid).addEventListener('click', function () { _GoTo(item.grid, item.building); });
+				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOSMine_' + item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
                 $('#DepositDepletedResult').append(
                     createTableRow([
                             [4, loca.GetText("RES", item.GetName_string()) + ' '+  buildingInfo],
@@ -209,7 +209,7 @@ function DepositDepletedGetData() {
             }
 			if (buildingGoto != "")
 			{
-				document.getElementById("buildPOS_" + item.GetGrid()).addEventListener("click",function() {_GoTo(item.GetGrid());});
+				document.getElementById("buildPOSMine_" + item.GetGrid()).addEventListener("click",function() {_GoTo(item.GetGrid());});
 			}			
             $(document).on('click', '#_RebuildMines_' + item.GetGrid(), function () {
 				
@@ -249,7 +249,7 @@ function DepositDepletedGetData() {
             var IconMap = "";
             if (i.Item.GetGrid() > 0)
 				_checkboxRebuildMines_ = '<input type="checkbox" id="_RebuildMines_' + i.Item.GetGrid() + '" />'.format(i.Item.GetGrid());
-				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOS_' +  i.Item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
+				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOSMine_' +  i.Item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
                     $('#DepositDepletedResult').append(
                         createTableRow([
                                 [4, loca.GetText("BUI", i.Item.GetBuildingName_string()) + (i.Resource == "" ? "" : " (" + i.Resource + ")")],
@@ -261,7 +261,7 @@ function DepositDepletedGetData() {
         } catch (e) {}
 		if (buildingGoto != "")
 		{
-			document.getElementById("buildPOS_" + i.Item.GetGrid()).addEventListener("click",function() {_GoTo(i.Item.GetGrid());});
+			document.getElementById("buildPOSMine_" + i.Item.GetGrid()).addEventListener("click",function() {_GoTo(i.Item.GetGrid());});
 		}
 		$(document).on('click', '#_RebuildMines_' + i.Item.GetGrid(), function () {
                 var isChecked = $('#_RebuildMines_' + i.Item.GetGrid()).prop('checked');
