@@ -127,7 +127,7 @@ const _exudUserBuildingListSounds = [ "BuildingPlace", "BuildingDestroy", "Build
 					"SelectBuilding_statueRabbid"
 					];
 
-_exudUserBuildingListSounds.sort();		
+_exudUserBuildingListSounds.sort();
 extendBaseLang(_exudUserBuildingListLang, 'exudUserBuildingListLang');
 addToolsMenuItem(getText('UserBuildingList', 'exudUserBuildingListLang') , _exudUserBuildingListMenuHandler);
 addToolsMenuItem(getText('Monitor', 'exudUserBuildingListLang') , _exudUserBuildingMonitorMenuHandler);
@@ -181,30 +181,30 @@ function _exudBuildingMonitorHasNotifyBuffed(gid)
 function _exudUserBuildingListMenuHandler(event) {
 		if (!(swmmo.application.mGameInterface.mCurrentPlayer.GetHomeZoneId() == swmmo.application.mGameInterface.mCurrentViewedZoneID))
 		{
-			showGameAlert("Not in home zone ");	
+			showGameAlert("Not in home zone ");
 			return;
 		}
 
 	$("div[role='dialog']:not(#UserBuildingListModal):visible").modal("hide");
-	
+
 	if(!_exudUserBuildingListModalInitialized)
 		$('#UserBuildingListModal').remove();
-	
+
 	try{
 		if($('#UserBuildingListModal .modal-header .container-fluid').length == 0){
 			$('#udUserBuildingListStyle').remove();
-		
+
 			if($('#udUserBuildingListStyle').length == 0)
 				$("head").append($("<style>", { 'id': 'udUserBuildingListStyle' }).text('div .row:hover {background-color: #A65329;}'));
-			
-			createModalWindow('UserBuildingListModal', getText('UserBuildingList', 'exudUserBuildingListLang'));	
-			
+
+			createModalWindow('UserBuildingListModal', getText('UserBuildingList', 'exudUserBuildingListLang'));
+
 			select = $('<select>', { id: 'exudUserBuildingListSelect' });
 				select.append($('<option>', { value:"---" }).text("---")).prop("outerHTML");
-			
+
 			$('#UserBuildingListModal .modal-header').append(
-				'<div class="container-fluid">' 
-				+ select.prop("outerHTML") 
+				'<div class="container-fluid">'
+				+ select.prop("outerHTML")
 				+ "&nbsp;&nbsp;" + $('<button>').attr({"id": "exudUserBuildingListRefresh","class": "btn btn-success"}).text(loca.GetText("LAB", "Update")).prop("outerHTML") 
 				+ "&nbsp;&nbsp;" + $('<button>').attr({"id": "exudUserBuildingListClear","class": "btn btn-success"}).text(getText('ClearMonitor', 'exudUserBuildingListLang')).prop("outerHTML") 
 				+ "&nbsp;&nbsp;" + $('<button>').attr({"id": "exudUserBuildingListAutofit","class": "btn btn-success"}).text(getText('AutofitUpgrading', 'exudUserBuildingListLang')).prop("outerHTML") 
@@ -213,7 +213,8 @@ function _exudUserBuildingListMenuHandler(event) {
 						[1, getText('Monitoring', 'exudUserBuildingListLang')],
 						[4, loca.GetText("LAB", "Name")],
 						[2, getText('Upgrading', 'exudUserBuildingListLang')],
-						[3, loca.GetText("LAB", 'Buff')],
+						[2, loca.GetText("LAB", 'Buff')],
+						[1, "Amount"],
 						[1, loca.GetText("LAB", "Level")],
 						[1, loca.GetText("LAB", "Visit")]
 					], true)
@@ -221,13 +222,13 @@ function _exudUserBuildingListMenuHandler(event) {
 			);
 			$('#exudUserBuildingListSelect').change(function() {_exudUserBuildingListUpdateView();});
 			$('#exudUserBuildingListRefresh').click(function() {_exudUserBuildingListRefresh();});
-			
+
 			$('#exudUserBuildingListClear').click(function() {
 				_exudUserBuildingListClear();
 				showGameAlert("List cleared !");
 				_exudUserBuildingListRefresh();
 			});
-			
+
 			$('#exudUserBuildingListAutofit').click(function() {
 				_exudUserBuildingListAutofit();
 				showGameAlert("List created !");
@@ -279,17 +280,24 @@ function _exudUserBuildingListAutofit()
 		}
 	});
 	_exudBuildingMonitorSaveSettings();
-	_exudUserBuildingListRefresh();	
+	_exudUserBuildingListRefresh();
 }
 
 function _exudUserBuildingListRefresh() {
-	
 	_exudUserBuildingListGetData();
 	_exudUserBuildingListUpdateView();
 }
 
-function _exudUserBuildingListGetData() {
+function getDeposit(buildingId){
+	try{
+		return swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.get(buildingId);
+	} catch (e) {
+		alert(e);
+		return null;
+	}
+}
 
+function _exudUserBuildingListGetData() {
 	try{
 		$('#exudUserBuildingListSelect').html("");
 		$('#exudUserBuildingListSelect').append($('<option>', { value:"---" }).text("---")).prop("outerHTML");
@@ -299,6 +307,11 @@ function _exudUserBuildingListGetData() {
 				var n = _exudUserBuildingListGetName(bld.GetBuildingName_string());
 				if (n != "")
 				{
+					var deposit = getDeposit(bld.GetGrid());
+					var depositAmount = "N/A";
+					if(deposit){
+						depositAmount = deposit.GetAmount();
+					}
 					var IconMapBld = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudSSPOS_'+ bld.GetGrid()+'"').replace('style="', 'style="cursor: pointer;')
 					var isUpgrading = "";
 					try{
@@ -317,7 +330,8 @@ function _exudUserBuildingListGetData() {
 							"GridPos" : bld.GetGrid(),
 							"Buffed" : (buffInfo == '' ? 0 : 1),
 							"BuffEnd" : buffInfo,
-							"Upg" : isUpgrading
+							"Upg" : isUpgrading,
+							"Amount" : depositAmount
 						}
 					);
 				}
@@ -327,8 +341,7 @@ function _exudUserBuildingListGetData() {
 				alert(e);
 			}
 		});
-		
-		
+
 		_exudUserBuildingListBuildings.sort(_exudUserBuildingListSort);
 		var PrevBuild = "";
 		_exudUserBuildingListBuildings.forEach(function(bld) {
@@ -339,7 +352,7 @@ function _exudUserBuildingListGetData() {
 			}
 		});
 	}
-	catch (e) {}			
+	catch (e) {}
 }
 
 function _exudBuildingListGetEndBuffTime(bld)
@@ -350,27 +363,26 @@ function _exudBuildingListGetEndBuffTime(bld)
 		if (buff != null)
 		{
 			if (buff.IsActive(swmmo.application.mGameInterface.GetClientTime()))
-			{		
-				app = buff.GetApplicanceMode();			
+			{
+				app = buff.GetApplicanceMode();
 				timeEnd =  new window.runtime.Date(Date.now() + (buff.GetStartTime() + buff.GetBuffDefinition().getDuration(app)) - swmmo.application.mGameInterface.GetClientTime());
 
-				if (timeEnd > 0)	
+				if (timeEnd > 0)
 				{
-					var dtfex = new window.runtime.flash.globalization.DateTimeFormatter("en-US"); 
+					var dtfex = new window.runtime.flash.globalization.DateTimeFormatter("en-US");
 					if (gameLang.indexOf("en-") > 0)
-						dtfex.setDateTimePattern("MM-dd-yyyy HH:mm"); 
+						dtfex.setDateTimePattern("MM-dd-yyyy HH:mm");
 					else
-						dtfex.setDateTimePattern("dd-MM HH:mm"); 
-					
+						dtfex.setDateTimePattern("dd-MM HH:mm");
+
 					BuffData = dtfex.format(new window.runtime.Date(timeEnd));
-					
-				}	
-			}							
+				}
+			}
 		}
 	 }
 	 catch (e) {
 	 }
-	
+
 	return BuffData;
 }
 
@@ -384,7 +396,7 @@ function _exudUserBuildingListUpdateView()
 		if (bld.Name == BuildToDisplay)
 		{
 			isSelected = _exudBuildingMonitorIsMonitoring(bld.GridPos);
-			
+
 			checkbox = '<input type="checkbox" id="_exudBL_{0}" {1}/>'.format(
 						bld.GridPos,
 						isSelected ? ' checked' : ''
@@ -393,10 +405,11 @@ function _exudUserBuildingListUpdateView()
 					[1, (bld.GridPos > 0 ?checkbox: "")],
 					[4, bld.Name],
 					[2, bld.Upg],
-					[3, (bld.Buffed  == 1 ? bld.BuffEnd : loca.GetText("LAB", 'NO'))],
+					[2, (bld.Buffed  == 1 ? bld.BuffEnd : loca.GetText("LAB", 'NO'))],
+					[1, bld.Amount],
 					[1, bld.Level],
 					[1, (bld.GridPos > 0 ? bld.IconMap : "")]
-				], false);				
+				], false);
 				++tot;
 		}
 		}
@@ -404,7 +417,6 @@ function _exudUserBuildingListUpdateView()
 		{
 			alert(e);
 		}
-		
 	});
 	$("#udUserBuildingListTotal").html("Tot: " + tot);
 	$('#UserBuildingListModalData').html('<div class="container-fluid">{0}</div>'.format(out));
@@ -421,7 +433,7 @@ function _exudUserBuildingListGetName(id)
 {
 	var desc = loca.GetText("BUI", id);
 	if (desc.indexOf("undefined") > -1)	desc = "";
-	
+
 	return desc;
 }
 function _exudUserBuildingListGoTo(e)
@@ -547,24 +559,24 @@ function _exudUserBuildingMonitorMenuHandler(event) {
 	
 	if(!_exudUserBuildingMonitorModalInitialized)
 		$('#UserBuildingMonitorModal').remove();
-	
+
 try{
 		if($('#UserBuildingMonitorModal .modal-header .container-fluid').length == 0){
 			$('#udUserBuildingMonitorStyle').remove();
 
 			if($('#udUserBuildingMonitorStyle').length == 0)
 				$("head").append($("<style>", { 'id': 'udUserBuildingMonitorStyle' }).text('div .row:hover {background-color: #A65329;}'));
-			
+
 			createModalWindow('UserBuildingMonitorModal', getText('Monitoring', 'exudUserBuildingListLang'));
-			
-			selectUS = $('<select>', { id: '_exudUserBuildingMonitorSelectUS' });	
-			selectBS = $('<select>', { id: '_exudUserBuildingMonitorSelectBS' });	
+
+			selectUS = $('<select>', { id: '_exudUserBuildingMonitorSelectUS' });
+			selectBS = $('<select>', { id: '_exudUserBuildingMonitorSelectBS' });
 
 			_exudUserBuildingListSounds.forEach(function(item) {
 				selectUS.append($('<option>', { value: item }).text(item)).prop("outerHTML");
 				selectBS.append($('<option>', { value: item }).text(item)).prop("outerHTML");
 			});
-						
+
 			$('#UserBuildingMonitorModal .modal-header').append(
 				'<div class="container-fluid">' 
 				+ '<div>'
@@ -580,14 +592,15 @@ try{
 						[1, getText('Monitoring', 'exudUserBuildingListLang')],
 						[4, loca.GetText("LAB", "Name")],
 						[2, getText('Upgrading', 'exudUserBuildingListLang')],
-						[3, loca.GetText("LAB", 'Buff')],
+						[2, loca.GetText("LAB", 'Buff')],
+						[1, "Amount"],
 						[1, loca.GetText("LAB", "Level")],
 						[1, loca.GetText("LAB", "Visit")]
 					], true)
 				+ "</div>"
 				+ "</div>"
 			);
-			
+
 			$('#_exudUserBuildingMonitorSelectUS').val(_exudBuildingMonitorSettings.UpgradeSound);
 			$('#_exudUserBuildingMonitorSelectBS').val(_exudBuildingMonitorSettings.BuffSound);
 
@@ -749,7 +762,8 @@ function _exudUserBuildingMonitorRefresh()
 				[1, (item > 0 ?checkbox: "")],
 				[4, _exudUserBuildingListGetName(bld.GetBuildingName_string())],
 				[2, checkboxU + "&nbsp;" + isUpgrading],
-				[3, checkboxB + "&nbsp;" + (buffInfo == '' ? loca.GetText("LAB", 'NO') : buffInfo )],
+				[2, checkboxB + "&nbsp;" + (buffInfo == '' ? loca.GetText("LAB", 'NO') : buffInfo )],
+				[1, "Amount"],
 				[1, bld.GetUIUpgradeLevel()],
 				[1, (item > 0 ? IconMap : "")]
 			], false);
@@ -774,7 +788,7 @@ function _exudUserBuildingMonitorMessage(Text)
 
 	}
 	catch (e) {
-		
+
 	}
 }
 function _exudUserBuildingMonitorPlaySound(sound)
