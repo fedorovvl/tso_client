@@ -208,9 +208,8 @@ function mainSettingsHandler(event)
 	}
 	var createLruDrop = function(){
 		var select = $('<select>', { 'class': 'form-control lruSize' });
-		const num = [3,5,7,10];
-		for(var i in num) {
-			select.append($('<option>', { value: num[i] }).text(num[i]));
+		for(var i=1; i < 21; i++) {
+			select.append($('<option>', { value: i }).text(i));
 		}
 		return select.prop('outerHTML');
 	}
