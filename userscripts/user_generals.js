@@ -947,20 +947,20 @@ function _exudCompareGenerals( a, b ) {
 
 function GetTravelTime(spec)
 {
-	var Specialists = swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector();
-	Specialists.forEach(function(item){
+	var specialists = swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector();
+	var time = "00:00";
+	specialists.forEach(function(item){
 		if (item.GetUniqueID().toKeyString() == spec['UID'])
 		{
-			spec = item;
+			if(item.GetTask() == null ) { return; }
+
+			if(item.GetTask().GetType() == 7) // travel to zone id
+			{
+				time = GetFormatedTime(item.GetTask().GetRemainingTime());
+			}
 		}
 	});
-	if(spec.GetTask() == null ) { return "00:00"; }
-
-	if(spec.GetTask().GetType() == 7) // travel to zone
-	{
-		return GetFormatedTime(spec.GetTask().GetRemainingTime());
-	}
-	return "00:00";
+	return time;
 }
 
 function GetFormatedTime(time){
