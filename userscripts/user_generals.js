@@ -12,6 +12,7 @@ const _exudGeneralsLang = {
 		"Load": "Load",
 		"CommandSent": "Command sent",
 		"ColumnOwner": "Owner",
+		"ColumnTimeToZone": "To Zone",
 		"IsGuest": " (* guest) ",
 		"SelectedFirst": "Selected First",
 		"ExcludeStarMenu": "Exclude Star Menu",
@@ -364,7 +365,9 @@ try {
 			[7, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
 			[2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
 			[1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))],
-			[2, _exudGeneralsGetLabel("ColumnOwner")]
+			[2, _exudGeneralsGetLabel("ColumnOwner")],
+			// [1, _exudGeneralsGetLabel("ColumnOwner")],
+			// [1, _exudGeneralsGetLabel("ColumnTimeToZone")]
 		    ], true) ;
 		} else {
 		    out += createTableRow([
@@ -649,7 +652,9 @@ function _exudMakeGeneralsTable(templateData)
 						[7, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
 						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
 						[1, (item.TotalArmy>0?item.TotalArmy:'')],
-						[2, (item.Owner ? loca.GetText("LAB", "YES"): IconMap)]
+						[2, (item.Owner ? loca.GetText("LAB", "YES"): IconMap)],
+						// [1, (item.Owner ? loca.GetText("LAB", "YES"): IconMap)],
+						// [1, GetTravelTime(item)]
 					]);
 				}
 				else{
@@ -940,4 +945,36 @@ function _exudCompareGenerals( a, b ) {
 		//alert("compare error : " + error.message);
 	}
 	return 0;
+}
+
+function GetTravelTime(spec)
+{
+	var Specialists = swmmo.application.mGameInterface.mCurrentPlayerZone.GetSpecialists_vector();
+	Specialists.forEach(function(item){
+		if (item.GetUniqueID().toKeyString() == spec['UID'])
+		{
+			spec = item;
+		}
+	});
+	if(spec.GetTask() == null ) { return "00:00"; }
+
+	if(spec.GetTask().GetType() == 7) // travel to zone
+	{
+		return GetFormatedTime(spec.GetTask().GetRemainingTime());
+	}
+	return "00:00";
+}
+
+function GetFormatedTime(time){
+	return GetMinutes(time) + ":" + GetSeconds(time);
+}
+
+function GetMinutes(time){
+	if(time <= 0) { return "00"; }
+	return (Math.floor(time / 1000 / 60) < 10 ? "0" : "") + Math.floor(time / 1000 / 60);
+}
+
+function GetSeconds(time){
+	if(time <= 0) { return "00"; }
+	return (Math.floor((time / 1000) % 60) < 10 ? "0" : "") + Math.floor((time / 1000) % 60);
 }
