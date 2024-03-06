@@ -862,9 +862,11 @@ function shortcutsExport()
 				});
 			});
 			$.each(exportedContent, function(item) {
-				$.each(exportedContent[item], function(spec) { 
-					delete exportedContent[item][spec].skills;
-					delete exportedContent[item][spec].name;
+				$.each(exportedContent[item], function(spec) {
+					if(spec.substr(0,4) != 'buff') {
+						delete exportedContent[item][spec].skills;
+						delete exportedContent[item][spec].name;
+					}
 				});
 			});
 			shortcutsExportFinal({ 'tree': dataToexport, 'content': exportedContent, 'generals': genData, 'description': shortcutsWindow.sBody().find('#description').val() }); 
@@ -975,7 +977,9 @@ function shortcutsExportGetGens(data)
 	var result = { };
 	$.each(data, function(item) { 
 		$.each(data[item], function(spec) { 
-			result[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills, 'name': data[item][spec].name };
+		    if(spec.substr(0,4) != 'buff') {
+				result[spec] = { 'type': data[item][spec].type, 'skills': data[item][spec].skills, 'name': data[item][spec].name };
+			}
 		});
 	});
 	return result;

@@ -4,6 +4,7 @@ var battleSearchFor;
 var battlePacket;
 var battleTemplates;
 var battleTimedQueue;
+var battleBuffSelect;
 var battleOkStatus = $('<img>', { 'src': 'images/863_GUI.Assets.gAssetManager_AchievementCompletedCheckedIcon.png' }).prop('outerHTML');
 var battleFailStatus = utils.getImage(new(game.def("GUI.Assets::gAssetManager_ExpeditionStateAttention"))().bitmapData, 'auto', '24px');
 var battleSearchIcon = utils.getImage(new(game.def("GUI.Assets::gAssetManager_SearchBtnIcon"))().bitmapData, 'auto', '24px');
@@ -47,11 +48,23 @@ function battleMenuHandler(event)
 				$('<div>').attr({ "class": "span12 text-center" }),
 				$('<button>').attr({ "class": "btn btn-primary pull-left armySaveTemplate" }).text(getText('save_template')).click(battleSaveDialog),
 				$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { battleTemplates.load(); }),
-				$('<button>').attr({ "class": "btn btn-primary directAttack" }).text(loca.GetText("ACL", "PvPAttacker")).click(battleAttackDirect),
+				$('<button>').attr({ "class": "btn btn-primary battleAddBuff", 'data-toggle': "tooltip", 'data-placement': "top", 'title': "Add buff" }).html($('<img>', { 'src': 'images/iconaddbuff.png' })).click(function() { 
+					var time_select = $('<select>').attr('class', 'form-control').append($('<option>', { value: 1000 }).text('1s'));
+					for(var i = 2; i < 301; i++) {	time_select.append($('<option>', { value: i * 1000 }).text(i+'s'));	}
+					var buffId = makeNewTSOid(5);
+					battleWindow.withBody('.container-fluid').append(utils.createTableRow([
+						[4, '<span class="pull-left">&#8597;&nbsp;<input type="checkbox" id="buff_'+buffId+'" />&nbsp;&nbsp;</span><button type="button" class="close pull-left"><span>&times;</span></button>&nbsp;&nbsp;' + battleBuffSelect.clone().prop("outerHTML")],
+						[4,  "&nbsp;"],
+						[3, $("<button>", { "class": "btn btn-sm btn-success", "style": 'height: 24px;', 'id': 'buff_' + buffId }).text(loca.GetText("LAB", "Select")).prop("outerHTML")],
+						[1, time_select ]])
+					);
+					battleSetBindings();
+				}),
+				$('<button>').attr({ "class": "btn btn-primary directAttack", 'data-toggle': "tooltip", 'data-placement': "top", 'title': loca.GetText("ACL", "PvPAttacker") }).html($('<img>', { 'src': 'images/1647_GUI.Assets.gAssetManager_ButtonIconFindWildZone.png' })).click(battleAttackDirect),
 				$('<button>').attr({ "class": "btn btn-primary reset", 'data-toggle': "tooltip", 'data-placement': "top", 'title': loca.GetText("LAB", "CloseDetails") }).html($('<img>', { 'src': 'images/918_GUI.Assets.gAssetManager_BackIcon.png' })).click(battleGetData),
 				$('<button>').attr({ "class": "btn btn-primary loadAttack", 'data-toggle': "tooltip", 'data-placement': "top", 'title': loca.GetText("ACL", "PvPAttacker") }).html($('<img>', { 'src': 'images/1647_GUI.Assets.gAssetManager_ButtonIconFindWildZone.png' })).click(battleAttack),
 				$('<button>').attr({ "class": "btn btn-primary loadMove", 'data-toggle': "tooltip", 'data-placement': "top", 'title': loca.GetText("LAB", "Move") }).html($('<img>', { 'src': 'images/1648_GUI.Assets.gAssetManager_ButtonIconTrumpet.png' })).click(battleMove),
-				$('<button>').attr({ "class": "btn btn-warning armyUnload" }).text(getText('armyUnload')).click(function(){ 
+				$('<button>').attr({ "class": "btn btn-primary armyUnload", 'data-toggle': "tooltip", 'data-placement': "top", 'title': getText("armyUnload") }).html($('<img>', { 'src': 'images/1632_GUI.Assets.gAssetManager_UnloadTroopsIcon.png', 'style': 'height: 21px;' })).click(function(){ 
 					battleWindow.withFooter('[data-toggle="tooltip"]').tooltip( "hide" );
 					var queue = new TimedQueue(1000);
 					var counter = 1, total = battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').length;
@@ -118,24 +131,36 @@ function battleSaveDialog()
 	try {
 		var sortOrder = {}, savePacket = {};
 		battleWindow.withBody('[type=checkbox]:not(.toggleSelect)').each(function(i, item) { 
-			var delay = $(item).closest("div.row").find("select").val();
+			var delay = $(item).closest("div.row").find("select:not(.shortercontrol)").val();
 			sortOrder[item.id] = { 'order': i, 'time': parseInt(delay||1000) };
 		});
 		battleWindow.withBody('[type=checkbox]:checked:not(.toggleSelect)').each(function(i, item) {
-			var spec = armyGetSpecialistFromID(item.id);
-			savePacket[item.id] = { 
-				'grid': spec.GetGarrisonGridIdx(),
-				'name': spec.getName(false),
-				'order': sortOrder[item.id].order,
-				'time': sortOrder[item.id].time,
-				'skills': armyInfo[item.id].skills,
-				'army': armyInfo[item.id].army,
-				'type': spec.GetType()
-			};
-			var grid = $(item).closest("div.row").find("button").val();
+			if(item.id.substr(0,4) == 'buff') {
+				var buff_name = $(item).closest('div').find('select').val();
+				savePacket[item.id] = { 
+					'name': buff_name,
+					'order': sortOrder[item.id].order,
+					'time': sortOrder[item.id].time,
+					'type': buff_name.indexOf("BattleBuff") == 0 ? 'buff' : 'speedbuff',
+					'skills': {},
+					'army': {}
+				};
+			} else {
+				var spec = armyGetSpecialistFromID(item.id);
+				savePacket[item.id] = { 
+					'grid': spec.GetGarrisonGridIdx(),
+					'name': spec.getName(false),
+					'order': sortOrder[item.id].order,
+					'time': sortOrder[item.id].time,
+					'skills': armyInfo[item.id].skills,
+					'army': armyInfo[item.id].army,
+					'type': spec.GetType()
+				};
+			}
+			var grid = $(item).closest("div.row").find("button").last().val();
 			if(!grid || grid == 0 || grid == "0") { return; }
 			savePacket[item.id].target = parseInt(grid);
-			savePacket[item.id].targetName = $(item).closest("div.row").find("button").text();
+			savePacket[item.id].targetName = $(item).closest("div.row").find("button").last().text();
 		});
 		if(Object.keys(savePacket).length > 0) { battleTemplates.save(savePacket); }
 		battlePacket = {};
@@ -160,6 +185,11 @@ function battleLoadDataCheck(data)
 {
 	game.gi.mMouseCursor.SetCursorEditMode(86);
 	$.each(data, function(item) { 
+		if(item.substr(0,4) == 'buff') {
+			data[item].canAttack = data[item].target > 0 && game.zone.mStreetDataMap.GetBuildingByGridPos(data[item].target) != null;
+			data[item].canSubmitAttack = data[item].canAttack && data[item].target > 0;
+			return;
+		}
 		var spec = armyGetSpecialistFromID(item);
 		data[item].spec = spec;
 		if(spec == null) { return; }
@@ -176,6 +206,9 @@ function battleLoadDataCheck(data)
 
 function battlecheckCanAttack(id, target)
 {
+	if(typeof id != 'object' && id.substr(0,4) == 'buff') {
+		return target > 0 && game.zone.mStreetDataMap.GetBuildingByGridPos(target) != null;
+	}
 	var spec = typeof id == 'object' ? id : armyGetSpecialistFromID(id);
 	if(spec == null) { return false; }
 	return target > 0 && 
@@ -188,8 +221,9 @@ function battlecheckCanAttack(id, target)
 function battleLoadData()
 {
 	updateFreeArmyInfo();
+	buffVector = game.gi.mCurrentPlayer.getAvailableBuffs_vector();
 	battleWindow.withFooter('[data-toggle="tooltip"]').tooltip( "hide" );
-	battleWindow.withFooter(".directAttack, .armyUnload, .armySubmit").hide();
+	battleWindow.withFooter(".directAttack, .armyUnload, .armySubmit, .battleAddBuff").hide();
 	battleWindow.withFooter(".reset").show();
 	var out = '<div class="container-fluid" style="user-select: all;">';
 	out += utils.createTableRow([[4, loca.GetText("LAB", "Name")], [4, loca.GetText("LAB","MilitaryHelp")], [1, loca.GetText("LAB", "Objective")], [2, loca.GetText("LAB", "Attack")], [1, '#']], true);
@@ -197,6 +231,32 @@ function battleLoadData()
 	battlePacket = battleLoadDataCheck(battlePacket);
 	var checkedPacket = armyLoadDataCheck(battlePacket);
 	$.each(battlePacket, function(item) { 
+		if(item.substr(0,4) == 'buff') {
+			var gbCount = getBuffAvailableCount(battlePacket[item].name);
+			var gbStatus = gbCount > 0 ? battleOkStatus : battleFailStatus;
+			var gbIcon = getImageTag(battlePacket[item].name, '20px', '20px')
+			switch(battlePacket[item].type){
+				case 'speedbuff':
+					out += utils.createTableRow([
+						[11, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + gbStatus + '&nbsp;'+gbIcon+'&nbsp;' + loca.GetText("RES", battlePacket[item].name)], 
+						[1, (battlePacket[item].time / 1000) + 's']]);
+					if(gbStatus) { 
+						canSubmitMove = true;
+						battlePacket[item].canMove = true;
+					}
+				break;
+				case 'buff':
+					out += utils.createTableRow([
+						[8, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + gbStatus + '&nbsp;'+gbIcon+'&nbsp;' + loca.GetText("RES", battlePacket[item].name)], 
+						[1, ""], 
+						[2, (battlePacket[item].canAttack ? battleOkStatus : battleFailStatus) + battlePacket[item].targetName, battlePacket[item].canAttack ? "buffReady" : "buffNotReady"], 
+						[1, (battlePacket[item].time / 1000) + 's']]);
+					if(!battlePacket[item].canSubmitAttack && battlePacket[item].target > 0) { canSubmitAttack = false; }
+					attackSubmitChecker.push(battlePacket[item].canAttack && battlePacket[item].target > 0 && gbCount > 0);
+				break;
+			}
+			return;
+		}
 		if(battlePacket[item].spec == null) {
 			out += utils.createTableRow([
 				[4, '<button type="button" class="close pull-left" value="'+item+'"><span>&times;</span></button>&nbsp;' + battlePacket[item].name], 
@@ -258,6 +318,13 @@ function battleAttack(direct)
 	battleTimedQueue = new TimedQueue(1000);
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canAttack) { return; }
+		if(battlePacket[item].type == 'buff') {
+			battleTimedQueue.add(function(){ 
+				sendBuffPacket(buffsAvailable[battlePacket[item].name].id, battlePacket[item].target);
+				game.chatMessage("({0}/{1}) {2}".format(battleTimedQueue.index, battleTimedQueue.len() - 1, 'apply ' + loca.GetText("RES", battlePacket[item].name) + ' to ' + battlePacket[item].target), 'battle');
+			}, battlePacket[item].time);
+			return;
+		}
 		var spec = armyGetSpecialistFromID(item);
 		battleTimedQueue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].targetName, 5, battlePacket[item].target); }, battlePacket[item].time);
 	});
@@ -275,6 +342,13 @@ function battleMove(direct)
 	battleTimedQueue = new TimedQueue(1000);
 	$.each(battlePacket, function(item) {
 		if(!battlePacket[item].canMove) { return; }
+		if(battlePacket[item].type == 'speedbuff') {
+			battleTimedQueue.add(function(){ 
+				sendBuffPacket(buffsAvailable[battlePacket[item].name].id, 0); 
+				game.chatMessage("({0}/{1}) {2}".format(battleTimedQueue.index, battleTimedQueue.len() - 1, 'apply ' + loca.GetText("RES", battlePacket[item].name)), 'battle');
+			});
+			return;
+		}
 		var spec = armyGetSpecialistFromID(item);
 		if(battlePacket[item].grid > 0) {
 			battleTimedQueue.add(function(){ battleSendGeneral(spec, battlePacket[item].name, battlePacket[item].grid, 4, battlePacket[item].grid); });
@@ -367,9 +441,10 @@ function battleGetData()
 	updateFreeArmyInfo();
 	battleWindow.withFooter('.armySaveTemplate').show();
 	armyUpdateProgress(-1);
+	battleBuffSelect = battleBuffCreateSelect();
 	battleWindow.withFooter('[data-toggle="tooltip"]').tooltip( "hide" );
 	battleWindow.withFooter(".loadAttack, .loadMove, .reset, .directAttack, .armySubmit, .armyReset").hide();
-	battleWindow.withFooter(".armyUnload, .armySendGeneralsBtn").show();
+	battleWindow.withFooter(".armyUnload, .armySendGeneralsBtn, .battleAddBuff").show();
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[4, $('<input>', { 'type': 'checkbox', 'class': 'toggleSelect' }).prop('outerHTML') + '&nbsp;&nbsp;' + loca.GetText("LAB", "Name")], [4, getText('armyCurrentArmy')], [3, loca.GetText("LAB", "Attack")], [1, '#']], true);
 	var select = $('<select>').attr('class', 'form-control').append($('<option>', { value: 1000 }).text('1s'));
@@ -389,7 +464,7 @@ function battleGetData()
 				html += utils.createTableRow([
 					[4, '&#8597;&nbsp;<input type="checkbox" id="' + uniqId + '" />&nbsp;' + $(getImageTag(item.getIconID(), '24px', '24px')).css("cursor", "pointer").attr({ "id": "specOpen", 'name': item.GetGarrisonGridIdx() }).prop('outerHTML') + ' ' + item.getName(false)], 
 					[4, info],
-					[3, (item.HasUnits() && !item.GetSpecialistDescription().isTransportGeneral() ? $("<button>", { "class": "btn btn-sm btn-success", "style": 'height: 28px;', 'id': uniqId }).text(loca.GetText("LAB", "Select")).prop("outerHTML") + '&nbsp;' + $(battleSearchIcon).css("cursor", "pointer").attr({ "id": "specOpen" }).prop("outerHTML") : ''), 'armySelect'],
+					[3, (item.HasUnits() && !item.GetSpecialistDescription().isTransportGeneral() ? $("<button>", { "class": "btn btn-sm btn-success", "style": 'height: 24px;', 'id': uniqId }).text(loca.GetText("LAB", "Select")).prop("outerHTML") + '&nbsp;' + $(battleSearchIcon).css("cursor", "pointer").attr({ "id": "specOpen" }).prop("outerHTML") : ''), 'armySelect'],
 					[1, item.HasUnits() && !item.GetSpecialistDescription().isTransportGeneral() ? select.clone() : '']
 				]);
 			} else {
@@ -408,6 +483,22 @@ function battleGetData()
 			}
 			battleWindow.withBody('input[id="'+item+'"]').closest("div.row").find("select").val(battlePacket[item].time);
 			battleWindow.withBody('input[id="'+item+'"]').prop("checked", true);
+			// add buffs
+			if(item.substr(0,4) != 'buff') { return; }
+			var time_select = $('<select>').attr('class', 'form-control').append($('<option>', { value: 1000 }).text('1s'));
+			for(var i = 2; i < 301; i++) {	time_select.append($('<option>', { value: i * 1000 }).text(i+'s'));	}
+			var clonedBattleBuffSelect = battleBuffSelect.clone();
+			clonedBattleBuffSelect.find('[value="'+battlePacket[item].name+'"]').attr('selected','selected');
+			battleWindow.withBody('.container-fluid').append(utils.createTableRow([
+				[4, '<span class="pull-left">&#8597;&nbsp;<input type="checkbox" id="'+item+'" checked />&nbsp;&nbsp;</span><button type="button" class="close pull-left"><span>&times;</span></button>&nbsp;&nbsp;' + clonedBattleBuffSelect.prop("outerHTML")],
+				[4,  "&nbsp;"],
+				[3, $("<button>", { "class": "btn btn-sm btn-success", "style": 'height: 24px;', 'id': item, 'value': battlePacket[item].target > 0 ? battlePacket[item].target : '' }).text(battlePacket[item].target > 0 ? battleTruncateName(battlePacket[item].targetName, 25) : loca.GetText("LAB", "Select")).prop("outerHTML")],
+				[1, time_select ]])
+			);
+			if(battlePacket[item].target > 0) {
+				battleWindow.withBody('button[id="'+item+'"]').closest('div').addClass(battlecheckCanAttack(item, battlePacket[item].target) ? "buffReady" : "buffNotReady");
+			}
+			battleWindow.withBody('input[id="'+item+'"]').closest("div.row").find("select").last().val(battlePacket[item].time);
 		});
 		var keys = Object.keys(battlePacket);
 		battleWindow.withBody("div.row:gt(0)").sort(function(a, b) {
@@ -419,12 +510,7 @@ function battleGetData()
 			return keys.indexOf(aVal) > keys.indexOf(bVal) ? 1 : -1;
 		}).appendTo(battleWindow.withBody('.container-fluid'));
 	}
-	battleWindow.withBody(".container-fluid").sortable();
-	battleWindow.withBody("button").click(function(e){
-		battleSearchFor = this.id;
-		e.stopPropagation();
-		$("#battleWindow .dropdown-toggle").dropdown('toggle');
-	});
+	battleSetBindings();
 	battleWindow.Dialog().find(".dropdown-menu button").click(function() {
 		battleWindow.withBody('button[id="'+battleSearchFor+'"]').text(battleTruncateName($(this).val(), 25)).val(this.id);
 		battleWindow.withBody('button[id="'+battleSearchFor+'"]').closest('div').removeClass( [ "buffReady", "buffNotReady" ] );
@@ -454,6 +540,28 @@ function battleGetData()
 	battleWindow.withBody("#specOpen").click(battleShowGeneral);
 	var count = battleWindow.withBody('button').closest('div .buffReady, .buffNotReady').length;
 	battleWindow.withFooter('.directAttack').css('display', count > 0 && count == battleWindow.withBody('button').closest('div .buffReady').length ? '' : 'none');
+}
+
+function battleBuffCreateSelect()
+{
+	var select = $('<select>').attr('class', 'shortercontrol');
+	game.gi.mCurrentPlayer.getAvailableBuffs_vector().filter(function(e) { 
+		return (e.GetBuffDefinition().GetName_string().indexOf("BattleBuff") == 0 || e.GetBuffDefinition().GetName_string().indexOf("GeneralSpeedBuff") == 0) && e.GetBuffDefinition().RequiredEventName() == "";
+	}).forEach(function(item) {
+		select.append($('<option>', { value: item.GetBuffDefinition().GetName_string() }).text(item.getName()));
+	});
+	return select;
+}
+
+function battleSetBindings()
+{
+	battleWindow.withBody(".container-fluid").sortable();
+	battleWindow.withBody('button:not(.close)').click(function(e){
+		battleSearchFor = this.id;
+		e.stopPropagation();
+		$("#battleWindow .dropdown-toggle").dropdown('toggle');
+	});
+	battleWindow.withBody(".close").click(function(e) { $(e.currentTarget).closest('.row').remove(); });
 }
 
 function battleShowGeneral()
