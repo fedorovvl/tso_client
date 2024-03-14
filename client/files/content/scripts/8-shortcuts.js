@@ -657,10 +657,11 @@ function shortcutsImportFinal()
 					delete newContent[item][spec];
 					return;
 				}
+				newContent[item][spec].skills = {};
+				if(spec.substr(0,4) == 'buff') { return; }
 				var specialist = armyGetSpecialistFromID(spec);
 				newContent[item][spec].name = specialist.getName(false);
 				newContent[item][spec].type = specialist.GetType();
-				newContent[item][spec].skills = {};
 				specialist.getSkillTree().getItems_vector().forEach(function(skill, index){
 					if(skill.getLevel() > 0) { newContent[item][spec].skills[index] = skill.getLevel(); }
 				});
@@ -768,14 +769,20 @@ function shortcutsImportGetData()
 	}
 	out += "<H4>{0}</H4>".format(getText("shortImportComparator")) + createTableRow([[5, loca.GetText("RES", "General")],[1, loca.GetText("LAB", "ProductionStatus")],[6, loca.GetText("QUL", "GuiDaiTheGoodGenerals")]], true);
 	shortcutsImportTotalGens = 0;
-	$.each(shortcutsImported.generals, function(item) {
-		if(!shortcutsImportTransport && shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).isTransportGeneral()) { return; }
-		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).getName_string());
+	var shortImportedGensArr = [];
+	$.each(shortcutsImported.generals, function(item) { 
+		var tmp = shortcutsImported.generals[item];
+		tmp.id = item;
+		shortImportedGensArr.push(tmp);
+	});
+	shortImportedGensArr.sort(function(a,b) { return a.type > b.type ? -1 : a.type < b.type ? 1 : 0; }).forEach(function(item) {
+		if(!shortcutsImportTransport && shortcutscSpecialist.GetSpecialistDescriptionForType(item.type).isTransportGeneral()) { return; }
+		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(item.type).getName_string());
 		shortcutsImportTotalGens++;
 		out += createTableRow([
-			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(name).prop('outerHTML') + shortcutsImportShowSkills(shortcutsImported.generals[item].skills, shortcutsImported.generals[item].type)],
+			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(name).prop('outerHTML') + shortcutsImportShowSkills(item.skills, item.type)],
 			[1, "", 'match'],
-			[6, shortcutsImportFilterSelect(select, shortcutsImported.generals[item].type) + '<div class="skills" style="text-align: right;"/>', item]
+			[6, shortcutsImportFilterSelect(select, item.type) + '<div class="skills" style="text-align: right;"/>', item.id]
 		], false);
 	});
 	shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;" }).html(out));
