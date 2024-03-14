@@ -691,7 +691,11 @@ function shortcutsImportFinal()
 	}
 	var file = new air.File(); 
 	file.addEventListener(air.Event.SELECT, function(event){
-		shortcutsImportTree(shortcutsImported.tree, newContent, file.nativePath);
+		if(mainSettings.shortcutsDir != "" && file.nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
+			alert("Parent dir not match "+mainSettings.shortcutsDir+"!");
+			return;
+		}
+		shortcutsImportTree(shortcutsImported.tree, newContent, shortcutsGetPath(file.nativePath, true));
 		shortcutsImportData(newContent, file.nativePath, false);
 		if(shortcutsImported.description != '') {
 			shortcutsImportData({ 'README.txt': shortcutsImported.description.replace(/\n/g, '\r\n') }, file.nativePath, true);
