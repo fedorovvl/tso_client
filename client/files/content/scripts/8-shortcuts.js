@@ -618,13 +618,14 @@ function shortcutsImportMakeSelect()
 	return select;
 }
 
-function shortcutsImportFilterSelect(select, type)
+function shortcutsImportFilterSelect(select, type, selectedVal)
 {
 	var result = select.clone();
 	var filter = [ type ];
 	shortcutsGeneralsReplacement[type]&&(filter = filter.concat(shortcutsGeneralsReplacement[type]));
 	result.find('option[id]').filterAttribute('id', filter, true).remove();
 	result.prepend($('<option>', { value: 0 }).text(loca.GetText("LAB", "Select")));
+	if(selectedVal) { result.find('[value="'+selectedVal+'"]').attr('selected', true); }
 	return result.find('option').length == 1 ? getText('NoData') : result.prop('outerHTML');
 }
 
@@ -779,15 +780,17 @@ function shortcutsImportGetData()
 		if(!shortcutsImportTransport && shortcutscSpecialist.GetSpecialistDescriptionForType(item.type).isTransportGeneral()) { return; }
 		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(item.type).getName_string());
 		shortcutsImportTotalGens++;
+		var prevFilterVal = shortcutsWindow.sBody().find('[class*="'+item.id+'"] select').val();
 		out += createTableRow([
 			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(name).prop('outerHTML') + shortcutsImportShowSkills(item.skills, item.type)],
 			[1, "", 'match'],
-			[6, shortcutsImportFilterSelect(select, item.type) + '<div class="skills" style="text-align: right;"/>', item.id]
+			[6, shortcutsImportFilterSelect(select, item.type, prevFilterVal) + '<div class="skills" style="text-align: right;"/>', item.id]
 		], false);
 	});
 	shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;" }).html(out));
 	shortcutsWindow.sBody().find('a').click(function(e) { e.preventDefault(); navigateToURL(this.href); });
 	shortcutsWindow.sBody().find('select').change(shortcutsImportMatch);
+	shortcutsWindow.sBody().find('select').trigger('change');
 }
 
 function shortcutsImportShowSkills(skills, type)
