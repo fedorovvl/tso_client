@@ -986,7 +986,7 @@ function shortcutsExportTree(t, content, skipped)
 function shortcutsExportGetTemplateData(filepath)
 {
 	try {
-		var file = new air.File(filepath);
+		var file = new air.File(shortcutsGetPath(filepath));
 		if(!file.exists) { return getText("buff_not_exist"); }
 		var fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.READ);
