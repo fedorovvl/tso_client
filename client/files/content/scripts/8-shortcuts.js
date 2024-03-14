@@ -143,10 +143,13 @@ function shortcutsMenuSelectedHandler(event)
 function shortcutsMenuSelectedRetryHandler(file_path, count)
 {
 	try {
+		if(mainSettings.shortcutsDir != "" && count == 0) {
+			file_path = shortcutsGetPath(file_path);
+		}
 		var filetype = shortcutsStripType(file_path);
 		var file = new air.File(filetype[0]);
 		if(!file.exists) {
-			alert(getText("bad_template") + '(not exists)');
+			alert(getText("bad_template") + '('+filetype[0]+') not exists');
 			return;
 		}
 		var fileStream = new air.FileStream();
@@ -160,7 +163,6 @@ function shortcutsMenuSelectedRetryHandler(file_path, count)
 		if(count > 3) {
 			alert(getText("bad_template") + '(retry)');
 		} else {
-			
 			shortcutsMenuSelectedRetryHandler(file_path, ++count);
 		}
 	}
@@ -460,11 +462,22 @@ function shortcutsselectTextFile(type)
     root.browseForOpenMultiple("Open", new window.runtime.Array(txtFilter)); 
     root.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, function(event) {
 		var nametotype = { 'buff': 'u', 'bui': 'p', 'battle': 'b' };
+		if(mainSettings.shortcutsDir != "" && event.files.length > 0 && event.files[0].nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
+			alert("Parent dir not match "+mainSettings.shortcutsDir+"!");
+			return;
+		}
 		event.files.forEach(function(item) {
-			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push([item.nativePath + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)), null]);
+			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push([shortcutsGetPath(item.nativePath, true) + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)), null]);
 		});
 		shortcutsUpdateView();
 	});
+}
+
+function shortcutsGetPath(path, cut)
+{
+	if(mainSettings.shortcutsDir == "") { return path; }
+	if(cut) { return path.replace(mainSettings.shortcutsDir, ''); }
+	return mainSettings.shortcutsDir + path;
 }
 
 function shortcutsUpdateView()

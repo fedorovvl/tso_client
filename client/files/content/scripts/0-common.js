@@ -36,7 +36,8 @@ var mainSettings = {
 		'bbmsg': '#8CA8FF', 'modmsg': '#E5CD2D', 'communityleadmsg': '#99ff99', 'globaltstamp': '#7FFF7F', 'globalsender': '#00FF33', 'globalmsg': '#E2E2E2', 'globalownname': '#FF8644', 'globalimportant': '#E2E2E2', 'findcooptstamp': '#00FF33', 'findcoopsender': '#00FF33', 'findcoopmsg': '#E2E2E2', 'findcoopownname': '#FF8644', 'findcoopimportant': '#E2E2E2', 'tradetstamp': '#00FF33', 'tradesender': '#00FF33', 'trademsg': '#E2E2E2', 'tradeownname': '#FF9347', 'tradeimportant': '#E2E2E2', 'helptstamp': '#00FF33', 'helpsender': '#00FF33', 'helpmsg': '#E2E2E2', 'helpownname': '#FF9347', 'helpimportant': '#E2E2E2', 'newststamp': '#FFFF00', 'newssender': '#FFFF00', 'newsmsg': '#FFFF00', 'newsimportant': '#FFFF00', 'newsownname': '#FF9347', 'guildtstamp': '#7FFF7F', 'guildsender': '#7FFF7F', 'guildmsg': '#7FFF7F', 'guildownname': '#7FFF7F', 'guildimportant': '#7FFF7F', 'officerststamp': '#7FFF7F', 'officerssender': '#7FFF7F', 'officersmsg': '#7FFF7F', 'officersownname': '#7FFF7F', 'officersimportant': '#7FFF7F', 'whispertstamp': '#FC68FF', 'whispersender': '#FC68FF', 'whispermsg': '#FC68FF', 'whisperownname': '#FF9347', 'whisperimportant': '#FC68FF', 'cooptstamp': '#00FF33', 'coopsender': '#00FF33', 'coopmsg': '#E2E2E2', 'coopownname': '#FF8644' 
 	},
 	infoBarResources: ["Tool", "Coin", "Plank", "RealPlank", "Stone", "Marble"],
-	showOnlyActiveGuildMembers: false
+	showOnlyActiveGuildMembers: false,
+	shortcutsDir: ""
 };
 var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
 
@@ -328,6 +329,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('buitemplates_desc') + getDefFolder('builastDir')], [3, createButton('builastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('armytemplates_desc') + getDefFolder('armylastDir')], [3, createButton('armylastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('battletemplates_desc') + getDefFolder('battlelastDir')], [3, createButton('battlelastDir', loca.GetText("LAB", "Select"))]]);
+	html += utils.createTableRow([[9, "Shortcuts main path: " + $('<span>', { 'class': 'shortcutsDir' }).html(mainSettings.shortcutsDir).prop('outerHTML')], [2, createButton('shortcutsDir', loca.GetText("LAB", "Select"))], [1, createButton('x_shortcutsDir', 'x')]]);
 	html += utils.createTableRow([[9, getText('dontchangefolder_desc')], [3, createSwitch('changeTemplateFolder', mainSettings.changeTemplateFolder)]]);
 	html += utils.createTableRow([[6, getText('geodeftask_desc')], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
 	html += utils.createTableRow([[6, getText('expldeftask_desc')], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
@@ -398,6 +400,11 @@ function mainSettingsHandler(event)
 			setupNotifications();
 			var title = notifySettings.compact ? loca.GetText("SD2", "ChangeSkinBuffMason") : game.gw + ' - ' + game.playerName;
 			notificationManager.show(title, loca.GetText("SD2", "ChangeSkinBuffMason"), "images/Icon2.png", null, notifySettings.compact);
+			return;
+		}
+		if(id[0] == 'x') {
+			mainSettings[id.replace("x_", "")] = '';
+			w.withBody('.' + id.replace("x_", "")).html("");
 			return;
 		}
 		var file = new air.File(); 
