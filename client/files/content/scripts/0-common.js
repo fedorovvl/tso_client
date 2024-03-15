@@ -31,6 +31,7 @@ var mainSettings = {
 	starColsCount: 9,
 	starRowsCount: 4,
 	experimental: false,
+	mwWindowSize: 'default',
 	useCustomChatCSS: false, 
 	chatCSS: { 
 		'bbmsg': '#8CA8FF', 'modmsg': '#E5CD2D', 'communityleadmsg': '#99ff99', 'globaltstamp': '#7FFF7F', 'globalsender': '#00FF33', 'globalmsg': '#E2E2E2', 'globalownname': '#FF8644', 'globalimportant': '#E2E2E2', 'findcooptstamp': '#00FF33', 'findcoopsender': '#00FF33', 'findcoopmsg': '#E2E2E2', 'findcoopownname': '#FF8644', 'findcoopimportant': '#E2E2E2', 'tradetstamp': '#00FF33', 'tradesender': '#00FF33', 'trademsg': '#E2E2E2', 'tradeownname': '#FF9347', 'tradeimportant': '#E2E2E2', 'helptstamp': '#00FF33', 'helpsender': '#00FF33', 'helpmsg': '#E2E2E2', 'helpownname': '#FF9347', 'helpimportant': '#E2E2E2', 'newststamp': '#FFFF00', 'newssender': '#FFFF00', 'newsmsg': '#FFFF00', 'newsimportant': '#FFFF00', 'newsownname': '#FF9347', 'guildtstamp': '#7FFF7F', 'guildsender': '#7FFF7F', 'guildmsg': '#7FFF7F', 'guildownname': '#7FFF7F', 'guildimportant': '#7FFF7F', 'officerststamp': '#7FFF7F', 'officerssender': '#7FFF7F', 'officersmsg': '#7FFF7F', 'officersownname': '#7FFF7F', 'officersimportant': '#7FFF7F', 'whispertstamp': '#FC68FF', 'whispersender': '#FC68FF', 'whispermsg': '#FC68FF', 'whisperownname': '#FF9347', 'whisperimportant': '#FC68FF', 'cooptstamp': '#00FF33', 'coopsender': '#00FF33', 'coopmsg': '#E2E2E2', 'coopownname': '#FF8644' 
@@ -208,6 +209,14 @@ function mainSettingsHandler(event)
 		}
 		return select.prop('outerHTML');
 	}
+	var createMwSizeDrop = function(){
+		const sizes = ['default','same','fullscreen','maximized','minimized'];
+		var select = $('<select>', { 'class': 'form-control mwWindowSize' });
+		for(var i in sizes) {
+			select.append($('<option>', { value: sizes[i] }).text(sizes[i]));
+		}
+		return select.prop('outerHTML');
+	}
 	var createLruDrop = function(){
 		var select = $('<select>', { 'class': 'form-control lruSize' });
 		for(var i=1; i < 21; i++) {
@@ -319,6 +328,7 @@ function mainSettingsHandler(event)
 		[6, createSwitch('buffOnlyActive', mainSettings.buffOnlyActive) + '<div style="position: absolute;left: 55px;top: 1px;" id="buffOnlyActiveLang">{0}</div>'.format(getBuffOnlyActive())]
 	]);
 	html += utils.createTableRow([[6, 'Experimental multi-windows'], [6, createSwitch('experimental', mainSettings.experimental)]]);
+	html += utils.createTableRow([[6, 'New windows mode'], [6, createMwSizeDrop()]]);
 
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade in active', 'id': 'menumain' }).append(html + '</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
@@ -427,6 +437,7 @@ function mainSettingsHandler(event)
 	w.withBody('.sortOrder').val(mainSettings.sortOrder).change(function(e) { mainSettings.sortOrder = parseInt($(e.target).val()); });
 	w.withBody('.defFilter').val(mainSettings.defFilter).change(function(e) { mainSettings.defFilter = $(e.target).val(); });
 	w.withBody('.dtfFormat').val(mainSettings.dtfFormat).change(function(e) { mainSettings.dtfFormat = $(e.target).val(); });
+	w.withBody('.mwWindowSize').val(mainSettings.mwWindowSize).change(function(e) { mainSettings.mwWindowSize = $(e.target).val(); });
 	w.withBody('.lruSize').val(mainSettings.lruCacheSize).change(function(e) { mainSettings.lruCacheSize = parseInt($(e.target).val()); });
 	w.withBody('.chatFontSize').val(mainSettings.chatFontSize).change(function(e) { 
 		mainSettings.chatFontSize = parseInt($(e.target).val());
