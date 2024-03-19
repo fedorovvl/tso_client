@@ -38,7 +38,8 @@ var mainSettings = {
 	},
 	infoBarResources: ["Tool", "Coin", "Plank", "RealPlank", "Stone", "Marble"],
 	showOnlyActiveGuildMembers: false,
-	shortcutsDir: ""
+	shortcutsDir: "",
+	shortAsGlobalRelative: false
 };
 var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
 
@@ -328,7 +329,7 @@ function mainSettingsHandler(event)
 		[6, createSwitch('buffOnlyActive', mainSettings.buffOnlyActive) + '<div style="position: absolute;left: 55px;top: 1px;" id="buffOnlyActiveLang">{0}</div>'.format(getBuffOnlyActive())]
 	]);
 	html += utils.createTableRow([[6, 'Experimental multi-windows'], [6, createSwitch('experimental', mainSettings.experimental)]]);
-	html += utils.createTableRow([[6, 'New windows mode'], [6, createMwSizeDrop()]]);
+	html += utils.createTableRow([[6, 'New window mode'], [6, createMwSizeDrop()]]);
 
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade in active', 'id': 'menumain' }).append(html + '</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
@@ -339,7 +340,8 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('buitemplates_desc') + getDefFolder('builastDir')], [3, createButton('builastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('armytemplates_desc') + getDefFolder('armylastDir')], [3, createButton('armylastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('battletemplates_desc') + getDefFolder('battlelastDir')], [3, createButton('battlelastDir', loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, "Shortcuts main path: " + $('<span>', { 'class': 'shortcutsDir' }).html(mainSettings.shortcutsDir).prop('outerHTML')], [2, createButton('shortcutsDir', loca.GetText("LAB", "Select"))], [1, createButton('x_shortcutsDir', 'x')]]);
+	html += utils.createTableRow([[9, "Shortcuts base path: " + $('<span>', { 'class': 'shortcutsDir' }).html(mainSettings.shortcutsDir).prop('outerHTML')], [2, createButton('shortcutsDir', loca.GetText("LAB", "Select"))], [1, createButton('x_shortcutsDir', 'x')]]);
+	html += utils.createTableRow([[9, "Use shortcuts base path for templates"], [3, createSwitch('shortAsGlobalRelative', mainSettings.shortAsGlobalRelative)]]);
 	html += utils.createTableRow([[9, getText('dontchangefolder_desc')], [3, createSwitch('changeTemplateFolder', mainSettings.changeTemplateFolder)]]);
 	html += utils.createTableRow([[6, getText('geodeftask_desc')], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
 	html += utils.createTableRow([[6, getText('expldeftask_desc')], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
@@ -419,8 +421,12 @@ function mainSettingsHandler(event)
 		}
 		var file = new air.File(); 
 		file.addEventListener(air.Event.SELECT, function(event){
-			mainSettings[id] = file.nativePath;
-			w.withBody('.' + id).html(file.nativePath);
+			if(mainSettings.shortcutsDir != "" && mainSettings.shortAsGlobalRelative && file.nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
+				alert("Dir not match base path "+mainSettings.shortcutsDir+"!");
+				return;
+			}
+			mainSettings[id] = mainSettings.shortAsGlobalRelative ? file.nativePath.replace(mainSettings.shortcutsDir, "") : file.nativePath;
+			w.withBody('.' + id).html(mainSettings[id]);
 		}); 
 		file.browseForDirectory("Select a directory"); 
 	});
@@ -465,6 +471,17 @@ function mainSettingsHandler(event)
 		w.withBody('#buffOnlyActiveLang').html(getBuffOnlyActive());
 	});
 	w.withBody('#changeTemplateFolder').change(function(e) { mainSettings.changeTemplateFolder = $(e.target).is(':checked'); });
+	w.withBody('#shortAsGlobalRelative').click(function(e) { 
+		if(mainSettings.shortcutsDir == "" && mainSettings.shortAsGlobalRelative) {
+			alert("Shortcuts base path not set");
+			e.preventDefault();
+			mainSettings.shortAsGlobalRelative = false;
+			return;
+		}
+	});
+	w.withBody('#shortAsGlobalRelative').change(function(e) { 
+		mainSettings.shortAsGlobalRelative = $(e.target).is(':checked');
+	});
 	w.withBody('#forcegc').change(function(e) {	
 		mainSettings.forcegc = $(e.target).is(':checked');
 		toggleForceGC();
@@ -1088,13 +1105,22 @@ SaveLoadTemplate.prototype = {
             .resolvePath("{0}Template.txt".format(this.module)), file.addEventListener(air.Event.COMPLETE, (function(t) {
                 if (mainSettings.changeTemplateFolder) {
                     var a = {};
-                    a[e.module + "lastDir"] = t.target.parent.nativePath, mainSettings[e.module + "lastDir"] = t.target.parent.nativePath, e.lastDir = t.target.parent.nativePath, settings.store(a);
+                    a[e.module + "lastDir"] = e.getRealPath(t.target.parent.nativePath, true);
+					mainSettings[e.module + "lastDir"] = e.getRealPath(t.target.parent.nativePath, true);
+					e.lastDir = mainSettings[e.module + "lastDir"];
+					settings.store(a);
                 };
                 a.saveCallback && a.saveCallback(), z && z()
             })), file.save(JSON.stringify(t, null, " "))
     },
+	getRealPath: function(path, cut) {
+		if(!mainSettings.shortAsGlobalRelative) { return path; }
+		if(mainSettings.shortcutsDir == "") { return path; }
+		if(cut) { return path.replace(mainSettings.shortcutsDir, ''); }
+		return mainSettings.shortcutsDir + path;
+	},
     getLastDir: function() {
-        return null != this.lastDir ? this.lastDir : air.File.documentsDirectory.nativePath
+        return null != this.lastDir ? this.getRealPath(this.lastDir) : air.File.documentsDirectory.nativePath
     },
     load: function() {
         var t = this;
