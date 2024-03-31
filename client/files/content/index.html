@@ -29,7 +29,8 @@
 			nativeProcessStartupInfo.executable = file;
 			var processArgs = new window.runtime.Vector["<String>"]();
 			rawArgs["window"] = mainSettings.mwWindowSize == 'same' ? rawArgs["window"] : mainSettings.mwWindowSize;
-			processArgs[0] = "tso://" + Object.keys(rawArgs).map(function(k) { return encodeURIComponent(k) + '=' + encodeURIComponent(rawArgs[k]); }).join('&') + "&flexid={0}&authrandom={1}&zoneid={2}".format(flexid, randomauth, zoneid);
+			$.extend(rawArgs, { "flexid": flexid, "authrandom": randomauth, "zoneid": zoneid });
+			processArgs[0] = "tso://?" + Object.keys(rawArgs).map(function(k) { return "{0}={1}".format(k, rawArgs[k]); }).join('&');
 			nativeProcessStartupInfo.arguments = processArgs;
 			process = new window.runtime.flash.desktop.NativeProcess();
 			process.start(nativeProcessStartupInfo);
