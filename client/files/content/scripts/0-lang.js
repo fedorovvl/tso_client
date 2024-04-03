@@ -367,7 +367,7 @@ const baseTranslation = {
 		"experimental_desc": 'Режим мультиоконности (МО)',
 		"mwmode_desc": 'Режим нового окна при МО',
 		"short_path_desc": "Базовый путь к закладкам: ",
-		"short_use_for_tmpl_desc": "Использовать базовый путь для шаблоновов",
+		"short_use_for_tmpl_desc": "Использовать базовый путь для шаблонов",
 		"only_guild_online_desc": "Только онлайн члены гильдии",
 		"position_desc": 'Позиция',
 		"compact_desc": 'Компактный режим',
