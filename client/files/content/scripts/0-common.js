@@ -42,7 +42,16 @@ var mainSettings = {
 	shortAsGlobalRelative: false
 };
 var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
-
+var cssRoomToLoca = {
+	'global': loca.GetText("LAB", "ChatGlobal"),
+	'findcoop': loca.GetText("LAB", "ChatFindcooperation"),
+	'trade': loca.GetText("LAB", "ChatTrade"),
+	'help': loca.GetText("LAB", "ChatHelp"),
+	'news': loca.GetText("LAB", "ChatNews"),
+	'guild': loca.GetText("LAB", "ChatGuild"),
+	'officers': loca.GetText("LAB", "ChatOfficers"),
+	'whisper': loca.GetText("LAB", "ChatWhisper")
+};
 var highlightTracker = game.getTracker('highlightTracker', highlightModifyFrame);
 var scaleFactor = game.def("global").mGraphicScaleFactor;
 var ResourceGroupToWarehouseTab = { 
@@ -162,6 +171,20 @@ function buiFastAccessMenuHandler(event) {
 	} catch (e) { debug(e); }
 }
 
+function cssGetText(id)
+{
+	//global
+	var result = "";
+	$.each(cssRoomToLoca, function(k, v) {
+		if(id.indexOf(k) == 0) { result = "[{0}] {1}".format(v, getText("css_" + id.replace(k, ''))); }
+	});
+	if(id.indexOf('coop') == 0) { 
+		return "[{0}] {1}".format(getText("css_adventure"), getText("css_" + id.replace('coop', '')));
+	}
+	if(result != "") { return result; }
+	return getText("css_" + id);
+}
+
 function mainSettingsHandler(event)
 {
 	var w = new Modal('mainSettings', utils.getImageTag('icon_dice.png', '45px') + ' '+loca.GetText("LAB", "ToggleOptionsPanel"));
@@ -214,7 +237,7 @@ function mainSettingsHandler(event)
 		const sizes = ['default','same','fullscreen','maximized','minimized'];
 		var select = $('<select>', { 'class': 'form-control mwWindowSize' });
 		for(var i in sizes) {
-			select.append($('<option>', { value: sizes[i] }).text(sizes[i]));
+			select.append($('<option>', { value: sizes[i] }).text(getText("wmsize_" + sizes[i])));
 		}
 		return select.prop('outerHTML');
 	}
@@ -277,20 +300,20 @@ function mainSettingsHandler(event)
 	var tabs = $('<ul>', { 'class': 'nav nav-pills nav-justified', 'style': 'width: 100%' });
 	var tabcontent = $('<div>', { 'class': 'tab-content' });
 	tabs.append($('<li>', { 'class': 'active' }).append($('<a>', { 'data-toggle': 'tab', 'href': '#menumain' }).text(loca.GetText("ACL", "BuffAdventuresGeneral"))));
-	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menutemplates' }).text("Templates")));
+	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menutemplates' }).text(getText("templates_desc"))));
 	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menuui' }).text("UI")));
-	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menunotify' }).text("Notifications")));
-	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menuchat' }).text("Chat")));
+	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menunotify' }).text(getText("notifi_desc"))));
+	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menuchat' }).text(getText("chat_desc"))));
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
 	var themeSelector = $('<select>', { 'class': 'form-control theme' });
-	themeSelector.append([$('<option>', { 'value': 'dark' }).text("Dark"), $('<option>', { 'value': 'light' }).text("Light")]);
+	themeSelector.append([$('<option>', { 'value': 'dark' }).text(getText("theme_dark")), $('<option>', { 'value': 'light' }).text(getText("theme_light"))]);
 	var positionSelector = $('<select>', { 'class': 'form-control position' });
 	positionSelector.append([
-		$('<option>', { 'value': 'auto' }).text('auto'),
-		$('<option>', { 'value': 'topLeft' }).text('topLeft'),
-		$('<option>', { 'value': 'topRight' }).text('topRight'),
-		$('<option>', { 'value': 'bottomLeft' }).text('bottomLeft'),
-		$('<option>', { 'value': 'bottomRight' }).text('bottomRight')
+		$('<option>', { 'value': 'auto' }).text(getText("position_auto")),
+		$('<option>', { 'value': 'topLeft' }).text(getText("position_topLeft")),
+		$('<option>', { 'value': 'topRight' }).text(getText("position_topRight")),
+		$('<option>', { 'value': 'bottomLeft' }).text(getText("position_bottomLeft")),
+		$('<option>', { 'value': 'bottomRight' }).text(getText("position_bottomRight"))
 	]);
 	var timeSelector = $('<select>', { 'class': 'form-control displayTime' });
 	timeSelector.append([$('<option>', { 'value': 3 }).text('3'), $('<option>', { 'value': 5 }).text('5'), $('<option>', { 'value': 7 }).text('7'), $('<option>', { 'value': 10 }).text('10')]);
@@ -328,8 +351,8 @@ function mainSettingsHandler(event)
 		[6, getText('buffactive_desc')], 
 		[6, createSwitch('buffOnlyActive', mainSettings.buffOnlyActive) + '<div style="position: absolute;left: 55px;top: 1px;" id="buffOnlyActiveLang">{0}</div>'.format(getBuffOnlyActive())]
 	]);
-	html += utils.createTableRow([[6, 'Experimental multi-windows'], [6, createSwitch('experimental', mainSettings.experimental)]]);
-	html += utils.createTableRow([[6, 'New window mode'], [6, createMwSizeDrop()]]);
+	html += utils.createTableRow([[6, getText("experimental_desc")], [6, createSwitch('experimental', mainSettings.experimental)]]);
+	html += utils.createTableRow([[6, getText("mwmode_desc")], [6, createMwSizeDrop()]]);
 
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade in active', 'id': 'menumain' }).append(html + '</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
@@ -340,8 +363,8 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('buitemplates_desc') + getDefFolder('builastDir')], [3, createButton('builastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('armytemplates_desc') + getDefFolder('armylastDir')], [3, createButton('armylastDir', loca.GetText("LAB", "Select"))]]);
 	html += utils.createTableRow([[9, getText('battletemplates_desc') + getDefFolder('battlelastDir')], [3, createButton('battlelastDir', loca.GetText("LAB", "Select"))]]);
-	html += utils.createTableRow([[9, "Shortcuts base path: " + $('<span>', { 'class': 'shortcutsDir' }).html(mainSettings.shortcutsDir).prop('outerHTML')], [2, createButton('shortcutsDir', loca.GetText("LAB", "Select"))], [1, createButton('x_shortcutsDir', 'x')]]);
-	html += utils.createTableRow([[9, "Use shortcuts base path for templates"], [3, createSwitch('shortAsGlobalRelative', mainSettings.shortAsGlobalRelative)]]);
+	html += utils.createTableRow([[9, getText("short_path_desc") + $('<span>', { 'class': 'shortcutsDir' }).html(mainSettings.shortcutsDir).prop('outerHTML')], [2, createButton('shortcutsDir', loca.GetText("LAB", "Select"))], [1, createButton('x_shortcutsDir', 'x')]]);
+	html += utils.createTableRow([[9, getText("short_use_for_tmpl_desc")], [3, createSwitch('shortAsGlobalRelative', mainSettings.shortAsGlobalRelative)]]);
 	html += utils.createTableRow([[9, getText('dontchangefolder_desc')], [3, createSwitch('changeTemplateFolder', mainSettings.changeTemplateFolder)]]);
 	html += utils.createTableRow([[6, getText('geodeftask_desc')], [6, createGeologistDropdown(0, 0, true), 'geoMass']]);
 	html += utils.createTableRow([[6, getText('expldeftask_desc')], [6, createExplorerDropdown(0, 0, 0, true), 'explMass']]);
@@ -357,7 +380,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('highlightGlow_desc')], [6, '<input type="text" value="'+mainSettings.highlightGlowColor+'" id="highlightGlowColor" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	html += utils.createTableRow([[6, getText('starmenurows_desc')], [6, createStarRowsDrop()]]);
 	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
-	html += utils.createTableRow([[6, "Show only online guild members"], [6, createSwitch('showOnlyActiveGuildMembers', mainSettings.showOnlyActiveGuildMembers)]]);
+	html += utils.createTableRow([[6, getText("only_guild_online_desc")], [6, createSwitch('showOnlyActiveGuildMembers', mainSettings.showOnlyActiveGuildMembers)]]);
 	var resDrop = createResourceDrop();
 	for(var i = 1; i < 7; i++) {
 		html += utils.createTableRow([[6, getText('infobarresource_desc') + i], [6, resDrop.clone().attr("id", "InfoBarRes_" + i).prop('outerHTML')]]);
@@ -368,10 +391,10 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('enabled_desc')], [3, createSwitch('enabled', notifySettings.enabled)]]);
 	html += utils.createTableRow([[6, getText('theme_desc')], [6, themeSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[6, getText('displaytime_desc')], [6, timeSelector.prop('outerHTML')]]);
-	html += utils.createTableRow([[6, 'Position'], [6, positionSelector.prop('outerHTML')]]);
+	html += utils.createTableRow([[6, getText("position_desc")], [6, positionSelector.prop('outerHTML')]]);
 	html += utils.createTableRow([[9, getText('sound_desc')], [3, createSwitch('sound', notifySettings.sound)]]);
-	html += utils.createTableRow([[9, 'Compact'], [3, createSwitch('compact', notifySettings.compact)]]);
-	html += utils.createTableRow([[3, ''],[6, createButton('testnotify', "Test notification")],[3, '']]);
+	html += utils.createTableRow([[9, getText("compact_desc")], [3, createSwitch('compact', notifySettings.compact)]]);
+	html += utils.createTableRow([[3, ''],[6, createButton('testnotify', getText("notifitest_desc"))],[3, '']]);
 	html += utils.createTableRow([[9, getText('newschattrigger_desc')], [3, createSwitch('news', notifySettings.news)]]);
 	html += utils.createTableRow([[9, getText('customwordsnewschannel_desc')], [3, createSwitch('newsCustom', notifySettings.newsCustom)]]);
 	html += utils.createTableRow([[9, getText('groupchatmentiontrigger_desc')], [3, createSwitch('mentionGroup', notifySettings.mentionGroup)]]);
@@ -383,7 +406,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('chatfontsize_desc')], [2, createChatFontDrop()], [4, getText('highlight_reboot')]]);
 	html += utils.createTableRow([[6, getText('usecustomchatcss_desc')], [6, createSwitch('useCustomChatCSS', mainSettings.useCustomChatCSS)]]);
 	$.each(mainSettings.chatCSS, function(k, v) {
-		html += utils.createTableRow([[6, k], [6, '<input type="text" value="'+v+'" id="'+k+'" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
+		html += utils.createTableRow([[6, cssGetText(k)], [6, '<input type="text" value="'+v+'" id="'+k+'" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	});
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menuchat' }).append(html+'</div>'));
 	w.Body().html(tabs.prop("outerHTML") + '<br>' + tabcontent.prop("outerHTML"));
@@ -422,7 +445,7 @@ function mainSettingsHandler(event)
 		var file = new air.File(); 
 		file.addEventListener(air.Event.SELECT, function(event){
 			if(mainSettings.shortcutsDir != "" && mainSettings.shortAsGlobalRelative && file.nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
-				alert("Dir not match base path "+mainSettings.shortcutsDir+"!");
+				alert(getText("dir_not_match_base_path")+mainSettings.shortcutsDir+"!");
 				return;
 			}
 			mainSettings[id] = mainSettings.shortAsGlobalRelative ? file.nativePath.replace(mainSettings.shortcutsDir, "") : file.nativePath;

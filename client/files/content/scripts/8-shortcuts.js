@@ -463,7 +463,7 @@ function shortcutsselectTextFile(type)
     root.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, function(event) {
 		var nametotype = { 'buff': 'u', 'bui': 'p', 'battle': 'b' };
 		if(mainSettings.shortcutsDir != "" && event.files.length > 0 && event.files[0].nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
-			alert("Parent dir not match "+mainSettings.shortcutsDir+"!");
+			alert(getText("dir_not_match_base_path")+mainSettings.shortcutsDir+"!");
 			return;
 		}
 		event.files.forEach(function(item) {
@@ -692,7 +692,7 @@ function shortcutsImportFinal()
 	var file = new air.File(); 
 	file.addEventListener(air.Event.SELECT, function(event){
 		if(mainSettings.shortcutsDir != "" && file.nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
-			alert("Parent dir not match "+mainSettings.shortcutsDir+"!");
+			alert(getText("dir_not_match_base_path")+mainSettings.shortcutsDir+"!");
 			return;
 		}
 		shortcutsImportTree(shortcutsImported.tree, newContent, shortcutsGetPath(file.nativePath, true));
