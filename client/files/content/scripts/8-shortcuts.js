@@ -143,10 +143,13 @@ function shortcutsMenuSelectedHandler(event)
 function shortcutsMenuSelectedRetryHandler(file_path, count)
 {
 	try {
+		if(mainSettings.shortcutsDir != "" && count == 0) {
+			file_path = shortcutsGetPath(file_path);
+		}
 		var filetype = shortcutsStripType(file_path);
 		var file = new air.File(filetype[0]);
 		if(!file.exists) {
-			alert(getText("bad_template") + '(not exists)');
+			alert(getText("bad_template") + '('+filetype[0]+') not exists');
 			return;
 		}
 		var fileStream = new air.FileStream();
@@ -160,7 +163,6 @@ function shortcutsMenuSelectedRetryHandler(file_path, count)
 		if(count > 3) {
 			alert(getText("bad_template") + '(retry)');
 		} else {
-			
 			shortcutsMenuSelectedRetryHandler(file_path, ++count);
 		}
 	}
@@ -460,11 +462,22 @@ function shortcutsselectTextFile(type)
     root.browseForOpenMultiple("Open", new window.runtime.Array(txtFilter)); 
     root.addEventListener(window.runtime.flash.events.FileListEvent.SELECT_MULTIPLE, function(event) {
 		var nametotype = { 'buff': 'u', 'bui': 'p', 'battle': 'b' };
+		if(mainSettings.shortcutsDir != "" && event.files.length > 0 && event.files[0].nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
+			alert(getText("dir_not_match_base_path")+mainSettings.shortcutsDir+"!");
+			return;
+		}
 		event.files.forEach(function(item) {
-			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push([item.nativePath + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)), null]);
+			(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings).push([shortcutsGetPath(item.nativePath, true) + "[{0}]".format(nametotype[type] ? nametotype[type] : type.charAt(0)), null]);
 		});
 		shortcutsUpdateView();
 	});
+}
+
+function shortcutsGetPath(path, cut)
+{
+	if(mainSettings.shortcutsDir == "") { return path; }
+	if(cut) { return path.replace(mainSettings.shortcutsDir, ''); }
+	return mainSettings.shortcutsDir + path;
 }
 
 function shortcutsUpdateView()
@@ -618,13 +631,14 @@ function shortcutsImportMakeSelect()
 	return select;
 }
 
-function shortcutsImportFilterSelect(select, type)
+function shortcutsImportFilterSelect(select, type, selectedVal)
 {
 	var result = select.clone();
 	var filter = [ type ];
 	shortcutsGeneralsReplacement[type]&&(filter = filter.concat(shortcutsGeneralsReplacement[type]));
 	result.find('option[id]').filterAttribute('id', filter, true).remove();
 	result.prepend($('<option>', { value: 0 }).text(loca.GetText("LAB", "Select")));
+	if(selectedVal) { result.find('[value="'+selectedVal+'"]').attr('selected', true); }
 	return result.find('option').length == 1 ? getText('NoData') : result.prop('outerHTML');
 }
 
@@ -657,10 +671,11 @@ function shortcutsImportFinal()
 					delete newContent[item][spec];
 					return;
 				}
+				newContent[item][spec].skills = {};
+				if(spec.substr(0,4) == 'buff') { return; }
 				var specialist = armyGetSpecialistFromID(spec);
 				newContent[item][spec].name = specialist.getName(false);
 				newContent[item][spec].type = specialist.GetType();
-				newContent[item][spec].skills = {};
 				specialist.getSkillTree().getItems_vector().forEach(function(skill, index){
 					if(skill.getLevel() > 0) { newContent[item][spec].skills[index] = skill.getLevel(); }
 				});
@@ -676,7 +691,11 @@ function shortcutsImportFinal()
 	}
 	var file = new air.File(); 
 	file.addEventListener(air.Event.SELECT, function(event){
-		shortcutsImportTree(shortcutsImported.tree, newContent, file.nativePath);
+		if(mainSettings.shortcutsDir != "" && file.nativePath.indexOf(mainSettings.shortcutsDir) != 0) {
+			alert(getText("dir_not_match_base_path")+mainSettings.shortcutsDir+"!");
+			return;
+		}
+		shortcutsImportTree(shortcutsImported.tree, newContent, shortcutsGetPath(file.nativePath, true));
 		shortcutsImportData(newContent, file.nativePath, false);
 		if(shortcutsImported.description != '') {
 			shortcutsImportData({ 'README.txt': shortcutsImported.description.replace(/\n/g, '\r\n') }, file.nativePath, true);
@@ -768,19 +787,27 @@ function shortcutsImportGetData()
 	}
 	out += "<H4>{0}</H4>".format(getText("shortImportComparator")) + createTableRow([[5, loca.GetText("RES", "General")],[1, loca.GetText("LAB", "ProductionStatus")],[6, loca.GetText("QUL", "GuiDaiTheGoodGenerals")]], true);
 	shortcutsImportTotalGens = 0;
-	$.each(shortcutsImported.generals, function(item) {
-		if(!shortcutsImportTransport && shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).isTransportGeneral()) { return; }
-		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(shortcutsImported.generals[item].type).getName_string());
+	var shortImportedGensArr = [];
+	$.each(shortcutsImported.generals, function(item) { 
+		var tmp = shortcutsImported.generals[item];
+		tmp.id = item;
+		shortImportedGensArr.push(tmp);
+	});
+	shortImportedGensArr.sort(function(a,b) { return a.type > b.type ? -1 : a.type < b.type ? 1 : 0; }).forEach(function(item) {
+		if(!shortcutsImportTransport && shortcutscSpecialist.GetSpecialistDescriptionForType(item.type).isTransportGeneral()) { return; }
+		var name = loca.GetText("SPE", shortcutscSpecialist.GetSpecialistDescriptionForType(item.type).getName_string());
 		shortcutsImportTotalGens++;
+		var prevFilterVal = shortcutsWindow.sBody().find('[class*="'+item.id+'"] select').val();
 		out += createTableRow([
-			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(name).prop('outerHTML') + shortcutsImportShowSkills(shortcutsImported.generals[item].skills, shortcutsImported.generals[item].type)],
+			[5, $('<div>', { 'style': 'line-height: 23px;' }).html(name).prop('outerHTML') + shortcutsImportShowSkills(item.skills, item.type)],
 			[1, "", 'match'],
-			[6, shortcutsImportFilterSelect(select, shortcutsImported.generals[item].type) + '<div class="skills" style="text-align: right;"/>', item]
+			[6, shortcutsImportFilterSelect(select, item.type, prevFilterVal) + '<div class="skills" style="text-align: right;"/>', item.id]
 		], false);
 	});
 	shortcutsWindow.sBody().html($('<div>', { 'class': "container-fluid", 'style': "user-select: none;" }).html(out));
 	shortcutsWindow.sBody().find('a').click(function(e) { e.preventDefault(); navigateToURL(this.href); });
 	shortcutsWindow.sBody().find('select').change(shortcutsImportMatch);
+	shortcutsWindow.sBody().find('select').trigger('change');
 }
 
 function shortcutsImportShowSkills(skills, type)
@@ -959,7 +986,7 @@ function shortcutsExportTree(t, content, skipped)
 function shortcutsExportGetTemplateData(filepath)
 {
 	try {
-		var file = new air.File(filepath);
+		var file = new air.File(shortcutsGetPath(filepath));
 		if(!file.exists) { return getText("buff_not_exist"); }
 		var fileStream = new air.FileStream();
 		fileStream.open(file, air.FileMode.READ);

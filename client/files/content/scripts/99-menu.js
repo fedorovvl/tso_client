@@ -3,7 +3,7 @@ var Menu = function(type){
 		return [
 			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), mnemonicIndex: 0, items: [
 				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), mnemonicIndex: 0, onSelect: mainSettingsHandler },
-				{ label: "Last 5 notifications", mnemonicIndex: 0, onSelect: notificationLast5Handler },
+				{ label: getText("notifi_last_desc"), mnemonicIndex: 0, onSelect: notificationLast5Handler },
 				{ label: getText('hotkeysTitle'), mnemonicIndex: 0, onSelect: keybindsMenuHandler },
 				{ label: loca.GetText("LAB", "Filter"), mnemonicIndex: 0, items: [
 						{ label: "none", name: "none", onSelect: menuFilterHandler },
