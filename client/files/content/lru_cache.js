@@ -20,6 +20,10 @@ LRUCache.prototype.put = function (key, value)
 		return;
 	}
 	
+	if(mainSettings.lruDisableDuplicates && Object.keys(this.store).filter(function(key, val) {  return val == value; }).length > 0) { 
+		return;
+	}
+	
     this.store[key] = value;
     this.tracker.push(key);
 	try {
