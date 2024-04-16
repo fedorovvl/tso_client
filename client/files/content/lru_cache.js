@@ -4,7 +4,7 @@ var LRUCache = function(size){
     this.tracker = [];
 };
 
-LRUCache.prototype.put = function (key, value)
+LRUCache.prototype.put = function (key, value)
 {
 	if (!this.store[key] && Object.keys(this.store).length + 1 > this.capacity) {
       var invalidated = this.tracker[0];
@@ -15,7 +15,11 @@ LRUCache.prototype.put = function (key, value)
     if (this.store[key]) {
       this.tracker.splice(this.tracker.indexOf(key), 1);
     }
-
+	
+	if(this.store[this.tracker.slice(-1).pop()] == value) { 
+		return;
+	}
+	
     this.store[key] = value;
     this.tracker.push(key);
 	try {
