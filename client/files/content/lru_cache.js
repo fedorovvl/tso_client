@@ -6,6 +6,7 @@ var LRUCache = function(size){
 
 LRUCache.prototype.put = function (key, value)
 {
+	var e = this;
 	if (!this.store[key] && Object.keys(this.store).length + 1 > this.capacity) {
       var invalidated = this.tracker[0];
       this.tracker.shift();
@@ -20,7 +21,7 @@ LRUCache.prototype.put = function (key, value)
 		return;
 	}
 	
-	if(mainSettings.lruDisableDuplicates && Object.keys(this.store).filter(function(key, val) {  return val == value; }).length > 0) { 
+	if(mainSettings.lruDisableDuplicates && Object.keys(this.store).filter(function(key) {  return e.store[key] == value; }).length > 0) { 
 		return;
 	}
 	
@@ -43,7 +44,7 @@ function LRULoadLast(event)
 
 function updateLRUMenu()
 {
-	var m = [];
+	var m = [{ label: getText('btn_reset'), onSelect: function() { lruTemplate = {}; updateLRUMenu();  } }];
 	$.each(lruTemplate, function(type) { 
 		if(!moduleToName[type]) { return; }
 		m.push({ label: moduleToName[type].name + '↓', enabled: false });
