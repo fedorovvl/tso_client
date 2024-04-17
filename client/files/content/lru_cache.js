@@ -17,14 +17,19 @@ LRUCache.prototype.put = function (key, value)
       this.tracker.splice(this.tracker.indexOf(key), 1);
     }
 	
+	value = mainSettings.shortAsGlobalRelative ? shortcutsGetPath(value, true) : value;
+	
 	if(this.store[this.tracker.slice(-1).pop()] == value) { 
 		return;
 	}
 	
-	if(mainSettings.lruDisableDuplicates && Object.keys(this.store).filter(function(key) {  return e.store[key] == value; }).length > 0) { 
-		return;
+	if(mainSettings.lruDisableDuplicates) {
+		Object.keys(this.store).filter(function(key) {  return e.store[key] == value; }).forEach(function(val) {
+			e.tracker.splice(e.tracker.indexOf(parseInt(val)), 1);
+			delete e.store[val];
+		});
 	}
-	
+
     this.store[key] = value;
     this.tracker.push(key);
 	try {
@@ -35,11 +40,17 @@ LRUCache.prototype.put = function (key, value)
 	}
 };
 
+LRUCache.prototype.check = function(key)
+{
+	debug(this.store[key]);
+	debug(this.tracker.indexOf(key));
+}
+
 function LRULoadLast(event)
 {
 	var module = event.target.name;
 	if(!lruTemplate[module]) { return; }
-	shortcutsMenuSelectedRetryHandler(lruTemplate[module].store[lruTemplate[module].tracker.slice(-1)[0]] + moduleToName[module].type, 1);
+	shortcutsMenuSelectedRetryHandler(lruTemplate[module].store[lruTemplate[module].tracker.slice(-1)[0]] + moduleToName[module].type, 0);
 }
 
 function updateLRUMenu()
