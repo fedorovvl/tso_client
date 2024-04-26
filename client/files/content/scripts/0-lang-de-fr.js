@@ -148,6 +148,7 @@ extendBaseLang({
 		"starmenucols_desc": "Sternmenü Spaltenanzahl"
 	},
 	'fr-fr': {
+		//Commun
 		'btn_submit': 'Soumettre',
 		'btn_reset': 'Remise à Zéro',
 		'btn_reload': 'Recharger',
@@ -163,6 +164,9 @@ extendBaseLang({
 		'bad_template' : 'Mauvais Fichier de Modèle',
 		'spec_time_normal': 'Temps Nécessaire',
 		'spec_time_arrival': "Date d'Arrivée",
+		'NoCollectibles': "Aucun objet de collection n'a été trouvé",
+		
+		// Fortifiants		
 		'buff_not_recorded' : 'Fortifiant non Enregistré ! Type - ',
 		'buff_wrong_zone' : 'Mauvaise Zone',
 		'buff_wrong_name' : 'Nom Différent',
@@ -183,6 +187,8 @@ extendBaseLang({
 		'buff_welcome': 'Bienvenue dans le Gestionnaire de Fortifiants!',
 		'buff_welcome_block': "<p>Vous pouvez enregistrer ce que vous avez besoin pour fortifier et le refaire automatiquement. Cliquer sur le bouton 'Début de l'Enregistrement' et fortfifiez vos batiments (ou ceux de vos amis). Après cela, revenez ici et cliquer sur 'Arrêter l'Enregistrement'. Vous verrez la liste des batiments et des fortifiants associés. Enregistrer cette liste comme Modèle et la fois suivante, cliquer simplement sur 'Charger Modèle' puis 'Soumettre'.</p><p>Les batiments sur fond rouge ne seront pas fortifiés.. Ainsi si l'une des lignes de fortifiant est rouge, les batiments avec ce fortifiant ne seront pas fortifiés</p>",
 		'experimental': "EXPERIMENTALE",
+		
+		// Transaction secrète 
 		'auc_warning': "Utiliser seulement après avoir payé 10k d'or sur Unity. Toujours 'Recharger' avant de cliquer sur 'Enchérir'.",
 		'auc_current': "ID Enchère Actuel:",
 		'auc_bidding_count': "Compteur d'Enchères:",
@@ -196,35 +202,113 @@ extendBaseLang({
 		'auc_you_have': "Vous avez:",
 		'auc_your_max': "Votre Enchère est la plus haute, donc vous ne pouvez pas Surenchérir",
 		'auc_do_bid': 'Enchèrir',
+		
 		'prod_estimate': 'Temps Estimé',
 		'prod_finish': 'Date de Fin',
 		'prod_timed': 'Production Chronométrée',
 		'prod_queuesize': 'Taille de la file',
 		'prod_welcome': 'Bienvenue dans le Gestionnaire de l’état de production !',
         'prod_welcome_block': "<p>Vous pouvez enregistrer l’état de production des bâtiments puis les arrêter ou les démarrer en masse. Cliquer sur le bouton 'Début de l'enregistrement' et sélectionnez vos bâtiments. Après cela, revenez ici et cliquer sur 'Arrêter l'Enregistrement'. Vous verrez la liste des bâtiments avec l'état actuel. Enregistrer cette liste comme Modèle et la fois suivante, cliquer simplement sur 'Charger Modèle' puis 'Soumettre'.</p>",
+		//  menu Général => Options
+		//Options => Général
 		'menustyle_grouped': 'Regroupé',
 		'menustyle_linear': 'Lineaire',
 		'menustyle_desc': 'Style de menu',
 		'deffilter_desc': 'Filtre par défaut',
 		'dateformat_desc': 'Format de la date',
+		'lru_desc': "Profondeur historique des modèles (LRU)",
+		'lru_duplicates_desc' : 'Désactiver duplication historique',
+		'spectimetype_desc': "Type de calcul de l'heure par défaut",
+		'sortorder_desc': 'Spécialistes du tri',
+		'forcegc_desc': "Forcer le ramassage des collectibles",
+		'buiFastdesc': "Type d'accès rapide au bâtiment",
+		'buffactive_desc': "Fortifiants batiments",
+		'experimental_desc'  : "Multi-fenêtre expérimentale",
+		'mwmode_desc' : "Nouveau mode windows",
+		
+		  // Options => Modèles
+		'templates_desc' : "Modèles",
 		'geotemplates_desc': 'Modèles géologues : ',
 		'expltemplates_desc': 'Modèles explorateurs : ',
 		'bufftemplates_desc': 'Modèles fortifiants : ',
 		'buitemplates_desc': 'Modèles batiments : ',
 		'armytemplates_desc': 'Modèles armées : ',
 		'battletemplates_desc': 'Modèles batailles : ',
+		'short_path_desc' :  "Raccourci dossier principal : ",
+		'short_use_for_tmpl_desc' : "Utiliser le raccourci pour les modèles",
+		'dontchangefolder_desc': "Changer le dernier répertoire de l'enregidtrement du modèle ",
 		'geodeftask_desc': 'Tâche par défaut des géologues',
 		'expldeftask_desc': 'Tâche par défaut des explorateurs',
-		'spectimetype_desc': "Type de calcul de l'heure par défaut",
+		
+		  // Options => UI
+		'highlight_desc': "Surbrillance collectibles",
+		'highlight_reboot': "Redémarrage requis",
+		'highlightSize_desc': "Taille de la boule",
+		'highlightColor_desc': "couleur intérieure boule",
+		'highlightGlow_desc': "Couleur extérieure boule",
+		'starmenurows_desc': "Nombre ligne étoile",
+		'starmenucols_desc': "Nombre colonne étoile",
+		'only_guild_online_desc' : "Membres actifs de la guilde",
+		'infobarresource_desc' : "Barre de ressources",
+		
+		  // Options => Notifications
+		'notifi_desc' : "Notifications",
+		'enabled_desc' : "Autoriser",
+		'theme_desc' : "Thème",
+		'theme_dark' : "Sombre",
+		'theme_light' : "Clair",
+		'displaytime_desc' : "Temps d'affichage",
+		'position_desc' : "Position",
+		'position_auto' : "Automatique",
+		'position_topLeft' : "Haut gauche",
+		'position_topRight' : "Haut droit",
+		'position_bottomLeft' : "Bas gauche",
+		'position_bottomRight' : "Bas droit",
+		'sound_desc' : "son",
+		'compact_desc' : "Compact",
+		'notifitest_desc' : "Test notification",
+		'newschattrigger_desc' : "nouveau déclencheur de chat",
+		'customwordsnewschannel_desc' : "mot personalisé nouveau canal",
+		'groupchatmentiontrigger_desc' : "Déclencheur mention de groupe de chat",
+		'customwordstrigger_desc' : "Mots déclencheurs",
+		
+		  //Options => Chats
+		'chat_desc' : "Chats",
+		'chatpanelwidth_desc': "Largeur du chat",
+		'chatfontsize_desc': "Taille police chat",
+		'usecustomchatcss_desc' : "Utiliser la personnalisation des chats",
+		'css_bbmsg' : "message BB",
+		'css_modmsg' : "message modérateur",
+		'css_communityleadmsg': 'UBI message',
+		'css_tstamp': 'Horodatage',
+		'css_sender': 'Nom du joueur écrivant',
+		'css_msg': 'Message',
+		'css_ownname': 'votre pseudo',
+		'css_important': 'Important',
+		'css_adventure': "Aventure",
+		
+		// Général => dernière notification
+		'notifi_last_desc': "5 dernières notifications",
+		
+		// Général => touche Raccourci
+		'hotkeysTitle': 'Touches de raccourci',
+		
+		// Guerre futile
 		'armyCurrentArmy': 'Armée actuelle',
 		'armyNewArmy': 'Nouvelle armée à charger',
 		'armyUnload': 'Enlever les sélections',
 		'armyLoad': 'Charger une armée',
+		'Add buff' : "Ajouter un appui",
+		
+		// Retour Vladimir
 		'feedbacktitle': 'Retour',
 		'feedbackdescription': "Cher joueur, si vous avez quelque chose à me dire, vous pouvez facilement le faire avec ce script. Écrivez simplement votre suggestion, critique ou critique dans la zone de texte ci-dessous et cliquez sur Soumettre. J'écoute toujours les retours sur mes développements et serai ravie de savoir ce que vous en pensez :)",
 		'feedbackregards': 'Cordialement, Vladimir',
 		'feedbacksended': 'Message envoyé!',
 		'feedbackerror': 'Erreur',
+		
+		// menu raccourcis
+		   //Raccourcis => Options
 		'shortcutsAdd' : 'Ajouter',
 		'shortcutsFilename' : 'Fichier',
 		'shortcutsAddItem' : 'Ajouter un item',
@@ -233,26 +317,19 @@ extendBaseLang({
 		'shortcutsToStar' : 'Retourner tous les généraux au menu étoile',
 		'shortcutsSaved' : 'Sauvegardé',
 		'shortcutsTitle': 'Raccourcis',
-		'sortorder_desc': 'Spécialistes du tri',
 		'sortbytype': 'Type',
 		'sortbyname': 'Nom',
-		"dutyShowGuest" : "Masquer/Afficher Invité(s)",
-		"specHideTitle" : "Cacher les spécialistes",
-		'hotkeysTitle': 'Touches de raccourci',
-		"dutymenuTitle": "Temps d'exécution des Spécialistes",
-		"NoData": "Pas d'information!",
-		"NoCollectibles": "Aucun objet de collection n'a été trouvé",
+		'dutyShowGuest' : "Masquer/Afficher Invité(s)",
+		'specHideTitle' : "Cacher les spécialistes",
+		'dutymenuTitle': "Temps d'exécution des Spécialistes",
+		'NoData': "Pas d'information!",
 		"buiFastCarousel": "Caroussel",
 		"buiFastLevel": "Niveau Max",
-		"buiFastdesc": "Type d'accès rapide au bâtiment",
 		"buffonlyactive": "Uniquement actif",
 		"buffall": "Tous",
-		"buffactive_desc": "Fortifiants batiments",
 		"okfieldcolor_desc": "Couleur Ok",
 		"failfieldcolor_desc": "Echec couleur",
 		"samefieldcolor_desc": "Déjà sur la position couleur",
-		"forcegc_desc": "Forcer le ramassage des collectibles",
-		"dontchangefolder_desc": "Changer le dernier répertoire de l'enregidtrement du modèle ",
 		"shortImportSmthWrong": "Quelque chose ne va pas, essayer à nouveau",
 		"shortImportDone": "Importation faite",
 		"shortImportTitle": "Importer",
@@ -267,6 +344,9 @@ extendBaseLang({
 		"shortExportReasonEmpty": "vide",
 		"shortExportReasonBadFormat": "mauvais format",
 		"shortExportReasonError": "erreur",
+		"shortImportSkillsUse": "Сonsidérer skills",
+		"shortImportSkillsIgnore": "Ignorer skills",
+		// menu aide (help menu)
 		"mainSettings_help": "Main-info",
 		"keybindsWindow_help": "Main-info",
 		"specModal_help": "Main-info#specialists",
@@ -281,29 +361,7 @@ extendBaseLang({
 		"shortcutsWindow_help": "Main-info",
 		"managerModal_help": "Main-info#tools",
 		"feedbackWindow_help": "Main-info",
-		"nondefault_help": "User-scripts-description",
-		"shortImportSkillsUse": "Сonsidérer skills",
-		"shortImportSkillsIgnore": "Ignorer skills",
-		"lru_desc": "Profondeur historique des modèles (LRU)",
-		"highlight_desc": "Surbrillance collectibles",
-		"highlightColor_desc": "couleur intérieure boule",
-		"highlightGlow_desc": "Couleur extérieure boule",
-		"highlight_reboot": "Redémarrage requis",
-		"highlightSize_desc": "Taille de la boule",
-		"chatpanelwidth_desc": "Largeur du chat",
-		"chatfontsize_desc": "Taille police chat",
-		"starmenurows_desc": "Nombre ligne étoile",
-		"starmenucols_desc": "Nombre colonne étoile",
-		// New translation
-		"infobarresource_desc" : "Barre de ressources",
-		"enabled_desc" : "Autoriser",
-		"theme_desc" : "Thème",
-		"displaytime_desc" : "Temps d'affichage",
-		"sound_desc" : "son",
-		"usecustomchatcss_desc" : "Utiliser la personnalisation des chats",
-		"newschattrigger_desc" : "nouveau déclencheur de chat",
-		"customwordsnewschannel_desc" : "mot personalisé nouveau canal",
-		"groupchatmentiontrigger_desc" : "Déclencheur mention de groupe de chat",
-		"customwordstrigger_desc" : "Mots déclencheurs"
+		"nondefault_help": "User-scripts-description"
+		
 	}
 });
