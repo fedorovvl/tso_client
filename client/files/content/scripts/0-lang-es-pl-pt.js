@@ -1,6 +1,6 @@
 // langs needed nl-nl,cz-cz,it-it,el-gr,ro-ro
 
-extendBaseLang({ 
+extendBaseLang({ 	
 	'es-es': {
 		'btn_submit': 'Enviar',
 		'btn_reset': 'Reiniciar',
@@ -156,7 +156,42 @@ extendBaseLang({
 		"newschattrigger_desc" : "Notificar chat de noticias",
 		"customwordsnewschannel_desc" : "Notificar palabras personalizadas chat de noticias",
 		"groupchatmentiontrigger_desc" : "Notificar mención en chat de grupo",
-		"customwordstrigger_desc" : "Palabras personalizadas"
+		"customwordstrigger_desc" : "Palabras personalizadas",
+		"wmsize_default": 'Predeterminado',
+		"wmsize_same": 'Igual que la principal',
+		"wmsize_fullscreen": 'Pantalla completa',
+		"wmsize_maximized": 'Pantalla maximizada',
+		"wmsize_minimized": 'Pantalla minimizada',
+		"templates_desc": "Plantillas",
+		"notifi_desc": "Notificaciones",
+		"chat_desc": "Chat",
+		"theme_dark": "Oscuro",
+		"theme_light": "Claro",
+		"position_auto": "Automática",
+		"position_topLeft": "Arriba a la izquierda",
+		"position_topRight": "Arriba a la derecha",
+		"position_bottomLeft": "Abajo a la izquierda",
+		"position_bottomRight": "Abajo a la derecha",
+		"experimental_desc": 'Múltiples ventanas (Experimental)',
+		"mwmode_desc": 'Modo de apertura de nueva ventana',
+		"short_path_desc": "Ruta base de atajos: ",
+		"short_use_for_tmpl_desc": "Usar ruta base de atajos para plantillas",
+		"only_guild_online_desc": "Mostrar solo miembros del gremio conectados",
+		"position_desc": 'Posición',
+		"compact_desc": 'Modo compacto',
+		"notifitest_desc": "Ver notificación de prueba",
+		"dir_not_match_base_path": "El directorio no coincide con la ruta base",
+		'css_bbmsg': 'Mensajes de BB',
+		'css_modmsg': 'Mensajes de MOD',
+		'css_communityleadmsg': 'Mensajes de UBI',
+		'css_tstamp': 'Marca de tiempo',
+		'css_sender': 'Nick del remitente',
+		'css_msg': 'Mensaje',
+		'css_ownname': 'Propio nick',
+		'css_important': 'Importante',
+		'css_adventure': "Aventuras",
+		'notifi_last_desc': "Ultimas 5 notificaciones",
+		'lru_duplicates_desc': "Deshabilitar plantillas LRU duplicadas"
 	},
     "pl-pl": {
 		"btn_submit": "Wyślij",
