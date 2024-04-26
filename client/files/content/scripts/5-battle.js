@@ -48,7 +48,7 @@ function battleMenuHandler(event)
 				$('<div>').attr({ "class": "span12 text-center" }),
 				$('<button>').attr({ "class": "btn btn-primary pull-left armySaveTemplate" }).text(getText('save_template')).click(battleSaveDialog),
 				$('<button>').attr({ "class": "btn btn-primary pull-left armyLoadTemplate" }).text(getText('load_template')).click(function() { battleTemplates.load(); }),
-				$('<button>').attr({ "class": "btn btn-primary battleAddBuff", 'data-toggle': "tooltip", 'data-placement': "top", 'title': "Add buff" }).html($('<img>', { 'src': 'images/iconaddbuff.png' })).click(function() { 
+				$('<button>').attr({ "class": "btn btn-primary battleAddBuff", 'data-toggle': "tooltip", 'data-placement': "top", 'title': getText("Add buff") }).html($('<img>', { 'src': 'images/iconaddbuff.png' })).click(function() { 
 					var time_select = $('<select>').attr('class', 'form-control').append($('<option>', { value: 1000 }).text('1s'));
 					for(var i = 2; i < 301; i++) {	time_select.append($('<option>', { value: i * 1000 }).text(i+'s'));	}
 					var buffId = makeNewTSOid(5);
