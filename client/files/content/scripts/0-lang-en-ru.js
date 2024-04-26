@@ -192,7 +192,8 @@ extendBaseLang({
 		'css_important': 'Important',
 		'css_adventure': "Adventure",
 		'notifi_last_desc': "Last 5 notifications",
-		'lru_duplicates_desc': "LRU disable duplicates"
+		'lru_duplicates_desc': "LRU disable duplicates",
+		'add_buff_desc': 'Add buff'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -384,6 +385,7 @@ extendBaseLang({
 		'css_important': 'Важное',
 		'css_adventure': "Приключение",
 		'notifi_last_desc': "Последние 5 уведомлений",
-		'lru_duplicates_desc': "Не разрешать дубли в LRU"
+		'lru_duplicates_desc': "Не разрешать дубли в LRU",
+		'add_buff_desc': 'Добавить усилитель'
 	}
 });
