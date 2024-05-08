@@ -680,6 +680,9 @@ SaveLoadTemplate.prototype = {
 		if(cut) { return path.replace(mainSettings.shortcutsDir, ''); }
 		return mainSettings.shortcutsDir + path;
 	},
+	setLRULabel: function(label) {
+		moduleToName[this.module] = { "name": label };
+	},
     getLastDir: function() {
         return null != this.lastDir ? this.getRealPath(this.lastDir) : air.File.documentsDirectory.nativePath
     },
