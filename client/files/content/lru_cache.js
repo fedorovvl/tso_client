@@ -57,14 +57,26 @@ function updateLRUMenu()
 {
 	var m = [{ label: getText('btn_reset'), onSelect: function() { lruTemplate = {}; updateLRUMenu();  } }];
 	$.each(lruTemplate, function(type) { 
-		if(!moduleToName[type]) { return; }
+		if(!moduleToName[type] || mainSettings.lruSkipModules.indexOf(type) > -1) { return; }
 		m.push({ label: moduleToName[type].name + '↓', enabled: false });
 		m.push({ label: moduleToName[type].name + ' → ' + loca.GetText("LAB", "ReplayBattle"), name: type, onSelect: LRULoadLast });
 		[].concat(lruTemplate[type].tracker).reverse().forEach(function(key) { 
-			m.push({ label: "[{0}] {1}".format(dtf.format(new window.runtime.Date(key)), lruTemplate[type].store[key].split("\\").pop().replace(/_/g, "[UNDERSCORE]")), name: lruTemplate[type].store[key] + moduleToName[type].type, onSelect: shortcutsMenuSelectedHandler });
+			m.push({ label: "[{0}] {1}".format(dtf.format(new window.runtime.Date(key)), lruTemplate[type].store[key].split("\\").pop().replace(/_/g, "[UNDERSCORE]")), name: "{0}-{1}".format(type, key), onSelect: LRUSelectedHandler });
 		});
 	});
 	menu.nativeMenu.getItemByName("LRU").submenu = air.ui.Menu.createFromJSON(m);
+}
+
+function LRUSelectedHandler(event)
+{
+	var keyType = event.target.name.split('-');
+	if(!moduleToName[keyType[0]].main) {
+		return shortcutsMenuSelectedRetryHandler(lruTemplate[keyType[0]].store[keyType[1]] + moduleToName[keyType[0]].type, 0);
+	}
+	var data = loadFileWithRetry(lruTemplate[keyType[0]].store[keyType[1]], 0);
+	moduleToName[keyType[0]].main();
+	moduleToName[keyType[0]].loadFn(JSON.parse(data.data), data.name);
+	lruTemplate[keyType[0]].put(Date.now(), lruTemplate[keyType[0]].store[keyType[1]]);
 }
 
 LRUCache.prototype.get = function(key)

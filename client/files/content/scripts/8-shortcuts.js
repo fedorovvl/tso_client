@@ -137,35 +137,14 @@ function shortcutsMenuSelectedHandler(event)
 	}
 	shortcutsLRUItem = event.target;
 	shortcutsLRUItem.label = "->{0}".format(shortcutsLRUItem.label);
-	shortcutsMenuSelectedRetryHandler(event.target.name, 0);
+	shortcutsMenuSelectedRetryHandler(event.target.name);
 }
 
-function shortcutsMenuSelectedRetryHandler(file_path, count)
+function shortcutsMenuSelectedRetryHandler(file_path)
 {
-	try {
-		if(mainSettings.shortcutsDir != "" && count == 0) {
-			file_path = shortcutsGetPath(file_path);
-		}
-		var filetype = shortcutsStripType(file_path);
-		var file = new air.File(filetype[0]);
-		if(!file.exists) {
-			alert(getText("bad_template") + '('+filetype[0]+') not exists');
-			return;
-		}
-		var fileStream = new air.FileStream();
-		fileStream.open(file, air.FileMode.READ);
-		var data = fileStream.readUTFBytes(file.size);
-		fileStream.close();
-		if (data == "") { return; }
-		shortcutsProceedFile(JSON.parse(data), filetype[1], file.name, filetype[0]);
-	} catch(e) {
-		debug(e);
-		if(count > 3) {
-			alert(getText("bad_template") + '(retry)');
-		} else {
-			shortcutsMenuSelectedRetryHandler(file_path, ++count);
-		}
-	}
+	var filetype = shortcutsStripType(file_path);
+	var data = loadFileWithRetry(filetype[0], 0);
+	shortcutsProceedFile(JSON.parse(data.data), filetype[1], data.name, filetype[0]);
 }
 
 function shortcutsProceedFile(data, type, name, fullPath)

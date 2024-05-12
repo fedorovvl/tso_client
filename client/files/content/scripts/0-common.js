@@ -41,7 +41,8 @@ var mainSettings = {
 	infoBarResources: ["Tool", "Coin", "Plank", "RealPlank", "Stone", "Marble"],
 	showOnlyActiveGuildMembers: false,
 	shortcutsDir: "",
-	shortAsGlobalRelative: false
+	shortAsGlobalRelative: false,
+	lruSkipModules: []
 };
 var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
 var cssRoomToLoca = {
@@ -343,6 +344,32 @@ function setupInfoBar()
 	}
 }
 
+function loadFileWithRetry(file_path, count)
+{
+	try {
+		if(mainSettings.shortcutsDir != "" && count == 0) {
+			file_path = shortcutsGetPath(file_path);
+		}
+		var file = new air.File(file_path);
+		if(!file.exists) {
+			alert(getText("bad_template") + '('+file_path+') not exists');
+			return;
+		}
+		var fileStream = new air.FileStream();
+		fileStream.open(file, air.FileMode.READ);
+		var data = fileStream.readUTFBytes(file.size);
+		fileStream.close();
+		if (data == "") { return; }
+		return { "data": data, "name": file.name };
+	} catch(e) {
+		debug(e);
+		if(count > 3) {
+			alert(getText("bad_template") + '(retry)');
+		} else {
+			loadFileWithRetry(file_path, ++count);
+		}
+	}
+}
 
 //backward compatibility
 function createModalWindow(id, title, drop) {	new Modal(id, title, drop||false).create(); }
@@ -680,11 +707,11 @@ SaveLoadTemplate.prototype = {
 		if(cut) { return path.replace(mainSettings.shortcutsDir, ''); }
 		return mainSettings.shortcutsDir + path;
 	},
-	setLRULabel: function(label) {
-		moduleToName[this.module] = { "name": label };
+	setLRULabel: function(label, windowFn) {
+		moduleToName[this.module] = { "name": label, "main": windowFn, "loadFn": this.loadCallback };
 	},
     getLastDir: function() {
-        return null != this.lastDir ? this.getRealPath(this.lastDir) : air.File.documentsDirectory.nativePath
+        return null != this.lastDir ? this.getRealPath(this.lastDir) : mainSettings.shortcutsDir != "" ? mainSettings.shortcutsDir : air.File.documentsDirectory.nativePath
     },
     load: function() {
         var t = this;

@@ -115,6 +115,7 @@ function mainSettingsHandler(event)
 	tabs.append($('<li>', { 'class': 'active' }).append($('<a>', { 'data-toggle': 'tab', 'href': '#menumain' }).text(loca.GetText("ACL", "BuffAdventuresGeneral"))));
 	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menutemplates' }).text(getText("templates_desc"))));
 	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menuui' }).text("UI")));
+	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menulru' }).text("LRU")));
 	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menunotify' }).text(getText("notifi_desc"))));
 	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menuchat' }).text(getText("chat_desc"))));
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
@@ -149,8 +150,6 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('deffilter_desc')], [6, createFilterDrop()]]);
 	html += utils.createTableRow([[6, "{0} {1}".format(loca.GetText("LAB", "Filter"), loca.GetText("QUL", "TutFreeHomezone3"))], [6, createSwitch('persistFilter', mainSettings.persistFilter)]]);
 	html += utils.createTableRow([[6, getText('dateformat_desc')], [6, createDateFormatterDrop()]]);
-	html += utils.createTableRow([[6, getText('lru_desc')], [6, createLruDrop()]]);
-	html += utils.createTableRow([[6, getText('lru_duplicates_desc')], [6, createSwitch('lruDisableDuplicates', mainSettings.lruDisableDuplicates)]]);
 	html += utils.createTableRow([
 		[6, getText('spectimetype_desc')], 
 		[6, createSwitch('specDefTimeType', mainSettings.specDefTimeType) + '<div style="position: absolute;left: 55px;top: 1px;" id="specTimeTypeLang">{0}</div>'.format(getDefTimeType())]
@@ -200,6 +199,16 @@ function mainSettingsHandler(event)
 		html += utils.createTableRow([[6, getText('infobarresource_desc') + i], [6, resDrop.clone().attr("id", "InfoBarRes_" + i).prop('outerHTML')]]);
 	}
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menuui' }).append(html+'</div>'));
+	var html = '<div class="container-fluid" style="user-select: all;">';
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
+	html += utils.createTableRow([[6, getText('lru_desc')], [6, createLruDrop()]]);
+	html += utils.createTableRow([[6, getText('lru_duplicates_desc')], [6, createSwitch('lruDisableDuplicates', mainSettings.lruDisableDuplicates)]]);
+	html += '<br>';
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
+	$.each(moduleToName, function(item) {
+		html += utils.createTableRow([[9, moduleToName[item].name], [3, createSwitch('lruSkip_'+item, mainSettings.lruSkipModules.indexOf(item) == -1)]]);
+	});
+	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menulru' }).append(html+'</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
 	html += utils.createTableRow([[9, getText('enabled_desc')], [3, createSwitch('enabled', notifySettings.enabled)]]);
@@ -315,6 +324,13 @@ function mainSettingsHandler(event)
 			e.preventDefault();
 			mainSettings.shortAsGlobalRelative = false;
 			return;
+		}
+	});
+	w.withBody('[id^=lruSkip_]').change(function(e) {
+		if($(e.target).is(':checked')) {
+			mainSettings.lruSkipModules.splice(mainSettings.lruSkipModules.indexOf(e.target.id.replace("lruSkip_", '')), 1);
+		} else {
+			mainSettings.lruSkipModules.push(e.target.id.replace("lruSkip_", ''));
 		}
 	});
 	w.withBody('#shortAsGlobalRelative').change(function(e) { 
