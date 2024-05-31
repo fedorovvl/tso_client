@@ -7,6 +7,5 @@ function _marketMonitorStartTimed(){
         game.showAlert("Рынок обновлен");
         _userMarketTimeOut = setTimeout(_marketMonitorStartTimed, 30000);
     }catch (e) {
-        myMessage(e.message)
     }
 }
