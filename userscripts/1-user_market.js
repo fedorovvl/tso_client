@@ -1,13 +1,17 @@
-try{clearTimeout(_userMarketTimeOut); game.chatMessage("Market timer reset")}catch (e) {game.chatMessage("Market timer ok")}
+try{clearTimeout(_userMarketTimeOut);clearTimeout(_userMarketStart); myMessage("Market timer reset")}catch (e) {myMessage("Market timer ok")}
 var _userMarketTimeOut = null;
-setTimeout(_marketMonitorStartTimed, 5000);
+var _userMarketStart = setTimeout(_marketMonitorStartTimed, 5000);
 function _marketMonitorStartTimed(){
     if (game.gi.isOnHomzone())
     try {
-        game.gi.SendServerAction(1061, 0, 0, 0, null);
+        clearTimeout(_userMarketStart);
+        clearTimeout(_userMarketTimeOut);
+        _userMarketStart = null;
+        _userMarketTimeOut = null;
+        game.gi.SendServerAction(TRADE_GET_UPDATES, 0, 0, 0, null);
         game.showAlert("Рынок обновлен");
-        _userMarketTimeOut = setTimeout(_marketMonitorStartTimed, 30000);
     }catch (e) {
-        game.chatMessage(e.message)
+        myMessage(e.message)
     }
+    _userMarketTimeOut = setTimeout(_marketMonitorStartTimed, 30000);
 }
