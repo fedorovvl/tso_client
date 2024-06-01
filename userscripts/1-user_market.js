@@ -8,7 +8,7 @@ function _marketMonitorStartTimed(){
         clearTimeout(_userMarketTimeOut);
         _userMarketStart = null;
         _userMarketTimeOut = null;
-        game.gi.SendServerAction(TRADE_GET_UPDATES, 0, 0, 0, null);
+        game.gi.SendServerAction(1061, 0, 0, 0, null);
         game.showAlert("Рынок обновлен");
     }catch (e) {
         game.chatMessage(e.message, 'market')
