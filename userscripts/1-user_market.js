@@ -1,4 +1,4 @@
-try{clearTimeout(_userMarketTimeOut);clearTimeout(_userMarketStart); myMessage("Market timer reset")}catch (e) {myMessage("Market timer ok")}
+try{clearTimeout(_userMarketTimeOut);clearTimeout(_userMarketStart); game.chatMessage("Market timer reset", 'market')}catch (e) {game.chatMessage("Market timer ok", 'market')}
 var _userMarketTimeOut = null;
 var _userMarketStart = setTimeout(_marketMonitorStartTimed, 5000);
 function _marketMonitorStartTimed(){
@@ -11,7 +11,7 @@ function _marketMonitorStartTimed(){
         game.gi.SendServerAction(TRADE_GET_UPDATES, 0, 0, 0, null);
         game.showAlert("Рынок обновлен");
     }catch (e) {
-        myMessage(e.message)
+        game.chatMessage(e.message, 'market')
     }
     _userMarketTimeOut = setTimeout(_marketMonitorStartTimed, 30000);
 }
