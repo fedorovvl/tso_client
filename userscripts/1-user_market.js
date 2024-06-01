@@ -2,6 +2,7 @@ try{clearTimeout(_userMarketTimeOut); game.chatMessage("Market timer reset")}cat
 var _userMarketTimeOut = null;
 setTimeout(_marketMonitorStartTimed, 5000);
 function _marketMonitorStartTimed(){
+    if (game.gi.isOnHomzone())
     try {
         game.gi.SendServerAction(1061, 0, 0, 0, null);
         game.showAlert("Рынок обновлен");
