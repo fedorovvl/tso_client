@@ -50,7 +50,9 @@ function menuBuffsHandler(event)
 	}
 	if(!buffRecordEnabled && buffRecord != null) {
 		buffVector = game.gi.mCurrentPlayer.getAvailableBuffs_vector();
-		out += getBuffHTML() + getBuffsAvailableHTML() + '<br><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">' + getText('buff_record_more') + '</button>';
+		var BuffHTML = getBuffHTML();
+		var BuffsAvailableHTML = getBuffsAvailableHTML();
+		out += BuffsAvailableHTML + '<br>' + BuffHTML + BuffsAvailableHTML + '<br><button type="button" class="btn btn-primary btn-lg btn-block" id="startRecording">' + getText('buff_record_more') + '</button>';
 		if(buffRecordFiltered.length > 0){
 			$('.buffSubmit').attr('disabled', false);
 		}

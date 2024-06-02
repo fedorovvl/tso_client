@@ -758,12 +758,17 @@ function _exudUserBuildingMonitorRefresh()
 		}
 		var IconMap = getImageTag("accuracy.png", '24px', '24px').replace('<img','<img id="exudBMPOS_'+ item+'"').replace('style="', 'style="cursor: pointer;')
 		var buffInfo = _exudBuildingListGetEndBuffTime(bld)
+		var deposit = getDeposit(bld.GetGrid());
+		var depositAmount = "";
+		if(deposit){
+			depositAmount = deposit.GetAmount();
+		}
 		out += createTableRow([
 				[1, (item > 0 ?checkbox: "")],
 				[4, _exudUserBuildingListGetName(bld.GetBuildingName_string())],
 				[2, checkboxU + "&nbsp;" + isUpgrading],
 				[2, checkboxB + "&nbsp;" + (buffInfo == '' ? loca.GetText("LAB", 'NO') : buffInfo )],
-				[1, "Amount"],
+				[1, depositAmount],
 				[1, bld.GetUIUpgradeLevel()],
 				[1, (item > 0 ? IconMap : "")]
 			], false);
