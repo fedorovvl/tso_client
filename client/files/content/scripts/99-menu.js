@@ -43,7 +43,8 @@ var Menu = function(type){
 				{ label: loca.GetText("SPE", "Geologist"), mnemonicIndex: 0, keyCode: 115, onSelect: specGeologistMenuHandler },
 				{ label: loca.GetText("ACL", "ExcelsiorLostCityBeforeRitual"), mnemonicIndex: 0, keyCode: 121, onSelect: battleMenuHandler },
 				{ label: getText('dutymenuTitle'), mnemonicIndex: 0, onSelect: specDutyMenuHandler },
-				{ label: getText('specHideTitle'), mnemonicIndex: 0, onSelect: hideSpecMenuHandler }
+				{ label: getText('specHideTitle'), mnemonicIndex: 0, onSelect: hideSpecMenuHandler },
+				{ label: getText('itemshide_desc'), mnemonicIndex: 0, onSelect: hideItemsMenuHandler }
 			]},
 			{ label: loca.GetText("LAB", "Buildings"), mnemonicIndex: 0, items: [
 				{ label: loca.GetText("LAB", "Buffs"), mnemonicIndex: 0, keyCode: 116, onSelect: menuBuffsHandler },
