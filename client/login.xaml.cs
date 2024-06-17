@@ -14,6 +14,7 @@ using System.Runtime.Serialization.Json;
 using System.Runtime.Serialization;
 using System.Drawing;
 using System.Windows.Media.Imaging;
+using OtpSharp;
 
 namespace client
 {
@@ -26,6 +27,7 @@ namespace client
         public string password { get; set; }
         public string region { get; set; }
         public string nickName { get; set; }
+        public string totpKey { get; set; }
         public string Ver { get; set; }
         public string Session { get; set; }
         public CookieCollection Cookies { get; set; }
@@ -116,7 +118,7 @@ namespace client
                 AddToRich(Servers.getTrans("tryauth") + attepts++);
                 post = new PostSubmitter
                 {
-                    Url = "https://public-ubiservices.ubi.com/v3/profiles/sessions",
+                    Url = Servers.ubiServices,
                     Type = PostSubmitter.PostTypeEnum.Post
                 };
                 post.HeaderItems.Add("Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(string.Format("{0}:{1}", username.Trim(), password.Trim()))));
@@ -131,6 +133,39 @@ namespace client
                 {
                     AddToRich(Servers.getTrans("authok"));
                     UbiSession sessionData = Deserialize<UbiSession>(res);
+                    if (sessionData.twoFactorAuthenticationTicket != null)
+                    {
+                        if (string.IsNullOrEmpty(totpKey))
+                        {
+                            AddToRich("2fa detected but no key present");
+                            attepts = 6;
+                            return;
+                        }
+                        Totp totp = new Totp(Base32.Base32Encoder.Decode(totpKey));
+                        post = new PostSubmitter
+                        {
+                            Url = Servers.ubiServices,
+                            Type = PostSubmitter.PostTypeEnum.Post
+                        };
+                        post.HeaderItems.Add("Authorization", "ubi_2fa_v1 t=" + sessionData.twoFactorAuthenticationTicket);
+                        post.ContentType = "application/json";
+                        post.HeaderItems.Add("Ubi-2FACode", totp.ComputeTotp());
+                        post.HeaderItems.Add("Ubi-AppId", "39164658-8187-4bf4-b46c-375f68356e3b");
+                        post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
+                        post.HeaderItems.Add("GenomeId", "978da00d-2533-4af4-a550-3ba09289084e");
+                        post.PostItems.Add("{\"rememberMe\":true}", string.Empty);
+                        res = post.Post(ref _cookies);
+                        AddToRich(Servers.getTrans("auth") + " 2fa");
+                        if (res.Contains("sessionKey"))
+                        {
+                            AddToRich(Servers.getTrans("authok"));
+                            sessionData = Deserialize<UbiSession>(res);
+                        } else
+                        {
+                            AddToRich(Servers.getTrans("autherr"));
+                            return;
+                        }
+                    }
                     post = new PostSubmitter
                     {
                         Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].uplay),

@@ -252,7 +252,7 @@
         <TextBlock HorizontalAlignment="Left" Margin="176,330,0,0" TextWrapping="Wrap" Padding="0" Text="{Binding langExit, Mode=OneWay}" TextAlignment="Center" VerticalAlignment="Top" Height="14" Width="49" FontFamily="Global Sans Serif" FontSize="11" TextDecorations="Underline" Foreground="#FF857647"/>
         <Button Height="14" HorizontalAlignment="Left" Margin="176,330,0,0" Name="button1" VerticalAlignment="Top" Width="42" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Click="butt_Click" Background="#00000000" Foreground="White" BorderThickness="0" />
         <TextBlock Height="23" HorizontalAlignment="Left" Margin="32,326,0,0" Name="error" FontWeight="Bold" Foreground="WhiteSmoke" Text="" VerticalAlignment="Top" Width="139" />
-        <CheckBox Width="24" Height="25" Margin="25,90,180,240" Name="SaveLogin" IsChecked="True">
+        <CheckBox Width="24" Height="25" Margin="15,90,180,240" Name="SaveLogin" IsChecked="True">
             <CheckBox.Template>
                 <ControlTemplate TargetType="CheckBox">
                     <StackPanel Orientation="Horizontal">
@@ -266,7 +266,7 @@
                 </ControlTemplate>
             </CheckBox.Template>
         </CheckBox>
-        <CheckBox IsEnabled="False" Width="24" ToolTipService.ShowOnDisabled="True" Height="25" Margin="38,244,194,131.8" ToolTip="Use upstream SWF" Name="swf_upsteam" IsChecked="False" Click="swf_upsteam_Click">
+        <CheckBox IsEnabled="False" Width="24" ToolTipService.ShowOnDisabled="True" Height="25" Margin="38,244,194,131.8" ToolTip="Use upstream SWF" Name="swf_upsteam" IsChecked="False">
             <CheckBox.Template>
                 <ControlTemplate TargetType="CheckBox">
                     <StackPanel Orientation="Horizontal">
@@ -310,13 +310,15 @@
             <ComboBoxItem Tag="en" Uid="23" Content="European English" IsSelected="True"/>
             <ComboBoxItem Tag="ts" Uid="24" Content="Testing"/>
         </ComboBox>
-        <Label Content="{Binding appversion, Mode=OneWay}" HorizontalAlignment="Left" Margin="174,114,0,0" HorizontalContentAlignment="Left" VerticalAlignment="Top" Height="23" Width="51" FontSize="9" Foreground="#FF9E8B56" FontWeight="Bold"/>
+        <Label Content="{Binding appversion, Mode=OneWay}" HorizontalAlignment="Left" Margin="185,114,0,0" HorizontalContentAlignment="Left" VerticalAlignment="Top" Height="23" Width="40" FontSize="9" Foreground="#FF9E8B56" FontWeight="Bold"/>
         <Image HorizontalAlignment="Left"  Height="102" Margin="10,0,0,0" VerticalAlignment="Top" Width="236" Source="files/logo.png"/>
-        <Label Content="{Binding langRemember, Mode=OneWay}" Padding="0" HorizontalAlignment="Left" Margin="65,117,0,0" VerticalAlignment="Top" Height="15" Width="60" Foreground="#FFD1BC7E" FontSize="11"/>
-        <Image HorizontalAlignment="Left" Height="20" Margin="154,113,0,0" VerticalAlignment="Top" Width="20" Source="files/StarMenuTabIconMisc.png"/>
-        <Image HorizontalAlignment="Left" Height="20" Margin="130,114,0,0" VerticalAlignment="Top" Width="20" Source="files/ButtonIconThrowAway.png"/>
-        <Button Height="18" ToolTip="Open tso_portable folder" HorizontalAlignment="Left" Margin="155,114,0,0" VerticalAlignment="Top" Width="16" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Background="#00000000" Foreground="White" BorderThickness="0" Click="openTsoFolder_Click" />
-        <Button Height="18" ToolTip="Delete tso_portable folder" HorizontalAlignment="Left" Margin="130,114,0,0" VerticalAlignment="Top" Width="16" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Background="#00000000" Foreground="White" BorderThickness="0" Click="resetTsoFolder_Click" />
+        <Label Content="{Binding langRemember, Mode=OneWay}" Padding="0" HorizontalAlignment="Left" Margin="58,117,0,0" VerticalAlignment="Top" Height="15" Width="60" Foreground="#FFD1BC7E" FontSize="11"/>
+        <Image HorizontalAlignment="Left" Height="20" Margin="165,113,0,0" VerticalAlignment="Top" Width="20" Source="files/StarMenuTabIconMisc.png"/>
+        <Image HorizontalAlignment="Left" Height="20" Margin="140,114,0,0" VerticalAlignment="Top" Width="20" Source="files/ButtonIconThrowAway.png"/>
+        <Image HorizontalAlignment="Left" Height="20" Margin="117,114,0,0" VerticalAlignment="Top" Width="20" Source="files/OptionsButton.png"/>
+        <Button Height="18" ToolTip="Open tso_portable folder" HorizontalAlignment="Left" Margin="167,114,0,0" VerticalAlignment="Top" Width="16" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Background="#00000000" Foreground="White" BorderThickness="0" Click="openTsoFolder_Click" />
+        <Button Height="18" ToolTip="Delete tso_portable folder" HorizontalAlignment="Left" Margin="142,114,0,0" VerticalAlignment="Top" Width="16" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Background="#00000000" Foreground="White" BorderThickness="0" Click="resetTsoFolder_Click" />
+        <Button Height="18" ToolTip="Delete tso_portable folder" HorizontalAlignment="Left" Margin="117,114,0,0" VerticalAlignment="Top" Width="18" Focusable="False" BorderBrush="#00000000" Cursor="Hand" Background="#00000000" Foreground="White" BorderThickness="0" Click="settingsButton_Click" />
         <Label Content="?" Cursor="Hand" HorizontalAlignment="Left" MouseLeftButtonDown="Label_MouseLeftButtonDown" Margin="121,349,0,0" VerticalAlignment="Top" Foreground="White" Height="22" Width="15" FontSize="10"/>
     </Grid>
 </Window>
