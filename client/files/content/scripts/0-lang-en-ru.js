@@ -194,7 +194,8 @@ extendBaseLang({
 		'notifi_last_desc': "Last 5 notifications",
 		'lru_duplicates_desc': "LRU disable duplicates",
 		'add_buff_desc': 'Add buff',
-		'itemshide_desc': 'Hide starmenu items'
+		'itemshide_desc': 'Hide starmenu items',
+		'mwchat_desc': 'Chat panel in MW'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -388,6 +389,7 @@ extendBaseLang({
 		'notifi_last_desc': "Последние 5 уведомлений",
 		'lru_duplicates_desc': "Не разрешать дубли в LRU",
 		'add_buff_desc': 'Добавить усилитель',
-		'itemshide_desc': 'Скрытие предметов'
+		'itemshide_desc': 'Скрытие предметов',
+		'mwchat_desc': 'Панель сисчата в МО'
 	}
 });

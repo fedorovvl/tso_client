@@ -117,8 +117,6 @@
 			if(expZone != null) {
 				swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarCenter.getChildByName("toggleFrindsList").visible = false;
 				swmmo.application.GAMESTATE_ID_ACTIONBAR.setConstraintValue("bottom", 0);
-				swmmo.application.GAMESTATE_ID_CHAT_PANEL.visible = false;
-				swmmo.application.blueFireComponent.width = swmmo.application.GAMESTATE_ID_CHAT_PANEL.width = 0;
 				for(i = 0; i < swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarLeft.numChildren; i++) { swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarLeft.getChildAt(i).visible = false;	}
 				for(i = 0; i < swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarRight.numChildren; i++) { swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarRight.getChildAt(i).visible = false; }
 				for(i = 0; i < swmmo.application.GAMESTATE_ID_AVATAR.numChildren; i++) { swmmo.application.GAMESTATE_ID_AVATAR.getChildAt(i).visible = false; }

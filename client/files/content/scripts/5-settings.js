@@ -166,6 +166,7 @@ function mainSettingsHandler(event)
 	]);
 	html += utils.createTableRow([[6, getText("experimental_desc")], [6, createSwitch('experimental', mainSettings.experimental)]]);
 	html += utils.createTableRow([[6, getText("mwmode_desc")], [6, createMwSizeDrop()]]);
+	html += utils.createTableRow([[6, getText("mwchat_desc")], [6, createSwitch('mwChatPanel', mainSettings.mwChatPanel)]]);
 
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade in active', 'id': 'menumain' }).append(html + '</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
@@ -342,6 +343,7 @@ function mainSettingsHandler(event)
 	});
 	w.withBody('#persistFilter').change(function(e) { mainSettings.persistFilter = $(e.target).is(':checked'); });
 	w.withBody('#highlight').change(function(e) { mainSettings.highlight = $(e.target).is(':checked'); });	
+	w.withBody('#mwChatPanel').change(function(e) { mainSettings.mwChatPanel = $(e.target).is(':checked'); });	
 	w.withBody('#experimental').change(function(e) { 
 		mainSettings.experimental = $(e.target).is(':checked');
 		toggleExperimental();
