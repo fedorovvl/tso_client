@@ -195,6 +195,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('starmenurows_desc')], [6, createStarRowsDrop()]]);
 	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
 	html += utils.createTableRow([[6, getText("only_guild_online_desc")], [6, createSwitch('showOnlyActiveGuildMembers', mainSettings.showOnlyActiveGuildMembers)]]);
+	html += utils.createTableRow([[6, getText("mail_route_desc")], [6, createSwitch('mailRouteStorage', mainSettings.mailRouteStorage)]]);
 	var resDrop = createResourceDrop();
 	for(var i = 1; i < 7; i++) {
 		html += utils.createTableRow([[6, getText('infobarresource_desc') + i], [6, resDrop.clone().attr("id", "InfoBarRes_" + i).prop('outerHTML')]]);
@@ -308,6 +309,11 @@ function mainSettingsHandler(event)
 	w.withBody('#specDefTimeType').change(function(e) {
 		mainSettings.specDefTimeType = $(e.target).is(':checked');
 		w.withBody('#specTimeTypeLang').html(getDefTimeType());
+	});
+	w.withBody('#mailRouteStorage').change(function(e) {
+		mainSettings.mailRouteStorage = $(e.target).is(':checked');
+		game.def("defines").MAIL_DEF_ROUTE_0 = mainSettings.mailRouteStorage ? 1 : 0;
+		game.def("defines").MAIL_DEF_ROUTE_1 = mainSettings.mailRouteStorage ? 0 : 1;
 	});
 	w.withBody('#buiFastAccessType').change(function(e) {
 		mainSettings.buiFastAccessType = $(e.target).is(':checked') ? 1 : 0;
