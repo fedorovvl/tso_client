@@ -131,7 +131,11 @@
 			alertItem = swmmo.getDefinitionByName("GUI.Components.ItemRenderer::AvatarMessageItemRenderer");
 			gameLang = combineSameLang(loca.getSelectedLanguage());
 			game = new Game(swmmo.application.mGameInterface, swmmo.getDefinitionByName("global").gameworld);
-			document.title += ' (' + game.gw + ') - ' + game.playerName;
+			if(game.gi.IsAdventureZoneID(game.gi.mCurrentViewedZoneID)) {
+				document.title += ' (' + game.gw + ') - ' + loca.GetText("ADN", game.playerName.replace("_" + game.gi.mCurrentViewedZoneID, ""));
+			} else {
+				document.title += ' (' + game.gw + ') - ' + game.playerName;
+			}
 			clearInterval(loadInterval);
 			air.File.applicationDirectory.resolvePath("scripts").getDirectoryListing().forEach(function(item) {
 				$('head').append($("<script>").attr({ "src": "scripts/" + item.name, "type": "text/javascript"}));
