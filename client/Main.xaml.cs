@@ -371,9 +371,12 @@ namespace client
                             username = settings_convert[0].Trim(),
                             password = settings_convert[1].Trim(),
                             nickName = settings_convert[3].Trim(),
-                            tsoArg = settings_convert[4].Trim(),
                             region = int.Parse(settings_convert[5].Trim())
                         };
+                        if(!string.IsNullOrEmpty(_settings.nickName) && _settings.nickName != "0")
+                        {
+                            _settings.tsoArg = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(settings_convert[4].Trim()));
+                        }
                         Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Settings converted"; }));
                     }
                     catch
