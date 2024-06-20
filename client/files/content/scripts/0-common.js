@@ -190,6 +190,11 @@ function cssGetText(id)
 	return getText("css_" + id);
 }
 
+function copyAuthTokenHandler(event)
+{
+	air.Clipboard.generalClipboard.setData("air:text", game.def("ServerState::cClientMessagesII").mAuthToken);
+	showAlert("Token copied");
+}
 
 function highlightDrawCircle()
 {

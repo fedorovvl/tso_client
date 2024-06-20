@@ -35,6 +35,7 @@ var Menu = function(type){
 					{ label: "Toggle showDepositMap", onSelect: menuDebugShowHandler },
 					{ label: "Toggle showLandingFields", onSelect: menuDebugShowHandler },
 					{ label: "Toggle showWatchAreas", onSelect: menuDebugShowHandler },
+				    { label: "Copy AuthToken", onSelect: copyAuthTokenHandler }
 				]}
 			]},
 			{ label: "LRU", name: 'LRU', mnemonicIndex: 0, items: [] },
