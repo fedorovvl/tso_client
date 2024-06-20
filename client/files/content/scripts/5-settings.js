@@ -223,7 +223,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('newschattrigger_desc')], [3, createSwitch('news', notifySettings.news)]]);
 	html += utils.createTableRow([[9, getText('customwordsnewschannel_desc')], [3, createSwitch('newsCustom', notifySettings.newsCustom)]]);
 	html += utils.createTableRow([[9, getText('groupchatmentiontrigger_desc')], [3, createSwitch('mentionGroup', notifySettings.mentionGroup)]]);
-	html += utils.createTableRow([[3, getText('customwordstrigger_desc')], [9, '<input type="text" value="'+notifySettings.mentionWords.join(", ")+'" id="mentionWords" class="form-control">']]);
+	html += utils.createTableRow([[3, getText('customwordstrigger_desc')], [9, '<input type="text" value="'+notifySettings.mentionWords.join(",")+'" id="mentionWords" class="form-control">']]);
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menunotify' }).append(html+'</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
