@@ -488,6 +488,8 @@ namespace client
             Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + _settings.nickName;
             Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
             extraVersion = extraVersion != string.Format("#{0}#", "TESTTAG") ? "-" + extraVersion : "";
+            if (debug)
+                File.AppendAllText("debug.txt", "start tso with " + _settings.tsoArg + "\r\n");
             System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion));
             try
             {
