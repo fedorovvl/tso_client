@@ -79,6 +79,7 @@ namespace client
             "--clientconfig - set client config file",
             "--login - set login",
             "--fastlogin - use saved token and client boot arg. Read wiki carefully before use it!",
+            "--token - extra token for fastlogin",
             "--password - set password",
             "--autologin - allows to start client with login/password from setting.dat",
             "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro] - changes the game interface language.",
@@ -210,6 +211,12 @@ namespace client
                 }
                 if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(_settings.tsoArg))
                 {
+                    if (cmd["token"] != null)
+                    {
+                        var tsoUrl = HttpUtility.ParseQueryString(_settings.tsoArg);
+                        tsoUrl.Set("dsoAuthToken", cmd["token"].Trim());
+                        _settings.tsoArg = HttpUtility.UrlDecode(tsoUrl.ToString());
+                    }
                     Dispatcher.BeginInvoke(new ThreadStart(delegate
                     {
                         run_tso();
@@ -280,6 +287,12 @@ namespace client
                 }
                 if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(_settings.tsoArg))
                 {
+                    if(cmd["token"] != null)
+                    {
+                        var tsoUrl = HttpUtility.ParseQueryString(_settings.tsoArg);
+                        tsoUrl.Set("dsoAuthToken", cmd["token"].Trim());
+                        _settings.tsoArg = HttpUtility.UrlDecode(tsoUrl.ToString());
+                    }
                     Dispatcher.BeginInvoke(new ThreadStart(delegate
                     {
                         run_tso();
