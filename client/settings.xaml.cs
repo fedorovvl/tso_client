@@ -65,7 +65,7 @@ namespace client
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            setting.region = game_lang_list.SelectedIndex;
+            setting.lang = (game_lang_list.SelectedItem as ComboBoxItem).Tag.ToString();
             setting.totpkey = totpkey.Text.Trim();
             setting.x64 = (bool)x64runtime.IsChecked;
             setting.tsofolder = tsofolder.Text.Trim();

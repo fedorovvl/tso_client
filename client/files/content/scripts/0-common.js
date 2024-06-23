@@ -459,7 +459,7 @@ $.fn.filterAttribute=function(t,r,e){var i=[];return(this.each(function(e,n){for
 /* Utils */
 
 var Utils = function() {
-    this.b64 = game.def("mx.utils::Base64Encoder", !0), this.b64.insertNewLines = !1, this.pngOpts = new window.runtime.flash.display.PNGEncoderOptions(!0)
+    this.b64 = game.def("mx.utils::Base64Encoder", !0), this.b64decoder = game.def("mx.utils::Base64Decoder", !0), this.b64.insertNewLines = !1, this.pngOpts = new window.runtime.flash.display.PNGEncoderOptions(!0)
 };
 Utils.prototype = {
     getImage: function(t, e, a) {
@@ -478,6 +478,16 @@ Utils.prototype = {
             .bitmapData;
         return this.getImage(s, a, r)
     },
+	encodeObject: function(o) {
+		var x = new air.ByteArray();
+		x.writeObject(o); 
+		this.b64.encodeBytes(x);
+		return this.b64.toString();
+	},
+	decodeObject: function(s) {
+		this.b64decoder.decode(s);
+		return this.b64decoder.toByteArray().readObject();
+	},
     createTableRow: function(t, e) {
         var a = $("<div>", {
                 'class': "row"
