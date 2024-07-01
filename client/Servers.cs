@@ -86,7 +86,8 @@ namespace client
                 { "langWinSize", "Размер окна клиента" },
                 { "langTotp", "Ключ двухфакторки" },
                 { "langSave", "Сохранить" },
-                { "langDef", "По умолчанию" }
+                { "langDef", "По умолчанию" },
+                { "langNickConfig", "Имя файла настроек как ник" }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -126,7 +127,8 @@ namespace client
                 { "langWinSize", "Client window size" },
                 { "langTotp", "2FA auth key" },
                 { "langSave", "Save" },
-                { "langDef", "Default" }
+                { "langDef", "Default" },
+                { "langNickConfig", "Client config filename as nickname" }
              }
             },
             { "fr-fr", new Dictionary<string, string>() {

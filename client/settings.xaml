@@ -328,6 +328,21 @@
                 </CheckBox>
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,113,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langWinSize, Mode=OneWay}" VerticalAlignment="Top" Width="161" />
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,143,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langTotp, Mode=OneWay}" VerticalAlignment="Top" Width="161" />
+                <CheckBox Height="25" IsChecked="True" x:Name="nicknameConfig" Margin="190.8,196,122.8,10" Width="24" Grid.Column="1">
+                    <CheckBox.Template>
+                        <ControlTemplate TargetType="{x:Type CheckBox}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image x:Name="_image" Source="files/unchecked.png" />
+                            </StackPanel>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Source" TargetName="_image" Value="files/checked.png" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </CheckBox.Template>
+                </CheckBox>
+                <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,198,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langNickConfig, Mode=OneWay}" VerticalAlignment="Top" Width="284" Grid.ColumnSpan="2" />
             </Grid>
         </GroupBox>
         <Button BorderThickness="0" Content="{Binding langSave, Mode=OneWay}" Click="Button_Click" Height="23" HorizontalAlignment="Left" Margin="250,256,0,0" VerticalAlignment="Top" Width="77" />

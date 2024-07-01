@@ -30,6 +30,7 @@ namespace client
         public string langExit  { get { return Servers.getTrans("exit"); } set { } }
         public string langSave { get { return Servers.getTrans("langSave"); } set { } }
         public string langDef { get { return Servers.getTrans("langDef"); } set { } }
+        public string langNickConfig { get { return Servers.getTrans("langNickConfig"); } set { } }
         public string[] winSizes = new string[] { "", "maximized", "minimized", "fullscreen" };
         public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro" };
 
@@ -47,6 +48,7 @@ namespace client
             x64runtime.IsChecked = setting.x64;
             tsofolder.Text = setting.tsofolder;
             clientconfig.Text = setting.clientconfig;
+            nicknameConfig.IsChecked = setting.configNickname;
             if(!string.IsNullOrEmpty(setting.window))
             {
                 window_size.SelectedIndex = Array.IndexOf(winSizes, setting.window);
@@ -68,6 +70,7 @@ namespace client
             setting.lang = (game_lang_list.SelectedItem as ComboBoxItem).Tag.ToString();
             setting.totpkey = totpkey.Text.Trim();
             setting.x64 = (bool)x64runtime.IsChecked;
+            setting.configNickname = (bool)nicknameConfig.IsChecked;
             setting.tsofolder = tsofolder.Text.Trim();
             setting.clientconfig = clientconfig.Text.Trim();
             setting.window = winSizes[window_size.SelectedIndex];

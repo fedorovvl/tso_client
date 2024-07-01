@@ -473,6 +473,10 @@ namespace client
                     tsoUrl.Set("clientconfig", _settings.clientconfig);
                 if (cmd["clientconfig"] != null)
                     tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim() == "NICKNAME" ? string.Format("{0}.json", log.nickName) : cmd["clientconfig"].Trim());
+                if(_settings.configNickname)
+                {
+                    tsoUrl.Set("clientconfig", string.Format("{0}.json", log.nickName));
+                }
                 _settings.tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString(), Servers._servers[_region].domain);
                 _settings.nickName = log.nickName;
                 File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
@@ -603,6 +607,7 @@ namespace client
         public string window { get; set; } = string.Empty;
         public string tsofolder { get; set; } = "tso_portable";
         public bool x64 { get; set; } = false;
+        public bool configNickname { get; set; } = false;
         public string username { get; set; } = string.Empty;
         public string password { get; set; } = string.Empty;
         public string nickName { get; set; } = string.Empty;
