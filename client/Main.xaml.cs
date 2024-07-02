@@ -414,7 +414,8 @@ namespace client
             PostSubmitter post = new PostSubmitter
             {
                 Url = Servers.dropboxAPI + "/2/files/get_metadata",
-                Type = PostSubmitter.PostTypeEnum.Post
+                Type = PostSubmitter.PostTypeEnum.Post,
+                useBC = true
             };
             post.HeaderItems.Add("Authorization", "Bearer " + _settings.dropboxkey);
             post.ContentType = "application/json";
@@ -430,7 +431,8 @@ namespace client
             PostSubmitter post = new PostSubmitter
             {
                 Url = Servers.dropboxContentAPI + "/2/files/download",
-                Type = PostSubmitter.PostTypeEnum.Post
+                Type = PostSubmitter.PostTypeEnum.Post,
+                useBC = true
             };
             post.HeaderItems.Add("Authorization", "Bearer " + _settings.dropboxkey);
             post.ContentType = "application/octet-stream";
@@ -445,7 +447,8 @@ namespace client
             PostSubmitter post = new PostSubmitter
             {
                 Url = Servers.dropboxContentAPI + "/2/files/upload",
-                Type = PostSubmitter.PostTypeEnum.Post
+                Type = PostSubmitter.PostTypeEnum.Post,
+                useBC = true
             };
             post.HeaderItems.Add("Authorization", "Bearer " + _settings.dropboxkey);
             post.ContentType = "application/octet-stream";
