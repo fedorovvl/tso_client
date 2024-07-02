@@ -202,6 +202,15 @@ namespace client
                 }
             }
             catch { }
+            if (!string.IsNullOrEmpty(_settings.nickName) && !string.IsNullOrEmpty(_settings.dropboxkey))
+            {
+                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Download fastArgs"; }));
+                try
+                {
+                    _settings.tsoArg = new Crypt().Decrypt(dropboxDownloadFile(_settings.nickName + ".dat"), true);
+                }
+                catch { }
+            }
             if (cmd["skip"] != null && File.Exists(Path.Combine(ClientDirectory, "client.swf")))
             {
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -398,6 +407,54 @@ namespace client
             SaveLogin.IsChecked = _settings.remember;
         }
 
+        private bool dropboxCheckFile(string filename)
+        {
+            if (string.IsNullOrEmpty(_settings.dropboxkey)) { return false; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxAPI + "/2/files/get_metadata",
+                Type = PostSubmitter.PostTypeEnum.Post
+            };
+            post.HeaderItems.Add("Authorization", "Bearer " + _settings.dropboxkey);
+            post.ContentType = "application/json";
+            post.PostItems.Add(string.Format(@"{{""path"":""/{0}""}}", filename), string.Empty);
+            string result = post.Post(ref _cookies);
+            return result == " CAPCHA " ? false : true;
+        }
+
+        private string dropboxDownloadFile(string filename)
+        {
+            if (!dropboxCheckFile(filename)) { return string.Empty; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxContentAPI + "/2/files/download",
+                Type = PostSubmitter.PostTypeEnum.Post
+            };
+            post.HeaderItems.Add("Authorization", "Bearer " + _settings.dropboxkey);
+            post.ContentType = "application/octet-stream";
+            post.HeaderItems.Add("Dropbox-API-Arg", string.Format(@"{{""path"":""/{0}""}}", filename));
+            string result = post.Post(ref _cookies);
+            return result == " CAPCHA " ? string.Empty : result;
+        }
+        private bool dropboxUploadFile(string filename, string data)
+        {
+            if (string.IsNullOrEmpty(_settings.dropboxkey)) { return false; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxContentAPI + "/2/files/upload",
+                Type = PostSubmitter.PostTypeEnum.Post
+            };
+            post.HeaderItems.Add("Authorization", "Bearer " + _settings.dropboxkey);
+            post.ContentType = "application/octet-stream";
+            post.HeaderItems.Add("Dropbox-API-Arg", string.Format(@"{{""path"":""/{0}"", ""mode"": {{"".tag"": ""overwrite""}}}}", filename));
+            post.PostItems.Add(data, string.Empty);
+            string result = post.Post(ref _cookies);
+            return result.Contains("error") ? false: true;
+        }
+
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             ExceptionDumper.DumpException(e.ExceptionObject as Exception);
@@ -479,6 +536,10 @@ namespace client
                 }
                 _settings.tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString(), Servers._servers[_region].domain);
                 _settings.nickName = log.nickName;
+                try
+                {
+                    dropboxUploadFile(_settings.nickName + ".dat", new Crypt().Encrypt(_settings.tsoArg, true));
+                } catch { }
                 File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
                 run_tso();
             }
@@ -602,6 +663,7 @@ namespace client
     public class clientSettings
     {
         public string totpkey { get; set; } = string.Empty;
+        public string dropboxkey { get; set; } = string.Empty;
         public string clientconfig { get; set; } = string.Empty;
         public string lang { get; set; } = string.Empty;
         public string window { get; set; } = string.Empty;
@@ -615,4 +677,5 @@ namespace client
         public bool remember { get; set; } = true;
         public int region { get; set; } = 16;
     }
+
 }

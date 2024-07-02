@@ -8,6 +8,8 @@ namespace client
     class Servers
     {
         public static string ubiServices = "https://public-ubiservices.ubi.com/v3/profiles/sessions";
+        public static string dropboxAPI = "https://api.dropboxapi.com";
+        public static string dropboxContentAPI = "https://content.dropboxapi.com";
 
         public static Dictionary<string, Server> _servers = new Dictionary<string, Server>()
         {
@@ -87,7 +89,9 @@ namespace client
                 { "langTotp", "Ключ двухфакторки" },
                 { "langSave", "Сохранить" },
                 { "langDef", "По умолчанию" },
-                { "langNickConfig", "Имя файла настроек как ник" }
+                { "langNickConfig", "Имя файла настроек как ник" },
+                { "langDropbox", "Ключ API Dropbox" },
+                { "langTestDropbox", "Проверка Dropbox" }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -128,7 +132,9 @@ namespace client
                 { "langTotp", "2FA auth key" },
                 { "langSave", "Save" },
                 { "langDef", "Default" },
-                { "langNickConfig", "Client config filename as nickname" }
+                { "langNickConfig", "Client config filename as nickname" },
+                { "langDropbox", "Dropbox API Key" },
+                { "langTestDropbox", "Dropbox test" }
              }
             },
             { "fr-fr", new Dictionary<string, string>() {
