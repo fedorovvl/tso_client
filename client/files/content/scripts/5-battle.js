@@ -369,11 +369,18 @@ function battleAttackDirect()
 	battleTimedQueue = new TimedQueue(1000);
 	battleWindow.withBody('[type=checkbox]:not(.toggleSelect)').each(function(i, item) {
 		var spec = armyGetSpecialistFromID(item.id);
-		var grid = $(item).closest("div.row").find("button").val();
+		var grid = $(item).closest("div.row").find("button").last().val();
 		if(!grid || grid == 0 || grid == "0") { return; }
 		var delay = parseInt($(item).closest("div.row").find("select").val());
-		if(game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(grid).GetStreetGridEntry(), spec.GetGarrisonGridIdx(), null, true).pathLenX10000 != 0) {
-			battleTimedQueue.add(function(){ battleSendGeneral(spec, spec.getName(false), grid, 5, grid); }, delay);
+		if(item.id.substr(0,4) == 'buff') {
+			var buff_name = $(item).closest('div').find('select').val();
+			if(getBuffAvailableCount(buff_name) > 0) {
+				battleTimedQueue.add(function(){ sendBuffPacket(buffsAvailable[buff_name].id, grid); }, delay);
+			}
+		} else {
+			if(game.gi.mPathFinder.CalculatePath(game.zone.mStreetDataMap.GetBuildingByGridPos(grid).GetStreetGridEntry(), spec.GetGarrisonGridIdx(), null, true).pathLenX10000 != 0) {
+				battleTimedQueue.add(function(){ battleSendGeneral(spec, spec.getName(false), grid, 5, grid); }, delay);
+			}
 		}
 	});
 	if(battleTimedQueue.len() > 0) {

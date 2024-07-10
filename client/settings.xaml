@@ -1,7 +1,7 @@
 ﻿<Window x:Class="client.settings"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TSO Game Client" Icon="files/icon.ico" Height="337.4" Width="449.2" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="true">
+        Title="TSO Game Client" Icon="files/icon.ico" Height="345.361" Width="449.2" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="true">
     <Window.Background>
         <ImageBrush ImageSource="files/settings.png" />
     </Window.Background>
@@ -251,7 +251,7 @@
     </Window.Resources>
     <Grid Margin="0,35,9.2,10.6">
         <GroupBox BorderThickness="0" Foreground="AliceBlue"  Height="179" HorizontalAlignment="Left" VerticalAlignment="Top" Width="549" Margin="0,12,0,0">
-            <Grid Height="231" Margin="0,0,-0.2,-59" VerticalAlignment="Top">
+            <Grid Height="268" Margin="0,0,-0.2,-96" VerticalAlignment="Top">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="199*"/>
                     <ColumnDefinition Width="338*"/>
@@ -275,21 +275,21 @@
                     <ComboBoxItem Tag="el" Content="Ελληνικά"/>
                     <ComboBoxItem Tag="ro" Content="Română"/>
                 </ComboBox>
-                <Grid Margin="19.8,48,122.8,153" Grid.Column="1">
+                <Grid Margin="19.8,48,122.8,190" Grid.Column="1">
                     <Border x:Name="Border" CornerRadius="2" BorderBrush="{StaticResource NormalBorderBrush}" BorderThickness="1">
                         <Border.Background>
                             <ImageBrush ImageSource="files/input.png" />
                         </Border.Background>
                     </Border>
-                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Background="#00000000" HorizontalAlignment="Stretch" Margin="7,7,-1,0.2" Name="clientconfig" VerticalAlignment="Stretch" />
+                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Background="#00000000" HorizontalAlignment="Stretch" Margin="5,7,-1,0" Name="clientconfig" VerticalAlignment="Stretch" />
                 </Grid>
-                <Grid Margin="19.8,78,122.8,123" Grid.Column="1">
+                <Grid Margin="19.8,78,122.8,160" Grid.Column="1">
                     <Border CornerRadius="2" BorderBrush="{StaticResource NormalBorderBrush}" BorderThickness="1">
                         <Border.Background>
                             <ImageBrush ImageSource="files/input.png" />
                         </Border.Background>
                     </Border>
-                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Background="#00000000" Name="tsofolder" HorizontalAlignment="Stretch" Margin="7,7,-1,0.2" VerticalAlignment="Stretch" />
+                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Background="#00000000" Name="tsofolder" HorizontalAlignment="Stretch" Margin="5,7,-1,0" VerticalAlignment="Stretch" />
                 </Grid>
                 <ComboBox MaxDropDownHeight="200" SelectedIndex="0" HorizontalAlignment="Left" Margin="19.8,108,0,0" Foreground="AliceBlue" x:Name="window_size" BorderThickness="0" BorderBrush="#00000000" Width="195" Grid.Column="1" Height="28" VerticalAlignment="Top">
                     <ComboBox.Background>
@@ -300,19 +300,27 @@
                     <ComboBoxItem Content="Minimized"/>
                     <ComboBoxItem Content="Fullscreen"/>
                 </ComboBox>
-                <Grid Margin="19.8,136,122.8,65" Grid.Column="1">
+                <Grid Margin="19.8,136,122.8,102" Grid.Column="1">
                     <Border CornerRadius="2" BorderBrush="{StaticResource NormalBorderBrush}" BorderThickness="1">
                         <Border.Background>
                             <ImageBrush ImageSource="files/input.png" />
                         </Border.Background>
                     </Border>
-                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Name="totpkey" Background="#00000000" HorizontalAlignment="Stretch" Margin="7,7,-1,0.2" VerticalAlignment="Stretch" />
+                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Name="totpkey" Background="#00000000" HorizontalAlignment="Stretch" Margin="6,7,0,0" VerticalAlignment="Stretch" />
+                </Grid>
+                <Grid Margin="19.8,166,122.8,72" Grid.Column="1">
+                    <Border CornerRadius="2" BorderBrush="{StaticResource NormalBorderBrush}" BorderThickness="1">
+                        <Border.Background>
+                            <ImageBrush ImageSource="files/input.png" />
+                        </Border.Background>
+                    </Border>
+                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Name="dropboxKey" Background="#00000000" HorizontalAlignment="Stretch" Margin="6,7,0,0" VerticalAlignment="Stretch" />
                 </Grid>
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,25,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langLang, Mode=OneWay}" VerticalAlignment="Top" Width="161" />
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,55,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langConf, Mode=OneWay}" VerticalAlignment="Top" Width="161" />
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,83,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langtsoFolder, Mode=OneWay}" VerticalAlignment="Top" Width="161" />
-                <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,171,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langx64, Mode=OneWay}" VerticalAlignment="Top" Width="217" Grid.ColumnSpan="2" />
-                <CheckBox Height="25" IsChecked="True" Name="x64runtime" Margin="190.8,166,122.8,40" Width="24" Grid.Column="1">
+                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,199,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langx64, Mode=OneWay}" VerticalAlignment="Top" Width="217" Grid.ColumnSpan="2" />
+                <CheckBox Height="25" IsChecked="True" Name="x64runtime" Margin="190.8,196,122.8,47" Width="24" Grid.Column="1">
                     <CheckBox.Template>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <StackPanel Orientation="Horizontal">
@@ -328,9 +336,26 @@
                 </CheckBox>
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,113,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langWinSize, Mode=OneWay}" VerticalAlignment="Top" Width="161" />
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,143,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langTotp, Mode=OneWay}" VerticalAlignment="Top" Width="161" />
+                <CheckBox Height="25" IsChecked="True" x:Name="nicknameConfig" Margin="190.8,221,122.8,22" Width="24" Grid.Column="1">
+                    <CheckBox.Template>
+                        <ControlTemplate TargetType="{x:Type CheckBox}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image x:Name="_image" Source="files/unchecked.png" />
+                            </StackPanel>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Source" TargetName="_image" Value="files/checked.png" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </CheckBox.Template>
+                </CheckBox>
+                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,226,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langNickConfig, Mode=OneWay}" VerticalAlignment="Top" Width="284" Grid.ColumnSpan="2" />
+                <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,171,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langDropbox, Mode=OneWay}" VerticalAlignment="Top" Width="161" />
             </Grid>
         </GroupBox>
-        <Button BorderThickness="0" Content="{Binding langSave, Mode=OneWay}" Click="Button_Click" Height="23" HorizontalAlignment="Left" Margin="250,256,0,0" VerticalAlignment="Top" Width="77" />
-        <Button BorderThickness="0" Content="{Binding langExit, Mode=OneWay}" Click="Button_Click_1" Height="23" HorizontalAlignment="Left" Margin="339,256,0,0" VerticalAlignment="Top" Width="77" />
+        <Button BorderThickness="0" Content="{Binding langSave, Mode=OneWay}" Click="Button_Click" Height="23" HorizontalAlignment="Left" Margin="255,267,0,0" VerticalAlignment="Top" Width="77" />
+        <Button BorderThickness="0" Content="{Binding langExit, Mode=OneWay}" Click="Button_Click_1" Height="23" HorizontalAlignment="Left" Margin="353,267,0,0" VerticalAlignment="Top" Width="77" />
+        <Button BorderThickness="0" Content="{Binding langTestDropbox, Mode=OneWay}" Click="Button_Click_2" Height="23" HorizontalAlignment="Left" Margin="21,267,0,0" VerticalAlignment="Top" Width="139" />
     </Grid>
 </Window>
