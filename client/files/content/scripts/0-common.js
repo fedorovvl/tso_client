@@ -484,9 +484,17 @@ Utils.prototype = {
 		this.b64.encodeBytes(x);
 		return this.b64.toString();
 	},
+	encode: function(o) {
+		this.b64.encodeUTFBytes(x);
+		return this.b64.toString();
+	},
 	decodeObject: function(s) {
 		this.b64decoder.decode(s);
 		return this.b64decoder.toByteArray().readObject();
+	},
+	decode: function(s) {
+		this.b64decoder.decode(s);
+		return this.b64decoder.toByteArray().toString();
 	},
     createTableRow: function(t, e) {
         var a = $("<div>", {
@@ -840,4 +848,8 @@ if(expZone == null) {
 if(mainSettings.mailRouteStorage) {
 	game.def("defines").MAIL_DEF_ROUTE_0 = 1;
 	game.def("defines").MAIL_DEF_ROUTE_1 = 0;
+}
+if(dropboxApiKey != null) {
+	dropboxApiKey = window.atob(dropboxApiKey);
+	dropboxApiRefresh = window.atob(dropboxApiRefresh);
 }

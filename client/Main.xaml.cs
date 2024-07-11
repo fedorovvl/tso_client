@@ -15,6 +15,7 @@ using AutoUpdaterDotNET;
 using System.Security.Cryptography;
 using System.Reflection;
 using System.Web.Script.Serialization;
+using System.Runtime.Serialization.Json;
 
 namespace client
 {
@@ -42,6 +43,7 @@ namespace client
         private string _langRun;
         private string _langExit;
         private string _langRemember;
+        private string _dropboxToken;
         private static string extraVersion = "#TESTTAG#";
         public string appversion
         {
@@ -204,6 +206,7 @@ namespace client
             catch { }
             if (!string.IsNullOrEmpty(_settings.nickName) && !string.IsNullOrEmpty(_settings.dropboxkey))
             {
+                dropboxGetToken();
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Download fastArgs"; }));
                 try
                 {
@@ -409,7 +412,7 @@ namespace client
 
         private bool dropboxCheckFile(string filename)
         {
-            if (string.IsNullOrEmpty(_settings.dropboxkey)) { return false; }
+            if (string.IsNullOrEmpty(_dropboxToken)) { return false; }
             CookieCollection _cookies = new CookieCollection();
             PostSubmitter post = new PostSubmitter
             {
@@ -417,7 +420,7 @@ namespace client
                 Type = PostSubmitter.PostTypeEnum.Post,
                 useBC = true
             };
-            post.HeaderItems.Add("Authorization", "Bearer " + _settings.dropboxkey);
+            post.HeaderItems.Add("Authorization", "Bearer " + _dropboxToken);
             post.ContentType = "application/json";
             post.PostItems.Add(string.Format(@"{{""path"":""/{0}""}}", filename), string.Empty);
             string result = post.Post(ref _cookies);
@@ -434,7 +437,7 @@ namespace client
                 Type = PostSubmitter.PostTypeEnum.Post,
                 useBC = true
             };
-            post.HeaderItems.Add("Authorization", "Bearer " + _settings.dropboxkey);
+            post.HeaderItems.Add("Authorization", "Bearer " + _dropboxToken);
             post.ContentType = "application/octet-stream";
             post.HeaderItems.Add("Dropbox-API-Arg", string.Format(@"{{""path"":""/{0}""}}", filename));
             string result = post.Post(ref _cookies);
@@ -442,7 +445,7 @@ namespace client
         }
         private bool dropboxUploadFile(string filename, string data)
         {
-            if (string.IsNullOrEmpty(_settings.dropboxkey)) { return false; }
+            if (string.IsNullOrEmpty(_dropboxToken)) { return false; }
             CookieCollection _cookies = new CookieCollection();
             PostSubmitter post = new PostSubmitter
             {
@@ -450,12 +453,42 @@ namespace client
                 Type = PostSubmitter.PostTypeEnum.Post,
                 useBC = true
             };
-            post.HeaderItems.Add("Authorization", "Bearer " + _settings.dropboxkey);
+            post.HeaderItems.Add("Authorization", "Bearer " + _dropboxToken);
             post.ContentType = "application/octet-stream";
             post.HeaderItems.Add("Dropbox-API-Arg", string.Format(@"{{""path"":""/{0}"", ""mode"": {{"".tag"": ""overwrite""}}}}", filename));
             post.PostItems.Add(data, string.Empty);
             string result = post.Post(ref _cookies);
             return result.Contains("error") ? false: true;
+        }
+
+        private void dropboxGetToken()
+        {
+            if (string.IsNullOrEmpty(_settings.dropboxkey) || string.IsNullOrEmpty(_settings.dropboxrefresh)) { return; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxAPI + "/oauth2/token",
+                Type = PostSubmitter.PostTypeEnum.Post
+            };
+            post.HeaderItems.Add("Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxkey)));
+            post.PostItems.Add("grant_type", "refresh_token");
+            post.PostItems.Add("refresh_token", _settings.dropboxrefresh);
+            string result = post.Post(ref _cookies);
+            if (!result.Contains("access_token"))
+            {
+                return;
+            }
+            dropBoxToken dropTokenData = Deserialize<dropBoxToken>(result);
+            _dropboxToken = dropTokenData.access_token;
+        }
+        public T Deserialize<T>(string aJSON) where T : new()
+        {
+            T deserializedObj = new T();
+            MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(aJSON));
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(deserializedObj.GetType());
+            deserializedObj = (T)ser.ReadObject(ms);
+            ms.Close();
+            return deserializedObj;
         }
 
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -534,8 +567,11 @@ namespace client
                 if (cmd["clientconfig"] != null)
                     tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim() == "NICKNAME" ? string.Format("{0}.json", log.nickName) : cmd["clientconfig"].Trim());
                 if(_settings.configNickname)
-                {
                     tsoUrl.Set("clientconfig", string.Format("{0}.json", log.nickName));
+                if (!string.IsNullOrEmpty(_settings.dropboxkey) && !string.IsNullOrEmpty(_settings.dropboxrefresh))
+                {
+                    tsoUrl.Set("dropboxApiKey", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxkey)));
+                    tsoUrl.Set("dropboxApiRefresh", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxrefresh)));
                 }
                 _settings.tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString(), Servers._servers[_region].domain);
                 _settings.nickName = log.nickName;
@@ -667,6 +703,7 @@ namespace client
     {
         public string totpkey { get; set; } = string.Empty;
         public string dropboxkey { get; set; } = string.Empty;
+        public string dropboxrefresh { get; set; } = string.Empty;
         public string clientconfig { get; set; } = string.Empty;
         public string lang { get; set; } = string.Empty;
         public string window { get; set; } = string.Empty;
@@ -680,5 +717,11 @@ namespace client
         public bool remember { get; set; } = true;
         public int region { get; set; } = 16;
     }
+    public class dropBoxToken
+    {
+        public string access_token { get; set; } = string.Empty;
+        public string token_type { get; set; } = string.Empty;
+        public int expires_in { get; set; } = 0;
 
+    }
 }

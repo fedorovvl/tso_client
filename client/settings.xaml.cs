@@ -12,6 +12,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.ComponentModel;
 using System.Web.Script.Serialization;
+using System.Text;
 
 namespace client
 {
@@ -33,6 +34,7 @@ namespace client
         public string langDef { get { return Servers.getTrans("langDef"); } set { } }
         public string langNickConfig { get { return Servers.getTrans("langNickConfig"); } set { } }
         public string langDropbox { get { return Servers.getTrans("langDropbox"); } set { } }
+        public string langDropboxRefresh { get { return Servers.getTrans("langDropboxRefresh"); } set { } }
         public string langTestDropbox { get { return Servers.getTrans("langTestDropbox"); } set { } }
         public string[] winSizes = new string[] { "", "maximized", "minimized", "fullscreen" };
         public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro" };
@@ -49,6 +51,7 @@ namespace client
             game_lang_list.SelectedIndex = Array.IndexOf(langs, setting.lang);
             totpkey.Text = setting.totpkey;
             dropboxKey.Text = setting.dropboxkey;
+            dropboxRefresh.Text = setting.dropboxrefresh;
             x64runtime.IsChecked = setting.x64;
             tsofolder.Text = setting.tsofolder;
             clientconfig.Text = setting.clientconfig;
@@ -74,6 +77,7 @@ namespace client
             setting.lang = (game_lang_list.SelectedItem as ComboBoxItem).Tag.ToString();
             setting.totpkey = totpkey.Text.Trim();
             setting.dropboxkey = dropboxKey.Text.Trim();
+            setting.dropboxrefresh = dropboxRefresh.Text.Trim();
             setting.x64 = (bool)x64runtime.IsChecked;
             setting.configNickname = (bool)nicknameConfig.IsChecked;
             setting.tsofolder = tsofolder.Text.Trim();
@@ -94,14 +98,14 @@ namespace client
             CookieCollection _cookies = new CookieCollection();
             PostSubmitter post = new PostSubmitter
             {
-                Url = Servers.dropboxAPI + "/2/files/list_folder",
+                Url = Servers.dropboxAPI + "/oauth2/token",
                 Type = PostSubmitter.PostTypeEnum.Post
             };
-            post.HeaderItems.Add("Authorization", "Bearer " + dropboxKey.Text.Trim());
-            post.ContentType = "application/json";
-            post.PostItems.Add("{\"path\":\"\"}", string.Empty);
+            post.HeaderItems.Add("Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(dropboxKey.Text.Trim())));
+            post.PostItems.Add("grant_type", "refresh_token");
+            post.PostItems.Add("refresh_token", dropboxRefresh.Text.Trim());
             string result = post.Post(ref _cookies);
-            if(result == " FAILED ")
+            if(!result.Contains("access_token"))
             {
                 MessageBox.Show(result);
                 return;

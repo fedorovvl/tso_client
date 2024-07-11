@@ -90,7 +90,8 @@ namespace client
                 { "langSave", "Сохранить" },
                 { "langDef", "По умолчанию" },
                 { "langNickConfig", "Имя файла настроек как ник" },
-                { "langDropbox", "Ключ API Dropbox" },
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Dropbox Refresh token" },
                 { "langTestDropbox", "Проверка Dropbox" }
              }
             },
@@ -133,7 +134,8 @@ namespace client
                 { "langSave", "Save" },
                 { "langDef", "Default" },
                 { "langNickConfig", "Client config filename as nickname" },
-                { "langDropbox", "Dropbox API Key" },
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Dropbox Refresh token" },
                 { "langTestDropbox", "Dropbox test" }
              }
             },
