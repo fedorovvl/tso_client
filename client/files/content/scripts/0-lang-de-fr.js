@@ -225,6 +225,7 @@ extendBaseLang({
 		'buffactive_desc': "Fortifiants batiments",
 		'experimental_desc'  : "Multi-fenêtre expérimentale",
 		'mwmode_desc' : "Nouveau mode windows",
+		'mwchat_desc': "Chat dans le multi-fenêtre",
 		
 		  // Options => Modèles
 		'templates_desc' : "Modèles",
@@ -250,6 +251,7 @@ extendBaseLang({
 		'starmenucols_desc': "Nombre colonne étoile",
 		'only_guild_online_desc' : "Membres actifs de la guilde",
 		'infobarresource_desc' : "Barre de ressources",
+		'mail_route_desc': "Collecte par défaut dans l'entrepôt",
 		
 		  // Options => Notifications
 		'notifi_desc' : "Notifications",

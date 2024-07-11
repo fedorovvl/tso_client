@@ -169,6 +169,18 @@ namespace client
                 { "run", "JOUER" },
                 { "exit", "fermer" },
                 { "remember", "Retenir" },
+                { "langLang", "Forcer la langue du jeu" },
+                { "langConf", "Nom du fichier de configuration" },
+                { "langtsoFolder", "Nom répertoire du client" },
+                { "langx64", "Exécution x64" },
+                { "langWinSize", "Taille fenêtre du client" },
+                { "langTotp", "Clé d'authentification 2FA" },
+                { "langSave", "Sauve" },
+                { "langDef", "Defaut" },
+                { "langNickConfig", "Nom du fichier configuration est le pseudo" },
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Rafraichir le jeton Dropbox" },
+                { "langTestDropbox", "Dropbox test" },
               }
            },
            { "pl-pl", new Dictionary<string, string>() {
