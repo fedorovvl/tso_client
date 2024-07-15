@@ -92,7 +92,8 @@ namespace client
                 { "langNickConfig", "Имя файла настроек как ник" },
                 { "langDropbox", "Dropbox APPKEY:APPSECRET" },
                 { "langDropboxRefresh", "Dropbox Refresh token" },
-                { "langTestDropbox", "Проверка Dropbox" }
+                { "langTestDropbox", "Проверка Dropbox" },
+                { "langAuthDropbox", "Авторизация Dropbox" }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -136,7 +137,8 @@ namespace client
                 { "langNickConfig", "Client config filename as nickname" },
                 { "langDropbox", "Dropbox APPKEY:APPSECRET" },
                 { "langDropboxRefresh", "Dropbox Refresh token" },
-                { "langTestDropbox", "Dropbox test" }
+                { "langTestDropbox", "Dropbox test" },
+                { "langAuthDropbox", "Dropbox auth" }
              }
             },
             { "fr-fr", new Dictionary<string, string>() {

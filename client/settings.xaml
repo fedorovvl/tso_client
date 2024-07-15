@@ -363,8 +363,9 @@
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="39,239,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langDropboxRefresh, Mode=OneWay}" VerticalAlignment="Top" Width="195" Grid.ColumnSpan="2" />
             </Grid>
         </GroupBox>
-        <Button BorderThickness="0" Content="{Binding langSave, Mode=OneWay}" Click="Button_Click" Height="23" HorizontalAlignment="Left" Margin="345,347,0,0" VerticalAlignment="Top" Width="77" />
+        <Button BorderThickness="0" Content="{Binding langSave, Mode=OneWay}" Click="Button_Click" Height="23" HorizontalAlignment="Left" Margin="360,347,0,0" VerticalAlignment="Top" Width="77" />
         <Button BorderThickness="0" Content="{Binding langExit, Mode=OneWay}" Click="Button_Click_1" Height="23" HorizontalAlignment="Left" Margin="442,347,0,0" VerticalAlignment="Top" Width="77" />
-        <Button BorderThickness="0" Content="{Binding langTestDropbox, Mode=OneWay}" Click="Button_Click_2" Height="23" HorizontalAlignment="Left" Margin="37,347,0,0" VerticalAlignment="Top" Width="139" />
+        <Button BorderThickness="0" Content="{Binding langTestDropbox, Mode=OneWay}" Click="Button_Click_2" Height="23" HorizontalAlignment="Left" Margin="25,347,0,0" VerticalAlignment="Top" Width="135" />
+        <Button BorderThickness="0" Content="{Binding langAuthDropbox, Mode=OneWay}" Click="Button_Click_3" Height="23" HorizontalAlignment="Left" Margin="165,347,0,0" VerticalAlignment="Top" Width="135" />
     </Grid>
 </Window>

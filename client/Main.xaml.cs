@@ -481,7 +481,7 @@ namespace client
             dropBoxToken dropTokenData = Deserialize<dropBoxToken>(result);
             _dropboxToken = dropTokenData.access_token;
         }
-        public T Deserialize<T>(string aJSON) where T : new()
+        public static T Deserialize<T>(string aJSON) where T : new()
         {
             T deserializedObj = new T();
             MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(aJSON));
@@ -668,6 +668,7 @@ namespace client
                 totpkey = _settings.totpkey;
                 if (isLoaded)
                     new Thread(checkVersion) { IsBackground = true }.Start();
+                File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
             }
         }
         private void resetTsoFolder_Click(object sender, RoutedEventArgs e)
@@ -720,6 +721,17 @@ namespace client
     public class dropBoxToken
     {
         public string access_token { get; set; } = string.Empty;
+        public string token_type { get; set; } = string.Empty;
+        public int expires_in { get; set; } = 0;
+
+    }
+    public class dropBoxAuth
+    {
+        public string access_token { get; set; } = string.Empty;
+        public string refresh_token { get; set; } = string.Empty;
+        public string scope { get; set; } = string.Empty;
+        public string uid { get; set; } = string.Empty;
+        public string account_id { get; set; } = string.Empty;
         public string token_type { get; set; } = string.Empty;
         public int expires_in { get; set; } = 0;
 

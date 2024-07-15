@@ -36,6 +36,7 @@ namespace client
         public string langDropbox { get { return Servers.getTrans("langDropbox"); } set { } }
         public string langDropboxRefresh { get { return Servers.getTrans("langDropboxRefresh"); } set { } }
         public string langTestDropbox { get { return Servers.getTrans("langTestDropbox"); } set { } }
+        public string langAuthDropbox { get { return Servers.getTrans("langAuthDropbox"); } set { } }
         public string[] winSizes = new string[] { "", "maximized", "minimized", "fullscreen" };
         public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro" };
 
@@ -105,11 +106,35 @@ namespace client
             post.PostItems.Add("grant_type", "refresh_token");
             post.PostItems.Add("refresh_token", dropboxRefresh.Text.Trim());
             string result = post.Post(ref _cookies);
-            if(!result.Contains("access_token"))
+            if (!result.Contains("access_token"))
             {
                 MessageBox.Show(result);
                 return;
             }
+            MessageBox.Show("OK");
+            return;
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(dropboxKey.Text.Trim()) || string.IsNullOrEmpty(dropboxRefresh.Text.Trim())) { return; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxAPI + "/oauth2/token",
+                Type = PostSubmitter.PostTypeEnum.Post
+            };
+            post.HeaderItems.Add("Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(dropboxKey.Text.Trim())));
+            post.PostItems.Add("grant_type", "authorization_code");
+            post.PostItems.Add("code", dropboxRefresh.Text.Trim());
+            string result = post.Post(ref _cookies);
+            if (!result.Contains("access_token"))
+            {
+                MessageBox.Show(result);
+                return;
+            }
+            dropBoxAuth authInfo = Main.Deserialize<dropBoxAuth>(result);
+            dropboxRefresh.Text = authInfo.refresh_token;
             MessageBox.Show("OK");
             return;
         }
