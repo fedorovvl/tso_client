@@ -289,7 +289,7 @@
                             <ImageBrush ImageSource="files/input.png" />
                         </Border.Background>
                     </Border>
-                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Background="#00000000" Name="tsofolder" HorizontalAlignment="Stretch" Margin="5,1,-1,0" VerticalAlignment="Stretch" />
+                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Background="#00000000" Name="tsofolder" HorizontalAlignment="Stretch" Margin="5,5,10,3" VerticalAlignment="Stretch" />
                 </Grid>
                 <ComboBox MaxDropDownHeight="200" SelectedIndex="0" HorizontalAlignment="Left" Margin="86,141,0,0" Foreground="AliceBlue" x:Name="window_size" BorderThickness="0" BorderBrush="#00000000" Width="229" Grid.Column="1" Height="28" VerticalAlignment="Top">
                     <ComboBox.Background>
@@ -308,13 +308,13 @@
                     </Border>
                     <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Name="totpkey" Background="#00000000" HorizontalAlignment="Stretch" Margin="6,7,0,0" VerticalAlignment="Stretch" />
                 </Grid>
-                <Grid Margin="86,203,24.2,102" Grid.Column="1">
+                <Grid Margin="86,203,63.2,102" Grid.Column="1">
                     <Border CornerRadius="2" BorderBrush="{StaticResource NormalBorderBrush}" BorderThickness="1">
                         <Border.Background>
                             <ImageBrush ImageSource="files/input.png" />
                         </Border.Background>
                     </Border>
-                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Name="dropboxKey" Background="#00000000" HorizontalAlignment="Stretch" Margin="6,7,0,0" VerticalAlignment="Stretch" />
+                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Name="dropboxKey" Background="#00000000" HorizontalAlignment="Stretch" Margin="6,8,10,0" VerticalAlignment="Stretch" />
                 </Grid>
                 <Grid Margin="86,234,24.2,71" Grid.Column="1">
                     <Border CornerRadius="2" BorderBrush="{StaticResource NormalBorderBrush}" BorderThickness="1">
@@ -322,7 +322,7 @@
                             <ImageBrush ImageSource="files/input.png" />
                         </Border.Background>
                     </Border>
-                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Name="dropboxRefresh" Background="#00000000" HorizontalAlignment="Stretch" Margin="6,7,0,0" VerticalAlignment="Stretch" />
+                    <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Name="dropboxRefresh" Background="#00000000" HorizontalAlignment="Stretch" Margin="6,8,10,0" VerticalAlignment="Stretch" />
                 </Grid>
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,42,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langLang, Mode=OneWay}" VerticalAlignment="Top" Width="196" Grid.ColumnSpan="2" />
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,77,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langConf, Mode=OneWay}" VerticalAlignment="Top" Width="196" Grid.ColumnSpan="2" />
@@ -367,5 +367,6 @@
         <Button BorderThickness="0" Content="{Binding langExit, Mode=OneWay}" Click="Button_Click_1" Height="23" HorizontalAlignment="Left" Margin="442,347,0,0" VerticalAlignment="Top" Width="77" />
         <Button BorderThickness="0" Content="{Binding langTestDropbox, Mode=OneWay}" Click="Button_Click_2" Height="23" HorizontalAlignment="Left" Margin="25,347,0,0" VerticalAlignment="Top" Width="135" />
         <Button BorderThickness="0" Content="{Binding langAuthDropbox, Mode=OneWay}" Click="Button_Click_3" Height="23" HorizontalAlignment="Left" Margin="165,347,0,0" VerticalAlignment="Top" Width="135" />
+        <Button BorderThickness="0" Content="֎" ToolTip="Get auth code" Click="Button_Click_4" Height="29" HorizontalAlignment="Left" Margin="485,217,0,0" VerticalAlignment="Top" Width="34" FontSize="20" />
     </Grid>
 </Window>

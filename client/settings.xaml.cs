@@ -13,6 +13,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.ComponentModel;
 using System.Web.Script.Serialization;
 using System.Text;
+using System.Diagnostics;
 
 namespace client
 {
@@ -23,13 +24,13 @@ namespace client
     {
         public clientSettings setting { get; set; }
 
-        public string langLang { get { return Servers.getTrans("langLang"); } set {} }
-        public string langConf  { get { return Servers.getTrans("langConf"); } set { } }
-        public string langtsoFolder  { get { return Servers.getTrans("langtsoFolder"); } set { } }
-        public string langx64  { get { return Servers.getTrans("langx64"); } set { } }
-        public string langWinSize  { get { return Servers.getTrans("langWinSize"); } set { } }
-        public string langTotp  { get { return Servers.getTrans("langTotp"); } set { } }
-        public string langExit  { get { return Servers.getTrans("exit"); } set { } }
+        public string langLang { get { return Servers.getTrans("langLang"); } set { } }
+        public string langConf { get { return Servers.getTrans("langConf"); } set { } }
+        public string langtsoFolder { get { return Servers.getTrans("langtsoFolder"); } set { } }
+        public string langx64 { get { return Servers.getTrans("langx64"); } set { } }
+        public string langWinSize { get { return Servers.getTrans("langWinSize"); } set { } }
+        public string langTotp { get { return Servers.getTrans("langTotp"); } set { } }
+        public string langExit { get { return Servers.getTrans("exit"); } set { } }
         public string langSave { get { return Servers.getTrans("langSave"); } set { } }
         public string langDef { get { return Servers.getTrans("langDef"); } set { } }
         public string langNickConfig { get { return Servers.getTrans("langNickConfig"); } set { } }
@@ -57,7 +58,7 @@ namespace client
             tsofolder.Text = setting.tsofolder;
             clientconfig.Text = setting.clientconfig;
             nicknameConfig.IsChecked = setting.configNickname;
-            if(!string.IsNullOrEmpty(setting.window))
+            if (!string.IsNullOrEmpty(setting.window))
             {
                 window_size.SelectedIndex = Array.IndexOf(winSizes, setting.window);
             }
@@ -138,6 +139,10 @@ namespace client
             MessageBox.Show("OK");
             return;
         }
-
+        private void Button_Click_4(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(dropboxKey.Text.Trim())) { return; }
+            Process.Start(new ProcessStartInfo { FileName = string.Format("{0}/oauth2/authorize?client_id={1}&response_type=code&token_access_type=offline", Servers.dropbox, dropboxKey.Text.Trim().Split(':')[0]), UseShellExecute = true });
+        }
     }
 }

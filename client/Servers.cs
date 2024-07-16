@@ -8,6 +8,7 @@ namespace client
     class Servers
     {
         public static string ubiServices = "https://public-ubiservices.ubi.com/v3/profiles/sessions";
+        public static string dropbox = "https://dropbox.com";
         public static string dropboxAPI = "https://api.dropboxapi.com";
         public static string dropboxContentAPI = "https://content.dropboxapi.com";
 
