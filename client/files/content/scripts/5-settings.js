@@ -63,9 +63,8 @@ function mainSettingsHandler(event)
 	}
 	var createChatFontDrop = function(){
 		var select = $('<select>', { 'class': 'form-control chatFontSize' });
-		const num = [12,14,16,18,20];
-		for(var i in num) {
-			select.append($('<option>', { value: num[i] }).text(num[i]));
+		for(var i=12; i < 50; i+=2) {
+			select.append($('<option>', { value: i }).text(i));
 		}
 		return select.prop('outerHTML');
 	}
