@@ -94,7 +94,8 @@ namespace client
                 { "langDropbox", "Dropbox APPKEY:APPSECRET" },
                 { "langDropboxRefresh", "Dropbox Refresh token" },
                 { "langTestDropbox", "Проверка Dropbox" },
-                { "langAuthDropbox", "Авторизация Dropbox" }
+                { "langAuthDropbox", "Авторизация Dropbox" },
+                { "langTryFast", "Пробовать быструю авторизацию" }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -139,7 +140,8 @@ namespace client
                 { "langDropbox", "Dropbox APPKEY:APPSECRET" },
                 { "langDropboxRefresh", "Dropbox Refresh token" },
                 { "langTestDropbox", "Dropbox test" },
-                { "langAuthDropbox", "Dropbox auth" }
+                { "langAuthDropbox", "Dropbox auth" },
+                { "langTryFast", "Try fastlogin first" }
              }
             },
             { "fr-fr", new Dictionary<string, string>() {

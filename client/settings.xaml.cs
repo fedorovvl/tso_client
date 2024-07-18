@@ -38,6 +38,7 @@ namespace client
         public string langDropboxRefresh { get { return Servers.getTrans("langDropboxRefresh"); } set { } }
         public string langTestDropbox { get { return Servers.getTrans("langTestDropbox"); } set { } }
         public string langAuthDropbox { get { return Servers.getTrans("langAuthDropbox"); } set { } }
+        public string langTryFast { get { return Servers.getTrans("langTryFast"); } set { } }
         public string[] winSizes = new string[] { "", "maximized", "minimized", "fullscreen" };
         public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro" };
 
@@ -58,6 +59,7 @@ namespace client
             tsofolder.Text = setting.tsofolder;
             clientconfig.Text = setting.clientconfig;
             nicknameConfig.IsChecked = setting.configNickname;
+            tryFast.IsChecked = setting.tryFast;
             if (!string.IsNullOrEmpty(setting.window))
             {
                 window_size.SelectedIndex = Array.IndexOf(winSizes, setting.window);
@@ -82,6 +84,7 @@ namespace client
             setting.dropboxrefresh = dropboxRefresh.Text.Trim();
             setting.x64 = (bool)x64runtime.IsChecked;
             setting.configNickname = (bool)nicknameConfig.IsChecked;
+            setting.tryFast = (bool)tryFast.IsChecked;
             setting.tsofolder = tsofolder.Text.Trim();
             setting.clientconfig = clientconfig.Text.Trim();
             setting.window = winSizes[window_size.SelectedIndex];

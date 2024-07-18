@@ -546,10 +546,15 @@ namespace client
                 _settings.password = string.Empty;
             }
             File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
-            login log = new login() { Owner = ((null == e) ? null : this), username = login.Text, password = password.Password, totpKey = totpkey, region = _region, WindowStartupLocation = ((null == e) ? System.Windows.WindowStartupLocation.CenterScreen : System.Windows.WindowStartupLocation.CenterOwner) };
+            login log = new login() { Owner = ((null == e) ? null : this), _settings = _settings, username = login.Text, password = password.Password, totpKey = totpkey, region = _region, WindowStartupLocation = ((null == e) ? System.Windows.WindowStartupLocation.CenterScreen : System.Windows.WindowStartupLocation.CenterOwner) };
             log.ShowDialog();
             if (log.DialogResult == true)
             {
+                if(_settings.tryFast && log.FastLoginSuccess)
+                {
+                    run_tso();
+                    return;
+                }
                 _cookies = log.Cookies;
                 var tsoUrl = HttpUtility.ParseQueryString(log.Ver);
                 if (!string.IsNullOrEmpty(_settings.lang))
@@ -710,6 +715,7 @@ namespace client
         public string window { get; set; } = string.Empty;
         public string tsofolder { get; set; } = "tso_portable";
         public bool x64 { get; set; } = false;
+        public bool tryFast { get; set; } = false;
         public bool configNickname { get; set; } = false;
         public string username { get; set; } = string.Empty;
         public string password { get; set; } = string.Empty;
