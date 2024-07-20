@@ -807,7 +807,7 @@ Dropbox.prototype = {
 			processData: false,
 			beforeSend: function (xhr) {
 				xhr.setRequestHeader ("Authorization", "Bearer " + e.token);
-				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.playerName+'.json", "mode": {".tag": "overwrite"}}');
+				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.gi.mHomePlayer.getPlayerID()+'.json", "mode": {".tag": "overwrite"}}');
 			},
 			success: function(data) {
 				showGameAlert("Upload success");
@@ -841,7 +841,7 @@ Dropbox.prototype = {
 			contentType: 'application/octet-stream',
 			beforeSend: function (xhr) {
 				xhr.setRequestHeader ("Authorization", "Bearer " + e.token);
-				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.playerName+'.json"}');
+				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.gi.mHomePlayer.getPlayerID()+'.json"}');
 			},
 			success: function(data) {
 				showGameAlert("Download success");

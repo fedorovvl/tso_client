@@ -204,13 +204,13 @@ namespace client
                 }
             }
             catch { }
-            if (!string.IsNullOrEmpty(_settings.nickName) && !string.IsNullOrEmpty(_settings.dropboxkey))
+            if (!string.IsNullOrEmpty(_settings.nickName) && !string.IsNullOrEmpty(_settings.dropboxkey) && _settings.accountId != 0)
             {
                 dropboxGetToken();
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Download fastArgs"; }));
                 try
                 {
-                    _settings.tsoArg = new Crypt().Decrypt(dropboxDownloadFile(_settings.nickName + ".dat"), true);
+                    _settings.tsoArg = new Crypt().Decrypt(dropboxDownloadFile(_settings.accountId + ".dat"), true);
                 }
                 catch { }
             }
@@ -579,10 +579,11 @@ namespace client
                     tsoUrl.Set("dropboxApiRefresh", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxrefresh)));
                 }
                 _settings.tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString(), Servers._servers[_region].domain);
+                _settings.accountId = long.Parse(tsoUrl.Get("dsoAuthUser"));
                 _settings.nickName = log.nickName;
                 try
                 {
-                    dropboxUploadFile(_settings.nickName + ".dat", new Crypt().Encrypt(_settings.tsoArg, true));
+                    dropboxUploadFile(_settings.accountId + ".dat", new Crypt().Encrypt(_settings.tsoArg, true));
                 } catch { }
                 File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
                 run_tso();
@@ -718,6 +719,7 @@ namespace client
         public bool tryFast { get; set; } = false;
         public bool configNickname { get; set; } = false;
         public string username { get; set; } = string.Empty;
+        public long accountId { get; set; } = 0;
         public string password { get; set; } = string.Empty;
         public string nickName { get; set; } = string.Empty;
         public string tsoArg { get; set; } = string.Empty;
