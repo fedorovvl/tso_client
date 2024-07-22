@@ -63,9 +63,8 @@ function mainSettingsHandler(event)
 	}
 	var createChatFontDrop = function(){
 		var select = $('<select>', { 'class': 'form-control chatFontSize' });
-		const num = [12,14,16,18,20];
-		for(var i in num) {
-			select.append($('<option>', { value: num[i] }).text(num[i]));
+		for(var i=12; i < 50; i+=2) {
+			select.append($('<option>', { value: i }).text(i));
 		}
 		return select.prop('outerHTML');
 	}
@@ -166,6 +165,7 @@ function mainSettingsHandler(event)
 	]);
 	html += utils.createTableRow([[6, getText("experimental_desc")], [6, createSwitch('experimental', mainSettings.experimental)]]);
 	html += utils.createTableRow([[6, getText("mwmode_desc")], [6, createMwSizeDrop()]]);
+	html += utils.createTableRow([[6, getText("mwchat_desc")], [6, createSwitch('mwChatPanel', mainSettings.mwChatPanel)]]);
 
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade in active', 'id': 'menumain' }).append(html + '</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
@@ -194,6 +194,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[6, getText('starmenurows_desc')], [6, createStarRowsDrop()]]);
 	html += utils.createTableRow([[6, getText('starmenucols_desc')], [2, createStarColsDrop()], [4, getText('highlight_reboot')]]);
 	html += utils.createTableRow([[6, getText("only_guild_online_desc")], [6, createSwitch('showOnlyActiveGuildMembers', mainSettings.showOnlyActiveGuildMembers)]]);
+	html += utils.createTableRow([[6, getText("mail_route_desc")], [6, createSwitch('mailRouteStorage', mainSettings.mailRouteStorage)]]);
 	var resDrop = createResourceDrop();
 	for(var i = 1; i < 7; i++) {
 		html += utils.createTableRow([[6, getText('infobarresource_desc') + i], [6, resDrop.clone().attr("id", "InfoBarRes_" + i).prop('outerHTML')]]);
@@ -221,7 +222,7 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('newschattrigger_desc')], [3, createSwitch('news', notifySettings.news)]]);
 	html += utils.createTableRow([[9, getText('customwordsnewschannel_desc')], [3, createSwitch('newsCustom', notifySettings.newsCustom)]]);
 	html += utils.createTableRow([[9, getText('groupchatmentiontrigger_desc')], [3, createSwitch('mentionGroup', notifySettings.mentionGroup)]]);
-	html += utils.createTableRow([[3, getText('customwordstrigger_desc')], [9, '<input type="text" value="'+notifySettings.mentionWords.join(", ")+'" id="mentionWords" class="form-control">']]);
+	html += utils.createTableRow([[3, getText('customwordstrigger_desc')], [9, '<input type="text" value="'+notifySettings.mentionWords.join(",")+'" id="mentionWords" class="form-control">']]);
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menunotify' }).append(html+'</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
@@ -308,6 +309,11 @@ function mainSettingsHandler(event)
 		mainSettings.specDefTimeType = $(e.target).is(':checked');
 		w.withBody('#specTimeTypeLang').html(getDefTimeType());
 	});
+	w.withBody('#mailRouteStorage').change(function(e) {
+		mainSettings.mailRouteStorage = $(e.target).is(':checked');
+		game.def("defines").MAIL_DEF_ROUTE_0 = mainSettings.mailRouteStorage ? 1 : 0;
+		game.def("defines").MAIL_DEF_ROUTE_1 = mainSettings.mailRouteStorage ? 0 : 1;
+	});
 	w.withBody('#buiFastAccessType').change(function(e) {
 		mainSettings.buiFastAccessType = $(e.target).is(':checked') ? 1 : 0;
 		w.withBody('#buiFastAccessTypeLang').html(getBuiFastAccessType());
@@ -342,6 +348,7 @@ function mainSettingsHandler(event)
 	});
 	w.withBody('#persistFilter').change(function(e) { mainSettings.persistFilter = $(e.target).is(':checked'); });
 	w.withBody('#highlight').change(function(e) { mainSettings.highlight = $(e.target).is(':checked'); });	
+	w.withBody('#mwChatPanel').change(function(e) { mainSettings.mwChatPanel = $(e.target).is(':checked'); });	
 	w.withBody('#experimental').change(function(e) { 
 		mainSettings.experimental = $(e.target).is(':checked');
 		toggleExperimental();

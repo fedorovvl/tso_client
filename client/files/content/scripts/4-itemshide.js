@@ -1,6 +1,5 @@
 var hideItemsTracker = game.getTracker('itemsHide', hideItemsHandler);
 game.gi.channels.ZONE.addPropertyObserver("ZONE_REFRESHED", hideItemsTracker);
-game.gi.mCurrentPlayer.addPropertyObserver("starMenuUpdated", hideItemsTracker);
 var itemsHideVector = {};
 var itemsHideAllVector = {};
 $.extend(itemsHideVector, settings.read(null, "itemsHide"));
@@ -53,6 +52,7 @@ function hideItemsHandler(event)
         });
         deleteCandidates.map(function(item) { game.gi.mCurrentPlayer.removeBuffFromVector(item); });
     } catch (e) { debug(e); }
+	game.gi.mCurrentPlayer.addPropertyObserver("starMenuUpdated", hideItemsTracker);
 }
     
 function hideItemsGetList()

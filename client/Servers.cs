@@ -7,6 +7,11 @@ namespace client
 {
     class Servers
     {
+        public static string ubiServices = "https://public-ubiservices.ubi.com/v3/profiles/sessions";
+        public static string dropbox = "https://dropbox.com";
+        public static string dropboxAPI = "https://api.dropboxapi.com";
+        public static string dropboxContentAPI = "https://content.dropboxapi.com";
+
         public static Dictionary<string, Server> _servers = new Dictionary<string, Server>()
         {
             { "de", new Server(){ domain = "https://www.diesiedleronline.de", uplay = "/de/api/user/uplay", main = "/de/startseite", play = "/de/spielen" } },
@@ -75,8 +80,22 @@ namespace client
                 { "nick", "Ник игрока - " },
                 { "launch", "Запускаем клиент..." },
                 { "run", "ВХОД" },
-                { "exit", "закрыть" },
+                { "exit", "Закрыть" },
                 { "remember", "Запомнить" },
+                { "langLang", "Язык интерфейса игры" },
+                { "langConf", "Имя файла настроек" },
+                { "langtsoFolder", "Папка клиента в AppData" },
+                { "langx64", "Использовать x64 версию" },
+                { "langWinSize", "Размер окна клиента" },
+                { "langTotp", "Ключ двухфакторки" },
+                { "langSave", "Сохранить" },
+                { "langDef", "По умолчанию" },
+                { "langNickConfig", "Имя файла настроек как ник" },
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Dropbox Refresh token" },
+                { "langTestDropbox", "Проверка Dropbox" },
+                { "langAuthDropbox", "Авторизация Dropbox" },
+                { "langTryFast", "Пробовать быструю авторизацию" }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -107,8 +126,22 @@ namespace client
                 { "nick", "Nickname - " },
                 { "launch", "Launch client..." },
                 { "run", "PLAY" },
-                { "exit", "exit" },
+                { "exit", "Exit" },
                 { "remember", "Remember" },
+                { "langLang", "Force game language" },
+                { "langConf", "Client config filename" },
+                { "langtsoFolder", "Client AppData folder name" },
+                { "langx64", "Use x64 runtime" },
+                { "langWinSize", "Client window size" },
+                { "langTotp", "2FA auth key" },
+                { "langSave", "Save" },
+                { "langDef", "Default" },
+                { "langNickConfig", "Client config filename as nickname" },
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Dropbox Refresh token" },
+                { "langTestDropbox", "Dropbox test" },
+                { "langAuthDropbox", "Dropbox auth" },
+                { "langTryFast", "Try fastlogin first" }
              }
             },
             { "fr-fr", new Dictionary<string, string>() {
@@ -141,6 +174,18 @@ namespace client
                 { "run", "JOUER" },
                 { "exit", "fermer" },
                 { "remember", "Retenir" },
+                { "langLang", "Forcer la langue du jeu" },
+                { "langConf", "Nom du fichier de configuration" },
+                { "langtsoFolder", "Nom répertoire du client" },
+                { "langx64", "Exécution x64" },
+                { "langWinSize", "Taille fenêtre du client" },
+                { "langTotp", "Clé d'authentification 2FA" },
+                { "langSave", "Sauve" },
+                { "langDef", "Defaut" },
+                { "langNickConfig", "Nom du fichier configuration est le pseudo" },
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Rafraichir le jeton Dropbox" },
+                { "langTestDropbox", "Dropbox test" },
               }
            },
            { "pl-pl", new Dictionary<string, string>() {
@@ -280,10 +325,9 @@ namespace client
         }
         public static string getTrans(string value)
         {
-            string lang = string.IsNullOrEmpty(Main.lang) ? Main._region : Main.cmd["lang"];
-            if (!trans.ContainsKey(_langs[lang]))
+            if (!trans.ContainsKey(_langs[Main._region]))
                 return trans["en-uk"][value];
-            return trans[_langs[lang]][value];
+            return trans[_langs[Main._region]][value];
         }
     }
 

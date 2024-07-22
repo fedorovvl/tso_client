@@ -264,6 +264,8 @@ namespace client
                             request.Headers.Add(_hValues.GetKey(i), _hValues[i]);
                         else
                             request.Headers.Set(_hValues.GetKey(i), _hValues[i]);
+                        if (Main.debug)
+                            File.AppendAllText("debug.txt", "add header " + _hValues.GetKey(i) + " = " + _hValues[i] + "\r\n");
                     }
                     using (var writeStream = request.GetRequestStream())
                     {

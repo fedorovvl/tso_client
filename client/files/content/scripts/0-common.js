@@ -42,7 +42,9 @@ var mainSettings = {
 	showOnlyActiveGuildMembers: false,
 	shortcutsDir: "",
 	shortAsGlobalRelative: false,
-	lruSkipModules: []
+	lruSkipModules: [],
+	mwChatPanel: false,
+	mailRouteStorage: false
 };
 var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
 var cssRoomToLoca = {
@@ -188,6 +190,11 @@ function cssGetText(id)
 	return getText("css_" + id);
 }
 
+function copyAuthTokenHandler(event)
+{
+	air.Clipboard.generalClipboard.setData("air:text", game.def("ServerState::cClientMessagesII").mAuthToken);
+	showAlert("Token copied");
+}
 
 function highlightDrawCircle()
 {
@@ -452,7 +459,7 @@ $.fn.filterAttribute=function(t,r,e){var i=[];return(this.each(function(e,n){for
 /* Utils */
 
 var Utils = function() {
-    this.b64 = game.def("mx.utils::Base64Encoder", !0), this.b64.insertNewLines = !1, this.pngOpts = new window.runtime.flash.display.PNGEncoderOptions(!0)
+    this.b64 = game.def("mx.utils::Base64Encoder", !0), this.b64decoder = game.def("mx.utils::Base64Decoder", !0), this.b64.insertNewLines = !1, this.pngOpts = new window.runtime.flash.display.PNGEncoderOptions(!0)
 };
 Utils.prototype = {
     getImage: function(t, e, a) {
@@ -471,6 +478,24 @@ Utils.prototype = {
             .bitmapData;
         return this.getImage(s, a, r)
     },
+	encodeObject: function(o) {
+		var x = new air.ByteArray();
+		x.writeObject(o); 
+		this.b64.encodeBytes(x);
+		return this.b64.toString();
+	},
+	encode: function(o) {
+		this.b64.encodeUTFBytes(x);
+		return this.b64.toString();
+	},
+	decodeObject: function(s) {
+		this.b64decoder.decode(s);
+		return this.b64decoder.toByteArray().readObject();
+	},
+	decode: function(s) {
+		this.b64decoder.decode(s);
+		return this.b64decoder.toByteArray().toString();
+	},
     createTableRow: function(t, e) {
         var a = $("<div>", {
                 'class': "row"
@@ -728,6 +753,110 @@ SaveLoadTemplate.prototype = {
     }
 };
 
+var Dropbox = function(appkey, token) {
+    this.appkey = appkey;
+	this.refresh_token = token;
+	this.token = null;
+	this.initialized = false;
+	this.refreshIntervalId = null;
+};
+Dropbox.prototype = {
+	init: function() {
+		var e = this;
+		$.ajax({
+			type: "POST",
+			url: "https://api.dropboxapi.com/oauth2/token",
+			data: { "grant_type": "refresh_token", "refresh_token": e.refresh_token },
+			dataType: "json",
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Basic " + e.appkey);
+			},
+			success: function(data) {
+				e.token = data.access_token;
+				e.initialized = true;
+				debug("token obtained");
+				// refresh every 2 hours
+				if(e.refreshIntervalId == null) {
+					e.refreshIntervalId = setInterval(function() { dropbox.init(); }, 7200000);
+				}
+				if(menu.nativeMenu.getItemByName("dropbox") == null) {
+					menu.nativeMenu.items[0].submenu.getItemByName("dropbox").enabled = true;
+				} else {
+					menu.nativeMenu.getItemByName("dropbox").enabled = true;
+				}
+			},
+			error: function(data) {
+				debug("get token error");
+				debug(data);
+				if(e.refreshIntervalId != null) { 
+					clearInterval(e.refreshIntervalId);
+				}
+			}
+		});
+	},
+	upload: function() {
+		var e = this;
+		var fd = new FormData();
+		fd.append('data', JSON.stringify(settings.settings)); 
+		$.ajax({
+			type: "POST",
+			url: "https://content.dropboxapi.com/2/files/upload",
+			data: fd,
+			dataType: "json",
+			contentType: 'application/octet-stream',
+			processData: false,
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Bearer " + e.token);
+				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.gi.mHomePlayer.getPlayerID()+'.json", "mode": {".tag": "overwrite"}}');
+			},
+			success: function(data) {
+				showGameAlert("Upload success");
+			},
+			error: function(data) {
+				showGameAlert("Upload error");
+				debug(data);
+			}
+		});
+	},
+	extractJSON: function(str) {
+		var firstOpen, firstClose, candidate;
+		firstOpen = str.indexOf('{', firstOpen + 1);
+		do {
+			firstClose = str.lastIndexOf('}');
+			if(firstClose <= firstOpen) { return null; }
+			do {
+				candidate = str.substring(firstOpen, firstClose + 1);
+				try { return JSON.parse(candidate);	}
+				catch(e) {	}
+				firstClose = str.substr(0, firstClose).lastIndexOf('}');
+			} while(firstClose > firstOpen);
+			firstOpen = str.indexOf('{', firstOpen + 1);
+		} while(firstOpen != -1);
+	},
+	download: function() {
+		var e = this;
+		$.ajax({
+			type: "POST",
+			url: "https://content.dropboxapi.com/2/files/download",
+			contentType: 'application/octet-stream',
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Bearer " + e.token);
+				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.gi.mHomePlayer.getPlayerID()+'.json"}');
+			},
+			success: function(data) {
+				showGameAlert("Download success");
+				var d_settings = e.extractJSON(data);
+				settings.settings = d_settings;
+				settings.save();
+			},
+			error: function(data) {
+				showGameAlert("Download error");
+				debug(data);
+			}
+		});
+	}
+};
+
 /* ColorPicker */
 function f() {
 	$(".kolorPicker").removeAttr("style"), $("#kolorPicker").unwrap(), $(".kolorPicker-wrapper").remove(), $("#kolorPicker").remove(), $(".kolorPickerUI").remove(), $(".kolorPicker").parent().removeAttr("style"), $("body").unbind("click.kp")
@@ -808,4 +937,24 @@ if(expZone == null) {
 	mainSettings.experimental&&toggleExperimental();
 	var experimentalVisitTracker = game.getTracker('experimentalVisitTracker', experimentalVisitHandler);
 	game.gi.channels.ZONE.addPropertyObserver("CLIENT_VISIT_ZONE", experimentalVisitTracker);
+} else {
+	if(mainSettings.mwChatPanel) {
+		swmmo.application.blueFireComponent.width = swmmo.application.GAMESTATE_ID_CHAT_PANEL.width = mainSettings.chatPanelWidth;
+		swmmo.application.GAMESTATE_ID_CHAT_PANEL.chatstatusbox.visible = false;
+		swmmo.application.GAMESTATE_ID_CHAT_PANEL.chatInput.visible = false;
+		swmmo.application.blueFireComponent.setConstraintValue("bottom", 0);
+		globalFlash.gui.mChatPanel.addChannel("news", ["news"], true, 7, loca.GetText("LAB","ChatNews"));
+	} else {
+		swmmo.application.GAMESTATE_ID_CHAT_PANEL.visible = false;
+		swmmo.application.blueFireComponent.width = swmmo.application.GAMESTATE_ID_CHAT_PANEL.width = 0;
+	}
+}
+if(mainSettings.mailRouteStorage) {
+	game.def("defines").MAIL_DEF_ROUTE_0 = 1;
+	game.def("defines").MAIL_DEF_ROUTE_1 = 0;
+}
+dropbox = new Dropbox(null, null);
+if(dropboxApiKey != null && expZone == null) {
+	dropbox = new Dropbox(dropboxApiKey, window.atob(dropboxApiRefresh));
+    dropbox.init();
 }

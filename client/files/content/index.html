@@ -11,8 +11,8 @@
 	<script type="text/javascript" src="lru_cache.js"></script>
 	<script type="text/javascript"> 
 
-		var swmmo,loca,assets,notifications,notificationManager,globalFlash,gameLang,loadInterval,loadInterval2,game,menu,utils,rawArgs,version = null,
-			dtf=new window.runtime.flash.globalization.DateTimeFormatter("en-US"),expZone=null,expAuth,expFlex,settings,settingsFile="settings.json",isDebug=!1;
+		var swmmo,loca,assets,notifications,notificationManager,globalFlash,gameLang,loadInterval,loadInterval2,game,menu,utils,rawArgs,dropbox,version = null,
+			dtf=new window.runtime.flash.globalization.DateTimeFormatter("en-US"),expZone=null,expAuth,expFlex,settings,settingsFile="settings.json",isDebug=!1,dropboxApiKey,dropboxApiRefresh;
 
 		window.onload = function(){ 
 		   var loader = new air.Loader(); 
@@ -100,6 +100,8 @@
 			if(p["authrandom"]) { expAuth = p["authrandom"]; }
 			if(p["flexid"]) { expFlex = p["flexid"]; }
 			if(p["zoneid"]) { expZone = p["zoneid"]; }
+			if(p["dropboxApiKey"]) { dropboxApiKey = decodeURIComponent(p["dropboxApiKey"]); }
+			if(p["dropboxApiRefresh"]) { dropboxApiRefresh = decodeURIComponent(p["dropboxApiRefresh"]); }
 			convertSettings();
 		  });
 		  loadInterval = setInterval(function(){ 
@@ -117,8 +119,6 @@
 			if(expZone != null) {
 				swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarCenter.getChildByName("toggleFrindsList").visible = false;
 				swmmo.application.GAMESTATE_ID_ACTIONBAR.setConstraintValue("bottom", 0);
-				swmmo.application.GAMESTATE_ID_CHAT_PANEL.visible = false;
-				swmmo.application.blueFireComponent.width = swmmo.application.GAMESTATE_ID_CHAT_PANEL.width = 0;
 				for(i = 0; i < swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarLeft.numChildren; i++) { swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarLeft.getChildAt(i).visible = false;	}
 				for(i = 0; i < swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarRight.numChildren; i++) { swmmo.application.GAMESTATE_ID_ACTIONBAR.actionBarRight.getChildAt(i).visible = false; }
 				for(i = 0; i < swmmo.application.GAMESTATE_ID_AVATAR.numChildren; i++) { swmmo.application.GAMESTATE_ID_AVATAR.getChildAt(i).visible = false; }
@@ -133,7 +133,11 @@
 			alertItem = swmmo.getDefinitionByName("GUI.Components.ItemRenderer::AvatarMessageItemRenderer");
 			gameLang = combineSameLang(loca.getSelectedLanguage());
 			game = new Game(swmmo.application.mGameInterface, swmmo.getDefinitionByName("global").gameworld);
-			document.title += ' (' + game.gw + ') - ' + game.playerName;
+			if(game.gi.IsAdventureZoneID(game.gi.mCurrentViewedZoneID)) {
+				document.title += ' (' + game.gw + ') - ' + loca.GetText("ADN", game.playerName.replace("_" + game.gi.mCurrentViewedZoneID, ""));
+			} else {
+				document.title += ' (' + game.gw + ') - ' + game.playerName;
+			}
 			clearInterval(loadInterval);
 			air.File.applicationDirectory.resolvePath("scripts").getDirectoryListing().forEach(function(item) {
 				$('head').append($("<script>").attr({ "src": "scripts/" + item.name, "type": "text/javascript"}));

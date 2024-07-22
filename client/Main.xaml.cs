@@ -15,6 +15,7 @@ using AutoUpdaterDotNET;
 using System.Security.Cryptography;
 using System.Reflection;
 using System.Web.Script.Serialization;
+using System.Runtime.Serialization.Json;
 
 namespace client
 {
@@ -24,29 +25,25 @@ namespace client
     public partial class Main : Window, INotifyPropertyChanged
     {
         static byte[] additionalEntropy = { 2, 1, 8, 4, 2 };
+        private clientSettings _settings = new clientSettings();
         public static bool debug = false;
-        public static string version = string.Empty;
         public static string setting_file = "settings.dat";
         public static string tso_folder = "tso_portable";
         public static string lang = string.Empty;
-        public static bool auto = false;
-        public static bool upstream_swf = false;
+        public static int http_timeout = 20000;
+        public static string totpkey = string.Empty;
         public static bool isLoaded = false;
         public static string[] upstream_data = null;
         public static CookieCollection _cookies;
         public static string _region = string.Empty;
-        public static int http_timeout = 20000;
         public static VersionInfo winver;
-        public static bool is64 = System.Environment.Is64BitOperatingSystem;
-        private int _regionUid;
-        public static string fast_nickname = string.Empty;
-        public static string fast_tsoarg = string.Empty;
         public static Arguments cmd;
         private string _langLogin;
         private string _langPass;
         private string _langRun;
         private string _langExit;
         private string _langRemember;
+        private string _dropboxToken;
         private static string extraVersion = "#TESTTAG#";
         public string appversion
         {
@@ -80,15 +77,16 @@ namespace client
         public event PropertyChangedEventHandler PropertyChanged;
         string[] args_help = new string[] {
             "--config - set config file",
+            "--totpkey - 2fa auth key",
             "--clientconfig - set client config file",
             "--login - set login",
             "--fastlogin - use saved token and client boot arg. Read wiki carefully before use it!",
+            "--token - extra token for fastlogin",
             "--password - set password",
             "--autologin - allows to start client with login/password from setting.dat",
             "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro] - changes the game interface language.",
             "--window [fullscreen|maximized|minimized] - initital game window size",
             "--skip - allows to skip update checking of client.swf",
-            "--http_timeout - set http requests timeout",
             "--tsofolder - set different tso folder name",
             "--x64 - use x64 adobe air runtime",
             "--debug - creates a debug.txt file with an error report in case of failure"
@@ -101,9 +99,8 @@ namespace client
 
         public Main()
         {
+            
             cmd = new Arguments(Environment.GetCommandLineArgs());
-            if (cmd["lang"] != null && Servers._langs.ContainsKey(cmd["lang"]))
-                lang = Servers._langs[cmd["lang"]];
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
             System.Net.ServicePointManager.Expect100Continue = false;
             InitializeComponent();
@@ -121,8 +118,10 @@ namespace client
                 debug = true;
             if (cmd["tsofolder"] != null)
                 tso_folder = cmd["tsofolder"].Trim();
-            if (cmd["http_timeout"] != null && IsNumeric(cmd["http_timeout"]))
-                http_timeout = int.Parse(cmd["http_timeout"]);
+            if (cmd["totpkey"] != null)
+                totpkey = cmd["totpkey"].Trim();
+            if (cmd["lang"] != null && Servers._langs.ContainsKey(cmd["lang"]))
+                lang = Servers._langs[cmd["lang"]];
             if (cmd["login"] != null && cmd["password"] != null)
             {
                 login.Text = cmd["login"];
@@ -156,12 +155,6 @@ namespace client
             }
         }
 
-        public static bool IsNumeric(object Expression)
-        {
-            double retNum;
-            bool isNum = Double.TryParse(Convert.ToString(Expression), System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retNum);
-            return isNum;
-        }
         public void checkVersion()
         {
             AutoUpdater.InstalledVersion = new Version(appversion);
@@ -189,7 +182,7 @@ namespace client
             }
             if (!debug)
             {
-                if (System.Environment.Is64BitOperatingSystem && cmd["x64"] != null)
+                if (System.Environment.Is64BitOperatingSystem && (cmd["x64"] != null || _settings.x64))
                 {
                     using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x64)))
                     {
@@ -211,6 +204,16 @@ namespace client
                 }
             }
             catch { }
+            if (!string.IsNullOrEmpty(_settings.nickName) && !string.IsNullOrEmpty(_settings.dropboxkey) && _settings.accountId != 0)
+            {
+                dropboxGetToken();
+                Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Download fastArgs"; }));
+                try
+                {
+                    _settings.tsoArg = new Crypt().Decrypt(dropboxDownloadFile(_settings.accountId + ".dat"), true);
+                }
+                catch { }
+            }
             if (cmd["skip"] != null && File.Exists(Path.Combine(ClientDirectory, "client.swf")))
             {
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -218,11 +221,17 @@ namespace client
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { butt_Click_1(null, null); }));
                 }
-                if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(fast_nickname))
+                if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(_settings.tsoArg))
                 {
+                    if (cmd["token"] != null)
+                    {
+                        var tsoUrl = HttpUtility.ParseQueryString(_settings.tsoArg);
+                        tsoUrl.Set("dsoAuthToken", cmd["token"].Trim());
+                        _settings.tsoArg = HttpUtility.UrlDecode(tsoUrl.ToString());
+                    }
                     Dispatcher.BeginInvoke(new ThreadStart(delegate
                     {
-                        run_tso(fast_tsoarg, fast_nickname);
+                        run_tso();
                     }));
                 }
                 return;
@@ -259,7 +268,7 @@ namespace client
                     }
                     catch { }
                 }
-                upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
+                bool upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
                 string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
                 if (!string.IsNullOrEmpty(chksum))
@@ -288,11 +297,17 @@ namespace client
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { butt_Click_1(null, null); }));
                 }
-                if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(fast_nickname))
+                if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(_settings.tsoArg))
                 {
+                    if(cmd["token"] != null)
+                    {
+                        var tsoUrl = HttpUtility.ParseQueryString(_settings.tsoArg);
+                        tsoUrl.Set("dsoAuthToken", cmd["token"].Trim());
+                        _settings.tsoArg = HttpUtility.UrlDecode(tsoUrl.ToString());
+                    }
                     Dispatcher.BeginInvoke(new ThreadStart(delegate
                     {
-                        run_tso(fast_tsoarg, fast_nickname);
+                        run_tso();
                     }));
                 }
                 return;
@@ -347,54 +362,34 @@ namespace client
             return resultArray.ToArray();
         }
 
-        private void populateSettings(string[] settings)
-        {
-            if (!string.IsNullOrEmpty(settings[0]))
-            {
-                login.Text = settings[0];
-                password.Password = settings[1];
-                pwd.Visibility = System.Windows.Visibility.Collapsed;
-            }
-            if (settings.Length > 3)
-            {
-                if(settings[2].Length > 1)
-                {
-                    settings[2] = Convert.ToInt16(bool.Parse(settings[2])).ToString();
-                }
-                //swf_upsteam.IsChecked = upstream_swf = Convert.ToBoolean(Convert.ToInt16(settings[2]));
-                try
-                {
-                    if (settings.Length > 5)
-                    {
-                        if(settings[3].Trim() != "0")
-                        {
-                            fast_nickname = settings[3].Trim();
-                            fast_tsoarg = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(settings[4].Trim()));
-                        }
-                        _regionUid = string.IsNullOrEmpty(settings[5]) ? 16 : int.Parse(settings[5].Trim());
-                        region_list.SelectedIndex = _regionUid;
-                        _region = (region_list.SelectedItem as ComboBoxItem).Tag.ToString();
-                    }
-                }
-                catch { }
-            }
-        }
-
-        // remove old crypt in next release
         public void ReadSettings()
         {
-            string[] settings = null;
+            string settings = null;
             if (File.Exists(setting_file))
             {
                 try
                 {
-                    settings = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(setting_file), additionalEntropy, DataProtectionScope.LocalMachine)).Split(new[] { '|' }, StringSplitOptions.None);
+                    settings = Encoding.UTF8.GetString(ProtectedData.Unprotect(File.ReadAllBytes(setting_file), additionalEntropy, DataProtectionScope.LocalMachine));
+                    _settings = new JavaScriptSerializer().Deserialize<clientSettings>(settings);
                 }
                 catch
                 {
                     try
                     {
-                        settings = new Crypt().Decrypt(File.ReadAllText(setting_file), true).Split(new[] { '|' }, StringSplitOptions.None);
+                        //convert
+                        string[] settings_convert = settings.Split(new[] { '|' }, StringSplitOptions.None);
+                        _settings = new clientSettings()
+                        {
+                            username = settings_convert[0].Trim(),
+                            password = settings_convert[1].Trim(),
+                            nickName = settings_convert[3].Trim(),
+                            region = int.Parse(settings_convert[5].Trim())
+                        };
+                        if(!string.IsNullOrEmpty(_settings.nickName) && _settings.nickName != "0")
+                        {
+                            _settings.tsoArg = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(settings_convert[4].Trim()));
+                        }
+                        Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Settings converted"; }));
                     }
                     catch
                     {
@@ -402,8 +397,98 @@ namespace client
                     }
                 }
             }
-            if(settings != null)
-                populateSettings(settings);
+            if (!string.IsNullOrEmpty(_settings.username))
+            {
+                login.Text = _settings.username;
+                password.Password = _settings.password;
+                pwd.Visibility = System.Windows.Visibility.Collapsed;
+            }
+            region_list.SelectedIndex = _settings.region;
+            _region = (region_list.SelectedItem as ComboBoxItem).Tag.ToString();
+            tso_folder = _settings.tsofolder;
+            totpkey = _settings.totpkey;
+            SaveLogin.IsChecked = _settings.remember;
+        }
+
+        private bool dropboxCheckFile(string filename)
+        {
+            if (string.IsNullOrEmpty(_dropboxToken)) { return false; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxAPI + "/2/files/get_metadata",
+                Type = PostSubmitter.PostTypeEnum.Post,
+                useBC = true
+            };
+            post.HeaderItems.Add("Authorization", "Bearer " + _dropboxToken);
+            post.ContentType = "application/json";
+            post.PostItems.Add(string.Format(@"{{""path"":""/{0}""}}", filename), string.Empty);
+            string result = post.Post(ref _cookies);
+            return result == " CAPCHA " ? false : true;
+        }
+
+        private string dropboxDownloadFile(string filename)
+        {
+            if (!dropboxCheckFile(filename)) { return string.Empty; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxContentAPI + "/2/files/download",
+                Type = PostSubmitter.PostTypeEnum.Post,
+                useBC = true
+            };
+            post.HeaderItems.Add("Authorization", "Bearer " + _dropboxToken);
+            post.ContentType = "application/octet-stream";
+            post.HeaderItems.Add("Dropbox-API-Arg", string.Format(@"{{""path"":""/{0}""}}", filename));
+            string result = post.Post(ref _cookies);
+            return result == " CAPCHA " ? string.Empty : result;
+        }
+        private bool dropboxUploadFile(string filename, string data)
+        {
+            if (string.IsNullOrEmpty(_dropboxToken)) { return false; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxContentAPI + "/2/files/upload",
+                Type = PostSubmitter.PostTypeEnum.Post,
+                useBC = true
+            };
+            post.HeaderItems.Add("Authorization", "Bearer " + _dropboxToken);
+            post.ContentType = "application/octet-stream";
+            post.HeaderItems.Add("Dropbox-API-Arg", string.Format(@"{{""path"":""/{0}"", ""mode"": {{"".tag"": ""overwrite""}}}}", filename));
+            post.PostItems.Add(data, string.Empty);
+            string result = post.Post(ref _cookies);
+            return result.Contains("error") ? false: true;
+        }
+
+        private void dropboxGetToken()
+        {
+            if (string.IsNullOrEmpty(_settings.dropboxkey) || string.IsNullOrEmpty(_settings.dropboxrefresh)) { return; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxAPI + "/oauth2/token",
+                Type = PostSubmitter.PostTypeEnum.Post
+            };
+            post.HeaderItems.Add("Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxkey)));
+            post.PostItems.Add("grant_type", "refresh_token");
+            post.PostItems.Add("refresh_token", _settings.dropboxrefresh);
+            string result = post.Post(ref _cookies);
+            if (!result.Contains("access_token"))
+            {
+                return;
+            }
+            dropBoxToken dropTokenData = Deserialize<dropBoxToken>(result);
+            _dropboxToken = dropTokenData.access_token;
+        }
+        public static T Deserialize<T>(string aJSON) where T : new()
+        {
+            T deserializedObj = new T();
+            MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(aJSON));
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(deserializedObj.GetType());
+            deserializedObj = (T)ser.ReadObject(ms);
+            ms.Close();
+            return deserializedObj;
         }
 
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -445,45 +530,80 @@ namespace client
             }
             if (!string.IsNullOrEmpty(error_msg))
             {
-
                 error.Text = error_msg;
                 return;
             }
             error.Text = string.Empty;
             this.Visibility = System.Windows.Visibility.Hidden;
-            login log = new login() { Owner = ((null == e) ? null : this), username = login.Text, password = password.Password, region = _region, WindowStartupLocation = ((null == e) ? System.Windows.WindowStartupLocation.CenterScreen : System.Windows.WindowStartupLocation.CenterOwner) };
+            _settings.remember = (bool)SaveLogin.IsChecked;
+            if (_settings.remember)
+            {
+                _settings.username = login.Text.Trim();
+                _settings.password = password.Password.Trim();
+            } else
+            {
+                _settings.username = string.Empty;
+                _settings.password = string.Empty;
+            }
+            File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
+            login log = new login() { Owner = ((null == e) ? null : this), _settings = _settings, username = login.Text, password = password.Password, totpKey = totpkey, region = _region, WindowStartupLocation = ((null == e) ? System.Windows.WindowStartupLocation.CenterScreen : System.Windows.WindowStartupLocation.CenterOwner) };
             log.ShowDialog();
             if (log.DialogResult == true)
             {
+                if(_settings.tryFast && log.FastLoginSuccess)
+                {
+                    run_tso();
+                    return;
+                }
                 _cookies = log.Cookies;
                 var tsoUrl = HttpUtility.ParseQueryString(log.Ver);
+                if (!string.IsNullOrEmpty(_settings.lang))
+                    tsoUrl.Set("lang", _settings.lang);
                 if (!string.IsNullOrEmpty(lang))
                     tsoUrl.Set("lang", lang);
+                if (!string.IsNullOrEmpty(_settings.window))
+                    tsoUrl.Set("window", _settings.window);
                 if (cmd["window"] != null)
                     tsoUrl.Set("window", cmd["window"]);
                 if (debug)
                     tsoUrl.Set("debug", "true");
+                if (!string.IsNullOrEmpty(_settings.clientconfig))
+                    tsoUrl.Set("clientconfig", _settings.clientconfig);
                 if (cmd["clientconfig"] != null)
                     tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim() == "NICKNAME" ? string.Format("{0}.json", log.nickName) : cmd["clientconfig"].Trim());
-                string tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString(), Servers._servers[_region].domain);
-                byte[] saveData = Encoding.UTF8.GetBytes(string.Format("{0}|{1}|{2}|{3}|{4}|{5}|", SaveLogin.IsChecked == true ? login.Text : "", SaveLogin.IsChecked == true ? password.Password : "", swf_upsteam.IsChecked == true ? 1 : 0, log.nickName, Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(tsoArg)), _regionUid));
-                File.WriteAllBytes(setting_file, ProtectedData.Protect(saveData, additionalEntropy, DataProtectionScope.LocalMachine));
-                run_tso(tsoArg, log.nickName);
+                if(_settings.configNickname)
+                    tsoUrl.Set("clientconfig", string.Format("{0}.json", log.nickName));
+                if (!string.IsNullOrEmpty(_settings.dropboxkey) && !string.IsNullOrEmpty(_settings.dropboxrefresh))
+                {
+                    tsoUrl.Set("dropboxApiKey", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxkey)));
+                    tsoUrl.Set("dropboxApiRefresh", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxrefresh)));
+                }
+                _settings.tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString(), Servers._servers[_region].domain);
+                _settings.accountId = long.Parse(tsoUrl.Get("dsoAuthUser"));
+                _settings.nickName = log.nickName;
+                try
+                {
+                    dropboxUploadFile(_settings.accountId + ".dat", new Crypt().Encrypt(_settings.tsoArg, true));
+                } catch { }
+                File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
+                run_tso();
             }
             this.Visibility = System.Windows.Visibility.Visible;
         }
 
-        private void run_tso(string argString, string nickname)
+        private void run_tso()
         {
             XmlDocument Doc = new XmlDocument();
             XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
             ns.AddNamespace("adobe", "http://ns.adobe.com/air/application/15.0");
             Doc.Load(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
             Doc.SelectSingleNode("/adobe:application/adobe:id", ns).InnerText = "TSO-" + RandomString;
-            Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + nickname;
+            Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + _settings.nickName;
             Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
             extraVersion = extraVersion != string.Format("#{0}#", "TESTTAG") ? "-" + extraVersion : "";
-            System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}{2}", argString, appversion, extraVersion));
+            if (debug)
+                File.AppendAllText("debug.txt", "start tso with " + _settings.tsoArg + "\r\n");
+            System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion));
             try
             {
                 App.Current.Shutdown(1);
@@ -529,7 +649,7 @@ namespace client
         private void Region_list_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             _region = ((sender as ComboBox).SelectedItem as ComboBoxItem).Tag.ToString();
-            _regionUid = int.Parse(((sender as ComboBox).SelectedItem as ComboBoxItem).Uid);
+            _settings.region = int.Parse(((sender as ComboBox).SelectedItem as ComboBoxItem).Uid);
             langLogin = Servers.getTrans("login");
             langPass = Servers.getTrans("password");
             langRun = Servers.getTrans("run");
@@ -542,6 +662,20 @@ namespace client
         private void openTsoFolder_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo { Arguments = ClientDirectory, FileName = "explorer.exe" });
+        }
+        private void settingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            settings settings_window = new settings() { Owner = this, setting = _settings, WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner };
+            settings_window.ShowDialog();
+            if (settings_window.DialogResult == true)
+            {
+                _settings = settings_window.setting;
+                tso_folder = _settings.tsofolder;
+                totpkey = _settings.totpkey;
+                if (isLoaded)
+                    new Thread(checkVersion) { IsBackground = true }.Start();
+                File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
+            }
         }
         private void resetTsoFolder_Click(object sender, RoutedEventArgs e)
         {
@@ -564,16 +698,50 @@ namespace client
             MessageBox.Show("Available arguments:\n" + String.Join("\n", args_help), "Info", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void swf_upsteam_Click(object sender, RoutedEventArgs e)
-        {
-            upstream_swf = (bool)(sender as CheckBox).IsChecked;
-            new Thread(checkVersion) { IsBackground = true }.Start();
-        }
     }
 
     public class gitFile
     {
         public string sha { get; set; }
         public string download_url { get; set; }
+    }
+
+    public class clientSettings
+    {
+        public string totpkey { get; set; } = string.Empty;
+        public string dropboxkey { get; set; } = string.Empty;
+        public string dropboxrefresh { get; set; } = string.Empty;
+        public string clientconfig { get; set; } = string.Empty;
+        public string lang { get; set; } = string.Empty;
+        public string window { get; set; } = string.Empty;
+        public string tsofolder { get; set; } = "tso_portable";
+        public bool x64 { get; set; } = false;
+        public bool tryFast { get; set; } = false;
+        public bool configNickname { get; set; } = false;
+        public string username { get; set; } = string.Empty;
+        public long accountId { get; set; } = 0;
+        public string password { get; set; } = string.Empty;
+        public string nickName { get; set; } = string.Empty;
+        public string tsoArg { get; set; } = string.Empty;
+        public bool remember { get; set; } = true;
+        public int region { get; set; } = 16;
+    }
+    public class dropBoxToken
+    {
+        public string access_token { get; set; } = string.Empty;
+        public string token_type { get; set; } = string.Empty;
+        public int expires_in { get; set; } = 0;
+
+    }
+    public class dropBoxAuth
+    {
+        public string access_token { get; set; } = string.Empty;
+        public string refresh_token { get; set; } = string.Empty;
+        public string scope { get; set; } = string.Empty;
+        public string uid { get; set; } = string.Empty;
+        public string account_id { get; set; } = string.Empty;
+        public string token_type { get; set; } = string.Empty;
+        public int expires_in { get; set; } = 0;
+
     }
 }

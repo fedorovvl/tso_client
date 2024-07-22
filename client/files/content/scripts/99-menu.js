@@ -3,6 +3,10 @@ var Menu = function(type){
 		return [
 			{ label: loca.GetText("ACL", "BuffAdventuresGeneral"), mnemonicIndex: 0, items: [
 				{ label: loca.GetText("LAB", "ToggleOptionsPanel"), mnemonicIndex: 0, onSelect: mainSettingsHandler },
+				{ label: "Dropbox", mnemonicIndex: 0, name: "dropbox", enabled: dropbox.initialized, items: [
+					{ label: "Download settings", onSelect: function() { dropbox.download(); } },
+					{ label: "Upload Settings", onSelect: function() { dropbox.upload(); } },
+				]},
 				{ label: getText("notifi_last_desc"), mnemonicIndex: 0, onSelect: notificationLast5Handler },
 				{ label: getText('hotkeysTitle'), mnemonicIndex: 0, onSelect: keybindsMenuHandler },
 				{ label: loca.GetText("LAB", "Filter"), mnemonicIndex: 0, items: [
@@ -35,6 +39,7 @@ var Menu = function(type){
 					{ label: "Toggle showDepositMap", onSelect: menuDebugShowHandler },
 					{ label: "Toggle showLandingFields", onSelect: menuDebugShowHandler },
 					{ label: "Toggle showWatchAreas", onSelect: menuDebugShowHandler },
+				    { label: "Copy AuthToken", onSelect: copyAuthTokenHandler }
 				]}
 			]},
 			{ label: "LRU", name: 'LRU', mnemonicIndex: 0, items: [] },
