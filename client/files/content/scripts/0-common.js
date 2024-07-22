@@ -484,9 +484,17 @@ Utils.prototype = {
 		this.b64.encodeBytes(x);
 		return this.b64.toString();
 	},
+	encode: function(o) {
+		this.b64.encodeUTFBytes(x);
+		return this.b64.toString();
+	},
 	decodeObject: function(s) {
 		this.b64decoder.decode(s);
 		return this.b64decoder.toByteArray().readObject();
+	},
+	decode: function(s) {
+		this.b64decoder.decode(s);
+		return this.b64decoder.toByteArray().toString();
 	},
     createTableRow: function(t, e) {
         var a = $("<div>", {
@@ -745,6 +753,110 @@ SaveLoadTemplate.prototype = {
     }
 };
 
+var Dropbox = function(appkey, token) {
+    this.appkey = appkey;
+	this.refresh_token = token;
+	this.token = null;
+	this.initialized = false;
+	this.refreshIntervalId = null;
+};
+Dropbox.prototype = {
+	init: function() {
+		var e = this;
+		$.ajax({
+			type: "POST",
+			url: "https://api.dropboxapi.com/oauth2/token",
+			data: { "grant_type": "refresh_token", "refresh_token": e.refresh_token },
+			dataType: "json",
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Basic " + e.appkey);
+			},
+			success: function(data) {
+				e.token = data.access_token;
+				e.initialized = true;
+				debug("token obtained");
+				// refresh every 2 hours
+				if(e.refreshIntervalId == null) {
+					e.refreshIntervalId = setInterval(function() { dropbox.init(); }, 7200000);
+				}
+				if(menu.nativeMenu.getItemByName("dropbox") == null) {
+					menu.nativeMenu.items[0].submenu.getItemByName("dropbox").enabled = true;
+				} else {
+					menu.nativeMenu.getItemByName("dropbox").enabled = true;
+				}
+			},
+			error: function(data) {
+				debug("get token error");
+				debug(data);
+				if(e.refreshIntervalId != null) { 
+					clearInterval(e.refreshIntervalId);
+				}
+			}
+		});
+	},
+	upload: function() {
+		var e = this;
+		var fd = new FormData();
+		fd.append('data', JSON.stringify(settings.settings)); 
+		$.ajax({
+			type: "POST",
+			url: "https://content.dropboxapi.com/2/files/upload",
+			data: fd,
+			dataType: "json",
+			contentType: 'application/octet-stream',
+			processData: false,
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Bearer " + e.token);
+				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.gi.mHomePlayer.getPlayerID()+'.json", "mode": {".tag": "overwrite"}}');
+			},
+			success: function(data) {
+				showGameAlert("Upload success");
+			},
+			error: function(data) {
+				showGameAlert("Upload error");
+				debug(data);
+			}
+		});
+	},
+	extractJSON: function(str) {
+		var firstOpen, firstClose, candidate;
+		firstOpen = str.indexOf('{', firstOpen + 1);
+		do {
+			firstClose = str.lastIndexOf('}');
+			if(firstClose <= firstOpen) { return null; }
+			do {
+				candidate = str.substring(firstOpen, firstClose + 1);
+				try { return JSON.parse(candidate);	}
+				catch(e) {	}
+				firstClose = str.substr(0, firstClose).lastIndexOf('}');
+			} while(firstClose > firstOpen);
+			firstOpen = str.indexOf('{', firstOpen + 1);
+		} while(firstOpen != -1);
+	},
+	download: function() {
+		var e = this;
+		$.ajax({
+			type: "POST",
+			url: "https://content.dropboxapi.com/2/files/download",
+			contentType: 'application/octet-stream',
+			beforeSend: function (xhr) {
+				xhr.setRequestHeader ("Authorization", "Bearer " + e.token);
+				xhr.setRequestHeader ("Dropbox-API-Arg", '{"path": "/'+game.gi.mHomePlayer.getPlayerID()+'.json"}');
+			},
+			success: function(data) {
+				showGameAlert("Download success");
+				var d_settings = e.extractJSON(data);
+				settings.settings = d_settings;
+				settings.save();
+			},
+			error: function(data) {
+				showGameAlert("Download error");
+				debug(data);
+			}
+		});
+	}
+};
+
 /* ColorPicker */
 function f() {
 	$(".kolorPicker").removeAttr("style"), $("#kolorPicker").unwrap(), $(".kolorPicker-wrapper").remove(), $("#kolorPicker").remove(), $(".kolorPickerUI").remove(), $(".kolorPicker").parent().removeAttr("style"), $("body").unbind("click.kp")
@@ -840,4 +952,9 @@ if(expZone == null) {
 if(mainSettings.mailRouteStorage) {
 	game.def("defines").MAIL_DEF_ROUTE_0 = 1;
 	game.def("defines").MAIL_DEF_ROUTE_1 = 0;
+}
+dropbox = new Dropbox(null, null);
+if(dropboxApiKey != null && expZone == null) {
+	dropbox = new Dropbox(dropboxApiKey, window.atob(dropboxApiRefresh));
+    dropbox.init();
 }

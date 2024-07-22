@@ -12,6 +12,8 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.ComponentModel;
 using System.Web.Script.Serialization;
+using System.Text;
+using System.Diagnostics;
 
 namespace client
 {
@@ -22,18 +24,21 @@ namespace client
     {
         public clientSettings setting { get; set; }
 
-        public string langLang { get { return Servers.getTrans("langLang"); } set {} }
-        public string langConf  { get { return Servers.getTrans("langConf"); } set { } }
-        public string langtsoFolder  { get { return Servers.getTrans("langtsoFolder"); } set { } }
-        public string langx64  { get { return Servers.getTrans("langx64"); } set { } }
-        public string langWinSize  { get { return Servers.getTrans("langWinSize"); } set { } }
-        public string langTotp  { get { return Servers.getTrans("langTotp"); } set { } }
-        public string langExit  { get { return Servers.getTrans("exit"); } set { } }
+        public string langLang { get { return Servers.getTrans("langLang"); } set { } }
+        public string langConf { get { return Servers.getTrans("langConf"); } set { } }
+        public string langtsoFolder { get { return Servers.getTrans("langtsoFolder"); } set { } }
+        public string langx64 { get { return Servers.getTrans("langx64"); } set { } }
+        public string langWinSize { get { return Servers.getTrans("langWinSize"); } set { } }
+        public string langTotp { get { return Servers.getTrans("langTotp"); } set { } }
+        public string langExit { get { return Servers.getTrans("exit"); } set { } }
         public string langSave { get { return Servers.getTrans("langSave"); } set { } }
         public string langDef { get { return Servers.getTrans("langDef"); } set { } }
         public string langNickConfig { get { return Servers.getTrans("langNickConfig"); } set { } }
         public string langDropbox { get { return Servers.getTrans("langDropbox"); } set { } }
+        public string langDropboxRefresh { get { return Servers.getTrans("langDropboxRefresh"); } set { } }
         public string langTestDropbox { get { return Servers.getTrans("langTestDropbox"); } set { } }
+        public string langAuthDropbox { get { return Servers.getTrans("langAuthDropbox"); } set { } }
+        public string langTryFast { get { return Servers.getTrans("langTryFast"); } set { } }
         public string[] winSizes = new string[] { "", "maximized", "minimized", "fullscreen" };
         public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro" };
 
@@ -49,11 +54,13 @@ namespace client
             game_lang_list.SelectedIndex = Array.IndexOf(langs, setting.lang);
             totpkey.Text = setting.totpkey;
             dropboxKey.Text = setting.dropboxkey;
+            dropboxRefresh.Text = setting.dropboxrefresh;
             x64runtime.IsChecked = setting.x64;
             tsofolder.Text = setting.tsofolder;
             clientconfig.Text = setting.clientconfig;
             nicknameConfig.IsChecked = setting.configNickname;
-            if(!string.IsNullOrEmpty(setting.window))
+            tryFast.IsChecked = setting.tryFast;
+            if (!string.IsNullOrEmpty(setting.window))
             {
                 window_size.SelectedIndex = Array.IndexOf(winSizes, setting.window);
             }
@@ -74,8 +81,10 @@ namespace client
             setting.lang = (game_lang_list.SelectedItem as ComboBoxItem).Tag.ToString();
             setting.totpkey = totpkey.Text.Trim();
             setting.dropboxkey = dropboxKey.Text.Trim();
+            setting.dropboxrefresh = dropboxRefresh.Text.Trim();
             setting.x64 = (bool)x64runtime.IsChecked;
             setting.configNickname = (bool)nicknameConfig.IsChecked;
+            setting.tryFast = (bool)tryFast.IsChecked;
             setting.tsofolder = tsofolder.Text.Trim();
             setting.clientconfig = clientconfig.Text.Trim();
             setting.window = winSizes[window_size.SelectedIndex];
@@ -94,14 +103,14 @@ namespace client
             CookieCollection _cookies = new CookieCollection();
             PostSubmitter post = new PostSubmitter
             {
-                Url = Servers.dropboxAPI + "/2/files/list_folder",
+                Url = Servers.dropboxAPI + "/oauth2/token",
                 Type = PostSubmitter.PostTypeEnum.Post
             };
-            post.HeaderItems.Add("Authorization", "Bearer " + dropboxKey.Text.Trim());
-            post.ContentType = "application/json";
-            post.PostItems.Add("{\"path\":\"\"}", string.Empty);
+            post.HeaderItems.Add("Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(dropboxKey.Text.Trim())));
+            post.PostItems.Add("grant_type", "refresh_token");
+            post.PostItems.Add("refresh_token", dropboxRefresh.Text.Trim());
             string result = post.Post(ref _cookies);
-            if(result == " FAILED ")
+            if (!result.Contains("access_token"))
             {
                 MessageBox.Show(result);
                 return;
@@ -110,5 +119,33 @@ namespace client
             return;
         }
 
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(dropboxKey.Text.Trim()) || string.IsNullOrEmpty(dropboxRefresh.Text.Trim())) { return; }
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = Servers.dropboxAPI + "/oauth2/token",
+                Type = PostSubmitter.PostTypeEnum.Post
+            };
+            post.HeaderItems.Add("Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(dropboxKey.Text.Trim())));
+            post.PostItems.Add("grant_type", "authorization_code");
+            post.PostItems.Add("code", dropboxRefresh.Text.Trim());
+            string result = post.Post(ref _cookies);
+            if (!result.Contains("access_token"))
+            {
+                MessageBox.Show(result);
+                return;
+            }
+            dropBoxAuth authInfo = Main.Deserialize<dropBoxAuth>(result);
+            dropboxRefresh.Text = authInfo.refresh_token;
+            MessageBox.Show("OK");
+            return;
+        }
+        private void Button_Click_4(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(dropboxKey.Text.Trim())) { return; }
+            Process.Start(new ProcessStartInfo { FileName = string.Format("{0}/oauth2/authorize?client_id={1}&response_type=code&token_access_type=offline", Servers.dropbox, dropboxKey.Text.Trim().Split(':')[0]), UseShellExecute = true });
+        }
     }
 }

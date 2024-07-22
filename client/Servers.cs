@@ -8,6 +8,7 @@ namespace client
     class Servers
     {
         public static string ubiServices = "https://public-ubiservices.ubi.com/v3/profiles/sessions";
+        public static string dropbox = "https://dropbox.com";
         public static string dropboxAPI = "https://api.dropboxapi.com";
         public static string dropboxContentAPI = "https://content.dropboxapi.com";
 
@@ -90,8 +91,11 @@ namespace client
                 { "langSave", "Сохранить" },
                 { "langDef", "По умолчанию" },
                 { "langNickConfig", "Имя файла настроек как ник" },
-                { "langDropbox", "Ключ API Dropbox" },
-                { "langTestDropbox", "Проверка Dropbox" }
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Dropbox Refresh token" },
+                { "langTestDropbox", "Проверка Dropbox" },
+                { "langAuthDropbox", "Авторизация Dropbox" },
+                { "langTryFast", "Пробовать быструю авторизацию" }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -133,8 +137,11 @@ namespace client
                 { "langSave", "Save" },
                 { "langDef", "Default" },
                 { "langNickConfig", "Client config filename as nickname" },
-                { "langDropbox", "Dropbox API Key" },
-                { "langTestDropbox", "Dropbox test" }
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Dropbox Refresh token" },
+                { "langTestDropbox", "Dropbox test" },
+                { "langAuthDropbox", "Dropbox auth" },
+                { "langTryFast", "Try fastlogin first" }
              }
             },
             { "fr-fr", new Dictionary<string, string>() {
@@ -167,6 +174,18 @@ namespace client
                 { "run", "JOUER" },
                 { "exit", "fermer" },
                 { "remember", "Retenir" },
+                { "langLang", "Forcer la langue du jeu" },
+                { "langConf", "Nom du fichier de configuration" },
+                { "langtsoFolder", "Nom répertoire du client" },
+                { "langx64", "Exécution x64" },
+                { "langWinSize", "Taille fenêtre du client" },
+                { "langTotp", "Clé d'authentification 2FA" },
+                { "langSave", "Sauve" },
+                { "langDef", "Defaut" },
+                { "langNickConfig", "Nom du fichier configuration est le pseudo" },
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Rafraichir le jeton Dropbox" },
+                { "langTestDropbox", "Dropbox test" },
               }
            },
            { "pl-pl", new Dictionary<string, string>() {

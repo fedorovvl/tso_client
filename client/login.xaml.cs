@@ -15,6 +15,7 @@ using System.Runtime.Serialization;
 using System.Drawing;
 using System.Windows.Media.Imaging;
 using OtpSharp;
+using System.Web;
 
 namespace client
 {
@@ -30,8 +31,12 @@ namespace client
         public string totpKey { get; set; }
         public string Ver { get; set; }
         public string Session { get; set; }
+        public clientSettings _settings { get; set; }
         public CookieCollection Cookies { get; set; }
         private Thread authlogin;
+        private bool fastSuccess = true;
+        public bool FastLoginSuccess { get { return fastSuccess; } set { } }
+
         public int attepts = 0;
 
 
@@ -102,11 +107,46 @@ namespace client
             ms.Close();
             return deserializedObj;
         }
-
+        private void FastAuth()
+        {
+            var tsoUrl = HttpUtility.ParseQueryString(_settings.tsoArg);
+            AddToRich("Try fastlogin");
+            CookieCollection _cookies = new CookieCollection();
+            PostSubmitter post = new PostSubmitter
+            {
+                Url = tsoUrl.Get("bb") + "authenticate",
+                Type = PostSubmitter.PostTypeEnum.Post
+            };
+            post.PostItems.Add("DSOAUTHUSER", tsoUrl.Get("dsoAuthUser"));
+            post.PostItems.Add("DSOAUTHTOKEN", tsoUrl.Get("dsoAuthToken"));
+            string res = post.Post(ref _cookies);
+            if (res.Contains("ERROR"))
+            {
+                AddToRich("Fastlogin failed. Back to normal auth");
+                fastSuccess = false;
+                MainAuth();
+                return;
+            }
+            AddToRich(Servers.getTrans("launch"));
+            Dispatcher.BeginInvoke(new ThreadStart(delegate
+            {
+                try
+                {
+                    DialogResult = true;
+                }
+                catch { }
+            }));
+            return;
+        }
         public void MainAuth()
         {
             try
             {
+                if(fastSuccess && _settings.tryFast && !string.IsNullOrEmpty(_settings.tsoArg))
+                {
+                    FastAuth();
+                    return;
+                }
                 PostSubmitter post;
                 string res;
                 CookieCollection _cookies = new CookieCollection();
