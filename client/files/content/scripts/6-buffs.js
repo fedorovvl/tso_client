@@ -144,17 +144,41 @@ function getBuffHTML()
 	$.each(buffRecord['data'], function(index, data) { 
 		status = getBuffStatus(data, isZoneRight);
 		// too dirty
-		if(data['buffName'].indexOf("RemoveBuff") >= 0) { 
-			if(status == 'buff_buffed') { status = 'buff_ready'; } 
-			else if(status == 'buff_ready') { status = 'buff_not_buffed'; } 
+		if(data['buffName'].indexOf("RemoveBuff") >= 0) {
+			if(status == 'buff_buffed') { status = 'buff_ready'; }
+			else if(status == 'buff_ready') { status = 'buff_not_buffed'; }
 		}
+
+		var cssClass = '';
+
+		switch (status) {
+			case 'buff_ready':
+				cssClass = 'buffReady'
+				break;
+			case 'buff_buffed':
+				cssClass = 'buffed'
+				break;
+			case 'buff_notactive':
+				cssClass = 'notActive'
+				break;
+			case 'buff_wrong_name':
+				cssClass = 'wrongName specSamegrid'
+				break;
+			case 'buff_not_exist':
+				cssClass = 'buffNotReady'
+				break;
+			default:
+				cssClass = 'buffNotReady';
+				break;
+		}
+
 		if(status == 'buff_ready') { buffRecordFiltered.push(data); }
 		result += createTableRow([
 			[1, data['buiGrid']],
 			[4, loca.GetText("BUI", data['buiName'])],
 			[1, getBuiLevel(data)],
 			[4, loca.GetText("RES", data['buffName'])],
-			[2, getText(status) + '<button type="button" class="close" value="'+data['buiGrid']+'"><span>&times;</span></button>', (status == 'buff_ready') ? "buffReady" : "buffNotReady"]
+			[2, getText(status) + '<button type="button" class="close" value="'+data['buiGrid']+'"><span>&times;</span></button>', cssClass]
 		]);
 	});
 	return result;
