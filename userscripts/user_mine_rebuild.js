@@ -189,11 +189,13 @@ function DepositDepletedGetData() {
                 var building_built = null;
 				var buildingInfo = '(' + loca.GetText("LAB", "DetailsDeposit") + ')';
                 var building_built = game.zone.GetBuildingFromGridPosition(item.GetGrid());
-				if ( building_built !== null ){
-					buildingInfo = "(Mine already on deposit)";
-				}
                 _checkboxRebuildMines_ = '<input type="checkbox" id="_RebuildMines_' + item.GetGrid() + '" />'.format(item.GetGrid());
-                
+
+                if ( building_built !== null ){
+					buildingInfo = "(Mine already on deposit)";
+                    _checkboxRebuildMines_ = '';
+				}
+
 				//document.getElementById('buildPOSMine_' + item.grid).addEventListener('click', function () { _GoTo(item.grid, item.building); });
 				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOSMine_' + item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
                 $('#DepositDepletedResult').append(
@@ -248,7 +250,7 @@ function DepositDepletedGetData() {
         try {
             var IconMap = "";
             if (i.Item.GetGrid() > 0)
-				_checkboxRebuildMines_ = '<input type="checkbox" id="_RebuildMines_' + i.Item.GetGrid() + '" />'.format(i.Item.GetGrid());
+				_checkboxRebuildMines_ = '';
 				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOSMine_' +  i.Item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
                     $('#DepositDepletedResult').append(
                         createTableRow([
