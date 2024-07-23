@@ -204,9 +204,12 @@ namespace client
                 }
             }
             catch { }
-            if (!string.IsNullOrEmpty(_settings.nickName) && !string.IsNullOrEmpty(_settings.dropboxkey) && _settings.accountId != 0)
+            if (!string.IsNullOrEmpty(_settings.dropboxkey) && !string.IsNullOrEmpty(_settings.dropboxrefresh))
             {
                 dropboxGetToken();
+            }
+            if (!string.IsNullOrEmpty(_settings.nickName) && _dropboxToken != null && _settings.accountId != 0)
+            {
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = "Download fastArgs"; }));
                 try
                 {
