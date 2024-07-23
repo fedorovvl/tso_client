@@ -162,7 +162,7 @@ function getBuffHTML()
 				cssClass = 'notActive'
 				break;
 			case 'buff_wrong_name':
-				cssClass = 'wrongName specSamegrid'
+				cssClass = 'wrongName'
 				break;
 			case 'buff_not_exist':
 				cssClass = 'buffNotReady'
