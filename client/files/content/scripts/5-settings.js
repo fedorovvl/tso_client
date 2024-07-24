@@ -106,7 +106,12 @@ function mainSettingsHandler(event)
 			'id': id
 		}).text(text)
 	}
-	w.size = '';
+	var getSounds = function() {
+		var result = [];
+		$.each(game.def("defines").soundEffects, function(k, v) { result.push(k); });
+		return result.sort();
+	}
+	w.size = 'modal-sg';
 	w.create();
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	var tabs = $('<ul>', { 'class': 'nav nav-pills nav-justified', 'style': 'width: 100%' });
@@ -117,6 +122,7 @@ function mainSettingsHandler(event)
 	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menulru' }).text("LRU")));
 	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menunotify' }).text(getText("notifi_desc"))));
 	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menuchat' }).text(getText("chat_desc"))));
+	tabs.append($('<li>').append($('<a>', { 'data-toggle': 'tab', 'href': '#menusound' }).text(getText("sound_desc"))));
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
 	var themeSelector = $('<select>', { 'class': 'form-control theme' });
 	themeSelector.append([$('<option>', { 'value': 'dark' }).text(getText("theme_dark")), $('<option>', { 'value': 'light' }).text(getText("theme_light"))]);
@@ -233,6 +239,12 @@ function mainSettingsHandler(event)
 		html += utils.createTableRow([[6, cssGetText(k)], [6, '<input type="text" value="'+v+'" id="'+k+'" class="kolorPicker form-control shortercontrol"><span class="colorcell"/>']]);
 	});
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menuchat' }).append(html+'</div>'));
+	var html = '<div class="container-fluid" style="user-select: all;">';
+	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [5, loca.GetText("LAB", "AvatarCurrentSelection")], [1, "#"]], true);
+	$.each(getSounds(), function(k,v) { 
+		html += utils.createTableRow([[6, v], [5, createSwitch('sound_'+v, mainSettings.effectSounds.hasOwnProperty(v)?mainSettings.effectSounds[v]:true)], [1, createButton('play', 'play')]]);
+	})
+	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menusound' }).append(html+'</div>'));
 	w.Body().html(tabs.prop("outerHTML") + '<br>' + tabcontent.prop("outerHTML"));
 	w.withBody('div.row').addClass('nohide');
 	w.withBody('.nav-justified > li').css("width", "20%");
@@ -255,6 +267,11 @@ function mainSettingsHandler(event)
 	w.withBody('.kolorPicker').change();
 	w.withBody('button').click(function(e) { 
 		var id = $(e.target).attr('id');
+		if(id == 'play') {
+			var effect = $(this).closest("div .row").find("input[type=checkbox]").prop("id").replace("sound_", '');
+			game.def("Sound::cSoundManager").getInstance().playEffect(effect);
+			return;
+		}
 		if(id == 'testnotify') {
 			setupNotifications();
 			var title = notifySettings.compact ? loca.GetText("SD2", "ChangeSkinBuffMason") : game.gw + ' - ' + game.playerName;
@@ -332,6 +349,9 @@ function mainSettingsHandler(event)
 			return;
 		}
 	});
+	w.withBody('[id^=sound_]').change(function(e) {
+		game.def("defines").soundEffects[e.target.id.replace("sound_", '')] = $(e.target).is(':checked');
+	});
 	w.withBody('[id^=lruSkip_]').change(function(e) {
 		if($(e.target).is(':checked')) {
 			mainSettings.lruSkipModules.splice(mainSettings.lruSkipModules.indexOf(e.target.id.replace("lruSkip_", '')), 1);
@@ -367,6 +387,7 @@ function mainSettingsHandler(event)
 	w.withBody('#newsCustom').change(function(e) { notifySettings.newsCustom = $(e.target).is(':checked'); });
 	w.withBody('#mentionGroup').change(function(e) { notifySettings.mentionGroup = $(e.target).is(':checked'); });
 	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
+		$.each(game.def("defines").soundEffects, function(k, v) { mainSettings.effectSounds[k] = v;	});
 		settings.settings["global"] = {};
 		settings.store(mainSettings);
 		if(menu.type != mainSettings.menuStyle) {

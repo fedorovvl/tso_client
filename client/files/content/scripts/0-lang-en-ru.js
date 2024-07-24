@@ -196,7 +196,8 @@ extendBaseLang({
 		'add_buff_desc': 'Add buff',
 		'itemshide_desc': 'Hide starmenu items',
 		'mwchat_desc': 'Chat panel in MW',
-		'mail_route_desc': "Loot to storage by default"
+		'mail_route_desc': "Loot to storage by default",
+		'sound_desc': "Sounds"
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -392,6 +393,7 @@ extendBaseLang({
 		'add_buff_desc': 'Добавить усилитель',
 		'itemshide_desc': 'Скрытие предметов',
 		'mwchat_desc': 'Панель сисчата в МО',
-		'mail_route_desc': "Добыча на склад по умолчанию"
+		'mail_route_desc': "Добыча на склад по умолчанию",
+		'sound_desc': "Звуки"
 	}
 });
