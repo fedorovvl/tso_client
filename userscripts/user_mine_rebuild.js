@@ -12,7 +12,7 @@ addToolsMenuItem(loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL"
 var _DepositDepletedModalInitialized = false;
 
 var assetsNamesMine = ["IronOre", "Coal", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter"];
-const assetsNames = ["IronOre", "Coal", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "MineDepletedDepositIronOre", "MineDepletedDepositCoal", "MineDepletedDepositBronzeOre", "MineDepletedDepositGoldOre", "MineDepletedDepositTitaniumOre", "MineDepletedDepositSalpeter"];
+var assetsNames = ["IronOre", "Coal", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "MineDepletedDepositIronOre", "MineDepletedDepositCoal", "MineDepletedDepositBronzeOre", "MineDepletedDepositGoldOre", "MineDepletedDepositTitaniumOre", "MineDepletedDepositSalpeter"];
 
 var DepositDepletedTranslates = {
     'en-uk': {
@@ -42,9 +42,7 @@ var DepositDepletedSwitchStatuses = {
     ON: getText('AvailableOnly', 'DepositDepletedTranslates'),
     OFF: getText('All', 'DepositDepletedTranslates')
 };
-var DepositDepletedGameScriptKeys = {
-    SWITCH_STATUS: DepositDepletedNamePrefix + 'AvailableOnlySwitchStatus'
-};
+var DepositDepleted_AvailableOnlySwitchStatus = false;
 
 var buildArray = [];
 var buildArraySave;
@@ -107,12 +105,12 @@ function DepositDepletedMenuHandler(event) {
         createTableRow([
             [3, createSwitch(
                   DepositDepletedElements.ON_OFF_RADIO,
-                  game[DepositDepletedGameScriptKeys.SWITCH_STATUS]
+                  DepositDepleted_AvailableOnlySwitchStatus
                 ) +
                   '<div style="position: absolute;left: 55px;top: 1px;" id="' +
                   DepositDepletedElements.ON_OFF_RADIO_TEXT +
                   '">{0}</div>'.format(
-                    game[DepositDepletedGameScriptKeys.SWITCH_STATUS] ? DepositDepletedSwitchStatuses.ON : DepositDepletedSwitchStatuses.OFF
+                    DepositDepleted_AvailableOnlySwitchStatus ? DepositDepletedSwitchStatuses.ON : DepositDepletedSwitchStatuses.OFF
                   )],
             [9, getText('AvailableOnlyHint', 'DepositDepletedTranslates')],
           ], true) +
@@ -195,11 +193,11 @@ function DepositDepletedMenuHandler(event) {
         if ($(this).is(':checked')) {
             $("#" + DepositDepletedElements.ON_OFF_RADIO_TEXT).text(DepositDepletedSwitchStatuses.ON);
             $("." + DepositDepletedElements.NOT_AVAILABLE_CB).hide();
-            game[DepositDepletedGameScriptKeys.SWITCH_STATUS] = true;
+            DepositDepleted_AvailableOnlySwitchStatus = true;
         } else {
             $("#" + DepositDepletedElements.ON_OFF_RADIO_TEXT).text(DepositDepletedSwitchStatuses.OFF);
             $("." + DepositDepletedElements.NOT_AVAILABLE_CB).show();
-            game[DepositDepletedGameScriptKeys.SWITCH_STATUS] = false;
+            DepositDepleted_AvailableOnlySwitchStatus = false;
         }
     });
 
