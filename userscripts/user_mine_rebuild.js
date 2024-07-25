@@ -12,7 +12,37 @@ addToolsMenuItem(loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL"
 var _DepositDepletedModalInitialized = false;
 
 var assetsNamesMine = ["IronOre", "Coal", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter"];
-const assetsNames = ["IronOre", "Coal", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "MineDepletedDepositIronOre", "MineDepletedDepositCoal", "MineDepletedDepositBronzeOre", "MineDepletedDepositGoldOre", "MineDepletedDepositTitaniumOre", "MineDepletedDepositSalpeter"];
+var assetsNames = ["IronOre", "Coal", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "MineDepletedDepositIronOre", "MineDepletedDepositCoal", "MineDepletedDepositBronzeOre", "MineDepletedDepositGoldOre", "MineDepletedDepositTitaniumOre", "MineDepletedDepositSalpeter"];
+
+var DepositDepletedTranslates = {
+    'en-uk': {
+        'All' : 'All',
+        'AvailableOnly' : 'Available only',
+        'AvailableOnlyHint' : '"Available only": no checkbox if a mine is already built or a depo has not been found yet.'
+    },
+    'en-us': {
+        'All' : 'All',
+        'AvailableOnly' : 'Available only',
+        'AvailableOnlyHint' : '"Available only": no checkbox if a mine is already built or a depo has not been found yet.'
+    },
+    'de-de': {
+        'All' : 'Alle',
+        'AvailableOnly' : 'Verfügbar nur',
+        'AvailableOnlyHint' : '"Verfügbar nur“: kein Kontrollkästchen, wenn bereits eine Mine gebaut ist oder noch kein Lager gefunden wurde.'
+    }
+};
+extendBaseLang(DepositDepletedTranslates, 'DepositDepletedTranslates');
+var DepositDepletedNamePrefix = 'DepositDepleted_';
+var DepositDepletedElements = {
+    ON_OFF_RADIO: DepositDepletedNamePrefix + 'AvailableOnlySwitch',
+    ON_OFF_RADIO_TEXT: DepositDepletedNamePrefix + 'AvailableOnlySwitchStatus',
+    NOT_AVAILABLE_CB: 'mineNotAvailable'
+};
+var DepositDepletedSwitchStatuses = {
+    ON: getText('AvailableOnly', 'DepositDepletedTranslates'),
+    OFF: getText('All', 'DepositDepletedTranslates')
+};
+var DepositDepleted_AvailableOnlySwitchStatus = false;
 
 var buildArray = [];
 var buildArraySave;
@@ -21,7 +51,7 @@ var DepositAll = [];
 var DepletedAll = [];
 
 function DepositDepletedMenuHandler(event) {
-	if(game.gi.isOnHomzone() == false) {
+    if(game.gi.isOnHomzone() == false) {
 		game.showAlert(getText('not_home'));
 		return;
 	}
@@ -72,6 +102,18 @@ function DepositDepletedMenuHandler(event) {
     });
 
 	$('#DepositDepletedModal .modal-header').html(
+        createTableRow([
+            [3, createSwitch(
+                  DepositDepletedElements.ON_OFF_RADIO,
+                  DepositDepleted_AvailableOnlySwitchStatus
+                ) +
+                  '<div style="position: absolute;left: 55px;top: 1px;" id="' +
+                  DepositDepletedElements.ON_OFF_RADIO_TEXT +
+                  '">{0}</div>'.format(
+                    DepositDepleted_AvailableOnlySwitchStatus ? DepositDepletedSwitchStatuses.ON : DepositDepletedSwitchStatuses.OFF
+                  )],
+            [9, getText('AvailableOnlyHint', 'DepositDepletedTranslates')],
+          ], true) +
         createTableRow([
                 [4, loca.GetText("LAB", "Name")],
                 [2, loca.GetText("LAB", "amount")],
@@ -147,10 +189,21 @@ function DepositDepletedMenuHandler(event) {
         $('#DepositDepletedModal').modal('hide');
     });
 
+    $("#" + DepositDepletedElements.ON_OFF_RADIO).change(function(){
+        if ($(this).is(':checked')) {
+            $("#" + DepositDepletedElements.ON_OFF_RADIO_TEXT).text(DepositDepletedSwitchStatuses.ON);
+            $("." + DepositDepletedElements.NOT_AVAILABLE_CB).hide();
+            DepositDepleted_AvailableOnlySwitchStatus = true;
+        } else {
+            $("#" + DepositDepletedElements.ON_OFF_RADIO_TEXT).text(DepositDepletedSwitchStatuses.OFF);
+            $("." + DepositDepletedElements.NOT_AVAILABLE_CB).show();
+            DepositDepleted_AvailableOnlySwitchStatus = false;
+        }
+    });
+
     $('#DepositDepletedModal:not(:visible)').modal({
         backdrop: "static"
     });
-
 }
 
 function DepositDepletedMakeModal() {
@@ -189,11 +242,13 @@ function DepositDepletedGetData() {
                 var building_built = null;
 				var buildingInfo = '(' + loca.GetText("LAB", "DetailsDeposit") + ')';
                 var building_built = game.zone.GetBuildingFromGridPosition(item.GetGrid());
-				if ( building_built !== null ){
-					buildingInfo = "(Mine already on deposit)";
-				}
                 _checkboxRebuildMines_ = '<input type="checkbox" id="_RebuildMines_' + item.GetGrid() + '" />'.format(item.GetGrid());
-                
+
+                if ( building_built !== null ){
+					buildingInfo = "(Mine already on deposit)";
+                    _checkboxRebuildMines_ = '<input type="checkbox" class="mineNotAvailable" id="_RebuildMines_' + item.GetGrid() + '" />'.format(item.GetGrid());
+				}
+
 				//document.getElementById('buildPOSMine_' + item.grid).addEventListener('click', function () { _GoTo(item.grid, item.building); });
 				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOSMine_' + item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
                 $('#DepositDepletedResult').append(
@@ -248,7 +303,7 @@ function DepositDepletedGetData() {
         try {
             var IconMap = "";
             if (i.Item.GetGrid() > 0)
-				_checkboxRebuildMines_ = '<input type="checkbox" id="_RebuildMines_' + i.Item.GetGrid() + '" />'.format(i.Item.GetGrid());
+                _checkboxRebuildMines_ = '<input type="checkbox" id="_RebuildMines_' + i.Item.GetGrid() + '" class="mineNotAvailable" />'.format(i.Item.GetGrid());
 				buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="buildPOSMine_' +  i.Item.GetGrid() + '"').replace('style="', 'style="cursor: pointer;');
                     $('#DepositDepletedResult').append(
                         createTableRow([
@@ -275,7 +330,13 @@ function DepositDepletedGetData() {
                 }
             });
     });
-	DepletedAll = Depleted; 
+	DepletedAll = Depleted;
+
+    if ($("#" + DepositDepletedElements.ON_OFF_RADIO).is(':checked')) {
+        $("." + DepositDepletedElements.NOT_AVAILABLE_CB).hide();
+    } else {
+        $("." + DepositDepletedElements.NOT_AVAILABLE_CB).show();
+    }
 }
 
 function _FindOriginalResource(building_name) {
