@@ -44,7 +44,8 @@ var mainSettings = {
 	shortAsGlobalRelative: false,
 	lruSkipModules: [],
 	mwChatPanel: false,
-	mailRouteStorage: false
+	mailRouteStorage: false,
+	effectSounds: {}
 };
 var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
 var cssRoomToLoca = {
@@ -288,6 +289,26 @@ function setFilterHandler(filter)
 function menuFilterHandler(event)
 {
 	setFilterHandler(event.target.name);
+}
+
+function getSoundsCount()
+{
+	var n = 0;
+	for(var i in game.def("defines").soundEffects) { n++; }
+	return n;
+}
+
+function disableEffectSounds()
+{
+	if(Object.keys(mainSettings.effectSounds).length == 0) { return; }
+	if(getSoundsCount() < Object.keys(mainSettings.effectSounds).length) {
+		debug("wait some");
+		setTimeout(disableEffectSounds, 1000);
+		return;
+	}
+	for(var i in mainSettings.effectSounds) { 
+		game.def("defines").soundEffects[i] = mainSettings.effectSounds[i];
+	}
 }
 
 function menuZoneRefreshHandler(event)
@@ -958,3 +979,4 @@ if(dropboxApiKey != null && expZone == null) {
 	dropbox = new Dropbox(dropboxApiKey, window.atob(dropboxApiRefresh));
     dropbox.init();
 }
+disableEffectSounds();
