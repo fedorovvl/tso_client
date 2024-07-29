@@ -17,10 +17,6 @@
 var ExplorerTimeMatrix_PFB_RB_STATUS = false;
 var ExplorerTimeMatrix_ADV_RB_STATUS = false;
 
-function logger(message) {
-    air.Introspector.Console.log(message);
-}
-
 function ExplorerTimeMatrix() {
     this.init = function () {
       this.extensionName = "Explorer Time Matrix";
@@ -443,7 +439,7 @@ explorerTimeMatrixMenuHandler = function (event) {
     });
 
   } catch (error) {
-      // logger(error)
+      //
   }
 };
 
