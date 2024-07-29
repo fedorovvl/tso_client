@@ -376,7 +376,7 @@ function ExplorerTimeMatrix() {
           });
 
           $('#' + namePrefix + 'Result').append(out);
-          $('[data-toggle="tooltip"]').tooltip();
+          $('[data-toggle="tooltip"]').tooltip({container: 'body'});
         }
     };
 }
