@@ -75,5 +75,12 @@
       "longDesc":"Mines can be rebuild via templates with load and save function, as well as a friendly UI",
       "author":"PiTi_TestSiedler",
 	  "url": ""
+   },
+   "user_exp_time_matrix.js":{
+      "name":"Explorer Time Matrix",
+      "shortDesc":"Explorer Time Matrix",
+      "longDesc":"It calculates and shows all the times (treasure and adventure searches) for all the explorers you have based on their skills. You can check the normal and the PFB times as well.",
+      "author":"Sas Sam",
+	  "url": ""
    }
 }
