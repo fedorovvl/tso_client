@@ -214,15 +214,6 @@ function ExplorerTimeMatrix() {
         return availableExplorers;
     };
 
-    this.getTaskInfo = function (taskId, subTaskId) {
-      try {
-        var task = swmmo.getDefinitionByName("global").specialistTaskDefinitions_vector[taskId];
-        return { taskName: task.taskName_string, subTaskName: task.subtasks_vector[subTaskId].taskType_string, duration: task.subtasks_vector[subTaskId].duration };
-      } catch (error) {
-        return {};
-      }
-    };
-
     this.getTaskDuration = function (task, explorer) {
       var calculatedTime = task.duration; // without any books
       var vectorIndex;
@@ -315,7 +306,7 @@ function ExplorerTimeMatrix() {
             treasureTimes += '<tr>';
             treasures.forEach(function(item) {
               var cat_id = item.val.split(",");
-              var task = _this.getTaskInfo(cat_id[0], cat_id[1]);
+              var task = getTaskInfo(cat_id[0], cat_id[1]);
               var calculatedTime = _this.getTaskDuration(task, explorer);
               var enabled = ((item.req[0] && skillArtifact) || (item.req[1] && skillRarity) || (!item.req[0] && !item.req[1] && playerLevel >= item.req[2]));
 
@@ -346,7 +337,7 @@ function ExplorerTimeMatrix() {
             adventureTimes += '<tr>';
             adventures.forEach(function(item) {
               var cat_id = item.val.split(",");
-              var task = _this.getTaskInfo(cat_id[0], cat_id[1]);
+              var task = getTaskInfo(cat_id[0], cat_id[1]);
               var calculatedTime = _this.getTaskDuration(task, explorer);
               var enabled = ((item.req[0] && art) || (item.req[1] && bean) || (!item.req[0] && !item.req[1] && playerLevel >= item.req[2]));
 
