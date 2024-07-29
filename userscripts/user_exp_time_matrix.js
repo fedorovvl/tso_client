@@ -196,7 +196,7 @@ function ExplorerTimeMatrix() {
 
       game
         .getSpecialists()
-        .sort(0)
+        .sort(specNameSorter)
         .forEach(function (item) {
           if (
             //item.GetTask() !== null ||
