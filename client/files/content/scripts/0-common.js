@@ -236,7 +236,11 @@ function highlightProceed(isUpdate)
 		"ruinAncientLibrary_01",
 		"ruinAncientLibrary_02_a",
 		"ruinAncientLibrary_02_b",
-		"ruinAncientLibrary_02"
+		"ruinAncientLibrary_02",
+		"ruinAncientLibrary_02_tls3",
+		"ruinAncientLibrary_02_tls4",
+		"ruinAncientLibrary_02_tls5",
+		"ruinAncientLibrary_01_tls6"
 	];
 	game.def("global").buildingGroup.mGOList_vector.filter(function(item) {
 		try {
