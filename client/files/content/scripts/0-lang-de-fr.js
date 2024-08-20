@@ -338,6 +338,9 @@ extendBaseLang({
 		'css_important': 'Important',
 		'css_adventure': "Aventure",
 		
+		// Options ==> son
+		'sound_desc': "Sons",
+		
 		// Général => dernière notification
 		'notifi_last_desc': "5 dernières notifications",
 		

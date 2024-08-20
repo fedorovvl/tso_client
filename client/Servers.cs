@@ -186,6 +186,8 @@ namespace client
                 { "langDropbox", "Dropbox APPKEY:APPSECRET" },
                 { "langDropboxRefresh", "Rafraichir le jeton Dropbox" },
                 { "langTestDropbox", "Dropbox test" },
+                { "langAuthDropbox", "Dropbox authentification" },
+                { "langTryFast", "Essayez d'abord Fastlogin" },
               }
            },
            { "pl-pl", new Dictionary<string, string>() {

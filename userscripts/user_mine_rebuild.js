@@ -28,7 +28,12 @@ var DepositDepletedTranslates = {
     'de-de': {
         'All' : 'Alle',
         'AvailableOnly' : 'Verfügbar nur',
-        'AvailableOnlyHint' : '"Verfügbar nur“: kein Kontrollkästchen, wenn bereits eine Mine gebaut ist oder noch kein Lager gefunden wurde.'
+        'AvailableOnlyHint' : '"Verfügbar nur“: kein Kontrollkästchen, wenn bereits eine Mine gebaut ist oder noch kein Lager gefunden wurde.'    
+    },
+    'fr-fr': {
+        'All' : 'Tous',
+        'AvailableOnly' : 'Disponible uniquement',
+        'AvailableOnlyHint' : '"Disponible uniquement" : aucune case à cocher si mine construite ou si gisement non trouvé.'
     }
 };
 extendBaseLang(DepositDepletedTranslates, 'DepositDepletedTranslates');

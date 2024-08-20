@@ -149,7 +149,7 @@ function specSettings()
 
 function specGeoGetDepleted()
 {
-	var result = {}; 
+	var result = {};
 	game.gi.mCurrentPlayerZone.mStreetDataMap.GetBuildings_vector().filter(function(bui) { return bui != null && bui.GetBuildingName_string().indexOf("MineDepleted") >= 0; }).forEach(function(depletedBui) { 
 		if(depletedBui == null) { return; }
 		var name = depletedBui.GetBuildingName_string().replace("MineDepletedDeposit", '');
@@ -380,8 +380,12 @@ function getTaskDurationText(spec_id, task_id)
 
 function getTaskInfo(taskId, subTaskId)
 {
-	var task = swmmo.getDefinitionByName("global").specialistTaskDefinitions_vector[taskId];
-	return { taskName: task.taskName_string, subTaskName: task.subtasks_vector[subTaskId].taskType_string, duration: task.subtasks_vector[subTaskId].duration };
+	try {
+		var task = swmmo.getDefinitionByName("global").specialistTaskDefinitions_vector[taskId];
+		return { taskName: task.taskName_string, subTaskName: task.subtasks_vector[subTaskId].taskType_string, duration: task.subtasks_vector[subTaskId].duration };
+	} catch (error) {
+		return {};
+	}
 }
 
 function sendSpec()
