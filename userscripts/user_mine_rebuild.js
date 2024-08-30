@@ -1,11 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////Created by A-Calc Development (PiTi) | In co-operation with Test_Siedler#3694//////////////////////
-///////////////////////////////////////////////////////Projects:////////////////////////////////////////////////////////////////
-//////////////////https://a-calc.de | Taming calculator and companion app for Ark: Survivial Evolved/Ascended///////////////////
-//////////////////https://crypto-webminer.com | Crypto Webminer - Mining in your Browser with Webmining technology//////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////Ihr mögt meine Arbeit und wollt mich Supporten? https://www.paypal.com/paypalme/ACalcDevelopment///////////////////
-/////////////Do you like my work and want to support me? https://www.paypal.com/paypalme/ACalcDevelopment///////////////////////
+/////////////////////////////Created by PiTi | In co-operation with Test_Siedler////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 addToolsMenuItem(loca.GetText("QUL", "TutBronzeMine") + " " + loca.GetText("QUL", "CQ2S1_Reconstitution_Tcl5"), DepositDepletedMenuHandler);
@@ -28,7 +22,12 @@ var DepositDepletedTranslates = {
     'de-de': {
         'All' : 'Alle',
         'AvailableOnly' : 'Verfügbar nur',
-        'AvailableOnlyHint' : '"Verfügbar nur“: kein Kontrollkästchen, wenn bereits eine Mine gebaut ist oder noch kein Lager gefunden wurde.'
+        'AvailableOnlyHint' : '"Verfügbar nur“: kein Kontrollkästchen, wenn bereits eine Mine gebaut ist oder noch kein Lager gefunden wurde.'    
+    },
+    'fr-fr': {
+        'All' : 'Tous',
+        'AvailableOnly' : 'Disponible uniquement',
+        'AvailableOnlyHint' : '"Disponible uniquement" : aucune case à cocher si mine construite ou si gisement non trouvé.'
     }
 };
 extendBaseLang(DepositDepletedTranslates, 'DepositDepletedTranslates');
