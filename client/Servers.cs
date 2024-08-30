@@ -329,6 +329,8 @@ namespace client
         {
             if (!trans.ContainsKey(_langs[Main._region]))
                 return trans["en-uk"][value];
+            if(!trans[_langs[Main._region]].ContainsKey(value))
+                return trans["en-uk"][value];
             return trans[_langs[Main._region]][value];
         }
     }
