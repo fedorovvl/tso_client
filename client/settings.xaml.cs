@@ -59,6 +59,7 @@ namespace client
             tsofolder.Text = setting.tsofolder;
             clientconfig.Text = setting.clientconfig;
             nicknameConfig.IsChecked = setting.configNickname;
+            tsoFolderNearLauncher.IsChecked = setting.tsoFolderNearLauncher;
             tryFast.IsChecked = setting.tryFast;
             if (!string.IsNullOrEmpty(setting.window))
             {
@@ -89,6 +90,7 @@ namespace client
             setting.clientconfig = clientconfig.Text.Trim();
             setting.window = winSizes[window_size.SelectedIndex];
             setting.lang = langs[game_lang_list.SelectedIndex];
+            setting.tsoFolderNearLauncher = (bool)tsoFolderNearLauncher.IsChecked;
             this.DialogResult = true;
         }
 
