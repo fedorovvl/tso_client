@@ -132,11 +132,11 @@ namespace client
             new Thread(checkVersion) { IsBackground = true }.Start();
         }
 
-        public static string ClientDirectory
+        public string ClientDirectory
         {
             get
             {
-                return Path.IsPathRooted(tso_folder) ? tso_folder : System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), tso_folder);
+                return Path.IsPathRooted(tso_folder) ? tso_folder : Path.Combine(_settings.tsoFolderNearLauncher ? AppDomain.CurrentDomain.BaseDirectory : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), tso_folder);
             }
         }
         private const string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -718,6 +718,7 @@ namespace client
         public string lang { get; set; } = string.Empty;
         public string window { get; set; } = string.Empty;
         public string tsofolder { get; set; } = "tso_portable";
+        public bool tsoFolderNearLauncher { get; set; } = false;
         public bool x64 { get; set; } = false;
         public bool tryFast { get; set; } = false;
         public bool configNickname { get; set; } = false;

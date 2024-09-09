@@ -283,7 +283,7 @@
                     </Border>
                     <TextBox Height="23"  Foreground="AliceBlue" BorderThickness="0" Background="#00000000" HorizontalAlignment="Stretch" Margin="5,7,-1,0" Name="clientconfig" VerticalAlignment="Stretch" />
                 </Grid>
-                <Grid Margin="86,105,24.2,200" Grid.Column="1">
+                <Grid Margin="86,105,52.2,200" Grid.Column="1">
                     <Border CornerRadius="2" BorderBrush="{StaticResource NormalBorderBrush}" BorderThickness="1">
                         <Border.Background>
                             <ImageBrush ImageSource="files/input.png" />
@@ -363,6 +363,20 @@
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="39,239,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langDropboxRefresh, Mode=OneWay}" VerticalAlignment="Top" Width="195" Grid.ColumnSpan="2" />
                 <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,324,0,-12" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langTryFast, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
                 <CheckBox Height="25" IsChecked="True" x:Name="tryFast" Margin="292,323,23.2,-12" Width="24" Grid.Column="1">
+                    <CheckBox.Template>
+                        <ControlTemplate TargetType="{x:Type CheckBox}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image x:Name="_image" Source="files/unchecked.png" />
+                            </StackPanel>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Source" TargetName="_image" Value="files/checked.png" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </CheckBox.Template>
+                </CheckBox>
+                <CheckBox Height="25" ToolTip="Place folder near launcher" IsChecked="True" x:Name="tsoFolderNearLauncher" Margin="292,108,23.2,203" Width="24" Grid.Column="1">
                     <CheckBox.Template>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <StackPanel Orientation="Horizontal">
