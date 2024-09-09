@@ -22,7 +22,7 @@ var DepositDepletedTranslates = {
     'de-de': {
         'All' : 'Alle',
         'AvailableOnly' : 'Verfügbar nur',
-        'AvailableOnlyHint' : '"Verfügbar nur“: kein Kontrollkästchen, wenn bereits eine Mine gebaut ist oder noch kein Lager gefunden wurde.'    
+        'AvailableOnlyHint' : '"Verfügbar nur“: kein Kontrollkästchen, wenn bereits eine Mine gebaut ist oder noch kein Vorkommen.'    
     },
     'fr-fr': {
         'All' : 'Tous',
@@ -161,23 +161,32 @@ function DepositDepletedMenuHandler(event) {
         }
     });
     $('#DepositDepletedModal .build_newSaveTemplate').click(function () {
-        buildArraySave = [];
-        $.each(buildArray, function (i, item) {
+    buildArraySave = [];
+    
+    $.each(buildArray, function (i, item) {
 
-            if (item.GetGrid() !== undefined && buildArraySave.indexOf(item.GetGrid()) === -1) {
-			var buildingName = (item.GetBuildingName_string !== undefined) ? item.GetBuildingName_string() : item.GetName_string();
-				
-				if (buildingName !== undefined) {
-					buildArraySave.push({
-						buiGrid: item.GetGrid(),
-						buiRessName: buildingName,
-						buiMineType: mapItemToNumber(buildingName)
-					});
-				}
-			}
-        });
-        build_newTemplates.save(buildArraySave);
+        if (item.GetGrid() !== undefined) {
+            var buildingName = (item.GetBuildingName_string !== undefined) ? item.GetBuildingName_string() : item.GetName_string();
+            
+            if (buildingName !== undefined) {
+                var Mapping = mapItemToNumber(buildingName);
+                var alreadyExists = buildArraySave.some(function(savedItem) {
+                    return savedItem.buiGrid === item.GetGrid();
+                });
+                
+                if (!alreadyExists) {
+                    buildArraySave.push({
+                        buiGrid: item.GetGrid(),
+                        buiRessName: Mapping.text,
+                        buiMineType: Mapping.number
+                    });
+                }
+            }
+        }
     });
+
+    build_newTemplates.save(buildArraySave);
+	});
     $('#DepositDepletedModal .build_newLoadTemplate').click(function () {
         build_newTemplates.load();
     });
@@ -360,30 +369,30 @@ function _GoTo(g) {
 
 function mapItemToNumber(itemName) {
     switch (itemName) {
-    case "TitaniumOre":
-        return 69;
-    case "Salpeter":
-        return 63;
-    case "BronzeOre":
-        return 36;
-    case "Coal":
-        return 37;
-    case "GoldOre":
-        return 46;
-    case "IronOre":
-        return 50;
-	case "MineDepletedDepositTitaniumOre":
-        return 69;
-    case "MineDepletedDepositSalpeter":
-        return 63;
-    case "MineDepletedDepositBronzeOre":
-        return 36;
-    case "MineDepletedDepositCoal":
-        return 37;
-    case "MineDepletedDepositGoldOre":
-        return 46;
-    case "MineDepletedDepositIronOre":
-        return 50;
+        case "TitaniumOre":
+            return { number: 69, text: "TitaniumOre" };
+        case "Salpeter":
+            return { number: 63, text: "Salpeter" };
+        case "BronzeOre":
+            return { number: 36, text: "BronzeOre" };
+        case "Coal":
+            return { number: 37, text: "Coal" };
+        case "GoldOre":
+            return { number: 46, text: "GoldOre" };
+        case "IronOre":
+            return { number: 50, text: "IronOre" };
+        case "MineDepletedDepositTitaniumOre":
+            return { number: 69, text: "TitaniumOre" };
+        case "MineDepletedDepositSalpeter":
+            return { number: 63, text: "Salpeter" };
+        case "MineDepletedDepositBronzeOre":
+            return { number: 36, text: "BronzeOre" };
+        case "MineDepletedDepositCoal":
+            return { number: 37, text: "Coal" };
+        case "MineDepletedDepositGoldOre":
+            return { number: 46, text: "GoldOre" };
+        case "MineDepletedDepositIronOre":
+            return { number: 50, text: "IronOre" };
     }
 }
 
@@ -393,25 +402,27 @@ function buildMine(buildArray_input) {
     var CurrentQueueFree = 0;
     var QueueTotal = 0;
     var buildArray_local = [];
-	
-    $.each(buildArray_input, function (i, item) {
+    
+    var addedGrids = [];
 
-			try
-			{
-				var a = item.GetGrid();
-				if (item.GetGrid() !== undefined && buildArray_input.indexOf(item.GetGrid()) === -1) {
-				var buildingName = (item.GetBuildingName_string !== undefined) ? item.GetBuildingName_string() : item.GetName_string();
-					
-					if (buildingName !== undefined) {
-						buildArray_local.push({
-							buiGrid: item.GetGrid(),
-							buiRessName: buildingName,
-							buiMineType: mapItemToNumber(buildingName)
-						});
-					}
-				}
-			}
-			catch(e){}
+    $.each(buildArray_input, function (i, item) {
+        try {
+            var grid = item.GetGrid();
+            if (grid !== undefined && addedGrids.indexOf(grid) === -1) {
+                var buildingName = (item.GetBuildingName_string !== undefined) ? item.GetBuildingName_string() : item.GetName_string();
+
+                if (buildingName !== undefined) {
+					var Mapping = mapItemToNumber(buildingName);
+                    buildArray_local.push({
+                        buiGrid: grid,
+                        buiRessName: Mapping.text,
+                        buiMineType: Mapping.number
+                    });
+                    addedGrids.push(grid);
+                }
+            }
+        } catch (e) {
+        }
     });
 
     $.each(swmmo.application.mGameInterface.mHomePlayer.mBuildQueue.GetQueue_vector(), function (i, GetQueue) {
@@ -424,16 +435,16 @@ function buildMine(buildArray_input) {
         if (CurrentQueueFree > 0) {
             var building_built = game.zone.GetBuildingFromGridPosition(item.buiGrid);
             if (building_built == null && game.gi.isOnHomzone()) {
-		CurrentQueueFree--;
+                CurrentQueueFree--;
                 x.add(function () {
-                    game.gi.SendServerAction(50, item.buiMineType, item.buiGrid, 0, null);
+					game.gi.SendServerAction(50, item.buiMineType, item.buiGrid, 0, null);
+					//air.Introspector.Console.log(item);
                     game.showAlert("Building: " + loca.GetText("RES", item.buiRessName));
-
                 });
             }
         }
-
     });
+
     x.run();
     buildArray_input = [];
     buildArray_local = [];
