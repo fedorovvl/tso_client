@@ -561,7 +561,7 @@ namespace client
                 _cookies = log.Cookies;
                 var tsoUrl = HttpUtility.ParseQueryString(log.Ver);
                 if (!string.IsNullOrEmpty(_settings.lang))
-                    tsoUrl.Set("lang", _settings.lang);
+                    tsoUrl.Set("lang", Servers._langs[_settings.lang]);
                 if (!string.IsNullOrEmpty(lang))
                     tsoUrl.Set("lang", lang);
                 if (!string.IsNullOrEmpty(_settings.window))
