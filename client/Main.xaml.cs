@@ -16,6 +16,7 @@ using System.Security.Cryptography;
 using System.Reflection;
 using System.Web.Script.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Collections.Specialized;
 
 namespace client
 {
@@ -559,43 +560,57 @@ namespace client
                     return;
                 }
                 _cookies = log.Cookies;
-                var tsoUrl = HttpUtility.ParseQueryString(log.Ver);
-                if (!string.IsNullOrEmpty(_settings.lang))
-                    tsoUrl.Set("lang", Servers._langs[_settings.lang]);
-                if (!string.IsNullOrEmpty(lang))
-                    tsoUrl.Set("lang", lang);
-                if (!string.IsNullOrEmpty(_settings.window))
-                    tsoUrl.Set("window", _settings.window);
-                if (cmd["window"] != null)
-                    tsoUrl.Set("window", cmd["window"]);
-                if (debug)
-                    tsoUrl.Set("debug", "true");
-                if (!string.IsNullOrEmpty(_settings.clientconfig))
-                    tsoUrl.Set("clientconfig", _settings.clientconfig);
-                if (cmd["clientconfig"] != null)
-                    tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim() == "NICKNAME" ? string.Format("{0}.json", log.nickName) : cmd["clientconfig"].Trim());
-                if(_settings.configNickname)
-                    tsoUrl.Set("clientconfig", string.Format("{0}.json", log.nickName));
-                if (!string.IsNullOrEmpty(_settings.dropboxkey) && !string.IsNullOrEmpty(_settings.dropboxrefresh))
-                {
-                    tsoUrl.Set("dropboxApiKey", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxkey)));
-                    tsoUrl.Set("dropboxApiRefresh", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxrefresh)));
-                }
+                _settings.nickName = log.nickName;
+                var tsoUrl = makeTsoUrl(log.Ver);
                 _settings.tsoArg = string.Format("tso://{0}&baseUri={1}", tsoUrl.ToString(), Servers._servers[_region].domain);
                 _settings.accountId = long.Parse(tsoUrl.Get("dsoAuthUser"));
-                _settings.nickName = log.nickName;
                 try
                 {
                     dropboxUploadFile(_settings.accountId + ".dat", new Crypt().Encrypt(_settings.tsoArg, true));
                 } catch { }
                 File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
-                run_tso();
+                run_tso(false);
             }
             this.Visibility = System.Windows.Visibility.Visible;
         }
 
-        private void run_tso()
+        private NameValueCollection makeTsoUrl(string data)
         {
+            var tsoUrl = HttpUtility.ParseQueryString(data);
+            try
+            {
+                if (string.IsNullOrEmpty(_settings.lang))
+                    tsoUrl.Set("lang", Servers._langs[(region_list.Items[_settings.region] as ComboBoxItem).Tag.ToString()]);
+            }
+            catch { }
+            if (!string.IsNullOrEmpty(_settings.lang))
+                tsoUrl.Set("lang", Servers._langs[_settings.lang]);
+            if (!string.IsNullOrEmpty(lang))
+                tsoUrl.Set("lang", lang);
+            if (!string.IsNullOrEmpty(_settings.window))
+                tsoUrl.Set("window", _settings.window);
+            if (cmd["window"] != null)
+                tsoUrl.Set("window", cmd["window"]);
+            if (debug)
+                tsoUrl.Set("debug", "true");
+            if (!string.IsNullOrEmpty(_settings.clientconfig))
+                tsoUrl.Set("clientconfig", _settings.clientconfig);
+            if (cmd["clientconfig"] != null)
+                tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim() == "NICKNAME" ? string.Format("{0}.json", _settings.nickName) : cmd["clientconfig"].Trim());
+            if (_settings.configNickname)
+                tsoUrl.Set("clientconfig", string.Format("{0}.json", _settings.nickName));
+            if (!string.IsNullOrEmpty(_settings.dropboxkey) && !string.IsNullOrEmpty(_settings.dropboxrefresh))
+            {
+                tsoUrl.Set("dropboxApiKey", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxkey)));
+                tsoUrl.Set("dropboxApiRefresh", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxrefresh)));
+            }
+            return tsoUrl;
+        }
+
+        private void run_tso(bool fast = true)
+        {
+            if (fast)
+                _settings.tsoArg = HttpUtility.UrlDecode(makeTsoUrl(_settings.tsoArg).ToString());
             XmlDocument Doc = new XmlDocument();
             XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
             ns.AddNamespace("adobe", "http://ns.adobe.com/air/application/15.0");
