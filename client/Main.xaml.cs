@@ -595,10 +595,10 @@ namespace client
                 tsoUrl.Set("debug", "true");
             if (!string.IsNullOrEmpty(_settings.clientconfig))
                 tsoUrl.Set("clientconfig", _settings.clientconfig);
-            if (cmd["clientconfig"] != null)
-                tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim() == "NICKNAME" ? string.Format("{0}.json", _settings.nickName) : cmd["clientconfig"].Trim());
             if (_settings.configNickname)
                 tsoUrl.Set("clientconfig", string.Format("{0}.json", _settings.nickName));
+            if (cmd["clientconfig"] != null)
+                tsoUrl.Set("clientconfig", cmd["clientconfig"].Trim() == "NICKNAME" ? string.Format("{0}.json", _settings.nickName) : cmd["clientconfig"].Trim());
             if (!string.IsNullOrEmpty(_settings.dropboxkey) && !string.IsNullOrEmpty(_settings.dropboxrefresh))
             {
                 tsoUrl.Set("dropboxApiKey", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxkey)));
