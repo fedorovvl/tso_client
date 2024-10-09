@@ -580,13 +580,13 @@ namespace client
             try
             {
                 if (string.IsNullOrEmpty(_settings.lang))
-                    tsoUrl.Set("lang", Servers._langs[(region_list.Items[_settings.region] as ComboBoxItem).Tag.ToString()]);
+                    tsoUrl.Set("tso://lang", Servers._langs[(region_list.Items[_settings.region] as ComboBoxItem).Tag.ToString()]);
             }
             catch { }
             if (!string.IsNullOrEmpty(_settings.lang))
-                tsoUrl.Set("lang", Servers._langs[_settings.lang]);
+                tsoUrl.Set("tso://lang", Servers._langs[_settings.lang]);
             if (!string.IsNullOrEmpty(lang))
-                tsoUrl.Set("lang", lang);
+                tsoUrl.Set("tso://lang", lang);
             if (!string.IsNullOrEmpty(_settings.window))
                 tsoUrl.Set("window", _settings.window);
             if (cmd["window"] != null)
