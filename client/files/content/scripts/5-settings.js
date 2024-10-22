@@ -70,7 +70,7 @@ function mainSettingsHandler(event)
 	}
 	var createChatWidthDrop = function(){
 		var select = $('<select>', { 'class': 'form-control chatWidth' });
-		for(var i=350; i < 600; i+=10) {
+		for(var i=350; i < 1010; i+=10) {
 			select.append($('<option>', { value: i }).text(i + 'px'));
 		}
 		return select.prop('outerHTML');
