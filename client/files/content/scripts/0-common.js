@@ -305,6 +305,7 @@ function getSoundsCount()
 function disableEffectSounds()
 {
 	if(Object.keys(mainSettings.effectSounds).length == 0) { return; }
+	if(game.def("Sound::cSoundManager").getInstance().isEffectsMuted()) { return; }
 	if(getSoundsCount() < Object.keys(mainSettings.effectSounds).length) {
 		debug("wait some");
 		setTimeout(disableEffectSounds, 1000);
