@@ -310,7 +310,7 @@
             <ComboBoxItem Tag="en" Uid="23" Content="European English" IsSelected="True"/>
             <ComboBoxItem Tag="ts" Uid="24" Content="Testing"/>
         </ComboBox>
-        <Label Content="{Binding appversion, Mode=OneWay}" HorizontalAlignment="Left" Margin="185,114,0,0" HorizontalContentAlignment="Left" VerticalAlignment="Top" Height="23" Width="40" FontSize="9" Foreground="#FF9E8B56" FontWeight="Bold"/>
+        <Label Content="{Binding version, Mode=OneWay}" HorizontalAlignment="Left" Margin="185,114,0,0" HorizontalContentAlignment="Left" VerticalAlignment="Top" Height="23" Width="40" FontSize="9" Foreground="#FF9E8B56" FontWeight="Bold"/>
         <Image HorizontalAlignment="Left"  Height="102" Margin="10,0,0,0" VerticalAlignment="Top" Width="236" Source="files/logo.png"/>
         <Label Content="{Binding langRemember, Mode=OneWay}" Padding="0" HorizontalAlignment="Left" Margin="58,117,0,0" VerticalAlignment="Top" Height="15" Width="60" Foreground="#FFD1BC7E" FontSize="11"/>
         <Image HorizontalAlignment="Left" Height="20" Margin="165,113,0,0" VerticalAlignment="Top" Width="20" Source="files/StarMenuTabIconMisc.png"/>

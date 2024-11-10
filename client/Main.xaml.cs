@@ -46,9 +46,10 @@ namespace client
         private string _langRemember;
         private string _dropboxToken;
         private static string extraVersion = "#TESTTAG#";
-        public string appversion
+        public const string appversion = "1.5.8.0";
+        public string version
         {
-            get { return "1.5.8.0"; }
+            get { return appversion; }
         }
         public string langLogin
         {
@@ -611,17 +612,23 @@ namespace client
         {
             if (fast)
                 _settings.tsoArg = HttpUtility.UrlDecode(makeTsoUrl(_settings.tsoArg).ToString());
-            XmlDocument Doc = new XmlDocument();
-            XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
-            ns.AddNamespace("adobe", "http://ns.adobe.com/air/application/15.0");
-            Doc.Load(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
-            Doc.SelectSingleNode("/adobe:application/adobe:id", ns).InnerText = "TSO-" + RandomString;
-            Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + _settings.nickName;
-            Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
-            extraVersion = extraVersion != string.Format("#{0}#", "TESTTAG") ? "-" + extraVersion : "";
-            if (debug)
-                File.AppendAllText("debug.txt", "start tso with " + _settings.tsoArg + "\r\n");
-            System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion));
+            try
+            {
+                XmlDocument Doc = new XmlDocument();
+                XmlNamespaceManager ns = new XmlNamespaceManager(Doc.NameTable);
+                ns.AddNamespace("adobe", "http://ns.adobe.com/air/application/15.0");
+                Doc.Load(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
+                Doc.SelectSingleNode("/adobe:application/adobe:id", ns).InnerText = "TSO-" + RandomString;
+                Doc.SelectSingleNode("/adobe:application/adobe:name", ns).InnerText = "The Settlers Online - " + _settings.nickName;
+                Doc.Save(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory));
+                extraVersion = extraVersion != string.Format("#{0}#", "TESTTAG") ? "-" + extraVersion : "";
+                if (debug)
+                    File.AppendAllText("debug.txt", "start tso with " + _settings.tsoArg + "\r\n");
+                System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion));
+            } catch
+            {
+                MessageBox.Show(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory) + " corrupted.. Remove it and try again");
+            }
             try
             {
                 App.Current.Shutdown(1);
