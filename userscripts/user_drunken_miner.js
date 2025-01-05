@@ -63,13 +63,7 @@ function DM_MenuHandler() {
     //render header
     _DM_renderHeader();
     //render body
-    var deposits;
-    if (DM_UpgradeSwitchStatus) {
-        deposits = _DM_getUpgradeData();
-    } else {
-        deposits = _DM_GetBuildData();
-    }
-    _DM_renderData(deposits);
+    _DM_renderBody();
 
     // footer
     $("#DrunkenMinerModal .modal-footer").prepend([
@@ -133,17 +127,40 @@ function _DM_renderHeader() {
 
         selectAllBtnsHtml += img.replace('24px', '24px;vertical-align: top') + ' ' + createSwitch('DM_selectAll_' + ore, false) + ' ';
     });
-    maxUpgradeLevelHtml = createTableRow([[3, ''], [9, maxUpgradeLevelHtml]], true);
-    selectAllBtnsHtml   = createTableRow([[3, ''], [9, selectAllBtnsHtml]], true);
+    maxUpgradeLevelHtml = createTableRow([
+        [
+            3,
+            '<div style="text-align: right">' + loca.GetText("LAB", "ExpeditionDifficultyTooltip") + loca.GetText('ACL', 'Upgrades') + '</div>'
+        ], [9, maxUpgradeLevelHtml]
+    ], true);
+    selectAllBtnsHtml   = createTableRow([
+        [
+            3, '<div style="text-align: right">' + loca.GetText("HIL", "Help_window_shortcuts_0") + '</div>'
+        ], [9, selectAllBtnsHtml]
+    ], true);
 
     var tableHeadHtml = createTableRow([
-        [3, loca.GetText("BUI", "BuildingMountainOre")], [3, loca.GetText('LAB', 'Expires')],
-        [2, loca.GetText("LAB", "RareBuffGroup0")], [1, loca.GetText("LAB", "RareBuffGroup2")],
-        [1, loca.GetText("LAB", "ExpeditionDifficultyTooltip")], [1, loca.GetText("LAB", "Tasks")],
-        [1, loca.GetText("LAB", "Visit")], // [12, loca.GetText("LAB", "Buff")],
+        [3, loca.GetText("BUI", "BuildingMountainOre")],
+        [1, loca.GetText("LAB", "Tasks")],
+        [1, loca.GetText("LAB", "RareBuffGroup2")],
+        [3, loca.GetText('LAB', 'Expires')],
+        [3, loca.GetText("LAB", "RareBuffGroup0")],
+        [1, loca.GetText("LAB", "Visit")]
+        // [12, loca.GetText("LAB", "Buff")],
+        // [1, loca.GetText("LAB", "ExpeditionDifficultyTooltip")]
     ], true);
 
     $('#DrunkenMinerModal .modal-header').html('<div class="container-fluid">' + switchHtml + maxUpgradeLevelHtml + selectAllBtnsHtml + '<br>' + tableHeadHtml + '</div>');
+}
+
+function _DM_renderBody() {
+    var deposits;
+    if (DM_UpgradeSwitchStatus) {
+        deposits = _DM_getUpgradeData();
+    } else {
+        deposits = _DM_GetBuildData();
+    }
+    _DM_renderData(deposits);
 }
 
 function _DM_getUpgradeData() {
@@ -161,13 +178,14 @@ function _DM_getUpgradeData() {
 
     deposits.forEach(function (deposit) {
         try {
-            var bld     = _DM_getOreMineData(deposit);
+            var bld     = _DM_getBuildingDataFromDeposit(deposit);
             var resItem = {
                 grid: deposit.GetGrid(),
                 buildingInfo: loca.GetText("LAB", "DetailsDeposit"),
                 depositName: deposit.GetName_string(),
                 resourcesLeft: deposit.GetAmount(),
                 icon: assetsIconsOres[deposit.GetName_string()],
+                buffIcon: (bld.buffIcon !== undefined) ? bld.buffIcon : '',
                 building: bld,
             };
 
@@ -250,15 +268,15 @@ function _DM_renderData(deposits) {
     var $rowHtml = '';
 
     deposits.deposit.forEach(function (deposit) {
-        var bld              = deposit.building;
-        var checkbox         = '';
-        var bldLvl           = '';
-        var secondsToDeplete = '';
-        var depositName      = deposit.depositName !== undefined ? loca.GetText('RES', deposit.depositName) : '';
-        var resourcesLeft    = deposit.resourcesLeft !== undefined ? deposit.resourcesLeft : '';
-        var buffName         = '';
-        var buffEndTime      = '';
-        var timeHtml         = '';
+        var bld           = deposit.building;
+        var checkbox      = '';
+        var bldLvl        = '';
+        var depositName   = deposit.depositName !== undefined ? loca.GetText('RES', deposit.depositName) : '';
+        var resourcesLeft = deposit.resourcesLeft !== undefined ? deposit.resourcesLeft : '';
+        var buffName      = '';
+        var buffIcon      = '';
+        var buffEndTime   = '';
+        var timeHtml      = '';
 
         var buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="DM_MinePOS_' + deposit.grid + '"').replace('style="', 'style="cursor: pointer;');
 
@@ -266,12 +284,12 @@ function _DM_renderData(deposits) {
             if (bld.isUpgradeAllowed && !bld.isUpgradeInProgress) {
                 checkbox = '<input type="checkbox" id="DM_UpgradeMines_' + bld.grid + '" name="' + deposit.depositName + '" class="' + DM_lements.UPGR_CHECKBX + '" />';
             }
-            bldLvl           = bld.level;
-            secondsToDeplete = bld.SecondsToDeplete;
-            buffName         = bld.buff;
-            buffEndTime      = bld.BufEndTime;
-            resourcesLeft    = bld.resourcesLeft;
-            depositName      = bld.locName;
+            bldLvl        = bld.level;
+            buffName      = bld.buff;
+            buffEndTime   = bld.BufEndTime;
+            resourcesLeft = bld.resourcesLeft;
+            depositName   = bld.locName;
+            buffIcon      = bld.buffIcon;
 
             timeHtml = _DMViewerSetTimeStr(bld.SecondsToDeplete, 2);
             if (buffEndTime.length > 0) {
@@ -286,8 +304,11 @@ function _DM_renderData(deposits) {
             return;
         }
         $rowHtml += createTableRow([
-            [3, getImageTag(deposit.icon, '24px') + ' ' + depositName], [3, timeHtml],
-            [2, '<small>' + buffName + '</small>'], [1, resourcesLeft], [1, bldLvl], [1, checkbox],
+            [3, getImageTag(deposit.icon, '24px') + '<sup>' + bldLvl + '</sup>' + ' ' + depositName],
+            [1, checkbox],
+            [1, resourcesLeft],
+            [3, timeHtml],
+            [3, getImageTag(buffIcon, '24px') + ' <small>' + buffName + '</small>'],
             [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
         ], false);
     });
@@ -331,15 +352,9 @@ function _DM_InitEvens() {
             $("." + DM_lements.BUILD_CHECKBX).show();
             DM_UpgradeSwitchStatus = false;
         }
-        var deposits;
-        if (DM_UpgradeSwitchStatus) {
-            deposits = _DM_getUpgradeData();
-        } else {
-            deposits = _DM_GetBuildData();
-        }
-
-        _DM_renderData(deposits);
         config.switchStatus = DM_UpgradeSwitchStatus;
+
+        _DM_renderBody();
         _DM_InitEvens();
         _DM_saveTmpSetting();
     });
@@ -396,7 +411,7 @@ function _DM_InitEvens() {
     $('#DrunkenMinerModal .upgradeReset').off('click').click(function () {
         config = {
             build: [], upgrade: [], switchStatus: DM_UpgradeSwitchStatus, maxLvl: {
-                "IronOre": 1, "CoalOre": 1, "BronzeOre": 1, "GoldOre": 1, "TitaniumOre": 1, "Salpeter": 1
+                "IronOre": 1, "Coal": 1, "BronzeOre": 1, "GoldOre": 1, "TitaniumOre": 1, "Salpeter": 1
             }
         };
 
@@ -407,7 +422,7 @@ function _DM_InitEvens() {
         $('#DrunkenMinerModal').modal('hide');
 
         if (config.upgrade.length === 0 && config.build.length === 0) {
-            game.showAlert(loca.GetText('CHA', 'InvalidAdminSlashCommand'));
+            game.showAlert(loca.GetText('LAB', 'BuffGroup14'));
             return;
         }
 
@@ -555,7 +570,7 @@ function _DM_upgradeMines(gridArr) {
             return;
         }
         name = building.GetBuildingName_string().replace('Mine', 'Ore');
-        if (name == 'CoalOre') {
+        if (name === 'CoalOre') {
             name = 'Coal';
         }
         var maxUpgradeLevel = config.maxLvl[name];
@@ -572,7 +587,7 @@ function _DM_upgradeMines(gridArr) {
     x.run();
 }
 
-function _DM_getOreMineData(deposit) {
+function _DM_getBuildingDataFromDeposit(deposit) {
     var bld = game.zone.GetBuildingFromGridPosition(deposit.GetGrid());
     if (bld === null || assetsNamesMines.indexOf(bld.GetBuildingName_string()) === -1 || bld.isGarrison()) {
         return null;
@@ -587,7 +602,6 @@ function _DM_getOreMineData(deposit) {
         locName = name;
     }
 
-
     var level                       = bld.GetUIUpgradeLevel();
     var grid                        = bld.GetGrid();
     var resLeft                     = deposit.GetAmount();
@@ -598,12 +612,14 @@ function _DM_getOreMineData(deposit) {
     var buffName                    = "";
     var buff                        = bld.productionBuff;
     var isWorking                   = bld.IsProductionActive();
+    var buffIcon                    = '';
     //has buff
     if (buff != null) {
         var app = buff.GetApplicanceMode();
         if (buff.IsActive(swmmo.application.mGameInterface.GetClientTime())) {
             secsToBuffEnd = new window.runtime.Date(Date.now() + (buff.GetStartTime() + buff.GetBuffDefinition().getDuration(app)) - swmmo.application.mGameInterface.GetClientTime());
             buffName      = loca.GetText("RES", buff.GetBuffDefinition().GetName_string());
+            buffIcon      = buff.GetBuffDefinition().GetName_string();
         }
         if (secsToBuffEnd > 0) {
             var dtfex = new window.runtime.flash.globalization.DateTimeFormatter("en-US");
@@ -630,6 +646,7 @@ function _DM_getOreMineData(deposit) {
         'isUpgradeInProgress': bld.IsUpgradeInProgress(),
         'isUpgradeAllowed': bld.IsUpgradeAllowed(true),
         'buff': buffName,
+        'buffIcon': buffIcon,
         'BufEndTime': timeStr,
         "AmountRemoved": totalRemoved,
         "SecondsToDeplete": (resourcesRemovedEverySecond > 0 && resLeft > 0 ? (resLeft / resourcesRemovedEverySecond) : 0),

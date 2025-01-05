@@ -85,8 +85,8 @@
    },
    "user_drunken_miner.js":{
       "name":"Drunken Miner",
-      "shortDesc":"Automation mine construction, and upgrading.",
-      "longDesc":"Automation resource management by simplifying the processes of ore searching, mine construction, and mine upgrading.",
+      "shortDesc":"Mine automation",
+      "longDesc":"Automation of resource management simplifies mine construction and upgrading processes. The system allows setting limits on mine upgrade levels based on ore types and enables quick selection of specific ore types.",
       "author":"MadFx",
       "url": ""
    }
