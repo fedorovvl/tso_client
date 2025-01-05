@@ -82,5 +82,12 @@
       "longDesc":"It calculates and shows all the times (treasure and adventure searches) for all the explorers you have based on their skills. You can check the normal and the PFB times as well.",
       "author":"Sas Sam",
 	  "url": ""
+   },
+   "user_drunken_miner.js":{
+      "name":"Drunken Miner",
+      "shortDesc":"Automation mine construction, and upgrading.",
+      "longDesc":"Automation resource management by simplifying the processes of ore searching, mine construction, and mine upgrading.",
+      "author":"MadFx",
+      "url": ""
    }
 }
