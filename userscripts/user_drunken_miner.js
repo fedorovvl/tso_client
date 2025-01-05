@@ -275,7 +275,7 @@ function _DM_renderData(deposits) {
 
             timeHtml = _DMViewerSetTimeStr(bld.SecondsToDeplete, 2);
             if (buffEndTime.length > 0) {
-                timeHtml = '<span style="color: ' + _DM_formatBuffTimeColor(secondsToDeplete, buffEndTime) + '">' + timeHtml + ' / ' + buffEndTime + '</span>';
+                timeHtml = '<span style="color: ' + _DM_formatBuffTimeColor(timeHtml, buffEndTime) + '">' + timeHtml + ' / ' + buffEndTime + '</span>';
             }
         } else {
             checkbox = '<input type="checkbox" id="DM_RebuildMines_' + deposit.grid + '" name="' + deposit.depositName + '" class="' + DM_lements.BUILD_CHECKBX + '" />';
