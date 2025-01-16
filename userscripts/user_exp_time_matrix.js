@@ -109,7 +109,11 @@ function ExplorerTimeMatrix() {
         'de-de': {
           'normal_times' : 'Normale Zeiten',
           'pfb_times' : 'PFB Zeiten',
-        }
+        },
+        'hu-hu': {
+          'normal_times' : 'Normál idő',
+          'pfb_times' : 'PFB idő',
+        },
       };
 
       extendBaseLang(translates, 'ExplorerTimeMatrixTranslates');

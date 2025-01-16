@@ -274,6 +274,7 @@
                     <ComboBoxItem Tag="it" Content="Italiano"/>
                     <ComboBoxItem Tag="el" Content="Ελληνικά"/>
                     <ComboBoxItem Tag="ro" Content="Română"/>
+                    <ComboBoxItem Tag="hu" Content="Magyar"/>
                 </ComboBox>
                 <Grid Margin="86,70,24.2,236" Grid.Column="1">
                     <Border x:Name="Border" CornerRadius="2" BorderBrush="{StaticResource NormalBorderBrush}" BorderThickness="1">

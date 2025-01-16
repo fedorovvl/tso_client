@@ -28,6 +28,7 @@ namespace client
             { "it", new Server(){ domain = "https://www.thesettlersonline.it", uplay = "/it/api/user/uplay", main = "/it/homepage", play = "/it/gioca" } },
             { "el", new Server(){ domain = "https://www.thesettlersonline.gr", uplay = "/el/api/user/uplay", main = "/el/%CE%B1%CF%81%CF%87%CE%B9%CE%BA%CE%AE-%CF%83%CE%B5%CE%BB%CE%AF%CE%B4%CE%B1", play = "/el/play" } },
             { "ro", new Server(){ domain = "https://www.thesettlersonline.ro", uplay = "/ro/api/user/uplay", main = "/ro/pagina-de-start", play = "/ro/play" } },
+            { "hu", new Server(){ domain = "https://www.thesettlersonline.com", uplay = "/en/api/user/uplay", main = "/en/homepage", play = "/en/play" } },
             { "ts", new Server(){ domain = "https://www.tsotesting.com", uplay = "/en/api/user/uplay", main = "/en/homepage", play = "/en/play" } },
         };
 
@@ -47,7 +48,8 @@ namespace client
             {  "it", "it-it" },
             {  "el", "el-gr" },
             {  "ro", "ro-ro" },
-            {  "ts", "en-uk" }
+            {  "ts", "en-uk" },
+            {  "hu", "hu-hu" },
         };
 
         public static Dictionary<string, Dictionary<string, string>> trans = new Dictionary<string, Dictionary<string, string>>()
@@ -316,6 +318,52 @@ namespace client
                 { "run", "JUGAR" },
                 { "exit", "salir" },
                 { "remember", "Recordar" },
+              }
+           },
+           { "hu-hu", new Dictionary<string, string>() {
+                { "login", "E-mail" },
+                { "password", "Jelszó" },
+                { "letsplay", "játsszunk" },
+                { "checking", "Kliens ellenőrzése" },
+                { "downloading", "Letöltés.." },
+                { "emptypass", "Üres jelszó." },
+                { "emptylogin", "Üres bejelentkezés." },
+                { "collect", "Kiemelés" },
+                { "collecttip", "Szeretné használni a kiemelés funkciót?\nCsak az UbiCollect.exe elindítása után nyomja meg az \"igen\" gombot!" },
+                { "tryauth", "Bejelentkezési kísérlet #" },
+                { "nomoretry", "Elég.. elfáradtam. :)" },
+                { "auth", "Azonosítás" },
+                { "authok", "Sikeres azonosítás " },
+                { "getplay", "Játékoldal kérése" },
+                { "cookieerr", "Nem lehet megragadni a sütiket :'(" },
+                { "paramserr", "Get paraméterek lekérdezése hiba" },
+                { "autherr", "Hitelesítési hiba. válasz - " },
+                { "loginerr", "Az e-mail cím vagy a jelszó nem helyes." },
+                { "captchaerr", "Megvan... próbáld meg később." },
+                { "uplayerr", "Az UPLAY nem válaszol." },
+                { "authex", "Auth oldal kivétel." },
+                { "emptyauth", "Üres válasz... ez fura " },
+                { "getparams", "Paraméterek lekérése." },
+                { "tsourlerr", "Hiba a tsoUrl paraméter megszerzésében." },
+                { "nick", "Becenév - " },
+                { "launch", "Kliens indítása..." },
+                { "run", "JÁTSZÁS" },
+                { "exit", "Kilépés" },
+                { "remember", "Emlékezz" },
+                { "langLang", "A játék nyelvének kényszerítése" },
+                { "langConf", "Kliens konfigurációs fájlnév" },
+                { "langtsoFolder", "Kliens AppData mappa neve" },
+                { "langx64", "x64 runtime használata" },
+                { "langWinSize", "Kliens ablak mérete" },
+                { "langTotp", "2FA auth kulcs" },
+                { "langSave", "Ment" },
+                { "langDef", "Alapértelmezett" },
+                { "langNickConfig", "Az kliens konfigurációs fájlneve becenévként" },
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxRefresh", "Dropbox Refresh token" },
+                { "langTestDropbox", "Dropbox test" },
+                { "langAuthDropbox", "Dropbox auth" },
+                { "langTryFast", "Próbálja ki először a gyors bejelentkezést" }
               }
            }
         };
