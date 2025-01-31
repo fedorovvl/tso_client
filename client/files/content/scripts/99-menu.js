@@ -69,7 +69,9 @@ var Menu = function(type){
 						{ label: loca.GetText("BUI", "EpicWorkyardWood"), name: "EpicWorkyardWood", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "EpicWorkyardCorn"), name: "EpicWorkyardCorn", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "GiftChristmasTree"), name: "GiftChristmasTree", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "FlyingHouse"), name: "FlyingHouse", onSelect: buiFastAccessMenuHandler }
+						{ label: loca.GetText("BUI", "FlyingHouse"), name: "FlyingHouse", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "BalloonMarket_mini"), name: "BalloonMarket_mini", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "GiftGhostShip"), name: "GiftGhostShip", onSelect: buiFastAccessMenuHandler }
 					]},
 					{ label: loca.GetText("LAB", "AdventureLevelSuperHigh"), mnemonicIndex: 0, items: [
 						{ label: loca.GetText("BUI", "Observatory"), name: "Observatory", onSelect: buiFastAccessMenuHandler },
@@ -82,7 +84,8 @@ var Menu = function(type){
 						{ label: loca.GetText("BUI", "SpringPark"), name: "SpringPark", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "ConcertHall"), name: "ConcertHall", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "Meadhall"), name: "Meadhall", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "SoccerField"), name: "SoccerField", onSelect: buiFastAccessMenuHandler }
+						{ label: loca.GetText("BUI", "SoccerField"), name: "SoccerField", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "IceSkatingLake"), name: "IceSkatingLake", onSelect: buiFastAccessMenuHandler }
 					]},
 					{ label: loca.GetText("QUL", "TutZoneWideBuffs1"), mnemonicIndex: 0, items: [
 						{ label: loca.GetText("BUI", "LoveTree"), name: "LoveTree", onSelect: buiFastAccessMenuHandler },
