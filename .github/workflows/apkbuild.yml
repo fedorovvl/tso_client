@@ -27,7 +27,7 @@ jobs:
     - name: Sign app APK
       working-directory: android
       run: jarsigner -verbose -keystore sign.keystore -storepass qwerty dist/client.apk abc.keystore
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
        name: client
        path: android/dist/client.apk
