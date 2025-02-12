@@ -137,6 +137,23 @@ const _exudGeneralsLang = {
 		"SelectedFirst": "erst auswählen",
 		"ExcludeStarMenu": "Sternemenü verbergen",
 		"SkillTip": "Klicke auf den General um den Skill zu sehen."
+	},
+	"hu-hu": {
+		"ByName": "Rendezés név szerint",
+		"ByType": "Rendezés típus szerint",
+		"ShowGuest": "Vendégek megjelenítése",
+		"HideGuest": "Vendégek elrejtése",
+		"ShowUnselected": "Kiválasztatlanok megjelenítése",
+		"HideUnselected": "Kiválasztatlanok elrejtése",
+		"SelectAll": "Válasszon ki mindent",
+		"Load": "Betöltés",
+		"CommandSent": "Elküldött parancs",
+		"ColumnOwner": "Tulajdonos",
+		"ColumnTimeToZone": "A zónához",
+		"IsGuest": " (* vendég) ",
+		"SelectedFirst": "Kijelölt első",
+		"ExcludeStarMenu": "Csillag menü kizárása",
+		"SkillTip": "Kattintson a general ikonra a Képességfa megnyitásához."
 	}
 };
 var _exudGeneralsButtons = {
