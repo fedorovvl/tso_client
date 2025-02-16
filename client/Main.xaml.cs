@@ -46,7 +46,7 @@ namespace client
         private string _langRemember;
         private string _dropboxToken;
         private static string extraVersion = "#TESTTAG#";
-        public const string appversion = "1.5.8.0";
+        public const string appversion = "1.5.8.1";
         public string version
         {
             get { return appversion; }
@@ -581,13 +581,13 @@ namespace client
             try
             {
                 if (string.IsNullOrEmpty(_settings.lang))
-                    tsoUrl.Set("tso://lang", Servers._langs[(region_list.Items[_settings.region] as ComboBoxItem).Tag.ToString()]);
+                    tsoUrl.Set("lang", Servers._langs[(region_list.Items[_settings.region] as ComboBoxItem).Tag.ToString()]);
             }
             catch { }
             if (!string.IsNullOrEmpty(_settings.lang))
-                tsoUrl.Set("tso://lang", Servers._langs[_settings.lang]);
+                tsoUrl.Set("lang", Servers._langs[_settings.lang]);
             if (!string.IsNullOrEmpty(lang))
-                tsoUrl.Set("tso://lang", lang);
+                tsoUrl.Set("lang", lang);
             if (!string.IsNullOrEmpty(_settings.window))
                 tsoUrl.Set("window", _settings.window);
             if (cmd["window"] != null)
@@ -611,7 +611,7 @@ namespace client
         private void run_tso(bool fast = true)
         {
             if (fast)
-                _settings.tsoArg = HttpUtility.UrlDecode(makeTsoUrl(_settings.tsoArg).ToString());
+                _settings.tsoArg = string.Format("tso://{0}", HttpUtility.UrlDecode(makeTsoUrl(_settings.tsoArg.Replace("tso://", "")).ToString()));
             try
             {
                 XmlDocument Doc = new XmlDocument();
