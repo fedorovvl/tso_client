@@ -180,7 +180,6 @@ function _DM_getUpgradeData() {
     deposits.sort(function (a, b) {
         return loca.GetText("RES", a.GetName_string()).localeCompare(loca.GetText("RES", b.GetName_string()));
     });
-
     deposits.forEach(function (deposit) {
         try {
             var bld     = _DM_getBuildingDataFromDeposit(deposit);
@@ -206,7 +205,7 @@ function _DM_getUpgradeData() {
                 }
             }
         } catch (e) {
-            alert(e.message);
+            air.Introspector.Console.log(e);
         }
     });
 
@@ -237,7 +236,7 @@ function _DM_GetBuildData() {
             };
             resArr.deposit.push(resItem);
         } catch (e) {
-            alert(e.message);
+            air.Introspector.Console.log(e);
         }
     });
 
@@ -257,7 +256,7 @@ function _DM_GetBuildData() {
                 });
             }
         } catch (e) {
-            alert(e.message);
+            air.Introspector.Console.log(e);
         }
     });
 
@@ -327,7 +326,7 @@ function _DM_renderData(deposits) {
                 ], [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
             ], false)
         } catch (e) {
-            alert(e.message);
+            air.Introspector.Console.log(e);
         }
     });
     $('#DrunkenMinerModalData').html("").append('<div class="container-fluid">' + $rowHtml + '</div>');
@@ -481,6 +480,7 @@ function _DM_FindOriginalResource(building_name) {
             if (building_name.indexOf(item) >= 0) res = item;
         });
     } catch (e) {
+        air.Introspector.Console.log(e);
     }
     return res;
 }
@@ -490,7 +490,7 @@ function _DM_GoTo(g) {
         $('#DrunkenMinerModal').modal('hide');
         swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
     } catch (e) {
-
+        air.Introspector.Console.log(e);
     }
 }
 
@@ -606,7 +606,8 @@ function _DM_getBuildingDataFromDeposit(deposit) {
     }
 
     var locName = loca.GetText('BUI', name);
-    if (locName.indexOf(UNDEFINED_TEXT) >= 0) {
+
+    if (locName.indexOf('[undefined text]') >= 0) {
         locName = name;
     }
 
@@ -693,6 +694,7 @@ function _DM_ViewerSetTimeStr(seconds, type) {
                 if (gameLang.indexOf("en-") > 0) return _m + "-" + _d + " " + d.toLocaleTimeString(); else return _d + "-" + _m + " " + d.toLocaleTimeString();
         }
     } catch (e) {
+        air.Introspector.Console.log(e);
     }
     return "";
 }
@@ -715,6 +717,7 @@ function _DM_parseBuffDate(dateStr) {
         var now = new Date();
         return new Date(now.getFullYear(), MM - 1, dd, hh, mm, ss);
     } catch (e) {
+        air.Introspector.Console.log(e);
         return '';
     }
 }
