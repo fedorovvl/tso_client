@@ -205,7 +205,7 @@ function _DM_getUpgradeData() {
                 }
             }
         } catch (e) {
-            air.Introspector.Console.log(e);
+            debug(e);
         }
     });
 
@@ -236,7 +236,7 @@ function _DM_GetBuildData() {
             };
             resArr.deposit.push(resItem);
         } catch (e) {
-            air.Introspector.Console.log(e);
+            debug(e);
         }
     });
 
@@ -256,7 +256,7 @@ function _DM_GetBuildData() {
                 });
             }
         } catch (e) {
-            air.Introspector.Console.log(e);
+            debug(e);
         }
     });
 
@@ -326,7 +326,7 @@ function _DM_renderData(deposits) {
                 ], [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
             ], false)
         } catch (e) {
-            air.Introspector.Console.log(e);
+            debug(e);
         }
     });
     $('#DrunkenMinerModalData').html("").append('<div class="container-fluid">' + $rowHtml + '</div>');
@@ -480,7 +480,7 @@ function _DM_FindOriginalResource(building_name) {
             if (building_name.indexOf(item) >= 0) res = item;
         });
     } catch (e) {
-        air.Introspector.Console.log(e);
+        debug(e);
     }
     return res;
 }
@@ -490,7 +490,7 @@ function _DM_GoTo(g) {
         $('#DrunkenMinerModal').modal('hide');
         swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
     } catch (e) {
-        air.Introspector.Console.log(e);
+        debug(e);
     }
 }
 
@@ -529,7 +529,7 @@ function _DM_saveTmpSetting() {
 }
 
 function _DM_buildMines(gridArr) {
-    // air.Introspector.Console.log(gridArr);
+    // debug(gridArr);
     var x                = new TimedQueue(1000);
     var CurrentQueue     = 0;
     var CurrentQueueFree = 0;
@@ -694,7 +694,7 @@ function _DM_ViewerSetTimeStr(seconds, type) {
                 if (gameLang.indexOf("en-") > 0) return _m + "-" + _d + " " + d.toLocaleTimeString(); else return _d + "-" + _m + " " + d.toLocaleTimeString();
         }
     } catch (e) {
-        air.Introspector.Console.log(e);
+        debug(e);
     }
     return "";
 }
@@ -717,7 +717,7 @@ function _DM_parseBuffDate(dateStr) {
         var now = new Date();
         return new Date(now.getFullYear(), MM - 1, dd, hh, mm, ss);
     } catch (e) {
-        air.Introspector.Console.log(e);
+        debug(e);
         return '';
     }
 }
