@@ -701,18 +701,26 @@ function _DM_ViewerSetTimeStr(seconds, type) {
 
 function _DM_parseBuffDate(dateStr) {
     try {
-        var parts = dateStr.split(" ");
+        if (typeof dateStr !== 'string') return '';
+
+        var parts = dateStr.trim().split(" ");
+        if (parts.length < 2) return '';
+
         var day   = parts[0];
         var time  = parts[1];
 
         var dayParts = day.split("-");
-        var dd       = parseInt(dayParts[0], 10);
-        var MM       = parseInt(dayParts[1], 10);
+        if (dayParts.length < 2) return '';
+
+        var dd = parseInt(dayParts[0], 10);
+        var MM = parseInt(dayParts[1], 10);
 
         var timeParts = time.split(":");
-        var hh        = parseInt(timeParts[0], 10);
-        var mm        = parseInt(timeParts[1], 10);
-        var ss        = timeParts.length > 2 ? parseInt(timeParts[2], 10) : 0;
+        if (timeParts.length < 2) return '';
+
+        var hh = parseInt(timeParts[0], 10);
+        var mm = parseInt(timeParts[1], 10);
+        var ss = timeParts.length > 2 ? parseInt(timeParts[2], 10) : 0;
 
         var now = new Date();
         return new Date(now.getFullYear(), MM - 1, dd, hh, mm, ss);
