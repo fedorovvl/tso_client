@@ -52,29 +52,33 @@ var DM_gEconomics = swmmo.getDefinitionByName("ServerState::gEconomics");
 $.extend(DM_config, settings.read(null, SCRIPT_PREFIX + 'SETTINGS'));
 
 function DM_MenuHandler() {
-    //check home zone
-    if (game.gi.isOnHomzone() === false) {
-        game.showAlert(getText('not_home'));
-        return;
+    try {
+        //check home zone
+        if (game.gi.isOnHomzone() === false) {
+            game.showAlert(getText('not_home'));
+            return;
+        }
+
+        //init script
+        _DM_init();
+
+        //Display interface
+        _DM_renderHeader();
+        _DM_renderBody();
+
+        // render footer
+        _DM_renderFooter();
+
+        //Initializing Events and Configurations
+        _DM_InitEvens();
+        _DM_SetConfigValues();
+
+        $('#DrunkenMinerModal:not(:visible)').modal({
+            backdrop: "static"
+        });
+    } catch (e) {
+        debug(e);
     }
-
-    //init script
-    _DM_init();
-
-    //Display interface
-    _DM_renderHeader();
-    _DM_renderBody();
-
-    // render footer
-    _DM_renderFooter();
-
-    //Initializing Events and Configurations
-    _DM_InitEvens();
-    _DM_SetConfigValues();
-
-    $('#DrunkenMinerModal:not(:visible)').modal({
-        backdrop: "static"
-    });
 }
 
 function _DM_init() {
@@ -312,7 +316,7 @@ function _DM_renderData(deposits) {
             [1, checkbox],
             [1, resourcesLeft],
             [3, timeHtml],
-            [3, getImageTag(buffIcon, '24px') + ' <small>' + buffName + '</small>'],
+            [3, (buffIcon ? getImageTag(buffIcon, '24px') + ' <small>' + buffName + '</small>' : '')],
             [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
         ], false);
     });
