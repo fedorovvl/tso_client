@@ -6,6 +6,13 @@
       "author":"MkFera",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3817826"
    },
+"user_guildplus.js":{
+      "name":"GuildPlus",
+      "shortDesc":"Simple guild info",
+      "longDesc":"Show simple guild info with quest, player status and guild coins received",
+      "author":"Mick3pedia",
+	  "url": "https://github.com/MikaelEngvall/tso_client/blob/master/userscripts/user_guildplus.js"
+   },
    "user_generals.js":{
       "name":"Generals",
       "shortDesc":"Generals manager",
