@@ -6,7 +6,7 @@
       "author":"MkFera",
 	  "url": "https://github.com/fedorovvl/tso_client/discussions/36#discussioncomment-3817826"
    },
-     "user_guild.js":{
+     "user_guildplus.js":{
       "name":"Guild",
       "shortDesc":"Simple guild info plus",
       "longDesc":"Show simple guild info with quest, player status and guild coins received",
