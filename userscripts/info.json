@@ -90,7 +90,7 @@
       "author":"MadFx",
       "url": ""
    },
-   "geouienhancer.js":{
+   "user_geouienhancer.js":{
       "name":"Geologist UI Enhancer",
       "shortDesc":"Better geologist UI",
       "longDesc":"A userscript has been added that allows you to see which deposits geologists have already been sent to, which deposits they are about to explore, and how many deposits are available in total.",
