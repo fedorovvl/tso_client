@@ -27,6 +27,11 @@ var _exudFriendsLang = {
 	'es-es': {
 		'online': 'Activo',
 		'since': 'Amigos desde'
+	},
+	'es-es': {
+		'online': 'Aktív',
+		'since': 'Barát, ettől',
+		'term': 'Feltételek'
 	}
 };
 extendBaseLang(_exudFriendsLang, 'exudFriends');
