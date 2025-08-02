@@ -89,5 +89,12 @@
       "longDesc":"Automation of resource management simplifies mine construction and upgrading processes. The system allows setting limits on mine upgrade levels based on ore types and enables quick selection of specific ore types.",
       "author":"MadFx",
       "url": ""
+   },
+   "buffenhancer.js":{
+      "name":"Buff UI Enhancer",
+      "shortDesc":"Improved visual perception.",
+      "longDesc":"Improved display of buffs, with the ability to quickly determine the type of buff, building, and also added a link to the place that will be buffed.",
+      "author":"MadFx",
+      "url": ""
    }
 }
