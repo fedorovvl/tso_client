@@ -70,7 +70,7 @@ if (!specGeoGetDepleted.__patched) {
                         deplHtml += getImageTag(res, '23px', '23px') + '&nbsp;' + count + '&nbsp;&nbsp;';
                     });
 
-                    var geoSwitch = getImageTag('IconAllGeologists', '50px', '50px').replace('<img','<img id="geoSwitch"').replace('style="', 'style="cursor: pointer;');
+                    var geoSwitch = getImageTag('IconAllGeologists', '50px').replace('<img','<img id="geoSwitch"').replace('style="', 'style="cursor: pointer;');
                     if (useSelectValues === false){
                         geoSwitch = geoSwitch.replace('style="', 'style="opacity:0.4;');
                     }
