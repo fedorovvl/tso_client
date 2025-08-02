@@ -1,5 +1,6 @@
 if (!specGeoGetDepleted.__patched) {
     const originalSpecGeoGetDepleted = specGeoGetDepleted;
+    var useSelectValues = true;
 
     specGeoGetDepleted = function() {
         var depletedDeposits = originalSpecGeoGetDepleted.call(this);
@@ -17,17 +18,19 @@ if (!specGeoGetDepleted.__patched) {
             '0,7': 'TitaniumOre',
             '0,8': 'Salpeter'
         };
-        $('#specModalData select').each(function() {
-            var val = $(this).val();
+        if (useSelectValues === true){
+            $('#specModalData select').each(function() {
+                var val = $(this).val();
 
-            if (val in valueMap) {
-                val = valueMap[val];
-            }
+                if (val in valueMap) {
+                    val = valueMap[val];
+                }
 
-            if (val) {
-                counts[val] = (counts[val] || 0) + 1;
-            }
-        });
+                if (val) {
+                    counts[val] = (counts[val] || 0) + 1;
+                }
+            });
+        }
         Object.keys(valueMap).forEach(function (key) {
             var val = valueMap[key];
             if (!(val in counts)) {
@@ -66,7 +69,19 @@ if (!specGeoGetDepleted.__patched) {
                     $.each(depletedData, function(res, count) {
                         deplHtml += getImageTag(res, '23px', '23px') + '&nbsp;' + count + '&nbsp;&nbsp;';
                     });
+
+                    var geoSwitch = getImageTag('IconAllGeologists', '50px', '50px').replace('<img','<img id="geoSwitch"').replace('style="', 'style="cursor: pointer;');
+                    if (useSelectValues === false){
+                        geoSwitch = geoSwitch.replace('style="', 'style="opacity:0.4;');
+                    }
+                    deplHtml += geoSwitch;
+
                     specWindow.withHeader('.depletedInfo').html(deplHtml);
+
+                    $("#geoSwitch").off('click').click(function () {
+                        useSelectValues = useSelectValues === false;
+                        updateSpecTimeRow(select, val, selected);
+                    });
                 }
             }
             var row = $(select).closest('.row').children('div').eq(1);
