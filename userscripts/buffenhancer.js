@@ -1,5 +1,7 @@
 if (!menuBuffsHandler.__patched) {
     const originalmenuBuffsHandler = menuBuffsHandler;
+    var buffsImagesCache  = []
+    var buildImagesCache  = [];
 
     var menuBuffsHandler = function menuBuffsHandler(arg) {
         originalmenuBuffsHandler(arg);
@@ -14,6 +16,7 @@ if (!menuBuffsHandler.__patched) {
         var buffNeeded = {};
         $.each(buffRecordFiltered, function (i, item) {
             buffNeeded[item.buffName] = (buffNeeded[item.buffName] || 0) + 1;
+            getBuffImgFromCache(item.buffName);
         });
         if (Object.keys(buffNeeded).length > 0) {
             var result = '<br><p>{0}</p>'.format(getText('buff_used'));
@@ -26,7 +29,7 @@ if (!menuBuffsHandler.__patched) {
             for (var buffName in buffNeeded) {
                 count = getBuffAvailableCount(buffName);
                 result += createTableRow([
-                    [8, getImageTag(buffName, '24px') + '&nbsp;' + loca.GetText("RES", buffName)],
+                    [8, getBuffImgFromCache(buffName) + '&nbsp;' + loca.GetText("RES", buffName)],
                     [2, buffNeeded[buffName]],
                     [2, count, count >= buffNeeded[buffName] ? "buffReady" : "buffNotReady"]
                 ]);
@@ -93,12 +96,14 @@ if (!menuBuffsHandler.__patched) {
             var buildingGoto = getImageTag('accuracy.png', '24px', '24px').replace('<img', '<img id="BuffPoss_' + data['buiGrid'] + '"').replace('style="', 'style="cursor: pointer;');
             result += createTableRow([
                 [1, buildingGoto],
-                [4, getImageTag(data['buiName'], '24px') + '&nbsp;' + loca.GetText("BUI", data['buiName'])],
+                [4, getBuildImageFromCache(data['buiName']) + '&nbsp;' + loca.GetText("BUI", data['buiName'])],
                 [1, getBuiLevel(data)],
-                [4, getImageTag(data['buffName'], '24px') + '&nbsp;' + loca.GetText("RES", data['buffName'])],
+                [4, getBuffImgFromCache(data['buffName']) + '&nbsp;' + loca.GetText("RES", data['buffName'])],
                 [2, getText(status) + '<button type="button" class="close" value="' + data['buiGrid'] + '"><span>&times;</span></button>', cssClass]
             ]);
         });
+        buffsImagesCache = [];
+        buildImagesCache = [];
         return result;
     }
 
@@ -109,6 +114,20 @@ if (!menuBuffsHandler.__patched) {
         } catch (e) {
             debug(e);
         }
+    }
+
+    function getBuffImgFromCache(buffName){
+        if (buffsImagesCache[buffName] === undefined){
+            buffsImagesCache[buffName] = getImageTag(buffName, '24px');
+        }
+        return buffsImagesCache[buffName];
+    }
+
+    function getBuildImageFromCache(buiName){
+        if (buildImagesCache[buiName] === undefined){
+            buildImagesCache[buiName] = getImageTag(buiName, '24px');
+        }
+        return buildImagesCache[buiName];
     }
 
     menuBuffsHandler.__patched = true;
