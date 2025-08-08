@@ -96,5 +96,12 @@
       "longDesc":"A userscript has been added that allows you to see which deposits geologists have already been sent to, which deposits they are about to explore, and how many deposits are available in total.",
       "author":"MadFx",
       "url": ""
+   },
+   "user_buffenhancer.js":{
+      "name":"Buff UI Enhancer",
+      "shortDesc":"Improved visual perception.",
+      "longDesc":"Improved display of buffs, with the ability to quickly determine the type of buff, building, and also added a link to the place that will be buffed.",
+      "author":"MadFx",
+      "url": ""
    }
 }
