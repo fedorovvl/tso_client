@@ -90,7 +90,7 @@
       "author":"MadFx",
       "url": ""
    },
-   "buffenhancer.js":{
+   "user_buffenhancer.js":{
       "name":"Buff UI Enhancer",
       "shortDesc":"Improved visual perception.",
       "longDesc":"Improved display of buffs, with the ability to quickly determine the type of buff, building, and also added a link to the place that will be buffed.",
