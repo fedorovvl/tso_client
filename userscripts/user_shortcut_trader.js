@@ -294,26 +294,7 @@ var ShortcutTrader = (function () {
             return [];
         }
 
-        categoryNames.sort(function (a, b) {
-            var sentinel = "ZZZZZZZZZZ";
-
-            var groupA = a.group_string ? a.group_string.toLowerCase() : "";
-            var groupB = b.group_string ? b.group_string.toLowerCase() : "";
-
-            if (groupA == "") groupA = sentinel;
-            if (groupB == "") groupB = sentinel;
-
-            groupA = groupA.toLowerCase();
-            groupB = groupB.toLowerCase();
-
-            if (groupA < groupB) {
-                return -1;
-            }
-            if (groupA > groupB) {
-                return 1;
-            }
-            return 0;
-        });
+        categoryNames.sort();
 
         var sortedGroupedList = [];
         for (var i = 0; i < categoryNames.length; i++) {
