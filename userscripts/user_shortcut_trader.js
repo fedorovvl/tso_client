@@ -90,7 +90,7 @@ var ShortcutTrader = (function () {
             renderBody();
         });
 
-        addTradeRow('market');
+        addTradeRow(isMarketTradeMode ? 'market' : 'friend');
         $('#FriendTraderModalData .container-fluid').append('<div class="FT_trades"></div>');
     }
 
@@ -200,18 +200,18 @@ var ShortcutTrader = (function () {
 
         var row = createTableRow([
             [2, $('<div>').append($('<div>').addClass('offer-res-img').css({
-            display: 'inline-block', verticalAlign: 'middle'
-        }).html(getImageTag(firstRes.name, '24px')), $('<div>').css({
-            display: 'inline-block',
-            verticalAlign: 'middle'
-        }).append(inputOffer))],
+                display: 'inline-block', verticalAlign: 'middle'
+            }).html(getImageTag(firstRes.name, '24px')), $('<div>').css({
+                display: 'inline-block',
+                verticalAlign: 'middle'
+            }).append(inputOffer))],
 
             [2, $('<div>').append($('<div>').addClass('cost-res-img').css({
-            display: 'inline-block', verticalAlign: 'middle'
-        }).html(getImageTag(secondRes.name, '24px')), $('<div>').css({
-            display: 'inline-block',
-            verticalAlign: 'middle'
-        }).append(inputCost))],
+                display: 'inline-block', verticalAlign: 'middle'
+            }).html(getImageTag(secondRes.name, '24px')), $('<div>').css({
+                display: 'inline-block',
+                verticalAlign: 'middle'
+            }).append(inputCost))],
 
             [2, selectOffer],
 
@@ -220,10 +220,10 @@ var ShortcutTrader = (function () {
             [2, targetSelect],
 
             [2, $('<div>', {
-            'class': 'FT_AddTradeBtn',
-            'data-mode': mode,
-            style: 'display:inline-block;cursor:pointer;background:wheat;border-radius:3px;'
-        }).html(getImageTag('AvatarAdd', '24px'))]], true);
+                'class': 'FT_AddTradeBtn',
+                'data-mode': mode,
+                style: 'display:inline-block;cursor:pointer;background:wheat;border-radius:3px;'
+            }).html(getImageTag('AvatarAdd', '24px'))]], true);
 
         $('#FriendTraderModalData').off('change', '#FT_OfferList_' + mode).on('change', '#FT_OfferList_' + mode, function () {
             $('.offer-res-img').html(getImageTag(this.value, '24px'));
@@ -415,7 +415,7 @@ var ShortcutTrader = (function () {
             return;
         }
 
-        var queue        = new TimedQueue(1000);
+        var queue        = new TimedQueue(3000);
         var successCount = 0;
         var totalTrades  = tradeArray.length;
 
@@ -434,7 +434,7 @@ var ShortcutTrader = (function () {
             if (!isMarketTradeMode) {
                 var friends  = getFriendsList();
                 var isFriend = friends.some(function (f) {
-                    return f.id === trade.userId;
+                    return f.id == trade.userId;
                 });
                 if (!isFriend) {
                     game.showAlert(loca.GetText('QUL', 'SocialMedium8') + ' ' + loca.GetText('LAB', 'AddFriend'));
@@ -445,7 +445,11 @@ var ShortcutTrader = (function () {
             var hasEnoughResource = true;
 
             try {
-                if (myResources.HasPlayerResource(trade.offerResName, trade.offerResAmount)) {
+                var amount = trade.offerResAmount;
+                if (isMarketTradeMode){
+                    amount = amount * trade.UserName;
+                }
+                if (myResources.HasPlayerResource(trade.offerResName, amount)) {
                     hasEnoughResource = true;
                 } else {
                     hasEnoughResource = false;
