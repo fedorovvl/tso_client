@@ -198,17 +198,28 @@ var ShortcutTrader = (function () {
             targetSelect.append('</optgroup>');
         }
 
-        var row = createTableRow([[2, $('<div>').append($('<div>').addClass('offer-res-img').css({
+        var row = createTableRow([
+            [2, $('<div>').append($('<div>').addClass('offer-res-img').css({
             display: 'inline-block', verticalAlign: 'middle'
         }).html(getImageTag(firstRes.name, '24px')), $('<div>').css({
             display: 'inline-block',
             verticalAlign: 'middle'
-        }).append(inputOffer))], [2, $('<div>').append($('<div>').addClass('cost-res-img').css({
+        }).append(inputOffer))],
+
+            [2, $('<div>').append($('<div>').addClass('cost-res-img').css({
             display: 'inline-block', verticalAlign: 'middle'
         }).html(getImageTag(secondRes.name, '24px')), $('<div>').css({
             display: 'inline-block',
             verticalAlign: 'middle'
-        }).append(inputCost))], [2, selectOffer], [2, selectCost], [2, targetSelect], [2, $('<div>', {
+        }).append(inputCost))],
+
+            [2, selectOffer],
+
+            [2, selectCost],
+
+            [2, targetSelect],
+
+            [2, $('<div>', {
             'class': 'FT_AddTradeBtn',
             'data-mode': mode,
             style: 'display:inline-block;cursor:pointer;background:wheat;border-radius:3px;'
