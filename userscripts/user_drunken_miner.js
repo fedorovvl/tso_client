@@ -6,23 +6,28 @@ const SCRIPT_PREFIX    = 'DM_';
 const DM_MaxUpgradeLvl = 12;
 
 addToolsMenuItem(loca.GetText("RES", 'BuffAd_Drunken_Miner'), DM_MenuHandler);
-var _DM_ModalInitialized = false;
 
-var DM_UpgradeSwitchStatus = false;
-var DM_assetsNamesMinesOres   = ["IronOre", "Coal", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter"];
-var DM_assetsNamesMines       = [
+var _DM_ModalInitialized = false;
+var DM_build_newTemplates;
+
+var DM_autoModeInterval     = null;
+var DM_AutoModeSwitchStatus = false;
+var DM_UpgradeSwitchStatus  = false;
+
+var DM_assetsNamesMinesOres = ["IronOre", "Coal", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter"];
+var DM_assetsNamesMines     = [
     "BronzeMine", "EpicBronzeMine", "BronzeMineEndless", "IronMine", "EpicIronMine", "ArcticIronMine", "CoalMine",
     "EpicCoalMine",
     "GoldMine", "EpicGoldMine", "TitaniumMine", "EpicTitaniumMine", "ArcticTitaniumMine", "SalpeterMine",
     "EpicSalpeterMine"
 ];
-var DM_assetsNames         = [
+var DM_assetsNames          = [
     "IronOre", "Coal", "BronzeOre", "GoldOre", "TitaniumOre", "Salpeter", "MineDepletedDepositIronOre",
     "MineDepletedDepositCoal", "MineDepletedDepositBronzeOre", "MineDepletedDepositGoldOre",
     "MineDepletedDepositTitaniumOre", "MineDepletedDepositSalpeter", "MineDepletedDepositGoldOreIndustrial",
     "MineDepletedDepositIronOreIndustrial"
 ];
-var DM_assetsIconsOres        = {
+var DM_assetsIconsOres      = {
     "IronOre": 'ButtonIconIron',
     "Coal": 'ButtonIconCoal',
     "BronzeOre": 'ButtonIconBronze',
@@ -30,51 +35,62 @@ var DM_assetsIconsOres        = {
     "TitaniumOre": 'ButtonIconTitanium',
     "Salpeter": 'ButtonIconSalpeter'
 };
-var DM_build_newTemplates;
 
 var DM_lements        = {
     ON_OFF_RADIO: SCRIPT_PREFIX + 'StateSwitch',
     ON_OFF_RADIO_TEXT: SCRIPT_PREFIX + 'StateSwitchStatus',
+    ON_OFF_AUTOMODE_RADIO: SCRIPT_PREFIX + 'AutoModeStateSwitch',
+    ON_OFF_AUTOMODE_RADIO_TEXT: SCRIPT_PREFIX + 'AutoModeStateSwitchStatus',
     BUILD_CHECKBX: SCRIPT_PREFIX + 'buildCheckBox',
     UPGR_CHECKBX: SCRIPT_PREFIX + 'upgrCheckBox'
 };
 var DM_SwitchStatuses = {
-    UPGRADE: loca.GetText('ACL', 'Upgrades'), BUILD: loca.GetText('BUI', 'TwinTown_building_spot')
+    UPGRADE: loca.GetText('ACL', 'Upgrades'),
+    BUILD: loca.GetText('BUI', 'TwinTown_building_spot'),
+    AUTOMODE_ON: loca.GetText('ACL', 'BuildQueueSlotTemp') + ' ' + loca.GetText('LAB', 'Yes'),
+    AUTOMODE_OFF: loca.GetText('ACL', 'BuildQueueSlotTemp') + ' ' + loca.GetText('LAB', 'No'),
 };
 
-var DM_config     = {
-    build: [], upgrade: [], switchStatus: DM_UpgradeSwitchStatus, maxLvl: {
+var DM_config = {
+    build: [],
+    upgrade: [],
+    switchStatus: DM_UpgradeSwitchStatus,
+    AutoModeStatus: DM_AutoModeSwitchStatus,
+    DM_autoModeInterval: DM_autoModeInterval,
+    maxLvl: {
         "IronOre": 1, "Coal": 1, "BronzeOre": 1, "GoldOre": 1, "TitaniumOre": 1, "Salpeter": 1
     }
 };
-var DM_gEconomics = swmmo.getDefinitionByName("ServerState::gEconomics");
-
 $.extend(DM_config, settings.read(null, SCRIPT_PREFIX + 'SETTINGS'));
 
 function DM_MenuHandler() {
-    //check home zone
-    if (game.gi.isOnHomzone() === false) {
-        game.showAlert(getText('not_home'));
-        return;
+    try {
+        //check home zone
+        if (game.gi.isOnHomzone() === false) {
+            game.showAlert(getText('not_home'));
+            return;
+        }
+
+        //init script
+        _DM_init();
+
+        //Display interface
+        _DM_renderHeader();
+        _DM_renderBody();
+
+        // render footer
+        _DM_renderFooter();
+
+        //Initializing Events and Configurations
+        _DM_InitEvens();
+        _DM_SetConfigValues();
+
+        $('#DrunkenMinerModal:not(:visible)').modal({
+            backdrop: "static"
+        });
+    } catch (e) {
+        debug(e)
     }
-
-    //init script
-    _DM_init();
-
-    //Display interface
-    _DM_renderHeader();
-    _DM_renderBody();
-
-    // render footer
-    _DM_renderFooter();
-
-    //Initializing Events and Configurations
-    _DM_InitEvens();
-    _DM_SetConfigValues();
-
-    $('#DrunkenMinerModal:not(:visible)').modal({
-        backdrop: "static"
-    });
 }
 
 function _DM_init() {
@@ -97,13 +113,27 @@ function _DM_init() {
 }
 
 function _DM_renderHeader() {
+    var switchTextHtml = $('<div>').attr({
+        "id": DM_lements.ON_OFF_RADIO_TEXT,
+        "style": "display:inline-block;vertical-align:top;padding-top:2px;padding-left:5px;z-index:999",
+    }).text(DM_UpgradeSwitchStatus ? DM_SwitchStatuses.UPGRADE : DM_SwitchStatuses.BUILD)
+    var autoHtml = $('<div>').attr({
+        "id": DM_lements.ON_OFF_AUTOMODE_RADIO_TEXT,
+        "style": "display:inline-block;vertical-align:top;padding-top:2px;padding-left:5px;z-index:999",
+        'data-toggle': "tooltip",
+        'data-placement': "right",
+        'title': loca.GetText('LAB','ChatAutoScroll'),
+    }).text(DM_AutoModeSwitchStatus ? DM_SwitchStatuses.AUTOMODE_ON : DM_SwitchStatuses.AUTOMODE_OFF)
+
     var switchHtml = createTableRow([
         [
-            11,
-            createSwitch(DM_lements.ON_OFF_RADIO, DM_UpgradeSwitchStatus) + '<div style="position: absolute;left: 55px;top: 1px;" id="' + DM_lements.ON_OFF_RADIO_TEXT + '">{0}</div>'
-                .format(DM_UpgradeSwitchStatus ? DM_SwitchStatuses.UPGRADE : DM_SwitchStatuses.BUILD)
-        ], [1, '']
+            3, createSwitch(DM_lements.ON_OFF_RADIO, DM_UpgradeSwitchStatus) + switchTextHtml[0].outerHTML
+        ],
+        [
+            9, createSwitch(DM_lements.ON_OFF_AUTOMODE_RADIO, DM_AutoModeSwitchStatus) + autoHtml[0].outerHTML
+        ]
     ], true)
+
 
     var maxUpgradeLevelHtml = '';
     var selectAllBtnsHtml   = '';
@@ -116,17 +146,18 @@ function _DM_renderHeader() {
         html += '</select>';
         maxUpgradeLevelHtml += html;
 
-        selectAllBtnsHtml += img.replace('24px', '24px;vertical-align: top') + ' ' + createSwitch('DM_selectAll_' + ore, false) + ' ';
+        selectAllBtnsHtml += img.replace('24px', '24px;vertical-align: top;cursor:pointer;margin-right:20px').replace('<img', '<img id="DM_selectAll_' + ore + '" ');
     });
     maxUpgradeLevelHtml = createTableRow([
         [
             3,
-            '<div style="text-align: right">' + loca.GetText("LAB", "ExpeditionDifficultyTooltip") + ' ' + loca.GetText('ACL', 'Upgrades') + '</div>'
+            '<div style="text-align: right">' + loca.GetText("LAB", "Max") + ' '  + loca.GetText("LAB", "ExpeditionDifficultyTooltip") + ' ' + loca.GetText('ACL', 'Upgrades') + '</div>'
         ], [9, maxUpgradeLevelHtml]
     ], true);
+
     selectAllBtnsHtml   = createTableRow([
         [
-            3, '<div style="text-align: right">' + loca.GetText("LAB", "depositSpeedUp") + '</div>'
+            3, '<div style="text-align: right">' + loca.GetText("LAB", "Select") + ' ' + loca.GetText("LAB", "All") + '</div>'
         ], [9, selectAllBtnsHtml]
     ], true);
 
@@ -141,7 +172,7 @@ function _DM_renderHeader() {
         // [1, loca.GetText("LAB", "ExpeditionDifficultyTooltip")]
     ], true);
 
-    $('#DrunkenMinerModal .modal-header').html('<div class="container-fluid">' + switchHtml + maxUpgradeLevelHtml + selectAllBtnsHtml + '<br>' + tableHeadHtml + '</div>');
+    $('#DrunkenMinerModal .modal-header').append('<div class="container-fluid">' + switchHtml  + maxUpgradeLevelHtml + selectAllBtnsHtml + '<br>' + tableHeadHtml + '</div>');
 }
 
 function _DM_renderBody() {
@@ -152,6 +183,7 @@ function _DM_renderBody() {
         deposits = _DM_GetBuildData();
     }
     _DM_renderData(deposits);
+    _DM_updateSelectAllOpacity();
 }
 
 function _DM_renderFooter() {
@@ -168,8 +200,98 @@ function _DM_renderFooter() {
     ]);
 }
 
+function _DM_checkAllTasksCompleted() {
+    if (DM_config.upgrade.length === 0 && DM_config.build.length === 0){
+        _DM_stopAutoMode();
+        // game.showAlert(loca.GetText('LAB','QuestCompleted'));
+        return true;
+    }
+    if (DM_UpgradeSwitchStatus) {
+        var allUpgraded = true;
+        for (var i = 0; i < DM_config.upgrade.length; i++) {
+            var grid = DM_config.upgrade[i];
+            var building = game.zone.GetBuildingFromGridPosition(grid);
+
+            if (building) {
+                var buildingData = _DM_getBuildingDataFromDeposit({
+                    GetGrid: function() { return grid; }, GetAmount: function() { return grid; }
+                });
+
+                if (buildingData) {
+                    var resourceName = buildingData.name.replace('Mine', 'Ore');
+                    if (resourceName === 'CoalOre') resourceName = 'Coal';
+                    if (resourceName === 'SalpeterOre') resourceName = 'Salpeter';
+
+                    var maxLevel = DM_config.maxLvl[resourceName] || DM_MaxUpgradeLvl;
+
+                    if (buildingData.level < maxLevel || buildingData.isUpgradeInProgress) {
+                        allUpgraded = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (allUpgraded && DM_config.upgrade.length > 0) {
+            _DM_stopAutoMode();
+            // game.showAlert(loca.GetText('LAB','QuestCompleted'));
+            return true;
+        }
+    } else {
+        if (DM_config.build.length === 0) {
+            _DM_stopAutoMode();
+            // game.showAlert(loca.GetText('LAB','QuestCompleted'));
+            return true;
+        }
+    }
+
+    return false;
+}
+function _DM_startAutoMode() {
+    if (DM_autoModeInterval === null && DM_config.DM_autoModeInterval !== null){
+        DM_autoModeInterval = DM_config.DM_autoModeInterval;
+    }
+    if (DM_autoModeInterval) {
+        _DM_stopAutoMode()
+    }
+
+    if (game.gi.isOnHomzone() === true) {
+        DM_autoModeInterval     = setInterval(function () {
+            if (DM_AutoModeSwitchStatus === false){
+                _DM_stopAutoMode();
+            }
+            if (_DM_checkAllTasksCompleted()){
+                return;
+            }
+            if (game.gi.isOnHomzone() === false) {
+                return;
+            }
+
+            if (DM_UpgradeSwitchStatus === true) {
+                _DM_upgradeMines(DM_config.upgrade);
+            }else{
+                _DM_buildMines(DM_config.build);
+            }
+        }, 15000);
+        DM_config.DM_autoModeInterval = DM_autoModeInterval;
+    }
+    loca.GetText('ALT', 'ErrorRetrievingMail') + ' ' + loca.GetText('LAB', 'QuestNew')
+}
+
+function _DM_stopAutoMode() {
+    if (DM_autoModeInterval === null && DM_config.DM_autoModeInterval !== null){
+        DM_autoModeInterval = DM_config.DM_autoModeInterval;
+    }
+    if (DM_autoModeInterval) {
+        clearInterval(DM_autoModeInterval);
+        DM_autoModeInterval = null;
+        DM_config.DM_autoModeInterval = null;
+        game.showAlert(loca.GetText('ALT', 'ErrorRetrievingMail') + ' ' + loca.GetText('LAB', 'QuestCompleted'));
+    }
+}
+
 function _DM_getUpgradeData() {
-    var resArr   = { deposit: [], depleted: [] };
+    var resArr   = {deposit: [], depleted: []};
     var deposits = [];
 
     swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.forEach(function (item) {
@@ -213,7 +335,7 @@ function _DM_getUpgradeData() {
 }
 
 function _DM_GetBuildData() {
-    var resArr   = { deposit: [], depleted: [] };
+    var resArr   = {deposit: [], depleted: []};
     var deposits = [];
 
     swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.forEach(function (item) {
@@ -312,7 +434,7 @@ function _DM_renderData(deposits) {
             [1, checkbox],
             [1, resourcesLeft],
             [3, timeHtml],
-            [3, getImageTag(buffIcon, '24px') + ' <small>' + buffName + '</small>'],
+            [3, buffIcon ? getImageTag(buffIcon, '24px') : '' + ' <small>' + buffName + '</small>'],
             [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
         ], false);
     });
@@ -339,7 +461,7 @@ function _DM_InitEvens() {
     });
 
     $('select[name^="DM_maxUpgLvlFilter_"]').off('change').change(function () {
-        var ore            = this.name.replace("DM_maxUpgLvlFilter_", "");
+        var ore               = this.name.replace("DM_maxUpgLvlFilter_", "");
         DM_config.maxLvl[ore] = $(this).val();
         _DM_saveTmpSetting();
     });
@@ -347,6 +469,8 @@ function _DM_InitEvens() {
     //set switch animation
     var mainSwitch = $("#" + DM_lements.ON_OFF_RADIO);
     mainSwitch.off('change').change(function () {
+        DM_config.build   = [];
+        DM_config.upgrade = [];
         if ($(this).is(':checked')) {
             $("#" + DM_lements.ON_OFF_RADIO_TEXT).text(DM_SwitchStatuses.UPGRADE);
             $("." + DM_lements.BUILD_CHECKBX).hide();
@@ -371,6 +495,29 @@ function _DM_InitEvens() {
         $("." + DM_lements.BUILD_CHECKBX).show();
     }
 
+    //set automode switch animation
+    var autoModeSwitch = $("#" + DM_lements.ON_OFF_AUTOMODE_RADIO);
+    autoModeSwitch.off('change').change(function () {
+        if ($(this).is(':checked')) {
+            $("#" + DM_lements.ON_OFF_AUTOMODE_RADIO_TEXT).text(DM_SwitchStatuses.AUTOMODE_ON);
+            DM_AutoModeSwitchStatus = true;
+        } else {
+            $("#" + DM_lements.ON_OFF_AUTOMODE_RADIO_TEXT).text(DM_SwitchStatuses.AUTOMODE_OFF);
+            DM_AutoModeSwitchStatus = false;
+            _DM_stopAutoMode();
+        }
+        DM_config.AutoModeStatus = DM_AutoModeSwitchStatus;
+        _DM_saveTmpSetting();
+    });
+
+    if (mainSwitch.is(':checked')) {
+        $("." + DM_lements.BUILD_CHECKBX).hide();
+        $("." + DM_lements.UPGR_CHECKBX).show();
+    } else {
+        $("." + DM_lements.UPGR_CHECKBX).hide();
+        $("." + DM_lements.BUILD_CHECKBX).show();
+    }
+
     $('[id^="DM_UpgradeMines_"]').off('click').on('click', function () {
         var grid      = this.id.replace("DM_UpgradeMines_", "");
         var isChecked = $('#DM_UpgradeMines_' + grid).prop('checked');
@@ -378,6 +525,7 @@ function _DM_InitEvens() {
         _DM_pushUpgradeGridToConfig(grid, isChecked);
 
         _DM_saveTmpSetting();
+        _DM_updateSelectAllOpacity();
     });
     $('[id^="DM_RebuildMines_"]').off('click').on('click', function () {
         var grid      = this.id.replace("DM_RebuildMines_", "");
@@ -386,11 +534,19 @@ function _DM_InitEvens() {
         _DM_pushBuildGridToConfig(grid, isChecked);
 
         _DM_saveTmpSetting();
+        _DM_updateSelectAllOpacity();
     });
 
-    $('[id^="DM_selectAll_"]').off('change').change(function () {
+    $('[id^="DM_selectAll_"]').off('click').click(function () {
         var ore       = this.id.replace("DM_selectAll_", "");
-        var isChecked = $('#DM_selectAll_' + ore).prop('checked');
+        var isChecked = !($('[name^="' + ore + '"]').prop('checked'));
+        if ($('#DM_selectAll_' + ore).css('opacity') == '0.5'){
+            $('#DM_selectAll_' + ore).css('opacity','1');
+            isChecked = true;
+        }else{
+            $('#DM_selectAll_' + ore).css('opacity','.5');
+            isChecked = false;
+        }
 
         $('[name^="' + ore + '"]').each(function () {
             $(this).prop('checked', isChecked);
@@ -432,15 +588,17 @@ function _DM_InitEvens() {
 
         if (DM_UpgradeSwitchStatus) {
             if (DM_config.upgrade.length > 0) {
-                setTimeout(function () {
-                    _DM_upgradeMines(DM_config.upgrade);
-                }, 3000);
+                _DM_upgradeMines(DM_config.upgrade);
+                if (DM_AutoModeSwitchStatus){
+                    _DM_startAutoMode();
+                }
             }
         } else {
             if (DM_config.build.length > 0) {
-                setTimeout(function () {
-                    _DM_buildMines(DM_config.build);
-                }, 3000);
+                _DM_buildMines(DM_config.build.slice());
+                if (DM_AutoModeSwitchStatus){
+                    _DM_startAutoMode();
+                }
             }
         }
     });
@@ -453,6 +611,8 @@ function _DM_InitEvens() {
     $("#DrunkenMinerModal .btnClose").off('click').click(function () {
         $('#DrunkenMinerModal').modal('hide');
     });
+
+    $('[data-toggle="tooltip"]').tooltip();
 }
 
 function _DM_SetConfigValues() {
@@ -471,6 +631,8 @@ function _DM_SetConfigValues() {
     DM_config.build.forEach(function (grid) {
         $('#DM_RebuildMines_' + grid).prop('checked', true);
     });
+    DM_autoModeInterval = DM_config.DM_autoModeInterval;
+    _DM_updateSelectAllOpacity();
 }
 
 function _DM_FindOriginalResource(building_name) {
@@ -497,29 +659,29 @@ function _DM_GoTo(g) {
 function _DM_mapItemToNumber(itemName) {
     switch (itemName) {
         case "TitaniumOre":
-            return { number: 69, text: "TitaniumOre" };
+            return {number: 69, text: "TitaniumOre"};
         case "Salpeter":
-            return { number: 63, text: "Salpeter" };
+            return {number: 63, text: "Salpeter"};
         case "BronzeOre":
-            return { number: 36, text: "BronzeOre" };
+            return {number: 36, text: "BronzeOre"};
         case "Coal":
-            return { number: 37, text: "Coal" };
+            return {number: 37, text: "Coal"};
         case "GoldOre":
-            return { number: 46, text: "GoldOre" };
+            return {number: 46, text: "GoldOre"};
         case "IronOre":
-            return { number: 50, text: "IronOre" };
+            return {number: 50, text: "IronOre"};
         case "MineDepletedDepositTitaniumOre":
-            return { number: 69, text: "TitaniumOre" };
+            return {number: 69, text: "TitaniumOre"};
         case "MineDepletedDepositSalpeter":
-            return { number: 63, text: "Salpeter" };
+            return {number: 63, text: "Salpeter"};
         case "MineDepletedDepositBronzeOre":
-            return { number: 36, text: "BronzeOre" };
+            return {number: 36, text: "BronzeOre"};
         case "MineDepletedDepositCoal":
-            return { number: 37, text: "Coal" };
+            return {number: 37, text: "Coal"};
         case "MineDepletedDepositGoldOre":
-            return { number: 46, text: "GoldOre" };
+            return {number: 46, text: "GoldOre"};
         case "MineDepletedDepositIronOre":
-            return { number: 50, text: "IronOre" };
+            return {number: 50, text: "IronOre"};
     }
 }
 
@@ -529,7 +691,6 @@ function _DM_saveTmpSetting() {
 }
 
 function _DM_buildMines(gridArr) {
-    // debug(gridArr);
     var x                = new TimedQueue(1000);
     var CurrentQueue     = 0;
     var CurrentQueueFree = 0;
@@ -543,32 +704,37 @@ function _DM_buildMines(gridArr) {
 
     $.each(gridArr, function (i, grid) {
         if (CurrentQueueFree < 1) {
-            return;
+            return false;
         }
         var deposit = swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.get(grid);
         if (!deposit) {
+            DM_config.build.splice(i, 1);
             return;
         }
         var buildingName = (deposit.GetBuildingName_string !== undefined) ? deposit.GetBuildingName_string() : deposit.GetName_string();
         if (buildingName === undefined) {
+            DM_config.build.splice(i, 1);
             return;
         }
         var Mapping = _DM_mapItemToNumber(buildingName);
-        var bld     = game.zone.GetBuildingFromGridPosition(deposit.GetGrid());
-        if (bld == null) {
-            CurrentQueueFree--;
-            x.add(function () {
-                game.gi.SendServerAction(50, Mapping.number, deposit.GetGrid(), 0, null);
-                game.showAlert(loca.GetText("BUI", "DefenseModeGhostGarrison") + ' ' + loca.GetText("RES", Mapping.text));
-            });
+        var bld     = game.zone.GetBuildingFromGridPosition(grid);
+        if (bld !== null) {
+            DM_config.build.splice(i, 1);
+            return;
         }
+
+        x.add(function () {
+            game.gi.SendServerAction(50, Mapping.number, grid, 0, null);
+            game.showAlert(loca.GetText("BUI", "DefenseModeGhostGarrison") + ' ' + loca.GetText("RES", Mapping.text));
+        });
+        CurrentQueueFree--;
+        DM_config.build.splice(i, 1);
     });
     x.run();
 }
 
 function _DM_upgradeMines(gridArr) {
     var x = new TimedQueue(1000);
-    game.showAlert(getText('command_sent'));
     $.each(gridArr, function (i, item) {
         var building = game.zone.GetBuildingFromGridPosition(item);
         if (!building) {
@@ -588,6 +754,7 @@ function _DM_upgradeMines(gridArr) {
                 game.gi.SendServerAction(60, 0, building.GetGrid(), 0, null);
                 var name    = building.GetBuildingName_string();
                 var locName = loca.GetText('BUI', name);
+
                 game.showAlert(loca.GetText("ALT", "UpgradeBuilding") + ' ' + locName);
             });
         }
@@ -637,7 +804,8 @@ function _DM_getBuildingDataFromDeposit(deposit) {
             timeStr = dtfex.format(new window.runtime.Date(secsToBuffEnd));
         }
     }
-    var rcd = DM_gEconomics.GetResourcesCreationDefinitionForBuilding(bld.GetBuildingName_string());
+
+    var rcd = swmmo.getDefinitionByName("ServerState::gEconomics").GetResourcesCreationDefinitionForBuilding(bld.GetBuildingName_string());
 
     var rcd_pck = 0; // infinite mines remove 0
     if (rcd != null) rcd_pck = rcd.amountRemoved; // resources removed base value
@@ -678,6 +846,30 @@ function _DM_pushBuildGridToConfig(grid, isChecked) {
         var index = DM_config.build.indexOf(grid);
         DM_config.build.splice(index, 1);
     }
+}
+
+function _DM_updateSelectAllOpacity() {
+    DM_assetsNamesMinesOres.forEach(function(oreName) {
+        var relatedCheckboxes = $('input[type="checkbox"][name="' + oreName + '"]').filter(function() {
+            var id = this.id;
+            return id && (id.indexOf('DM_RebuildMines_') === 0 || id.indexOf('DM_UpgradeMines_') === 0);
+        });
+        var hasChecked = false;
+        relatedCheckboxes.each(function() {
+            if ($(this).is(':checked')) {
+                hasChecked = true;
+                return false;
+            }
+        });
+        var selectAllElement = $('#DM_selectAll_' + oreName);
+        if (selectAllElement.length > 0) {
+            if (hasChecked) {
+                selectAllElement.css('opacity', '1');
+            } else {
+                selectAllElement.css('opacity', '.5');
+            }
+        }
+    });
 }
 
 //helpers
