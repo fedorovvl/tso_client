@@ -86,7 +86,7 @@ namespace client
             "--token - extra token for fastlogin",
             "--password - set password",
             "--autologin - allows to start client with login/password from setting.dat",
-            "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro] - changes the game interface language.",
+            "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro|hu] - changes the game interface language.",
             "--window [fullscreen|maximized|minimized] - initital game window size",
             "--skip - allows to skip update checking of client.swf",
             "--tsofolder - set different tso folder name",
