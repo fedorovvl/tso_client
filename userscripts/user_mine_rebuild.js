@@ -28,6 +28,11 @@ var DepositDepletedTranslates = {
         'All' : 'Tous',
         'AvailableOnly' : 'Disponible uniquement',
         'AvailableOnlyHint' : '"Disponible uniquement" : aucune case à cocher si mine construite ou si gisement non trouvé.'
+    },
+    'hu-hu': {
+        'All' : 'Mind',
+        'AvailableOnly' : 'Csak elérhető',
+        'AvailableOnlyHint' : '"Csak elérhető": nincs pipa, ha egy bánya már megépült, vagy még nem találtak depót.'
     }
 };
 extendBaseLang(DepositDepletedTranslates, 'DepositDepletedTranslates');
