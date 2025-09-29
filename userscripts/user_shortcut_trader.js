@@ -148,6 +148,7 @@ var ShortcutTrader = (function () {
                 } else {
                     tradesData.marketTrades = trades;
                 }
+                renderBody();
             }
         });
 
@@ -316,13 +317,20 @@ var ShortcutTrader = (function () {
         });
 
         $('#FriendTraderModalData').off('click', '.FT_SendTrade').on('click', '.FT_SendTrade', function () {
+            if ($(this).css('pointer-events') === 'none') return;
             var i = $(this).data('index');
+
+
+            $('.FT_SendTrade').css({ opacity: 0.5, 'pointer-events': 'none' });
+            setTimeout(function (){
+                $('.FT_SendTrade').css({ opacity: 1, 'pointer-events': '' });
+            }, 3000);
+
             if (isMarketTradeMode) {
                 sendTrades([tradesData.marketTrades[i]]);
             } else {
                 sendTrades([tradesData.friendsTrades[i]]);
             }
-            renderBody();
         });
 
         return createTableRow([[2, getImageTag(item.offerResName, '24px') + ' ' + item.offerResAmount], [2, getImageTag(item.costResName, '24px') + ' ' + item.costResAmount], [6, formatToFractionOrReturn(item.UserName)], [2, $('<div>').append(delBtn, sendBtn)]], false);
