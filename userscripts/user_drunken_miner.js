@@ -10,7 +10,6 @@ addToolsMenuItem(loca.GetText("RES", 'BuffAd_Drunken_Miner'), DM_MenuHandler);
 var _DM_ModalInitialized = false;
 var DM_build_newTemplates;
 
-var DM_autoModeInterval     = null;
 var DM_AutoModeSwitchStatus = false;
 var DM_UpgradeSwitchStatus  = false;
 
@@ -56,7 +55,6 @@ var DM_config = {
     upgrade: [],
     switchStatus: DM_UpgradeSwitchStatus,
     AutoModeStatus: DM_AutoModeSwitchStatus,
-    DM_autoModeInterval: DM_autoModeInterval,
     maxLvl: {
         "IronOre": 1, "Coal": 1, "BronzeOre": 1, "GoldOre": 1, "TitaniumOre": 1, "Salpeter": 1
     }
@@ -117,12 +115,12 @@ function _DM_renderHeader() {
         "id": DM_lements.ON_OFF_RADIO_TEXT,
         "style": "display:inline-block;vertical-align:top;padding-top:2px;padding-left:5px;z-index:999",
     }).text(DM_UpgradeSwitchStatus ? DM_SwitchStatuses.UPGRADE : DM_SwitchStatuses.BUILD)
-    var autoHtml = $('<div>').attr({
+    var autoHtml       = $('<div>').attr({
         "id": DM_lements.ON_OFF_AUTOMODE_RADIO_TEXT,
         "style": "display:inline-block;vertical-align:top;padding-top:2px;padding-left:5px;z-index:999",
         'data-toggle': "tooltip",
         'data-placement': "right",
-        'title': loca.GetText('LAB','ChatAutoScroll'),
+        'title': loca.GetText('LAB', 'ChatAutoScroll'),
     }).text(DM_AutoModeSwitchStatus ? DM_SwitchStatuses.AUTOMODE_ON : DM_SwitchStatuses.AUTOMODE_OFF)
 
     var switchHtml = createTableRow([
@@ -151,11 +149,11 @@ function _DM_renderHeader() {
     maxUpgradeLevelHtml = createTableRow([
         [
             3,
-            '<div style="text-align: right">' + loca.GetText("LAB", "Max") + ' '  + loca.GetText("LAB", "ExpeditionDifficultyTooltip") + ' ' + loca.GetText('ACL', 'Upgrades') + '</div>'
+            '<div style="text-align: right">' + loca.GetText("LAB", "Max") + ' ' + loca.GetText("LAB", "ExpeditionDifficultyTooltip") + ' ' + loca.GetText('ACL', 'Upgrades') + '</div>'
         ], [9, maxUpgradeLevelHtml]
     ], true);
 
-    selectAllBtnsHtml   = createTableRow([
+    selectAllBtnsHtml = createTableRow([
         [
             3, '<div style="text-align: right">' + loca.GetText("LAB", "Select") + ' ' + loca.GetText("LAB", "All") + '</div>'
         ], [9, selectAllBtnsHtml]
@@ -172,7 +170,7 @@ function _DM_renderHeader() {
         // [1, loca.GetText("LAB", "ExpeditionDifficultyTooltip")]
     ], true);
 
-    $('#DrunkenMinerModal .modal-header').append('<div class="container-fluid">' + switchHtml  + maxUpgradeLevelHtml + selectAllBtnsHtml + '<br>' + tableHeadHtml + '</div>');
+    $('#DrunkenMinerModal .modal-header').append('<div class="container-fluid">' + switchHtml + maxUpgradeLevelHtml + selectAllBtnsHtml + '<br>' + tableHeadHtml + '</div>');
 }
 
 function _DM_renderBody() {
@@ -200,21 +198,20 @@ function _DM_renderFooter() {
     ]);
 }
 
-function _DM_checkAllTasksCompleted() {
-    if (DM_config.upgrade.length === 0 && DM_config.build.length === 0){
-        _DM_stopAutoMode();
-        // game.showAlert(loca.GetText('LAB','QuestCompleted'));
-        return true;
-    }
-    if (DM_UpgradeSwitchStatus) {
+function _DM_checkAllTasksCompleted(gridArr, upgSwitchStatus) {
+    if (upgSwitchStatus) {
         var allUpgraded = true;
-        for (var i = 0; i < DM_config.upgrade.length; i++) {
-            var grid = DM_config.upgrade[i];
+        for (var i = 0; i < gridArr.length; i++) {
+            var grid     = gridArr[i];
             var building = game.zone.GetBuildingFromGridPosition(grid);
 
             if (building) {
                 var buildingData = _DM_getBuildingDataFromDeposit({
-                    GetGrid: function() { return grid; }, GetAmount: function() { return grid; }
+                    GetGrid: function () {
+                        return grid;
+                    }, GetAmount: function () {
+                        return grid;
+                    }
                 });
 
                 if (buildingData) {
@@ -232,62 +229,119 @@ function _DM_checkAllTasksCompleted() {
             }
         }
 
-        if (allUpgraded && DM_config.upgrade.length > 0) {
-            _DM_stopAutoMode();
-            // game.showAlert(loca.GetText('LAB','QuestCompleted'));
+        if (allUpgraded) {
             return true;
         }
     } else {
-        if (DM_config.build.length === 0) {
-            _DM_stopAutoMode();
-            // game.showAlert(loca.GetText('LAB','QuestCompleted'));
+        if (gridArr.length === 0) {
             return true;
         }
     }
 
     return false;
 }
-function _DM_startAutoMode() {
-    if (DM_autoModeInterval === null && DM_config.DM_autoModeInterval !== null){
-        DM_autoModeInterval = DM_config.DM_autoModeInterval;
-    }
-    if (DM_autoModeInterval) {
-        _DM_stopAutoMode()
+
+function getNearestConstructionOrUpgradeTime(gridArr, upgSwitchStatus) {
+    if (!Array.isArray(gridArr) || gridArr.length === 0) {
+        return null;
     }
 
-    if (game.gi.isOnHomzone() === true) {
-        DM_autoModeInterval     = setInterval(function () {
-            if (DM_AutoModeSwitchStatus === false){
-                _DM_stopAutoMode();
-            }
-            if (_DM_checkAllTasksCompleted()){
-                return;
-            }
-            if (game.gi.isOnHomzone() === false) {
-                return;
-            }
+    var currentTimeMs      = game.gi.GetClientTime();
+    var nearestEventTimeMs = null;
+    var hasActiveProcess   = false;
 
-            if (DM_UpgradeSwitchStatus === true) {
-                _DM_upgradeMines(DM_config.upgrade);
-            }else{
-                _DM_buildMines(DM_config.build);
+    if (upgSwitchStatus) {
+        for (var i = 0; i < gridArr.length; i++) {
+            var grid = gridArr[i];
+            var building = game.zone.GetBuildingFromGridPosition(grid);
+
+            if (building) {
+                if (building.IsUpgradeInProgress && building.IsUpgradeInProgress()) {
+                    hasActiveProcess = true;
+
+                    var upgradeStartTimeSec = building.GetUpgradeStartTime ? building.GetUpgradeStartTime() : 0;
+                    var upgradeDurationSec  = building.GetUpgradeDuration ? building.GetUpgradeDuration() : 0;
+
+                    var upgradeEndTimeMs = upgradeDurationSec - (currentTimeMs - upgradeStartTimeSec);
+
+                    if (nearestEventTimeMs === null || upgradeEndTimeMs < nearestEventTimeMs) {
+                        nearestEventTimeMs = upgradeEndTimeMs;
+                    }
+                }
             }
-        }, 15000);
-        DM_config.DM_autoModeInterval = DM_autoModeInterval;
+        }
+    } else {
+        var queueVector         = game.gi.mHomePlayer.mBuildQueue.GetQueue_vector ?
+            game.gi.mHomePlayer.mBuildQueue.GetQueue_vector() : [];
+        var totalAvailableSlots = game.gi.mHomePlayer.mBuildQueue.GetTotalAvailableSlots ?
+            game.gi.mHomePlayer.mBuildQueue.GetTotalAvailableSlots() : 0;
+        var currentQueueLength  = queueVector.length;
+        var freeSlots           = totalAvailableSlots - currentQueueLength;
+
+        if (freeSlots > 0) {
+            hasActiveProcess = true;
+            var nearestEventTimeMs = 3000
+        }else{
+            var firstQueuedBuilding = queueVector[0];
+            if (firstQueuedBuilding){
+                hasActiveProcess = true;
+                nearestEventTimeMs = firstQueuedBuilding.GetRemainingConstructionDuration()
+            }
+        }
     }
-    loca.GetText('ALT', 'ErrorRetrievingMail') + ' ' + loca.GetText('LAB', 'QuestNew')
+
+    if (!hasActiveProcess) {
+        nearestEventTimeMs = 28000;
+    }
+    if (nearestEventTimeMs < 3000) {
+        nearestEventTimeMs = 3000;
+    }
+    nearestEventTimeMs += 2000;
+    return nearestEventTimeMs;
 }
 
-function _DM_stopAutoMode() {
-    if (DM_autoModeInterval === null && DM_config.DM_autoModeInterval !== null){
-        DM_autoModeInterval = DM_config.DM_autoModeInterval;
+function _DM_startAutoMode() {
+    if (!DM_AutoModeSwitchStatus) {
+        return;
     }
-    if (DM_autoModeInterval) {
-        clearInterval(DM_autoModeInterval);
-        DM_autoModeInterval = null;
-        DM_config.DM_autoModeInterval = null;
+
+    if (game.gi.isOnHomzone()) {
+        game.showAlert(loca.GetText('ALT', 'ErrorRetrievingMail') + ' ' + loca.GetText('LAB', 'QuestNew'));
+
+        if (DM_UpgradeSwitchStatus) {
+            _DM_autoLoop(DM_config.upgrade.slice(), true);
+        } else {
+            _DM_autoLoop(DM_config.build.slice(), false);
+        }
+    }
+}
+
+function _DM_autoLoop(gridArr, isUpgradeMode) {
+    if (!game.gi.isOnHomzone()) {
+        _DM_scheduleNextLoop(gridArr, isUpgradeMode, 30000);
+        return;
+    }
+
+    if (!DM_AutoModeSwitchStatus || _DM_checkAllTasksCompleted(gridArr, isUpgradeMode)) {
+        DM_AutoModeSwitchStatus = false;
         game.showAlert(loca.GetText('ALT', 'ErrorRetrievingMail') + ' ' + loca.GetText('LAB', 'QuestCompleted'));
+        return;
     }
+
+    if (isUpgradeMode) {
+        _DM_upgradeMines(gridArr);
+    } else {
+        _DM_buildMines(gridArr);
+    }
+
+    var time = getNearestConstructionOrUpgradeTime(gridArr, isUpgradeMode);
+    _DM_scheduleNextLoop(gridArr, isUpgradeMode, time);
+}
+
+function _DM_scheduleNextLoop(gridArr, isUpgradeMode, delayMs) {
+    setTimeout(function () {
+        _DM_autoLoop(gridArr, isUpgradeMode);
+    }, delayMs);
 }
 
 function _DM_getUpgradeData() {
@@ -504,7 +558,6 @@ function _DM_InitEvens() {
         } else {
             $("#" + DM_lements.ON_OFF_AUTOMODE_RADIO_TEXT).text(DM_SwitchStatuses.AUTOMODE_OFF);
             DM_AutoModeSwitchStatus = false;
-            _DM_stopAutoMode();
         }
         DM_config.AutoModeStatus = DM_AutoModeSwitchStatus;
         _DM_saveTmpSetting();
@@ -540,11 +593,11 @@ function _DM_InitEvens() {
     $('[id^="DM_selectAll_"]').off('click').click(function () {
         var ore       = this.id.replace("DM_selectAll_", "");
         var isChecked = !($('[name^="' + ore + '"]').prop('checked'));
-        if ($('#DM_selectAll_' + ore).css('opacity') == '0.5'){
-            $('#DM_selectAll_' + ore).css('opacity','1');
+        if ($('#DM_selectAll_' + ore).css('opacity') == '0.5') {
+            $('#DM_selectAll_' + ore).css('opacity', '1');
             isChecked = true;
-        }else{
-            $('#DM_selectAll_' + ore).css('opacity','.5');
+        } else {
+            $('#DM_selectAll_' + ore).css('opacity', '.5');
             isChecked = false;
         }
 
@@ -588,16 +641,18 @@ function _DM_InitEvens() {
 
         if (DM_UpgradeSwitchStatus) {
             if (DM_config.upgrade.length > 0) {
-                _DM_upgradeMines(DM_config.upgrade);
-                if (DM_AutoModeSwitchStatus){
+                if (DM_AutoModeSwitchStatus) {
                     _DM_startAutoMode();
+                } else {
+                    _DM_upgradeMines(DM_config.upgrade);
                 }
             }
         } else {
             if (DM_config.build.length > 0) {
-                _DM_buildMines(DM_config.build.slice());
-                if (DM_AutoModeSwitchStatus){
+                if (DM_AutoModeSwitchStatus) {
                     _DM_startAutoMode();
+                } else {
+                    _DM_buildMines(DM_config.build.slice());
                 }
             }
         }
@@ -631,7 +686,6 @@ function _DM_SetConfigValues() {
     DM_config.build.forEach(function (grid) {
         $('#DM_RebuildMines_' + grid).prop('checked', true);
     });
-    DM_autoModeInterval = DM_config.DM_autoModeInterval;
     _DM_updateSelectAllOpacity();
 }
 
@@ -706,20 +760,24 @@ function _DM_buildMines(gridArr) {
         if (CurrentQueueFree < 1) {
             return false;
         }
+        gridArr = gridArr.filter(function(grid) {
+            var deposit = swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.get(grid);
+            return !!deposit;
+        });
         var deposit = swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.get(grid);
         if (!deposit) {
-            DM_config.build.splice(i, 1);
+            gridArr.splice(i, 1);
             return;
         }
         var buildingName = (deposit.GetBuildingName_string !== undefined) ? deposit.GetBuildingName_string() : deposit.GetName_string();
         if (buildingName === undefined) {
-            DM_config.build.splice(i, 1);
+            gridArr.splice(i, 1);
             return;
         }
         var Mapping = _DM_mapItemToNumber(buildingName);
         var bld     = game.zone.GetBuildingFromGridPosition(grid);
         if (bld !== null) {
-            DM_config.build.splice(i, 1);
+            gridArr.splice(i, 1);
             return;
         }
 
@@ -728,7 +786,7 @@ function _DM_buildMines(gridArr) {
             game.showAlert(loca.GetText("BUI", "DefenseModeGhostGarrison") + ' ' + loca.GetText("RES", Mapping.text));
         });
         CurrentQueueFree--;
-        DM_config.build.splice(i, 1);
+        gridArr.splice(i, 1);
     });
     x.run();
 }
@@ -757,6 +815,8 @@ function _DM_upgradeMines(gridArr) {
 
                 game.showAlert(loca.GetText("ALT", "UpgradeBuilding") + ' ' + locName);
             });
+        }else if(building.GetUIUpgradeLevel() == maxUpgradeLevel){
+            gridArr.splice(i, 1);
         }
     });
     x.run();
@@ -764,11 +824,17 @@ function _DM_upgradeMines(gridArr) {
 
 function _DM_getBuildingDataFromDeposit(deposit) {
     var bld = game.zone.GetBuildingFromGridPosition(deposit.GetGrid());
-    if (bld === null || DM_assetsNamesMines.indexOf(bld.GetBuildingName_string()) === -1 || bld.isGarrison()) {
+    if (!bld || typeof bld.GetBuildingName_string !== 'function') {
         return null;
     }
     var name = bld.GetBuildingName_string();
-    if (name.toUpperCase().indexOf('EW_') !== -1 || name.toUpperCase().indexOf('DECORATION_MOUNTAIN_PEAK') !== -1 || name.toUpperCase().indexOf('BANDITS') !== -1) {
+    if (
+        DM_assetsNamesMines.indexOf(name) === -1 ||
+        bld.isGarrison() ||
+        name.toUpperCase().indexOf('EW_') !== -1 ||
+        name.toUpperCase().indexOf('DECORATION_MOUNTAIN_PEAK') !== -1 ||
+        name.toUpperCase().indexOf('BANDITS') !== -1
+    ) {
         return null;
     }
 
@@ -805,7 +871,7 @@ function _DM_getBuildingDataFromDeposit(deposit) {
         }
     }
 
-    var rcd = swmmo.getDefinitionByName("ServerState::gEconomics").GetResourcesCreationDefinitionForBuilding(bld.GetBuildingName_string());
+    var rcd = swmmo.getDefinitionByName("ServerState::gEconomics").GetResourcesCreationDefinitionForBuilding(name);
 
     var rcd_pck = 0; // infinite mines remove 0
     if (rcd != null) rcd_pck = rcd.amountRemoved; // resources removed base value
@@ -849,13 +915,13 @@ function _DM_pushBuildGridToConfig(grid, isChecked) {
 }
 
 function _DM_updateSelectAllOpacity() {
-    DM_assetsNamesMinesOres.forEach(function(oreName) {
-        var relatedCheckboxes = $('input[type="checkbox"][name="' + oreName + '"]').filter(function() {
+    DM_assetsNamesMinesOres.forEach(function (oreName) {
+        var relatedCheckboxes = $('input[type="checkbox"][name="' + oreName + '"]').filter(function () {
             var id = this.id;
             return id && (id.indexOf('DM_RebuildMines_') === 0 || id.indexOf('DM_UpgradeMines_') === 0);
         });
-        var hasChecked = false;
-        relatedCheckboxes.each(function() {
+        var hasChecked        = false;
+        relatedCheckboxes.each(function () {
             if ($(this).is(':checked')) {
                 hasChecked = true;
                 return false;
