@@ -7,7 +7,9 @@ import os
 
 url = sys.argv[1]
 print("load " + url)
-contents = request.urlopen(url).read()
+req = request.Request(url)
+req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0')
+contents = request.urlopen(req).read()
 env = UnityPy.load(contents)
 for obj in env.objects:
   if obj.type.name == "TextAsset":
