@@ -31,7 +31,7 @@ namespace client
         public static string setting_file = "settings.dat";
         public static string tso_folder = "tso_portable";
         public static string lang = string.Empty;
-        public static int http_timeout = 20000;
+        public static int http_timeout = 300000;
         public static string totpkey = string.Empty;
         public static bool isLoaded = false;
         public static string[] upstream_data = null;
