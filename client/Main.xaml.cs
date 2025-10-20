@@ -47,6 +47,7 @@ namespace client
         private string _dropboxToken;
         private static string extraVersion = "#TESTTAG#";
         public const string appversion = "1.5.8.1";
+        public static bool newAuth = false;
         public string version
         {
             get { return appversion; }
@@ -101,7 +102,6 @@ namespace client
 
         public Main()
         {
-            
             cmd = new Arguments(Environment.GetCommandLineArgs());
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
             System.Net.ServicePointManager.Expect100Continue = false;
@@ -118,6 +118,8 @@ namespace client
             ReadSettings();
             if (cmd["debug"] != null)
                 debug = true;
+            if (cmd["cipauth"] != null)
+                newAuth = true;
             if (cmd["tsofolder"] != null)
                 tso_folder = cmd["tsofolder"].Trim();
             if (cmd["totpkey"] != null)

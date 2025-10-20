@@ -278,7 +278,7 @@ namespace client
                 }
                 else
                 {
-                    var uri = new Uri(url + "?" + postData);
+                    var uri = new Uri(string.Format("{0}{1}", url, string.IsNullOrEmpty(postData) ? "" : "?" + postData));
                     request = (HttpWebRequest)WebRequest.Create(uri);
                     request.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12";
                     request.Referer = Servers.getRandReferer();
@@ -288,7 +288,7 @@ namespace client
                     {
                         request.CookieContainer.Add(Cookies);
                     }
-                    
+
                     request.Method = _mType.ToString();
                 }
                 if (Main.debug)
@@ -304,8 +304,7 @@ namespace client
                         using (var response = (HttpWebResponse)request.GetResponse())
                         {
                             //System.Windows.MessageBox.Show(response.ContentLength.ToString());
-                            if (_mType == PostTypeEnum.Post)
-                            {
+                            
                                 foreach (Cookie cookie in response.Cookies)
                                 {
                                     var isMatch = false;
@@ -324,8 +323,14 @@ namespace client
                                         Cookies.Add(cookie);
                                     }
                                 }
+                            
+                            string redirectUrl = response.GetResponseHeader("Location");
+                            if (!string.IsNullOrEmpty(redirectUrl))
+                            {
+                                result = redirectUrl;
+                                isResponceRecieved = true;
+                                break;
                             }
-
 
                             using (var responseStream = response.GetResponseStream())
                             {
