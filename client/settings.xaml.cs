@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Web.Script.Serialization;
 using System.Text;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace client
 {
@@ -114,10 +115,10 @@ namespace client
             string result = post.Post(ref _cookies);
             if (!result.Contains("access_token"))
             {
-                MessageBox.Show(result);
+                System.Windows.MessageBox.Show(result);
                 return;
             }
-            MessageBox.Show("OK");
+            System.Windows.MessageBox.Show("OK");
             return;
         }
 
@@ -136,18 +137,35 @@ namespace client
             string result = post.Post(ref _cookies);
             if (!result.Contains("access_token"))
             {
-                MessageBox.Show(result);
+                System.Windows.MessageBox.Show(result);
                 return;
             }
             dropBoxAuth authInfo = Main.Deserialize<dropBoxAuth>(result);
             dropboxRefresh.Text = authInfo.refresh_token;
-            MessageBox.Show("OK");
+            System.Windows.MessageBox.Show("OK");
             return;
         }
         private void Button_Click_4(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(dropboxKey.Text.Trim())) { return; }
             Process.Start(new ProcessStartInfo { FileName = string.Format("{0}/oauth2/authorize?client_id={1}&response_type=code&token_access_type=offline", Servers.dropbox, dropboxKey.Text.Trim().Split(':')[0]), UseShellExecute = true });
+        }
+
+        private void export_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            using (var fbd = new OpenFileDialog() { InitialDirectory = Environment.CurrentDirectory })
+            {
+                DialogResult result = fbd.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.FileName))
+                {
+                    
+                }
+            }
+        }
+
+        private void import_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+
         }
     }
 }

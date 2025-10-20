@@ -397,5 +397,7 @@
         <Button BorderThickness="0" Content="{Binding langTestDropbox, Mode=OneWay}" Click="Button_Click_2" Height="23" HorizontalAlignment="Left" Margin="29,375,0,0" VerticalAlignment="Top" Width="135" />
         <Button BorderThickness="0" Content="{Binding langAuthDropbox, Mode=OneWay}" Click="Button_Click_3" Height="23" HorizontalAlignment="Left" Margin="169,375,0,0" VerticalAlignment="Top" Width="135" />
         <Button BorderThickness="0" Content="֎" ToolTip="Get auth code" Click="Button_Click_4" Height="29" HorizontalAlignment="Left" Margin="485,217,0,0" VerticalAlignment="Top" Width="34" FontSize="20" />
+        <Image HorizontalAlignment="Left" Height="30" Margin="446,12,0,0" VerticalAlignment="Top" Width="31" Source="files/upload.png" Cursor="Hand" ToolTip="Export" MouseDown="export_MouseDown"/>
+        <Image HorizontalAlignment="Left" Height="30" Margin="488,12,0,0" VerticalAlignment="Top" Width="31" Source="files/download.png" Cursor="Hand" ToolTip="Import" MouseDown="import_MouseDown"/>
     </Grid>
 </Window>

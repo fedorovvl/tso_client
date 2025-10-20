@@ -8,20 +8,19 @@ namespace client
 {
     class Crypt
     {
-        public string Encrypt(string ToEncrypt, bool useHasing)
+        public string Encrypt(string ToEncrypt, bool useHasing, string key = "Bhagwati")
         {
             byte[] keyArray;
             byte[] toEncryptArray = UTF8Encoding.UTF8.GetBytes(ToEncrypt);
-            string Key = "Bhagwati";
             if (useHasing)
             {
                 MD5CryptoServiceProvider hashmd5 = new MD5CryptoServiceProvider();
-                keyArray = hashmd5.ComputeHash(UTF8Encoding.UTF8.GetBytes(Key));
+                keyArray = hashmd5.ComputeHash(UTF8Encoding.UTF8.GetBytes(key));
                 hashmd5.Clear();
             }
             else
             {
-                keyArray = UTF8Encoding.UTF8.GetBytes(Key);
+                keyArray = UTF8Encoding.UTF8.GetBytes(key);
             }
             TripleDESCryptoServiceProvider tDes = new TripleDESCryptoServiceProvider();
             tDes.Key = keyArray;
@@ -32,11 +31,10 @@ namespace client
             tDes.Clear();
             return Convert.ToBase64String(resultArray, 0, resultArray.Length);
         }
-        public string Decrypt(string cypherString, bool useHasing)
+        public string Decrypt(string cypherString, bool useHasing, string key = "Bhagwati")
         {
             byte[] keyArray;
             byte[] toDecryptArray = Convert.FromBase64String(cypherString);
-            string key = "Bhagwati";
             if (useHasing)
             {
                 MD5CryptoServiceProvider hashmd = new MD5CryptoServiceProvider();
