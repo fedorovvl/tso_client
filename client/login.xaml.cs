@@ -181,6 +181,7 @@ namespace client
                     Type = PostSubmitter.PostTypeEnum.Post
                 };
                 post.ContentType = "application/json";
+                post.useBC = true;
                 post.PostItems.Add("{\"headers\":{\"Content-Type\":\"application/json\",\"Accept\":\"application/json\"}}", string.Empty);
                 res = post.Post(ref _cookies);
                 if(res.Contains("ERROR"))
@@ -196,6 +197,7 @@ namespace client
                     Url = "https://api.partners.ubisoft.com/v1/profiles/authentication/token",
                     Type = PostSubmitter.PostTypeEnum.Post
                 };
+                post.useBC = true;
                 post.ContentType = "application/json";
                 post.PostItems.Add("{\"rememberMe\":true}", string.Empty);
                 post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
@@ -217,6 +219,7 @@ namespace client
                         Url = "https://api.partners.ubisoft.com/v1/profiles/authentication/token",
                         Type = PostSubmitter.PostTypeEnum.Post
                     };
+                    post.useBC = true;
                     post.HeaderItems.Add("Ubi-Profile-Authorization", "ubi_2fa_v1 t=" + AuthData.twoFactorAuthenticationTicket);
                     post.HeaderItems.Add("Authorization", "Bearer " + oAuthData.accessToken);
                     post.ContentType = "application/json";
@@ -243,6 +246,7 @@ namespace client
                     Url = "https://api.partners.ubisoft.com/v1/oauth/authorize/callback",
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
+                post.useBC = true;
                 post.PostItems.Add(redirectUrlOpts.ToString(), string.Empty);
                 AddToRich("Get profile_token");
                 res = post.Post(ref _cookies);
@@ -255,6 +259,7 @@ namespace client
                     Url = "https://api.partners.ubisoft.com/v1/oauth/consents",
                     Type = PostSubmitter.PostTypeEnum.Post
                 };
+                post.useBC = true;
                 post.ContentType = "application/json";
                 post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
                 post.HeaderItems.Add("ClientId", redirectUrlOpts.Get("client_id"));
@@ -266,6 +271,7 @@ namespace client
                     Url = "https://api.partners.ubisoft.com/v1/oauth/authorize/callback",
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
+                post.useBC = true;
                 post.PostItems.Add(redirectUrlOpts.ToString(), string.Empty);
                 res = post.Post(ref _cookies);
 
@@ -274,6 +280,7 @@ namespace client
                     Url = res.Replace("login", "login2"),
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
+                post.useBC = true;
                 AddToRich("Post login url");
                 res = post.Post(ref _cookies);
                 post = new PostSubmitter
@@ -281,6 +288,7 @@ namespace client
                     Url = res,
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
+                post.useBC = true;
                 AddToRich("Post login url");
                 res = post.Post(ref _cookies);
                 post = new PostSubmitter
@@ -288,12 +296,14 @@ namespace client
                     Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].main),
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
+                post.useBC = true;
                 res = post.Post(ref _cookies);
                 post = new PostSubmitter
                 {
                     Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].play),
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
+                post.useBC = true;
                 AddToRich(Servers.getTrans("getplay"));
                 res = post.Post(ref _cookies);
                 if (!PrepareFlash(res, res.Contains("thisProgram")))
