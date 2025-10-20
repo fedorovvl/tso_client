@@ -354,13 +354,23 @@ namespace client
                         {
                             HttpWebResponse httpResponse = (HttpWebResponse)e.Response;
                             result = string.Format("ERROR. Statuscode {0}. Description {1} ", httpResponse.StatusCode, httpResponse.StatusDescription);
+
                             if (httpResponse.StatusCode == HttpStatusCode.Conflict)
                             {
                                 result = " CAPCHA ";
-                            }
-                            if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+                            } else if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
                             {
                                 result = " FAILED ";
+                            } else
+                            {
+                                using (var responseStream = httpResponse.GetResponseStream())
+                                {
+                                    using (var readStream = new StreamReader(responseStream,
+                                                                             Encoding.UTF8))
+                                    {
+                                        result += readStream.ReadToEnd();
+                                    }
+                                }
                             }
                             isResponceRecieved = true;
                         }

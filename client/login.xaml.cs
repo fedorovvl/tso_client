@@ -183,6 +183,12 @@ namespace client
                 post.ContentType = "application/json";
                 post.PostItems.Add("{\"headers\":{\"Content-Type\":\"application/json\",\"Accept\":\"application/json\"}}", string.Empty);
                 res = post.Post(ref _cookies);
+                if(res.Contains("ERROR"))
+                {
+                    AddToRich(Servers.getTrans("autherr"));
+                    AddToRich(res);
+                    return;
+                }
                 UbioAuth oAuthData = Deserialize<UbioAuth>(res);
                 AddToRich("Get auth token");
                 post = new PostSubmitter
@@ -293,7 +299,7 @@ namespace client
                 if (!PrepareFlash(res, res.Contains("thisProgram")))
                 {
                     AddToRich(Servers.getTrans("paramserr"));
-                    CipAuth();
+                    //CipAuth();
                 }
             }
             catch (Exception e)
@@ -302,7 +308,7 @@ namespace client
                 if (Main.debug)
                     msg += e.StackTrace;
                 AddToRich(Servers.getTrans("autherr") + msg);
-                CipAuth();
+                //CipAuth();
             }
             return;
         }
