@@ -265,7 +265,14 @@ namespace client
 
                 post = new PostSubmitter
                 {
-                    Url = res.Replace("login", "login2").Replace("oauth", "it/oauth"),
+                    Url = res.Replace("login", "login2"),
+                    Type = PostSubmitter.PostTypeEnum.Get
+                };
+                AddToRich("Post login url");
+                res = post.Post(ref _cookies);
+                post = new PostSubmitter
+                {
+                    Url = res,
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
                 AddToRich("Post login url");
