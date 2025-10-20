@@ -153,19 +153,40 @@ namespace client
 
         private void export_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
             using (var fbd = new OpenFileDialog() { InitialDirectory = Environment.CurrentDirectory })
             {
+                fbd.CheckFileExists = false;
+                fbd.FileName = Main.setting_file + "_open";
                 DialogResult result = fbd.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.FileName))
+                if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    
+                    File.WriteAllText(fbd.FileName, new JavaScriptSerializer().Serialize(setting));
+                    System.Windows.MessageBox.Show("OK");
                 }
             }
         }
 
         private void import_MouseDown(object sender, MouseButtonEventArgs e)
         {
-
+            e.Handled = true;
+            using (var fbd = new OpenFileDialog() { InitialDirectory = Environment.CurrentDirectory })
+            {
+                DialogResult result = fbd.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    try
+                    {
+                        string settings = File.ReadAllText(fbd.FileName);
+                        setting = new JavaScriptSerializer().Deserialize<clientSettings>(settings);
+                        System.Windows.MessageBox.Show("OK");
+                        this.DialogResult = true;
+                    } catch(Exception ex)
+                    {
+                        System.Windows.MessageBox.Show("FAIL "+ex.Message);
+                    }
+                }
+            }
         }
     }
 }

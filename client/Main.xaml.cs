@@ -704,6 +704,7 @@ namespace client
                 if (isLoaded)
                     new Thread(checkVersion) { IsBackground = true }.Start();
                 File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
+                ReadSettings();
             }
         }
         private void resetTsoFolder_Click(object sender, RoutedEventArgs e)
