@@ -165,6 +165,12 @@ namespace client
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
                 res = post.Post(ref _cookies);
+                if(!res.Contains("https"))
+                {
+                    AddToRich(Servers.getTrans("autherr"));
+                    AddToRich(res);
+                    return;
+                }
                 post = new PostSubmitter
                 {
                     Url = res,
