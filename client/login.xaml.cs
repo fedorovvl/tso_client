@@ -280,7 +280,6 @@ namespace client
                     Url = res.Replace("login", "login2"),
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
-                post.useBC = true;
                 AddToRich("Post login url");
                 res = post.Post(ref _cookies);
                 post = new PostSubmitter
@@ -288,7 +287,6 @@ namespace client
                     Url = res,
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
-                post.useBC = true;
                 AddToRich("Post login url");
                 res = post.Post(ref _cookies);
                 post = new PostSubmitter
@@ -296,14 +294,12 @@ namespace client
                     Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].main),
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
-                post.useBC = true;
                 res = post.Post(ref _cookies);
                 post = new PostSubmitter
                 {
                     Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].play),
                     Type = PostSubmitter.PostTypeEnum.Get
                 };
-                post.useBC = true;
                 AddToRich(Servers.getTrans("getplay"));
                 res = post.Post(ref _cookies);
                 if (!PrepareFlash(res, res.Contains("thisProgram")))
