@@ -156,7 +156,7 @@ namespace client
                         }
                         hdr.AppendLine("Cookie: " + string.Join("; ", cList.ToArray()));
                     }
-                    hdr.AppendLine("Connection: close");
+                    //hdr.AppendLine("Connection: close");
                     var bytes = new UTF8Encoding().GetBytes(postData);
                     if (_mType == PostTypeEnum.Post)
                     {
@@ -183,6 +183,7 @@ namespace client
                         totalRead = stream.Read(buff, 0, buff.Length);
                         response += Encoding.ASCII.GetString(buff, 0, totalRead);
                     } while (totalRead != 0);
+                    stream.Close();
                     string[] data = response.Split(new string[] { "\r\n\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (string header in data[0].Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
                     {
