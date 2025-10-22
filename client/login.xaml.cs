@@ -210,6 +210,12 @@ namespace client
                 post.HeaderItems.Add("Authorization", "Bearer " + oAuthData.accessToken);
                 post.HeaderItems.Add("Ubi-Profile-Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(string.Format("{0}:{1}", username.Trim(), password.Trim()))));
                 res = post.Post(ref _cookies);
+                if (res.Contains("ERROR"))
+                {
+                    AddToRich(Servers.getTrans("autherr"));
+                    AddToRich(res);
+                    return;
+                }
                 UbiAuth AuthData = Deserialize<UbiAuth>(res);
                 if (AuthData.twoFactorAuthenticationTicket != null)
                 {
@@ -256,6 +262,12 @@ namespace client
                 post.PostItems.Add(redirectUrlOpts.ToString(), string.Empty);
                 AddToRich("Get profile_token");
                 res = post.Post(ref _cookies);
+                if (res.Contains("ERROR"))
+                {
+                    AddToRich(Servers.getTrans("autherr"));
+                    AddToRich(res);
+                    return;
+                }
                 var callbackOpts = HttpUtility.ParseQueryString(HttpUtility.ParseQueryString(new Uri(res).Query)["redirectUrl"]);
                 AddToRich(callbackOpts.Get("profile_token"));
                 redirectUrlOpts.Add("profile_token", callbackOpts.Get("profile_token"));
