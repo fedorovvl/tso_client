@@ -46,7 +46,7 @@ namespace client
         private string _langRemember;
         private string _dropboxToken;
         private static string extraVersion = "#TESTTAG#";
-        public const string appversion = "1.5.8.2";
+        public const string appversion = "1.5.8.3";
         public static bool newAuth = false;
         public static bool forceFullAuth = false;
         public string version
