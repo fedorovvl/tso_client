@@ -216,6 +216,11 @@ namespace client
                     AddToRich(res);
                     return;
                 }
+                if (res.Contains("FAILED"))
+                {
+                    AddToRich(Servers.getTrans("loginerr"));
+                    return;
+                }
                 UbiAuth AuthData = Deserialize<UbiAuth>(res);
                 if (AuthData.twoFactorAuthenticationTicket != null)
                 {
