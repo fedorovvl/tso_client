@@ -112,6 +112,12 @@ namespace client
         }
         private void FastAuth()
         {
+            if(Main.forceFullAuth)
+            {
+                fastSuccess = false;
+                MainAuth();
+                return;
+            }
             var tsoUrl = HttpUtility.ParseQueryString(_settings.tsoArg);
             AddToRich("Try fastlogin");
             CookieCollection _cookies = new CookieCollection();

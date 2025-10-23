@@ -48,6 +48,7 @@ namespace client
         private static string extraVersion = "#TESTTAG#";
         public const string appversion = "1.5.8.2";
         public static bool newAuth = false;
+        public static bool forceFullAuth = false;
         public string version
         {
             get { return appversion; }
@@ -278,8 +279,7 @@ namespace client
                 bool upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
                 string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
-                if (upstream_swf || _region == "ts")
-                    newAuth = true;
+                newAuth = (upstream_swf || _region == "ts") ? true : false;
                 if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
@@ -684,8 +684,11 @@ namespace client
             langRun = Servers.getTrans("run");
             langExit = Servers.getTrans("exit");
             langRemember = Servers.getTrans("remember");
-            if(isLoaded)
+            if (isLoaded)
+            {
                 new Thread(checkVersion) { IsBackground = true }.Start();
+                forceFullAuth = true;
+            }
         }
 
         private void openTsoFolder_Click(object sender, RoutedEventArgs e)
