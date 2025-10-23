@@ -58,10 +58,7 @@ namespace client
         {
             langExit.Text = Servers.getTrans("exit");
             langAuth.Content = Servers.getTrans("auth");
-            if(Main.newAuth)
-                authlogin = new Thread(CipAuth) { IsBackground = true };
-            else
-                authlogin = new Thread(MainAuth) { IsBackground = true };
+            authlogin = new Thread(MainAuth) { IsBackground = true };
             authlogin.Start();
         }
 
@@ -151,11 +148,6 @@ namespace client
         {
             try
             {
-                if (fastSuccess && _settings.tryFast && !string.IsNullOrEmpty(_settings.tsoArg))
-                {
-                    FastAuth();
-                    return;
-                }
                 PostSubmitter post;
                 string res;
                 CookieCollection _cookies = new CookieCollection();
@@ -351,12 +343,15 @@ namespace client
         {
             try
             {
-                if(fastSuccess && _settings.tryFast && !string.IsNullOrEmpty(_settings.tsoArg))
+                if (fastSuccess && _settings.tryFast && !string.IsNullOrEmpty(_settings.tsoArg))
                 {
                     FastAuth();
                     return;
                 }
-                PostSubmitter post;
+                if (Main.newAuth) {
+                    CipAuth();
+                    return;
+                }
                 string res;
                 CookieCollection _cookies = new CookieCollection();
                 if (attepts > 5)
@@ -365,6 +360,7 @@ namespace client
                     return;
                 }
                 AddToRich(Servers.getTrans("tryauth") + attepts++);
+                PostSubmitter post;
                 post = new PostSubmitter
                 {
                     Url = Servers.ubiServices,
