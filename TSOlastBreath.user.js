@@ -24,13 +24,9 @@
 (function() {
   var li       = document.createElement ('li');
   li.className = "sub";
-    li.innerHTML = '<a id="clplay" href="#">Old client</a>';
+  li.innerHTML = '<a id="clplay" href="#">Old client</a>';
   if(document.querySelector(".jsInstance-logout") == null)
     return;
-  document.querySelector("#menu ul").appendChild(li);
-  var li       = document.createElement ('li');
-  li.className = "main";
-  li.innerHTML = '<div style="padding-top: 5px;"><input type="checkbox" id="highlight"><label for="highlight">  Highlight</label></div>';
   document.querySelector("#menu ul").appendChild(li);
   var url = new URL(window.location.href);
   document.getElementById("clplay").addEventListener("click", async () => {
@@ -49,9 +45,6 @@
     if (!tso) {
 	    alert("something went wrong play page");
 	    return;
-    }
-    if(document.getElementById('highlight').checked == true) {
-      tso = decodeURIComponent(tso).replace(/&s=(.*?)\|(.*?)&/,"&s=http://127.0.0.1:9000/$1|http://127.0.0.1:9000/$2&");
     }
     window.location.href = "tso://"+tso+"&baseUri="+encodeURIComponent(url.origin);
     return;
