@@ -47,6 +47,7 @@ namespace client
             {  "it", "it-it" },
             {  "el", "el-gr" },
             {  "ro", "ro-ro" },
+            {  "cn", "zh-cn" },
             {  "ts", "en-uk" }
         };
 

@@ -41,7 +41,7 @@ namespace client
         public string langAuthDropbox { get { return Servers.getTrans("langAuthDropbox"); } set { } }
         public string langTryFast { get { return Servers.getTrans("langTryFast"); } set { } }
         public string[] winSizes = new string[] { "", "maximized", "minimized", "fullscreen" };
-        public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro" };
+        public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro", "cn" };
 
         public settings()
         {
