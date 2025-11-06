@@ -121,10 +121,4 @@
   <data name="content" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\files\content.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="runtime_x64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\files\runtime_x64.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="runtime_x86" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\files\runtime_x86.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
 </root>
