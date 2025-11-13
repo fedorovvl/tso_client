@@ -398,7 +398,7 @@ namespace client
             }
             region_list.SelectedIndex = _settings.region;
             _region = (region_list.SelectedItem as ComboBoxItem).Tag.ToString();
-            tso_folder = _settings.tsofolder;
+            tso_folder = String.IsNullOrEmpty(_settings.tsofolder) ? "tso_portable" : _settings.tsofolder;
             totpkey = _settings.totpkey;
             SaveLogin.IsChecked = _settings.remember;
         }
@@ -686,7 +686,7 @@ namespace client
             if (settings_window.DialogResult == true)
             {
                 _settings = settings_window.setting;
-                tso_folder = _settings.tsofolder;
+                tso_folder = String.IsNullOrEmpty(_settings.tsofolder) ? "tso_portable" : _settings.tsofolder;
                 totpkey = _settings.totpkey;
                 if (isLoaded)
                     new Thread(checkVersion) { IsBackground = true }.Start();

@@ -198,7 +198,8 @@ extendBaseLang({
 		'itemshide_desc': 'Hide starmenu items',
 		'mwchat_desc': 'Chat panel in MW',
 		'mail_route_desc': "Loot to storage by default",
-		'sound_desc': "Sounds"
+		'sound_desc': "Sounds",
+		'mwfriends_desc': 'MW for friends island'
 	},
 	'ru-ru': {
 		'btn_submit': 'Отправить',
@@ -396,6 +397,7 @@ extendBaseLang({
 		'itemshide_desc': 'Скрытие предметов',
 		'mwchat_desc': 'Панель сисчата в МО',
 		'mail_route_desc': "Добыча на склад по умолчанию",
-		'sound_desc': "Звуки"
+		'sound_desc': "Звуки",
+		'mwfriends_desc': 'МО для остров друзей'
 	}
 });

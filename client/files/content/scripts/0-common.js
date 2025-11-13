@@ -44,8 +44,10 @@ var mainSettings = {
 	shortAsGlobalRelative: false,
 	lruSkipModules: [],
 	mwChatPanel: false,
+	mwFriends: false,
 	mailRouteStorage: false,
-	effectSounds: {}
+	effectSounds: {},
+    customShortcuts: {}
 };
 var chatCSSTemplate = '.bbmsg {#bbmsg;font-weight: bold;}.modmsg {#modmsg;font-weight: bold;}.communityleadmsg {#communityleadmsg;font-weight: bold;}.globaltstamp {#globaltstamp;}.globalsender {#globalsender;text-decoration: underline;}.globalmsg {#globalmsg;}.globalownname {#globalownname;font-weight: bold;}.globalimportant {#globalimportant;font-weight: bold;}.findcooptstamp {#findcooptstamp;}.findcoopsender {#findcoopsender;text-decoration: underline;}.findcoopmsg {#findcoopmsg;}.findcoopownname {#findcoopownname;font-weight: bold;}.findcoopimportant {#findcoopimportant;font-weight: bold;}.tradetstamp {#tradetstamp;}.tradesender {#tradesender;text-decoration: underline;}.trademsg {#trademsg;}.tradeownname {#tradeownname;font-weight: bold;}.tradeimportant {#tradeimportant;font-weight: bold;}.helptstamp {#helptstamp;}.helpsender {#helpsender;text-decoration: underline;}.helpmsg {#helpmsg;}.helpownname {#helpownname;font-weight: bold;}.helpimportant {#helpimportant;font-weight: bold;}.newststamp {#newststamp;}.newssender {#newssender;text-decoration: underline;}.newsmsg {#newsmsg;}.newsimportant {#newsimportant;font-weight: bold;}.newsownname {#newsownname;font-weight: bold;}.guildtstamp {#guildtstamp;}.guildsender {#guildsender;text-decoration: underline;}.guildmsg {#guildmsg;}.guildownname {#guildownname;font-weight: bold;}.guildimportant {#guildimportant;font-weight: bold;}.officerststamp {#officerststamp;}.officerssender {#officerssender;text-decoration: underline;}.officersmsg {#officersmsg;}.officersownname {#officersownname;font-weight: bold;}.officersimportant {#officersimportant;font-weight: bold;}.whispertstamp {#whispertstamp;}.whispersender {#whispersender;text-decoration: underline;}.whispermsg {#whispermsg;}.whisperownname {#whisperownname;font-weight: bold;}.whisperimportant {#whisperimportant;font-weight: bold;}.*coop*tstamp {#cooptstamp;}.*coop*sender {#coopsender;text-decoration: underline;}.*coop*msg {#coopmsg;}.*coop*ownname {#coopownname;}';
 var cssRoomToLoca = {
@@ -261,7 +263,7 @@ function highlightProceed(isUpdate)
 function experimentalVisitHandler(event, data)
 {
 	game.chatMessage("Request zone visit " + event.data, 'exp');
-	if(event.data < 0) {
+	if(event.data < 0 || mainSettings.mwFriends) {
 		game.chatMessage("Run new application", 'exp');
 		runNewApplication(game.def("mx.messaging::FlexClient").getInstance().id, game.def("defines").CLIENT_AUTHRANDOM, event.data);
 	} else {

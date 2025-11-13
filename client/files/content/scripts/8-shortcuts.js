@@ -48,7 +48,22 @@ var shortcutsGeneralsReplacement = {
 };
 
 var shortcutsSettings = [];
-$.extend(shortcutsSettings, readSettings(null, 'shortcuts'));
+shortcutsLoadSettings(false);
+
+function shortcutsLoadSettings(reloadMenu)
+{
+    shortcutsSettings = [];
+    $.extend(shortcutsSettings, readSettings(null, 'shortcuts'));
+    game.chatMessage("load shortcutsSettings", 'shortcuts');
+    if(game.gi.IsAdventureZone() && advRefreshed == 1 && mainSettings.customShortcuts[game.gi.getAdventureName()]) {
+        shortcutsSettings = [];
+        game.chatMessage("load shortcutsSettings for " + game.gi.getAdventureName(), 'shortcuts');
+        $.extend(shortcutsSettings, readSettings(game.gi.getAdventureName(), 'shortcuts_adv'));
+    }
+    if(reloadMenu) { 
+        shortcutsMakeMenu();
+    }
+}
 
 function shortcutsMakeMenu()
 {
@@ -313,13 +328,43 @@ function shortcutsFreeAllUnits(event)
 	}
 }
 
+function shortcutsSettingsWindow()
+{
+	shortcutsWindow.settings(function() {
+        mainSettings.customShortcuts = {};
+        shortcutsWindow.withsBody('[id^=cadv_]:checked').each(function(i, item) {
+            mainSettings.customShortcuts[item.id.replace("cadv_", '')] = true;
+        });
+        settings.settings["global"] = {};
+        settings.store(mainSettings);
+        shortcutsWindow.shide();
+        shortcutsLoadSettings(true);
+    }, '');
+	shortcutsWindow.sDialog().css("height", "80%");
+	var html = '<div class="container-fluid" style="user-select: all;">';
+	html += utils.createTableRow([[12, 'Custom shortcuts']], true);
+    var adventures = {};
+    game.def("AdventureSystem::cAdventureDefinition").map_AdventureName_AdventureDefinition.valueSet().filter(function(item) { return item.mName_string.indexOf("$") < 0 && item.GetRequiresEvent() == ""; }).forEach(function(item) { 
+        (adventures[item.GetType_string()] = adventures[item.GetType_string()] || []).push(item.mName_string);
+    });
+    $.each(adventures, function(name, items) {
+        html += utils.createTableRow([[10, name],[2, '']], true);
+        for(adv in items) {
+            html += utils.createTableRow([[10, loca.GetText("ADN", items[adv])], [2, createSwitch('cadv_'+items[adv], mainSettings.customShortcuts[items[adv]])]]);
+        }
+    });
+	shortcutsWindow.sData().html(html + '<div>');
+    
+	shortcutsWindow.sshow();
+}
+
 function shortcutsAddHandler(event)
 {
 	shortcutsSkillsVector = game.def("global").skillTrees_vector.filter(function(t) { return t.name_string == 'general'; })[0].items_vector;
 	shortcutsTransportSkillsVector = game.def("global").skillTrees_vector.filter(function(t) { return t.name_string == 'transporter'; })[0].items_vector;
 	shortcutsWindow = new Modal('shortcutsWindow', utils.getImageTag('icon_advanced_paper_wholesale.png') + ' ' + getText('shortcutsTitle'));
 	shortcutsWindow.create();
-	
+	shortcutsWindow.addSettingsButton(shortcutsSettingsWindow);
 	if(shortcutsWindow.withHeader('.container-fluid').length == 0){
 		var select = $('<select>', { id: 'shortcutsSelect', 'class': "form-control" }).append($('<option>', { value:"---" }).text("---"));
 		shortcutsWindow.withHeader('').append($('<div>', { 'class': 'container-fluid' }).append([
@@ -401,8 +446,17 @@ function shortcutsAddHandler(event)
 					(shortcutsGetActive() && shortcutsGetActive().items || shortcutsSettings)[i][1] = $(item).find('.form-control').val() || null;
 				}
 			});
-			settings.settings['shortcuts'] = [];
-			storeSettings(shortcutsSettings, 'shortcuts');
+            if(advRefreshed == 0 || !mainSettings.customShortcuts[game.gi.getAdventureName()]) {
+                settings.settings['shortcuts'] = [];
+                storeSettings(shortcutsSettings, 'shortcuts');
+            } else {
+                try {
+                    settings.settings['shortcuts_adv'][game.gi.getAdventureName()] = [];
+                } catch(e) { }
+                var toSave = {};
+                toSave[game.gi.getAdventureName()] = shortcutsSettings;
+                storeSettings(toSave, 'shortcuts_adv');
+            }
 			shortcutsMakeMenu();
 			shortcutsWindow.withHeader('.shortcutsSaved').fadeIn();
 			setTimeout(function() { shortcutsWindow.withHeader('.shortcutsSaved').fadeOut(); }, 1000);
