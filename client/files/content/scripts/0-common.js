@@ -491,6 +491,11 @@ var Utils = function() {
 };
 Utils.prototype = {
     getImage: function(t, e, a) {
+        if (!t) {
+            return $("<span>", {
+                'style': "display: inline-block; width: {0}; height: {1}; background-color: #ccc;".format(e || "auto", a || "auto")
+            }).prop("outerHTML");
+        }
         var r = t.encode(t.rect, this.pngOpts);
         return this.b64.encodeBytes(r), $("<img>", {
                 'style': "width: {0};height: {1};".format(e || "auto", a || "auto"),
