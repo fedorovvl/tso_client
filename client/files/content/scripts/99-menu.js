@@ -224,6 +224,7 @@ Menu.prototype = {
 };
 menu = new Menu(mainSettings.menuStyle);
 menu.show();
-setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem: ' + humanMemorySize(air.System.privateMemory, 1); }, 5000);
+if(memMonitorIntervalId) clearInterval(memMonitorIntervalId);
+memMonitorIntervalId = setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem: ' + humanMemorySize(air.System.privateMemory, 1); }, 5000);
 reloadScripts(null);
 shortcutsMakeMenu();

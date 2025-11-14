@@ -148,11 +148,14 @@ var _exudBuildingMonitorSettings = {
 };
 $.extend(_exudBuildingMonitorSettings, readSettings(null, 'exusMonitorBuilding'));
 
+// Clean up any existing timeout before initialization
+if (typeof _exudBuildingMonitorTimeOut !== 'undefined' && _exudBuildingMonitorTimeOut != null) {
+	clearTimeout(_exudBuildingMonitorTimeOut);
+}
 var _exudBuildingMonitorTimeOut = null;
 
-if ((_exudBuildingMonitorTimeOut == null || _exudBuildingMonitorTimeOut == undefined) && (_exudBuildingMonitorSettings.Notify))
+if (_exudBuildingMonitorSettings.Notify)
 {
-	_exudBuildingMonitorTimeOut = null;
 	setTimeout(_exudUserBuildingMonitorStart, 30000);
 }
 

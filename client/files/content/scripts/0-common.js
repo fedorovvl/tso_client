@@ -1,4 +1,5 @@
 var forcegcIntervalId = null;
+var memMonitorIntervalId = null;
 var enabledScripts = {};
 var buiFastAccess = [];
 var lruTemplate = {};
@@ -79,6 +80,20 @@ function toggleExperimental()
 
 function reloadScripts(event)
 {
+	// Clean up intervals before reloading scripts
+	if(forcegcIntervalId) {
+		clearInterval(forcegcIntervalId);
+		forcegcIntervalId = null;
+	}
+	if(memMonitorIntervalId) {
+		clearInterval(memMonitorIntervalId);
+		memMonitorIntervalId = null;
+	}
+	if(dropbox && dropbox.refreshIntervalId) {
+		clearInterval(dropbox.refreshIntervalId);
+		dropbox.refreshIntervalId = null;
+	}
+
 	menu.clearTools();
 	air.File.applicationDirectory.resolvePath("userscripts").getDirectoryListing().forEach(function(item) {
 		if(enabledScripts[item.name] || enabledScripts[item.name] == undefined) {
