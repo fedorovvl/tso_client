@@ -593,6 +593,10 @@ namespace client
                 tsoUrl.Set("dropboxApiKey", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxkey)));
                 tsoUrl.Set("dropboxApiRefresh", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxrefresh)));
             }
+            if (_settings.useCache)
+            {
+                tsoUrl.Set("gfxcache", "true");
+            }
             return tsoUrl;
         }
 
@@ -735,6 +739,7 @@ namespace client
         public bool tsoFolderNearLauncher { get; set; } = false;
         public bool x64 { get; set; } = false;
         public bool tryFast { get; set; } = false;
+        public bool useCache { get; set; } = false;
         public bool configNickname { get; set; } = false;
         public string username { get; set; } = string.Empty;
         public long accountId { get; set; } = 0;

@@ -96,7 +96,8 @@ namespace client
                 { "langDropboxRefresh", "Dropbox Refresh token" },
                 { "langTestDropbox", "Проверка Dropbox" },
                 { "langAuthDropbox", "Авторизация Dropbox" },
-                { "langTryFast", "Пробовать быструю авторизацию" }
+                { "langTryFast", "Пробовать быструю авторизацию" },
+                { "langUseCache", "Использовать локальный кеш" }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -142,7 +143,8 @@ namespace client
                 { "langDropboxRefresh", "Dropbox Refresh token" },
                 { "langTestDropbox", "Dropbox test" },
                 { "langAuthDropbox", "Dropbox auth" },
-                { "langTryFast", "Try fastlogin first" }
+                { "langTryFast", "Try fastlogin first" },
+                { "langUseCache", "Use local cache" }
              }
             },
             { "fr-fr", new Dictionary<string, string>() {
