@@ -47,7 +47,6 @@ namespace client
         private string _dropboxToken;
         private static string extraVersion = "#TESTTAG#";
         public const string appversion = "1.5.8.3";
-        public static bool newAuth = false;
         public static bool forceFullAuth = false;
         public string version
         {
@@ -119,8 +118,6 @@ namespace client
             ReadSettings();
             if (cmd["debug"] != null)
                 debug = true;
-            if (cmd["cipauth"] != null)
-                newAuth = true;
             if (cmd["tsofolder"] != null)
                 tso_folder = cmd["tsofolder"].Trim();
             if (cmd["totpkey"] != null)
@@ -263,7 +260,6 @@ namespace client
                 bool upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
                 string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
-                newAuth = (upstream_swf || _region == "ts") ? true : false;
                 if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
