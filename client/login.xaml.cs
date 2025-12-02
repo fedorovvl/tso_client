@@ -326,6 +326,10 @@ namespace client
                 if (!PrepareFlash(res, res.Contains("thisProgram")))
                 {
                     AddToRich(Servers.getTrans("paramserr"));
+                    if (res.StartsWith("https://"))
+                    {
+                        AddToRich("Redirect detected. Maintenance?");
+                    }
                 }
             }
             catch (Exception e)
