@@ -146,6 +146,9 @@ function _DM_renderHeader() {
 
         selectAllBtnsHtml += img.replace('24px', '24px;vertical-align: top;cursor:pointer;margin-right:20px').replace('<img', '<img id="DM_selectAll_' + ore + '" ');
     });
+    var img  = getImageTag('RefreshTradeIcon', '24px');
+    selectAllBtnsHtml += img.replace('24px', '24px;vertical-align: top;cursor:pointer;margin-right:20px').replace('<img', '<img id="DM_selectAll_ALL" ');
+
     maxUpgradeLevelHtml = createTableRow([
         [
             3,
@@ -488,7 +491,7 @@ function _DM_renderData(deposits) {
             [1, checkbox],
             [1, resourcesLeft],
             [3, timeHtml],
-            [3, buffIcon ? getImageTag(buffIcon, '24px') : '' + ' <small>' + buffName + '</small>'],
+            [3, (buffIcon ? getImageTag(buffIcon, '24px') : '') + ' <small>' + buffName + '</small>'],
             [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
         ], false);
     });
@@ -592,33 +595,36 @@ function _DM_InitEvens() {
 
     $('[id^="DM_selectAll_"]').off('click').click(function () {
         var ore       = this.id.replace("DM_selectAll_", "");
-        var isChecked = !($('[name^="' + ore + '"]').prop('checked'));
-        if ($('#DM_selectAll_' + ore).css('opacity') == '0.5') {
-            $('#DM_selectAll_' + ore).css('opacity', '1');
-            isChecked = true;
+        var isChecked;
+        if (ore === 'ALL') {
+            const anyChecked = $('#DrunkenMinerModalData input[type="checkbox"]').prop('checked');
+            isChecked = !anyChecked;
+            $(this).css('opacity', isChecked ? '1' : '0.5');
         } else {
-            $('#DM_selectAll_' + ore).css('opacity', '.5');
-            isChecked = false;
+            const selector = '[name^="' + ore + '"]';
+            const anyChecked = $(selector).is(':checked');
+            isChecked = !anyChecked;
+            $(this).css('opacity', isChecked ? '1' : '0.5');
         }
 
-        $('[name^="' + ore + '"]').each(function () {
+        const $targets = (ore === 'ALL') ? $('#DrunkenMinerModalData input[type="checkbox"]') : $('[name^="' + ore + '"]');
+
+        $targets.each(function () {
             $(this).prop('checked', isChecked);
-            var grid = '';
 
             if (this.id.indexOf('DM_UpgradeMines_') !== -1) {
-                grid = this.id.replace("DM_UpgradeMines_", "");
-
+                const grid = this.id.replace("DM_UpgradeMines_", "");
                 _DM_pushUpgradeGridToConfig(grid, isChecked);
                 return;
             }
             if (this.id.indexOf('DM_RebuildMines_') !== -1) {
-                grid = this.id.replace("DM_RebuildMines_", "");
-
+                const grid = this.id.replace("DM_RebuildMines_", "");
                 _DM_pushBuildGridToConfig(grid, isChecked);
             }
         });
 
         _DM_saveTmpSetting();
+        _DM_updateSelectAllOpacity();
     });
 
     $('#DrunkenMinerModal .upgradeReset').off('click').click(function () {
@@ -855,6 +861,7 @@ function _DM_getBuildingDataFromDeposit(deposit) {
     var buff                        = bld.productionBuff;
     var isWorking                   = bld.IsProductionActive();
     var buffIcon                    = '';
+
     //has buff
     if (buff != null) {
         var app = buff.GetApplicanceMode();
@@ -936,6 +943,14 @@ function _DM_updateSelectAllOpacity() {
             }
         }
     });
+
+    var allCheckboxes = $('#DrunkenMinerModalData input[type="checkbox"]');
+    var isChecked = allCheckboxes.is(':checked');
+    if (isChecked){
+        $('#DM_selectAll_ALL').css('opacity', '1');
+    }else{
+        $('#DM_selectAll_ALL').css('opacity', '.5');
+    }
 }
 
 //helpers
