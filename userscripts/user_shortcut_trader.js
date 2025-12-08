@@ -6,6 +6,7 @@ var ShortcutTrader = (function () {
     var NAME              = loca.GetText("QUL", "MiadTropicalSunQ2") + ', ' + loca.GetText("ACL", "SellGoods_1");
     var tradesData        = {};
     var isMarketTradeMode = true;
+    let isTradeAlreadySent = false;
     var buildTemplates;
     var modalInitialized  = false;
 
@@ -39,6 +40,10 @@ var ShortcutTrader = (function () {
         renderHeader();
         renderBody();
         renderFooter();
+
+        if (isTradeAlreadySent === false){
+            isTradeAlreadySent = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0) !== 0;
+        }
 
         $('#FriendTraderModal:not(:visible)').modal({backdrop: "static"});
     }
@@ -489,8 +494,13 @@ var ShortcutTrader = (function () {
             tradeOffer.slotPos      = 0;
 
             if (trade.userId === 0) {
-                var freeSlots = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0);
-                var slotPos   = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(2);
+                let freeSlots, slotPos;
+                if (isTradeAlreadySent) {
+                    freeSlots = 1;
+                } else {
+                    freeSlots = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0);
+                }
+                slotPos   = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(2);
 
                 tradeOffer.lots     = trade.UserName;
                 tradeOffer.slotType = freeSlots === 0 ? 0 : 2;
@@ -500,6 +510,7 @@ var ShortcutTrader = (function () {
             (function (currentTradeOffer, currentTrade) {
                 queue.add(function () {
                     game.gi.mClientMessages.SendMessagetoServer(1049, game.gi.mCurrentViewedZoneID, currentTradeOffer);
+                    isTradeAlreadySent = true;
                     successCount++;
                     if (currentTrade.userId === 0) {
                         game.showAlert(loca.GetText('LAB', 'TradeOffer') + ' ' + loca.GetText('MES', 'TradeInitiated') + ' (' + successCount + '/' + totalTrades + ')');
