@@ -937,7 +937,7 @@ var ext_translate =  {
   }
 };
 
-var nt_uniq = loca.NT.filter(function(item, index, array) { return index==0?true:(array.lastIndexOf(item, index-1) == -1);     });
+var nt_uniq = loca.NT ? loca.NT.filter(function(item, index, array) { return index==0?true:(array.lastIndexOf(item, index-1) == -1);     }) : [];
 
 if(ext_translate[gameLang]) {
   $.each(ext_translate[gameLang], function(category, data) {
@@ -948,5 +948,5 @@ if(ext_translate[gameLang]) {
       loca.setText(category, id, text);
     });
   });
-  loca.NT = nt_uniq;
+  if(loca.NT) { loca.NT = nt_uniq; }
 }
