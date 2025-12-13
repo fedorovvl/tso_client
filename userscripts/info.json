@@ -110,5 +110,12 @@
       "longDesc": "Allows you to save trade order templates and quickly relist them with a single click. Supports trading with both players and the market.",
       "author": "MadFx",
       "url": ""
+   },
+   "user_ext_translate.js": {
+      "name": "External translation",
+      "shortDesc": "External translation source.",
+      "longDesc": "Allows add missed translations or change translations of existing items.",
+      "author": "SirriS",
+      "url": ""
    }
 }
