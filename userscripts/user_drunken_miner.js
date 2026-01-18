@@ -71,7 +71,9 @@
         ON_OFF_AUTOMODE_RADIO: SCRIPT_PREFIX + 'AutoModeStateSwitch',
         ON_OFF_AUTOMODE_RADIO_TEXT: SCRIPT_PREFIX + 'AutoModeStateSwitchStatus',
         BUILD_CHECKBX: SCRIPT_PREFIX + 'buildCheckBox',
-        UPGR_CHECKBX: SCRIPT_PREFIX + 'upgrCheckBox'
+        UPGR_CHECKBX: SCRIPT_PREFIX + 'upgrCheckBox',
+        SAFE_BUFF_BTN: SCRIPT_PREFIX + 'toggleSafeBuffing',
+        SELECT_ALL_BTN: SCRIPT_PREFIX + 'selectAll_ALL',
     };
     const DM_SwitchStatuses = {
         UPGRADE: loca.GetText('ACL', 'Upgrades'),
@@ -85,7 +87,8 @@
         upgrade: [],
         switchStatus: DM_UpgradeSwitchStatus,
         AutoModeStatus: DM_AutoModeSwitchStatus,
-        maxLvl: RESOURCES.maxLevelDefaults
+        maxLvl: RESOURCES.maxLevelDefaults,
+        safeBuffing: false
     };
     $.extend(DM_config, settings.read(null, SCRIPT_PREFIX + 'SETTINGS'));
 
@@ -139,69 +142,97 @@
     }
 
     function _DM_renderHeader() {
-        var switchTextHtml = $('<div>').attr({
-            "id": DM_lements.ON_OFF_RADIO_TEXT,
-            "style": "display:inline-block;vertical-align:top;padding-top:2px;padding-left:5px;z-index:999",
-        }).text(DM_UpgradeSwitchStatus ? DM_SwitchStatuses.UPGRADE : DM_SwitchStatuses.BUILD)
-        var autoHtml       = $('<div>').attr({
-            "id": DM_lements.ON_OFF_AUTOMODE_RADIO_TEXT,
-            "style": "display:inline-block;vertical-align:top;padding-top:2px;padding-left:5px;z-index:999",
-            'data-toggle': "tooltip",
-            'data-placement': "right",
-            'title': loca.GetText('LAB', 'ChatAutoScroll'),
-        }).text(DM_AutoModeSwitchStatus ? DM_SwitchStatuses.AUTOMODE_ON : DM_SwitchStatuses.AUTOMODE_OFF)
 
-        var switchHtml = createTableRow([
-            [
-                3, createSwitch(DM_lements.ON_OFF_RADIO, DM_UpgradeSwitchStatus) + switchTextHtml[0].outerHTML
-            ],
-            [
-                9, createSwitch(DM_lements.ON_OFF_AUTOMODE_RADIO, DM_AutoModeSwitchStatus) + autoHtml[0].outerHTML
-            ]
-        ], true)
+        function icon(id, iconName, extraStyle) {
+            return getImageTag(iconName, '24px')
+                .replace(
+                    '<img',
+                    '<img' +
+                    (id ? ' id="' + id + '"' : '') +
+                    ' style="vertical-align:top;cursor:pointer;' + (extraStyle || '') + '"'
+                );
+        }
 
+        function labeledSwitch(id, status, text) {
+            var label = $('<div>')
+                .attr({
+                    id: id + '_TEXT',
+                    style: 'display:inline-block;vertical-align:top;padding:2px 0 0 5px;z-index:999'
+                })
+                .text(text);
 
-        var maxUpgradeLevelHtml = '';
-        var selectAllBtnsHtml   = '';
-        RESOURCES.ores.forEach(function (ore) {
-            var img  = getImageTag(RESOURCES.icons[ore], '24px');
-            var html = img + '<select name="DM_maxUpgLvlFilter_' + ore + '">';
-            for (var i = 0; i < DM_MaxUpgradeLvl; i++) {
-                html += '<option value="' + (i + 1) + '">' + (i + 1) + '</option>';
+            return createSwitch(id, status) + label[0].outerHTML;
+        }
+
+        function buildSelect(ore) {
+            var html = icon(null, RESOURCES.icons[ore], '');
+            html += '<select name="DM_maxUpgLvlFilter_' + ore + '">';
+            for (var i = 1; i <= DM_MaxUpgradeLvl; i++) {
+                html += '<option value="' + i + '">' + i + '</option>';
             }
-            html += '</select>';
-            maxUpgradeLevelHtml += html;
+            return html + '</select>';
+        }
 
-            selectAllBtnsHtml += img.replace('24px', '24px;vertical-align: top;cursor:pointer;margin-right:20px').replace('<img', '<img id="DM_selectAll_' + ore + '" ');
+        var switchRow = createTableRow([
+            [3, labeledSwitch(
+                DM_lements.ON_OFF_RADIO,
+                DM_UpgradeSwitchStatus,
+                DM_UpgradeSwitchStatus ? DM_SwitchStatuses.UPGRADE : DM_SwitchStatuses.BUILD
+            )],
+            [9, labeledSwitch(
+                DM_lements.ON_OFF_AUTOMODE_RADIO,
+                DM_AutoModeSwitchStatus,
+                DM_AutoModeSwitchStatus ? DM_SwitchStatuses.AUTOMODE_ON : DM_SwitchStatuses.AUTOMODE_OFF
+            )]
+        ], true);
+
+        var maxUpgradeHtml = '';
+        var selectAllHtml  = '';
+
+        RESOURCES.ores.forEach(function (ore) {
+            maxUpgradeHtml += buildSelect(ore);
+            selectAllHtml  += icon('DM_selectAll_' + ore, RESOURCES.icons[ore], 'margin-right:20px;');
         });
-        var img = getImageTag('RefreshTradeIcon', '24px');
-        selectAllBtnsHtml += img.replace('24px', '24px;vertical-align: top;cursor:pointer;margin-right:20px').replace('<img', '<img id="DM_selectAll_ALL" ');
 
-        maxUpgradeLevelHtml = createTableRow([
-            [
-                3,
-                '<div style="text-align: right">' + loca.GetText("LAB", "Max") + ' ' + loca.GetText("LAB", "ExpeditionDifficultyTooltip") + ' ' + loca.GetText('ACL', 'Upgrades') + '</div>'
-            ], [9, maxUpgradeLevelHtml]
+        selectAllHtml += icon(DM_lements.SELECT_ALL_BTN, 'RefreshTradeIcon', 'margin-right:20px;');
+        selectAllHtml += icon(DM_lements.SAFE_BUFF_BTN, 'ProductivityBuffLvl3', 'margin-right:20px;');
+
+        var maxUpgradeRow = createTableRow([
+            [3, '<div style="text-align:right">' +
+            loca.GetText('LAB', 'Max') + ' ' +
+            loca.GetText('LAB', 'ExpeditionDifficultyTooltip') + ' ' +
+            loca.GetText('ACL', 'Upgrades') +
+            '</div>'],
+            [9, maxUpgradeHtml]
         ], true);
 
-        selectAllBtnsHtml = createTableRow([
-            [
-                3, '<div style="text-align: right">' + loca.GetText("LAB", "Select") + ' ' + loca.GetText("LAB", "All") + '</div>'
-            ], [9, selectAllBtnsHtml]
+        var selectAllRow = createTableRow([
+            [3, '<div style="text-align:right">' +
+            loca.GetText('LAB', 'Select') + ' ' +
+            loca.GetText('LAB', 'All') +
+            '</div>'],
+            [9, selectAllHtml]
         ], true);
 
-        var tableHeadHtml = createTableRow([
-            [3, loca.GetText("BUI", "BuildingMountainOre")],
-            [1, loca.GetText("LAB", "Tasks")],
-            [1, loca.GetText("LAB", "RareBuffGroup2")],
+        var tableHeadRow = createTableRow([
+            [3, loca.GetText('BUI', 'BuildingMountainOre')],
+            [1, loca.GetText('LAB', 'Tasks')],
+            [1, loca.GetText('LAB', 'RareBuffGroup2')],
             [3, loca.GetText('LAB', 'Expires')],
-            [3, loca.GetText("LAB", "RareBuffGroup0")],
-            [1, loca.GetText("LAB", "Visit")]
-            // [12, loca.GetText("LAB", "Buff")],
-            // [1, loca.GetText("LAB", "ExpeditionDifficultyTooltip")]
+            [3, loca.GetText('LAB', 'RareBuffGroup0')],
+            [1, loca.GetText('LAB', 'Visit')]
         ], true);
 
-        $('#DrunkenMinerModal .modal-header').append('<div class="container-fluid">' + switchHtml + maxUpgradeLevelHtml + selectAllBtnsHtml + '<br>' + tableHeadHtml + '</div>');
+        $('#DrunkenMinerModal .modal-header')
+            .append(
+                '<div class="container-fluid">' +
+                switchRow +
+                maxUpgradeRow +
+                selectAllRow +
+                '<br>' +
+                tableHeadRow +
+                '</div>'
+            );
     }
 
     function _DM_renderBody() {
@@ -684,6 +715,46 @@
             _DM_updateSelectAllOpacity();
         });
 
+        $('#'+DM_lements.SAFE_BUFF_BTN).off('click').on('click', function () {
+            DM_config.safeBuffing = !DM_config.safeBuffing;
+
+            $(this).css('opacity', DM_config.safeBuffing ? '1' : '0.5');
+
+            if (!DM_UpgradeSwitchStatus) {
+                _DM_saveTmpSetting();
+                return;
+            }
+
+            if (DM_UpgradeSwitchStatus) {
+                $('#DrunkenMinerModalData input.' + DM_lements.UPGR_CHECKBX).each(function () {
+                    var $cb = $(this);
+                    var grid = $cb.attr('id').replace('DM_UpgradeMines_', '');
+
+                    var $timeCell = $cb.parent().parent().find('div:eq(3)');
+                    var timeText = $timeCell.text().trim();
+
+                    debug(timeText)
+                    if (timeText.indexOf('/') === -1) return;
+                    var parts = timeText.split('/');
+                    var depleteStr = parts[0].trim();
+                    var buffStr    = parts[1].trim();
+
+                    var color = _DM_formatBuffTimeColor(depleteStr, buffStr);
+                    if (color !== 'orange') return;
+                    if (DM_config.safeBuffing) {
+                        $cb.prop('checked', true);
+                        _DM_pushUpgradeGridToConfig(grid, true);
+                    }else{
+                        $cb.prop('checked', false);
+                        _DM_pushUpgradeGridToConfig(grid, false);
+                    }
+                })
+            }
+
+            _DM_updateSelectAllOpacity();
+            _DM_saveTmpSetting();
+        });
+
         $('#DrunkenMinerModal .upgradeReset').off('click').click(function () {
             DM_config = {
                 build: [], upgrade: [], switchStatus: DM_UpgradeSwitchStatus, maxLvl: {
@@ -943,16 +1014,32 @@
     }
 
     function _DM_updateSelectAllOpacity() {
+        var hasOrangeChecked  = false;
+        var hasChecked        = false;
         RESOURCES.ores.forEach(function (oreName) {
             var relatedCheckboxes = $('input[type="checkbox"][name="' + oreName + '"]').filter(function () {
                 var id = this.id;
                 return id && (id.indexOf('DM_RebuildMines_') === 0 || id.indexOf('DM_UpgradeMines_') === 0);
             });
-            var hasChecked        = false;
             relatedCheckboxes.each(function () {
-                if ($(this).is(':checked')) {
+                var $cb = $(this);
+                if ($cb.is(':checked')) {
                     hasChecked = true;
-                    return false;
+                    if (!hasOrangeChecked) {
+                        var $timeCell = $cb.parent().parent().find('div:eq(3)');
+                        var timeText = $timeCell.text().trim();
+
+                        if (timeText.indexOf('/') !== -1) {
+                            var parts = timeText.split('/');
+                            var color = _DM_formatBuffTimeColor(parts[0].trim(), parts[1].trim());
+                            if (color === 'orange') {
+                                hasOrangeChecked = true;
+                            }
+                        }
+                    }
+                    if (hasChecked && hasOrangeChecked){
+                        return false;
+                    }
                 }
             });
             var selectAllElement = $('#DM_selectAll_' + oreName);
@@ -966,12 +1053,9 @@
         });
 
         var allCheckboxes = $('#DrunkenMinerModalData input[type="checkbox"]');
-        var isChecked     = allCheckboxes.is(':checked');
-        if (isChecked) {
-            $('#DM_selectAll_ALL').css('opacity', '1');
-        } else {
-            $('#DM_selectAll_ALL').css('opacity', '.5');
-        }
+        var isAnyChecked  = allCheckboxes.is(':checked');
+        $('#' + DM_lements.SELECT_ALL_BTN).css('opacity', isAnyChecked ? '1' : '.5');
+        $('#' + DM_lements.SAFE_BUFF_BTN).css('opacity', hasOrangeChecked ? '1' : '.5');
     }
 
     function _DM_findOreInDepletedName(depletedName) {
