@@ -6,7 +6,7 @@ var ShortcutTrader = (function () {
     var NAME              = loca.GetText("QUL", "MiadTropicalSunQ2") + ', ' + loca.GetText("ACL", "SellGoods_1");
     var tradesData        = {};
     var isMarketTradeMode = true;
-    let isTradeAlreadySent = false;
+    var isTradeAlreadySent = false;
     var buildTemplates;
     var modalInitialized  = false;
 
@@ -50,6 +50,7 @@ var ShortcutTrader = (function () {
 
     function init() {
         try {
+            game.gi.mClientMessages.SendMessagetoServer(1061, game.gi.mCurrentViewedZoneID, null)
             tradesData = initTradesData();
             $.extend(tradesData, settings.read(null, 'FT_SETTINGS'));
             isMarketTradeMode = tradesData.isMarketTradeMode;
@@ -267,6 +268,8 @@ var ShortcutTrader = (function () {
                 userName = qty.find('option:selected').val();
             }
 
+            var resources = getResourceList();
+
             var trades = [];
             if (isMarketTradeMode) {
                 trades = tradesData.marketTrades;
@@ -332,9 +335,11 @@ var ShortcutTrader = (function () {
             }, 3000);
 
             if (isMarketTradeMode) {
-                sendTrades([tradesData.marketTrades[i]]);
+                TradeService.send([tradesData.marketTrades[i]]);
+                // sendTestTrades([tradesData.marketTrades[i]]);
             } else {
-                sendTrades([tradesData.friendsTrades[i]]);
+                TradeService.send([tradesData.friendsTrades[i]]);
+                // sendTestTrades([tradesData.friendsTrades[i]]);
             }
         });
 
@@ -370,7 +375,48 @@ var ShortcutTrader = (function () {
                     });
                 }
             });
+
+            categoryNames.push('buffs');
+            resourcesByCategory['buffs'] = [];
+            var items = swmmo.getDefinitionByName("global").map_BuffName_BuffDefinition;
+            for (var item in items) {
+                var definition = items[item];
+                var name = definition.GetName_string();
+                if (definition.IsTradable(name)) {
+                    resourcesByCategory['buffs'].push({
+                        name: name,
+                    });
+                }
+            }
+
+            categoryNames.push('adventures');
+            resourcesByCategory['adventures'] = [];
+            items = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition").map_AdventureName_AdventureDefinition.valueSet();
+            for (var item in items) {
+                var definition = items[item];
+                var name = definition.GetName();
+                if (definition.IsTradable()) {
+                    resourcesByCategory['adventures'].push({
+                        name: name,
+                    });
+                }
+            }
+
+            categoryNames.push('buildings');
+            resourcesByCategory['buildings'] = [];
+            items = swmmo.getDefinitionByName("global").buildingGroup.mGOList_vector;
+            for (var item in items) {
+                var definition = items[item];
+                var name = definition.mGfxResourceListName_string;
+                if (definition.isTradable()) {
+                    resourcesByCategory['buildings'].push({
+                        name: name,
+                    });
+                }
+            }
+
         } catch (e) {
+            debug(e);
             return [];
         }
 
@@ -389,6 +435,17 @@ var ShortcutTrader = (function () {
         return sortedGroupedList;
     }
 
+    function getResourceTypeByName(name){
+        var defenition = swmmo.getDefinitionByName("global").buildingGroup.GetNrFromName(name)
+        if (defenition !== 195) return 'BuildBuilding'
+        defenition = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition")
+            .map_AdventureName_AdventureDefinition
+            .getItem(name);
+        if (defenition) return 'Adventure';
+
+        return name;
+    }
+
     function getFriendsList() {
         return globalFlash.gui.mFriendsList.GetFilteredFriends("", true).map(function (f) {
             return {id: f.id, name: f.username};
@@ -402,11 +459,24 @@ var ShortcutTrader = (function () {
             cat.items.forEach(function (res) {
                 $select.append($('<option>', {
                     value: res.name, 'data-max': res.maxLimit
-                }).text(loca.GetText("RES", res.name)));
+                }).text(getName(res.name)));
             })
         });
         $select.append('</optgroup>');
         return $select;
+    }
+
+    function getName(originalName){
+        locs = ['RES','BUI','SHI','ADN'];
+        var name = '[undefined text]';
+        for (loc in locs){
+            loc = locs[loc];
+            name = loca.GetText(loc, originalName);
+            if (name !== '[undefined text]' && name !== '[undefined text] '){
+                return name;
+            }
+        }
+        return name;
     }
 
     function createNumberInput(id, min, max, value) {
@@ -420,110 +490,6 @@ var ShortcutTrader = (function () {
             'class': 'form-control',
             style: 'display:inline;width:100px;'
         });
-    }
-
-    function sendTrades(tradeArray) {
-        if (!Array.isArray(tradeArray) || tradeArray.length === 0) {
-            game.showAlert(loca.GetText('LAB', 'CannotAffordSendTrade'));
-            return;
-        }
-
-        var queue        = new TimedQueue(3000);
-        var successCount = 0;
-        var totalTrades  = tradeArray.length;
-
-        var myResources = game.gi.mCurrentPlayerZone.GetResources(game.gi.mHomePlayer);
-        for (var i = 0; i < tradeArray.length; i++) {
-            var trade = tradeArray[i];
-
-            if (!isMarketTradeMode && trade.userId === 0) {
-                totalTrades--;
-                continue;
-            }
-            if (isMarketTradeMode && trade.userId !== 0) {
-                totalTrades--;
-                continue;
-            }
-            if (!isMarketTradeMode) {
-                var friends  = getFriendsList();
-                var isFriend = friends.some(function (f) {
-                    return f.id == trade.userId;
-                });
-                if (!isFriend) {
-                    game.showAlert(loca.GetText('QUL', 'SocialMedium8') + ' ' + loca.GetText('LAB', 'AddFriend'));
-                    continue;
-                }
-            }
-
-            var hasEnoughResource = true;
-
-            try {
-                var amount = trade.offerResAmount;
-                if (isMarketTradeMode){
-                    amount = amount * trade.UserName;
-                }
-                if (myResources.HasPlayerResource(trade.offerResName, amount)) {
-                    hasEnoughResource = true;
-                } else {
-                    hasEnoughResource = false;
-                }
-            } catch (checkError) {
-                hasEnoughResource = false;
-            }
-
-            if (!hasEnoughResource) {
-                totalTrades--;
-                game.showAlert(loca.GetText('LAB', 'CannotAffordSendTrade'));
-                continue;
-            }
-
-            var offerRes         = new (game.def("Communication.VO::dResourceVO"));
-            offerRes.amount      = offerRes.producedAmount = trade.offerResAmount;
-            offerRes.name_string = trade.offerResName;
-
-            var costRes         = new (game.def("Communication.VO::dResourceVO"));
-            costRes.amount      = costRes.producedAmount = trade.costResAmount;
-            costRes.name_string = trade.costResName;
-
-            var tradeOffer          = new (game.def("Communication.VO::dTradeOfferVO"));
-            tradeOffer.offerRes     = offerRes;
-            tradeOffer.costsRes     = costRes;
-            tradeOffer.receipientId = trade.userId;
-            tradeOffer.lots         = 0;
-            tradeOffer.slotType     = 4;
-            tradeOffer.slotPos      = 0;
-
-            if (trade.userId === 0) {
-                let freeSlots, slotPos;
-                if (isTradeAlreadySent) {
-                    freeSlots = 1;
-                } else {
-                    freeSlots = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0);
-                }
-                slotPos   = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(2);
-
-                tradeOffer.lots     = trade.UserName;
-                tradeOffer.slotType = freeSlots === 0 ? 0 : 2;
-                tradeOffer.slotPos  = slotPos
-            }
-
-            (function (currentTradeOffer, currentTrade) {
-                queue.add(function () {
-                    game.gi.mClientMessages.SendMessagetoServer(1049, game.gi.mCurrentViewedZoneID, currentTradeOffer);
-                    isTradeAlreadySent = true;
-                    successCount++;
-                    if (currentTrade.userId === 0) {
-                        game.showAlert(loca.GetText('LAB', 'TradeOffer') + ' ' + loca.GetText('MES', 'TradeInitiated') + ' (' + successCount + '/' + totalTrades + ')');
-                    } else {
-                        game.showAlert(loca.GetText('LAB', 'TradeOffer') + ' ' + loca.GetText('LAB', 'User') + ': ' + currentTrade.UserName + ' (' + successCount + '/' + totalTrades + ')');
-                    }
-                });
-            })(tradeOffer, trade);
-        }
-
-        if (queue.len() > 0) {
-            queue.run();
-        }
     }
 
     function sanitizeInput(element) {
@@ -543,7 +509,281 @@ var ShortcutTrader = (function () {
         }
     }
 
-    return {init: init};
+    var TradeService = (function () {
+        function send(trades) {
+            if (!TradeValidator.isValidTradeArray(trades)) {
+                TradeUI.alertCannotAfford();
+                return;
+            }
+
+            var queue            = new TimedQueue(4000);
+            var successCount     = 0;
+            var totalTrades      = trades.length;
+            var playerResources  = game.gi.mCurrentPlayerZone.GetResources(game.gi.mHomePlayer);
+
+            trades.forEach(function (trade) {
+                if (!TradeValidator.isTradeAllowed(trade)) {
+                    totalTrades--;
+                    return;
+                }
+
+                var tradeOffer = TradeOfferFactory.create(trade, playerResources);
+                if (!tradeOffer) {
+                    totalTrades--;
+                    return;
+                }
+
+                TradeOfferFactory.applyRecipient(tradeOffer, trade);
+
+                TradeQueue.enqueue(queue, tradeOffer, trade, function () {
+                    successCount++;
+                    isTradeAlreadySent = true;
+                    TradeUI.showSuccess(trade, successCount, totalTrades);
+                });
+            });
+
+            if (queue.len() > 0) {
+                queue.run();
+                TradeQueue.finishBatch();
+            }
+        }
+
+        return {
+            send: send
+        };
+    })();
+
+    var TradeValidator = (function () {
+        function isValidTradeArray(trades) {
+            return Array.isArray(trades) && trades.length > 0;
+        }
+
+        function isTradeAllowed(trade) {
+            if (!isMarketTradeMode && trade.userId === 0) {
+                return false;
+            }
+            if (isMarketTradeMode && trade.userId !== 0) {
+                return false;
+            }
+            if (!isMarketTradeMode){
+                var isFriend = getFriendsList().some(function (f) {
+                    return f.id == trade.userId;
+                });
+
+                if (!isFriend) {
+                    TradeUI.alertAddFriend();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return {
+            isValidTradeArray: isValidTradeArray,
+            isTradeAllowed: isTradeAllowed
+        };
+    })();
+
+    var TradeOfferFactory = (function () {
+        function create(trade, playerResources) {
+            var offer = new (game.def("Communication.VO::dTradeOfferVO"));
+
+            if (!applyOffer(offer, trade, playerResources)) {
+                return null;
+            }
+
+            applyCost(offer, trade);
+            return offer;
+        }
+
+        function applyRecipient(offer, trade) {
+            offer.receipientId = trade.userId;
+            offer.lots         = 0;
+            offer.slotType     = 4;
+            offer.slotPos      = 0;
+
+            if (trade.userId !== 0) {
+                return;
+            }
+
+            var freeSlots = isTradeAlreadySent
+                ? 1
+                : game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0);
+
+            offer.lots     = trade.UserName;
+            offer.slotType = freeSlots === 0 ? 0 : 2;
+            offer.slotPos  = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(2);
+        }
+
+        function applyOffer(offer, trade, playerResources) {
+            var def = TradeResources.getResourceDef(trade.offerResName);
+
+            if (def) {
+                return TradeResources.applyOfferResource(offer, trade, playerResources);
+            }else{
+                return TradeResources.applyOfferBuff(offer, trade);
+            }
+        }
+
+        function applyCost(offer, trade) {
+            var def = TradeResources.getResourceDef(trade.costResName);
+
+            if (def) {
+                TradeResources.applyCostResource(offer, trade);
+            } else {
+                TradeResources.applyCostBuff(offer, trade);
+            }
+        }
+
+        return {
+            create: create,
+            applyRecipient: applyRecipient
+        };
+
+    })();
+
+    var TradeResources = (function () {
+        function getResourceDef(name) {
+            return swmmo
+                .getDefinitionByName("ServerState::gEconomics")
+                .GetResourcesDefaultDefinition(name);
+        }
+
+        function findTradableBuff(name) {
+            var result = null;
+
+            game.gi.mHomePlayer.getBuffsSortedForStarMenu().some(function (item) {
+                if (
+                    (item.GetBuffDefinition().GetName_string() === name ||
+                        item.GetResourceName_string() === name) &&
+                    item.GetBuffDefinition().IsTradable(item.GetResourceName_string())
+                ) {
+                    result = item.CreateBuffVOFromBuff();
+                    return true;
+                }
+                return false;
+            });
+
+            return result;
+        }
+
+        function applyOfferResource(offer, trade, playerResources) {
+            var amount = trade.offerResAmount;
+
+            if (isMarketTradeMode) {
+                amount *= trade.UserName;
+            }
+
+            try {
+                if (!playerResources.HasPlayerResource(trade.offerResName, amount)) {
+                    TradeUI.alertCannotAfford();
+                    return false;
+                }
+            } catch (e) {
+                TradeUI.alertCannotAfford();
+                return false;
+            }
+
+            var res = new (game.def("Communication.VO::dResourceVO"));
+            res.amount = res.producedAmount = trade.offerResAmount;
+            res.name_string = trade.offerResName;
+
+            offer.offerRes = res;
+            return true;
+        }
+
+        function applyOfferBuff(offer, trade) {
+            var buff = findTradableBuff(trade.offerResName);
+
+            if (!buff || buff.amount < trade.offerResAmount) {
+                TradeUI.alertCannotAfford();
+                return false;
+            }
+
+            buff.amount = trade.offerResAmount;
+            offer.offerBuff = buff;
+            return true;
+        }
+
+        function applyCostResource(offer, trade) {
+            var res = new (game.def("Communication.VO::dResourceVO"));
+            res.amount = res.producedAmount = trade.costResAmount;
+            res.name_string = trade.costResName;
+
+            offer.costsRes = res;
+        }
+
+        function applyCostBuff(offer, trade) {
+            var buff = new (game.def("Communication.VO::dBuffVO"));
+            buff.sourceZoneId        = game.gi.mCurrentViewedZoneID;
+            buff.amount              = trade.costResAmount;
+            buff.resourceName_string = trade.costResName;
+            buff.buffName_string     = getResourceTypeByName(trade.costResName);
+
+            offer.costsBuff = buff;
+        }
+
+        return {
+            getResourceDef: getResourceDef,
+            applyOfferResource: applyOfferResource,
+            applyOfferBuff: applyOfferBuff,
+            applyCostResource: applyCostResource,
+            applyCostBuff: applyCostBuff
+        };
+
+    })();
+
+    var TradeQueue = {
+        enqueue: function (queue, offer, trade, cb) {
+            queue.add(function () {
+                game.gi.mClientMessages.SendMessagetoServer(
+                    1049,
+                    game.gi.mCurrentViewedZoneID,
+                    offer
+                );
+                cb();
+                globalFlash.gui.mAvatarMessageList.AddMessage('TradeInitiated');
+            });
+        },
+        finishBatch: function () {
+            game.gi.mClientMessages.SendMessagetoServer(
+                1062,
+                game.gi.mCurrentViewedZoneID,
+                null
+            );
+        }
+    };
+
+    var TradeUI = {
+        alertCannotAfford: function () {
+            game.showAlert(loca.GetText('LAB', 'CannotAffordSendTrade'));
+        },
+        alertAddFriend: function () {
+            game.showAlert(
+                loca.GetText('QUL', 'SocialMedium8') + ' ' +
+                loca.GetText('LAB', 'AddFriend')
+            );
+        },
+        showSuccess: function (trade, success, total) {
+            var msg = loca.GetText('LAB', 'TradeOffer') + ' ';
+            msg += trade.userId === 0
+                ? loca.GetText('MES', 'TradeInitiated')
+                : loca.GetText('LAB', 'User') + ': ' + trade.UserName;
+            msg += ' (' + success + '/' + total + ')';
+
+            game.showAlert(msg);
+        }
+    };
+
+    return {
+        init: init,
+        TradeService:TradeService,
+        TradeValidator:TradeValidator,
+        TradeOfferFactory:TradeOfferFactory,
+        TradeResources:TradeResources,
+        TradeQueue:TradeQueue,
+        TradeUI:TradeUI,
+    };
 })();
 
 ShortcutTrader.init();
