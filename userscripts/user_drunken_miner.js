@@ -733,7 +733,6 @@
                     var $timeCell = $cb.parent().parent().find('div:eq(3)');
                     var timeText = $timeCell.text().trim();
 
-                    debug(timeText)
                     if (timeText.indexOf('/') === -1) return;
                     var parts = timeText.split('/');
                     var depleteStr = parts[0].trim();
