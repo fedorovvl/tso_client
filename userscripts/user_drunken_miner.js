@@ -1014,9 +1014,9 @@
     }
 
     function _DM_updateSelectAllOpacity() {
-        var hasOrangeChecked  = false;
-        var hasChecked        = false;
+        var hasAnyOrangeChecked = false;
         RESOURCES.ores.forEach(function (oreName) {
+            var hasChecked        = false;
             var relatedCheckboxes = $('input[type="checkbox"][name="' + oreName + '"]').filter(function () {
                 var id = this.id;
                 return id && (id.indexOf('DM_RebuildMines_') === 0 || id.indexOf('DM_UpgradeMines_') === 0);
@@ -1025,7 +1025,7 @@
                 var $cb = $(this);
                 if ($cb.is(':checked')) {
                     hasChecked = true;
-                    if (!hasOrangeChecked) {
+                    if (!hasAnyOrangeChecked) {
                         var $timeCell = $cb.parent().parent().find('div:eq(3)');
                         var timeText = $timeCell.text().trim();
 
@@ -1033,11 +1033,11 @@
                             var parts = timeText.split('/');
                             var color = _DM_formatBuffTimeColor(parts[0].trim(), parts[1].trim());
                             if (color === 'orange') {
-                                hasOrangeChecked = true;
+                                hasAnyOrangeChecked = true;
                             }
                         }
                     }
-                    if (hasChecked && hasOrangeChecked){
+                    if (hasChecked && hasAnyOrangeChecked){
                         return false;
                     }
                 }
@@ -1055,7 +1055,7 @@
         var allCheckboxes = $('#DrunkenMinerModalData input[type="checkbox"]');
         var isAnyChecked  = allCheckboxes.is(':checked');
         $('#' + DM_lements.SELECT_ALL_BTN).css('opacity', isAnyChecked ? '1' : '.5');
-        $('#' + DM_lements.SAFE_BUFF_BTN).css('opacity', hasOrangeChecked ? '1' : '.5');
+        $('#' + DM_lements.SAFE_BUFF_BTN).css('opacity', hasAnyOrangeChecked ? '1' : '.5');
     }
 
     function _DM_findOreInDepletedName(depletedName) {
