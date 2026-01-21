@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Web.Script.Serialization;
 using System.Text;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace client
 {
@@ -39,8 +40,9 @@ namespace client
         public string langTestDropbox { get { return Servers.getTrans("langTestDropbox"); } set { } }
         public string langAuthDropbox { get { return Servers.getTrans("langAuthDropbox"); } set { } }
         public string langTryFast { get { return Servers.getTrans("langTryFast"); } set { } }
+        public string langUseCache { get { return Servers.getTrans("langUseCache"); } set { } }
         public string[] winSizes = new string[] { "", "maximized", "minimized", "fullscreen" };
-        public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro" };
+        public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro", "cn" };
 
         public settings()
         {
@@ -61,6 +63,7 @@ namespace client
             nicknameConfig.IsChecked = setting.configNickname;
             tsoFolderNearLauncher.IsChecked = setting.tsoFolderNearLauncher;
             tryFast.IsChecked = setting.tryFast;
+            useCache.IsChecked = setting.useCache;
             if (!string.IsNullOrEmpty(setting.window))
             {
                 window_size.SelectedIndex = Array.IndexOf(winSizes, setting.window);
@@ -86,6 +89,7 @@ namespace client
             setting.x64 = (bool)x64runtime.IsChecked;
             setting.configNickname = (bool)nicknameConfig.IsChecked;
             setting.tryFast = (bool)tryFast.IsChecked;
+            setting.useCache = (bool)useCache.IsChecked;
             setting.tsofolder = tsofolder.Text.Trim();
             setting.clientconfig = clientconfig.Text.Trim();
             setting.window = winSizes[window_size.SelectedIndex];
@@ -114,10 +118,10 @@ namespace client
             string result = post.Post(ref _cookies);
             if (!result.Contains("access_token"))
             {
-                MessageBox.Show(result);
+                System.Windows.MessageBox.Show(result);
                 return;
             }
-            MessageBox.Show("OK");
+            System.Windows.MessageBox.Show("OK");
             return;
         }
 
@@ -136,18 +140,56 @@ namespace client
             string result = post.Post(ref _cookies);
             if (!result.Contains("access_token"))
             {
-                MessageBox.Show(result);
+                System.Windows.MessageBox.Show(result);
                 return;
             }
             dropBoxAuth authInfo = Main.Deserialize<dropBoxAuth>(result);
             dropboxRefresh.Text = authInfo.refresh_token;
-            MessageBox.Show("OK");
+            System.Windows.MessageBox.Show("OK");
             return;
         }
         private void Button_Click_4(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(dropboxKey.Text.Trim())) { return; }
             Process.Start(new ProcessStartInfo { FileName = string.Format("{0}/oauth2/authorize?client_id={1}&response_type=code&token_access_type=offline", Servers.dropbox, dropboxKey.Text.Trim().Split(':')[0]), UseShellExecute = true });
+        }
+
+        private void export_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            using (var fbd = new OpenFileDialog() { InitialDirectory = Environment.CurrentDirectory })
+            {
+                fbd.CheckFileExists = false;
+                fbd.FileName = Main.setting_file + "_open";
+                DialogResult result = fbd.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    File.WriteAllText(fbd.FileName, new JavaScriptSerializer().Serialize(setting));
+                    System.Windows.MessageBox.Show("OK");
+                }
+            }
+        }
+
+        private void import_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            using (var fbd = new OpenFileDialog() { InitialDirectory = Environment.CurrentDirectory })
+            {
+                DialogResult result = fbd.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    try
+                    {
+                        string settings = File.ReadAllText(fbd.FileName);
+                        setting = new JavaScriptSerializer().Deserialize<clientSettings>(settings);
+                        System.Windows.MessageBox.Show("OK");
+                        this.DialogResult = true;
+                    } catch(Exception ex)
+                    {
+                        System.Windows.MessageBox.Show("FAIL "+ex.Message);
+                    }
+                }
+            }
         }
     }
 }

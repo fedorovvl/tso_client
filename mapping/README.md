@@ -3,7 +3,8 @@
  - python 3.9+ required 
  - UnityPy module required
 
-compiled with pyinstaller (no python required)
+compiled with pyinstaller (no python required) 
+```pyinstaller --onefile --collect-all UnityPy mapping.py
 
 Usage:
 ```mapping.exe https://ubistatic-a.akamaihd.net/0018/live/debug/unity/SWMMO/Build/2789f6b15ef7f1ca8a1ad4283bd6c094.data```
