@@ -6,7 +6,7 @@ var ShortcutTrader = (function () {
     const SCRIPT_CONST = {
         PREFIX: 'FT',
         NAME: loca.GetText("QUL", "MiadTropicalSunQ2") + ', ' + loca.GetText("ACL", "SellGoods_1"),
-        TRADE_TYPES: {MARKET:'market',FRIEND:'friend'},
+        TRADE_TYPES: {MARKET: 'market', FRIEND: 'friend'},
         TRADE_QUEUE_DELAY: 4000,
         BUTTON_COOLDOWN: 3000,
         MESSAGE_TYPES: {
@@ -215,7 +215,7 @@ var ShortcutTrader = (function () {
                 return;
             }
 
-            var userId   = 0;
+            var userId = 0;
             var userName;
 
             if (mode === SCRIPT_CONST.TRADE_TYPES.FRIEND) {
