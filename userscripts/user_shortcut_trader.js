@@ -4,59 +4,65 @@
 
 var ShortcutTrader = (function () {
     const SCRIPT_CONST = {
+        PREFIX: 'FT',
         NAME: loca.GetText("QUL", "MiadTropicalSunQ2") + ', ' + loca.GetText("ACL", "SellGoods_1"),
+        TRADE_TYPES: {MARKET:'market',FRIEND:'friend'},
         TRADE_QUEUE_DELAY: 4000,
         BUTTON_COOLDOWN: 3000,
         MESSAGE_TYPES: {
-            SEND_TRADE: 1049,
-            REFRESH_TRADES: 1062,
-            REQUEST_TRADE_DATA: 1061
+            SEND_TRADE: 1049, REFRESH_TRADES: 1062, REQUEST_TRADE_DATA: 1061
         }
     };
     var buildTemplates;
 
     function openModal() {
-        if (!game.gi.isOnHomzone()) {
-            game.showAlert(getText('not_home'));
-            return;
-        }
-
-        if (SettingsService.getState().tradesData.zone_id !== game.gi.mCurrentViewedZoneID) {
-            SettingsService.resetState();
-        }
-        $("div[role='dialog']:not(#FriendTraderModal):visible").modal("hide");
-        if (!SettingsService.getState().modalInitialized) $('#FriendTraderModal').remove();
-        createModalWindow('FriendTraderModal', SCRIPT_CONST.NAME);
-
-        buildTemplates = new SaveLoadTemplate('ml', function (data, name) {
-            $("#FriendTraderModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
-            if (SettingsService.getState().tradesData.isMarketTradeMode) {
-                data.friendsTrades = SettingsService.getState().tradesData.friendsTrades;
-            } else {
-                data.marketTrades = SettingsService.getState().tradesData.marketTrades;
+        try {
+            if (!game.gi.isOnHomzone()) {
+                game.showAlert(getText('not_home'));
+                return;
             }
-            SettingsService.getState().tradesData = data;
-            SettingsService.saveSettings();
+
+            var state = SettingsService.getState();
+            if (state.tradesData.zone_id !== game.gi.mCurrentViewedZoneID) {
+                SettingsService.resetState();
+            }
+            $("div[role='dialog']:not(#" + UIMap.ids.modal + "):visible").modal("hide");
+            if (!state.modalInitialized) $('#' + UIMap.ids.modal).remove();
+            createModalWindow(UIMap.ids.modal, SCRIPT_CONST.NAME);
+
+            buildTemplates = new SaveLoadTemplate('ml', function (data, name) {
+                $("#" + UIMap.ids.modal + " .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
+                if (SettingsService.isMarketModeON()) {
+                    data.friendsTrades = state.tradesData.friendsTrades;
+                } else {
+                    data.marketTrades = state.tradesData.marketTrades;
+                }
+                data.isMarketTradeMode = state.tradesData.isMarketTradeMode
+                state.tradesData       = data;
+                SettingsService.setState(state);
+                SettingsService.saveSettings();
+                UIRenderer.renderBody();
+            });
+            $.extend(state.tradesData, settings.read(null, SCRIPT_CONST.PREFIX + '_SETTINGS'));
+            UIRenderer.renderHeader();
             UIRenderer.renderBody();
-        });
+            UIRenderer.renderFooter();
 
-        $.extend(SettingsService.getState().tradesData, settings.read(null, 'FT_SETTINGS'));
-        UIRenderer.renderHeader();
-        UIRenderer.renderBody();
-        UIRenderer.renderFooter();
+            if (state.isTradeAlreadySent === false) {
+                state.isTradeAlreadySent = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0) !== 0;
+            }
 
-        if (SettingsService.getState().isTradeAlreadySent === false){
-            SettingsService.getState().isTradeAlreadySent = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0) !== 0;
+            ActionsService.init();
+            $('#' + UIMap.ids.modal + ':not(:visible)').modal({backdrop: "static"});
+        } catch (e) {
+            debug(e);
         }
-
-        ActionsService.init();
-        $('#FriendTraderModal:not(:visible)').modal({backdrop: "static"});
     }
 
     function init() {
         try {
             game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MESSAGE_TYPES.REQUEST_TRADE_DATA, game.gi.mCurrentViewedZoneID, null)
-            $.extend(SettingsService.getState().tradesData, settings.read(null, 'FT_SETTINGS'));
+            $.extend(SettingsService.getState().tradesData, settings.read(null, SCRIPT_CONST.PREFIX + '_SETTINGS'));
             addToolsMenuItem(SCRIPT_CONST.NAME, openModal);
         } catch (e) {
             debug(e);
@@ -69,35 +75,26 @@ var ShortcutTrader = (function () {
         function initStateData() {
             return {
                 tradesData: {
-                    isMarketTradeMode: true,
-                    zone_id: game.gi.mCurrentViewedZoneID,
-                    friendsTrades: [],
-                    marketTrades: [],
-                },
-                isTradeAlreadySent: false,
-                modalInitialized: false
+                    isMarketTradeMode: true, zone_id: game.gi.mCurrentViewedZoneID, friendsTrades: [], marketTrades: [],
+                }, isTradeAlreadySent: false, modalInitialized: false
             };
         }
 
-        function resetState(){
+        function resetState() {
             STATE = initStateData();
             return STATE;
         }
 
         function saveSettings() {
-            settings.settings['FT_SETTINGS'] = {};
-            settings.store(STATE.tradesData, 'FT_SETTINGS');
+            settings.settings[SCRIPT_CONST.PREFIX + '_SETTINGS'] = {};
+            settings.store(STATE.tradesData, SCRIPT_CONST.PREFIX + '_SETTINGS');
         }
 
         function getCurrentTrades() {
-            var trades = STATE.tradesData.isMarketTradeMode
-                ? STATE.tradesData.marketTrades
-                : STATE.tradesData.friendsTrades;
-
-            return trades;
+            return STATE.tradesData.isMarketTradeMode ? STATE.tradesData.marketTrades : STATE.tradesData.friendsTrades;
         }
 
-        function removeTrade(index){
+        function removeTrade(index) {
             if (STATE.tradesData.isMarketTradeMode) {
                 STATE.tradesData.marketTrades.splice(index, 1);
             } else {
@@ -105,45 +102,61 @@ var ShortcutTrader = (function () {
             }
         }
 
-        function getState() { return STATE; }
+        function getState() {
+            return STATE;
+        }
+
+        function setState(state) {
+            STATE = state;
+        }
+
+        function getTradeModeType() {
+            return STATE.tradesData.isMarketTradeMode ? SCRIPT_CONST.TRADE_TYPES.MARKET : SCRIPT_CONST.TRADE_TYPES.FRIEND
+        }
+
+        function getIsMarketMode() {
+            return STATE.tradesData.isMarketTradeMode;
+        }
 
         return {
             getState: getState,
+            setState: setState,
             resetState: resetState,
             saveSettings: saveSettings,
+            removeTrade: removeTrade,
             getCurrentTrades: getCurrentTrades,
-            removeTrade: removeTrade
+            getTradeModeType: getTradeModeType,
+            isMarketModeON: getIsMarketMode,
         };
     })();
 
-    var ActionsService = (function (){
-        function init(){
-            var $modal = $('#FriendTraderModalData');
+    var ActionsService = (function () {
+        function init() {
+            var $modal = $('#' + UIMap.ids.modalData);
 
-            $modal.off('click', '.FT_delTrade').on('click', '.FT_delTrade', handleDeleteTrade)
-                .off('click', '.FT_SendTrade').on('click', '.FT_SendTrade', handleSendTrade)
-                .off('change', '.FT_AddTradeBtn').on('click', '.FT_AddTradeBtn', handleAddTrade)
-                .off('change', '#FT_SWITCH').on('change', '#FT_SWITCH', handleMainSwitch)
-                .off('change', '[id^="FT_OfferList_"]').on('change', '[id^="FT_OfferList_"]', handleOfferChange)
-                .off('change', '[id^="FT_CostList_"]').on('change', '[id^="FT_CostList_"]', handleCostChange)
-                .off('input change', '[id^="FT_AddOffer_"]').on('input change', '[id^="FT_AddOffer_"]', handleInputSanitize)
-                .off('input change', '[id^="FT_AddCost_"]').on('input change', '[id^="FT_AddCost_"]', handleInputSanitize);
+            $modal.off('click', '.' + UIMap.classes.deleteTrade).on('click', '.' + UIMap.classes.deleteTrade, handleDeleteTrade)
+                .off('click', '.' + UIMap.classes.sendTrade).on('click', '.' + UIMap.classes.sendTrade, handleSendTrade)
+                .off('change', '.' + UIMap.classes.addTradeBtn).on('click', '.' + UIMap.classes.addTradeBtn, handleAddTrade)
+                .off('change', '#' + UIMap.ids.mainSwitch).on('change', '#' + UIMap.ids.mainSwitch, handleMainSwitch)
+                .off('change', '[id^="' + UIMap.ids.offerSelectStr + '"]').on('change', '[id^="' + UIMap.ids.offerSelectStr + '"]', handleOfferChange)
+                .off('change', '[id^="' + UIMap.ids.costSelectStr + '"]').on('change', '[id^="' + UIMap.ids.costSelectStr + '"]', handleCostChange)
+                .off('input change', '[id^="' + UIMap.ids.offerInputStr + '"]').on('input change', '[id^="' + UIMap.ids.offerInputStr + '"]', handleInputSanitize)
+                .off('input change', '[id^="' + UIMap.ids.costInputStr + '"]').on('input change', '[id^="' + UIMap.ids.costInputStr + '"]', handleInputSanitize);
 
-            $('#FriendTraderModal').off('click', '.FT_reset-btn').on('click', '.FT_reset-btn', handleReset)
-                .off('click', '.FT_send-all-btn').on('click', '.FT_send-all-btn', handleSubmitAll)
-                .off('click', '.FT_save-temp-btn').on('click', '.FT_save-temp-btn', handleSaveTemplate)
-                .off('click', '.FT_load-temp-btn').on('click', '.FT_load-temp-btn', handleLoadTemplate);
+            $('#' + UIMap.ids.modal).off('click', '.' + UIMap.classes.resetBtn).on('click', '.' + UIMap.classes.resetBtn, handleReset)
+                .off('click', '.' + UIMap.classes.sendAllBtn).on('click', '.' + UIMap.classes.sendAllBtn, handleSubmitAll)
+                .off('click', '.' + UIMap.classes.saveTemplateBtn).on('click', '.' + UIMap.classes.saveTemplateBtn, handleSaveTemplate)
+                .off('click', '.' + UIMap.classes.loadTemplateBtn).on('click', '.' + UIMap.classes.loadTemplateBtn, handleLoadTemplate);
 
-            $(".FT_trades").sortable({
-                items: ".row",
-                update: handleSortTrades
+            $("." + UIMap.classes.tradesContainer).sortable({
+                items: ".row", update: handleSortTrades
             });
         }
 
         function handleSendTrade() {
             if ($(this).css('pointer-events') === 'none') return;
 
-            var index = $(this).data('index');
+            var index  = $(this).data('index');
             var trades = SettingsService.getCurrentTrades();
 
             disableSendButtons();
@@ -151,12 +164,13 @@ var ShortcutTrader = (function () {
         }
 
         function handleSortTrades(event, ui) {
-            var currentIndex = ui.item.find(".FT_delTrade").data("index");
+            var currentIndex = ui.item.find("." + UIMap.classes.deleteTrade).data("index");
 
-            var nextElement = ui.item.nextAll(".row").find(".FT_delTrade").first();
+            var nextElement = ui.item.nextAll(".row").find("." + UIMap.classes.deleteTrade).first();
             var nextIndex   = nextElement.length ? nextElement.data("index") : null;
 
-            var trades = SettingsService.getCurrentTrades().slice(0);
+            var state     = SettingsService.getState();
+            var trades    = SettingsService.getCurrentTrades();
             var movedItem = trades[currentIndex];
             if (movedItem === undefined) {
                 return;
@@ -171,15 +185,17 @@ var ShortcutTrader = (function () {
                 trades.push(movedItem);
             }
 
-            if (!SettingsService.getState().tradesData.isMarketTradeMode) {
-                SettingsService.getState().tradesData.friendsTrades = trades;
+            if (SettingsService.isMarketModeON()) {
+                state.tradesData.marketTrades = trades;
             } else {
-                SettingsService.getState().tradesData.marketTrades = trades;
+                state.tradesData.friendsTrades = trades;
             }
+            SettingsService.setState(state);
+            SettingsService.saveSettings();
             UIRenderer.renderBody();
         }
 
-        function handleDeleteTrade(){
+        function handleDeleteTrade() {
             const index = $(this).data('index');
             SettingsService.removeTrade(index);
             UIRenderer.renderBody();
@@ -187,28 +203,27 @@ var ShortcutTrader = (function () {
         }
 
         function handleAddTrade() {
-            //todo Change mode
-            var mode = $(this).data('mode');
+            var mode = SettingsService.getTradeModeType();
 
-            var offerResName   = $('#FT_OfferList_' + mode).val();
-            var offerResAmount = parseInt($('#FT_AddOffer_' + mode).val(), 10);
-            var costResName    = $('#FT_CostList_' + mode).val();
-            var costResAmount  = parseInt($('#FT_AddCost_' + mode).val(), 10);
+            var offerResName   = $('#' + UIMap.ids.offerSelect(mode)).val();
+            var offerResAmount = parseInt($('#' + UIMap.ids.addOfferInput(mode)).val(), 10);
+            var costResName    = $('#' + UIMap.ids.costSelect(mode)).val();
+            var costResAmount  = parseInt($('#' + UIMap.ids.addCostInput(mode)).val(), 10);
 
             if (!offerResAmount || !costResAmount) {
-                game.showAlert(getText('invalid_amount'));
+                TradeUI.alertCannotAfford();
                 return;
             }
 
             var userId   = 0;
-            var userName = 'Market';
+            var userName;
 
-            if (mode === 'friend') {
-                var $friendSel = $('#FT_friend_selector_' + mode);
-                userId   = parseInt($friendSel.val(), 10);
-                userName = $friendSel.find('option:selected').text();
+            if (mode === SCRIPT_CONST.TRADE_TYPES.FRIEND) {
+                var $friendSel = $('#' + UIMap.ids.friendSelector(mode));
+                userId         = parseInt($friendSel.val(), 10);
+                userName       = $friendSel.find('option:selected').text();
             } else {
-                userName = $('#market_scroll_' + mode).find('option:selected').val();
+                userName = $('#' + UIMap.ids.marketSelector(mode)).find('option:selected').val();
             }
 
             var newTrade = {
@@ -225,26 +240,26 @@ var ShortcutTrader = (function () {
         }
 
         function handleMainSwitch() {
-            var mode = $(this).is(':checked') ? 'market' : 'friend';
-            if (mode === 'friend') {
-                $('#FT_RadioText').text(loca.GetText("LAB", "Friends"));
+            var mode = SettingsService.getTradeModeType();
+            if (mode === SCRIPT_CONST.TRADE_TYPES.FRIEND) {
+                $('#' + UIMap.ids.mainSwitchRadio).text(loca.GetText("LAB", "Friends"));
                 SettingsService.getState().tradesData.isMarketTradeMode = false;
             } else {
-                $('#FT_RadioText').text(loca.GetText("LAB", "Marketplace"));
+                $('#' + UIMap.ids.mainSwitchRadio).text(loca.GetText("LAB", "Marketplace"));
                 SettingsService.getState().tradesData.isMarketTradeMode = true;
             }
-            $('.FT_AddRowContainer').empty();
+            $('.' + UIMap.classes.addRowContainer).empty();
             UIRenderer.addTradeRow(mode);
             UIRenderer.renderBody();
             SettingsService.saveSettings();
         }
 
         function handleOfferChange() {
-            $('.offer-res-img').html(getImageTag(this.value, '24px'));
+            $('.' + UIMap.classes.offerResourceImg).html(getImageTag(this.value, '24px'));
         }
 
         function handleCostChange() {
-            $('.cost-res-img').html(getImageTag(this.value, '24px'));
+            $('.' + UIMap.classes.costResourceImg).html(getImageTag(this.value, '24px'));
         }
 
         function handleReset() {
@@ -254,11 +269,10 @@ var ShortcutTrader = (function () {
         }
 
         function handleSubmitAll() {
-            var $modal = $('#FriendTraderModal');
+            var $modal = $('#' + UIMap.ids.modal);
             var trades = SettingsService.getCurrentTrades();
 
             if (!trades.length) {
-                game.showAlert(getText('no_trades'));
                 return;
             }
 
@@ -280,14 +294,14 @@ var ShortcutTrader = (function () {
         }
 
         function disableSendButtons() {
-            $('.FT_SendTrade').css({ opacity: 0.5, 'pointer-events': 'none' });
-            setTimeout(function() {
-                $('.FT_SendTrade').css({ opacity: 1, 'pointer-events': '' });
+            $('.' + UIMap.classes.sendTrade).css({opacity: 0.5, 'pointer-events': 'none'});
+            setTimeout(function () {
+                $('.' + UIMap.classes.sendTrade).css({opacity: 1, 'pointer-events': ''});
             }, SCRIPT_CONST.BUTTON_COOLDOWN);
         }
 
         function sanitizeInput(element) {
-            var value = element.value.replace(/\D/g, '');
+            var value     = element.value.replace(/\D/g, '');
             element.value = value || 1;
         }
 
@@ -296,47 +310,99 @@ var ShortcutTrader = (function () {
         };
     })();
 
+    var UIMap = {
+        ids: {
+            modal: SCRIPT_CONST.PREFIX + '_FriendTraderModal',
+            modalData: SCRIPT_CONST.PREFIX + '_FriendTraderModalData',
+            mainSwitch: SCRIPT_CONST.PREFIX + '_SWITCH',
+            mainSwitchRadio: SCRIPT_CONST.PREFIX + '_RadioText',
+
+            offerInputStr: SCRIPT_CONST.PREFIX + '_AddOffer_',
+            costInputStr: SCRIPT_CONST.PREFIX + '_AddCost_',
+            offerSelectStr: SCRIPT_CONST.PREFIX + '_OfferList_',
+            costSelectStr: SCRIPT_CONST.PREFIX + '_CostList_',
+
+            addOfferInput: function (mode) {
+                return this.offerInputStr + mode;
+            },
+            addCostInput: function (mode) {
+                return this.costInputStr + mode;
+            },
+            offerSelect: function (mode) {
+                return this.offerSelectStr + mode;
+            },
+            costSelect: function (mode) {
+                return this.costSelectStr + mode;
+            },
+            friendSelector: function (mode) {
+                return SCRIPT_CONST.PREFIX + '_friend_selector_' + mode;
+            },
+            marketSelector: function (mode) {
+                return SCRIPT_CONST.PREFIX + '_market_scroll_' + mode;
+            }
+        },
+
+        classes: {
+            addRowContainer: SCRIPT_CONST.PREFIX + '_AddRowContainer',
+            tradesContainer: SCRIPT_CONST.PREFIX + '_Trades',
+
+            offerResourceImg: 'offer-res-img',
+            costResourceImg: 'cost-res-img',
+            deleteTrade: SCRIPT_CONST.PREFIX + '_delTrade',
+            sendTrade: SCRIPT_CONST.PREFIX + '_SendTrade',
+            addTradeBtn: SCRIPT_CONST.PREFIX + '_AddTradeBtn',
+
+            resetBtn: SCRIPT_CONST.PREFIX + '_reset-btn',
+            sendAllBtn: SCRIPT_CONST.PREFIX + '_send-all-btn',
+            saveTemplateBtn: SCRIPT_CONST.PREFIX + '_save-temp-btn',
+            loadTemplateBtn: SCRIPT_CONST.PREFIX + '_load-temp-btn'
+        }
+    };
+
     var UIRenderer = (function () {
+
         function renderHeader() {
-            var switchRadio   = '<div>' + createSwitch('FT_SWITCH', SettingsService.getState().tradesData.isMarketTradeMode) + '<div style="display:inline-block;vertical-align:top;margin-left: 10px;margin-bottom: 15px;" id="FT_RadioText">' + loca.GetText("LAB", "Marketplace") + '</div></div>';
+            var switchRadio   = '<div>' + createSwitch(UIMap.ids.mainSwitch, SettingsService.getState().tradesData.isMarketTradeMode) + '<div style="display:inline-block;vertical-align:top;margin-left: 10px;margin-bottom: 15px;" id="' + UIMap.ids.mainSwitchRadio + '">' + loca.GetText("LAB", "Marketplace") + '</div></div>';
             var tableHeadHtml = createTableRow([[2, loca.GetText("LAB", "WareToDeliver")], [2, loca.GetText("LAB", "WareToRecieve")], [4, loca.GetText("LAB", "SelectTradeResources")], [2, loca.GetText("LAB", "BoughtFromSoldTo")], [2, loca.GetText('LAB', 'Tasks')]], true);
 
-            $('#FriendTraderModalData').append('<div class="container-fluid">' + switchRadio + tableHeadHtml + '</div>');
-            $('#FriendTraderModalData .container-fluid').append('<div class="FT_AddRowContainer"></div>');
-
-            UIRenderer.addTradeRow(SettingsService.getState().tradesData.isMarketTradeMode ? 'market' : 'friend');
-            $('#FriendTraderModalData .container-fluid').append('<div class="FT_trades"></div>');
+            var $modal = $('#' + UIMap.ids.modalData);
+            $modal.append('<div class="container-fluid">' + switchRadio + tableHeadHtml + '</div>');
+            $modal.find('.container-fluid').append('<div class="' + UIMap.classes.addRowContainer + '"></div>');
+            UIRenderer.addTradeRow(SettingsService.getTradeModeType());
+            $modal.find('.container-fluid').append('<div class="' + UIMap.classes.tradesContainer + '"></div>');
         }
 
         function renderBody() {
-            var $container = $('#FriendTraderModalData .container-fluid .FT_trades').empty();
-            if (!SettingsService.getState().tradesData.isMarketTradeMode) {
-                SettingsService.getState().tradesData.friendsTrades.forEach(function (trade, index) {
-                    if (trade.userId == 0) {
-                        return;
-                    }
-                    $container.append(UIRenderer.renderTradeRow(trade, index));
-                });
-            } else {
-                SettingsService.getState().tradesData.marketTrades.forEach(function (trade, index) {
-                    if ((!SettingsService.getState().tradesData.isMarketTradeMode && trade.userId == 0) || (SettingsService.getState().tradesData.isMarketTradeMode && trade.userId !== 0)) {
-                        return;
-                    }
-                    $container.append(UIRenderer.renderTradeRow(trade, index));
-                });
+            function shouldRenderTrade(trade, isMarket) {
+                if (!isMarket) {
+                    return trade.userId !== 0;
+                }
+                return trade.userId === 0;
             }
+
+            var state    = SettingsService.getState();
+            var isMarket = SettingsService.isMarketModeON();
+            var trades   = isMarket ? state.tradesData.marketTrades : state.tradesData.friendsTrades;
+
+            var $container = $('#' + UIMap.ids.modal)
+                .find('.container-fluid')
+                .find('.' + UIMap.classes.tradesContainer)
+                .empty();
+
+            trades.forEach(function (trade, index) {
+                if (!shouldRenderTrade(trade, isMarket)) {
+                    return;
+                }
+                $container.append(UIRenderer.renderTradeRow(trade, index));
+            });
         }
 
+
         function renderFooter() {
-            var $modal  = $('#FriendTraderModal');
+            var $modal  = $('#' + UIMap.ids.modal);
             var $footer = $modal.find('.modal-footer');
 
-            var buttons = [
-                createButton('FT_reset-btn btn-warning', getText('btn_reset')),
-                createButton('FT_send-all-btn btn-success', getText('btn_submit') + ' ' + loca.GetText("LAB", "All")),
-                createButton('FT_save-temp-btn btn-primary pull-left', getText('save_template')),
-                createButton('FT_load-temp-btn btn-primary pull-left', getText('load_template'))
-            ];
+            var buttons = [createButton(UIMap.classes.resetBtn + ' btn-warning', getText('btn_reset')), createButton(UIMap.classes.sendAllBtn + ' btn-success', getText('btn_submit') + ' ' + loca.GetText("LAB", "All")), createButton(UIMap.classes.saveTemplateBtn + ' btn-primary pull-left', getText('save_template')), createButton(UIMap.classes.loadTemplateBtn + ' btn-primary pull-left', getText('load_template'))];
 
             $footer.prepend(buttons);
         }
@@ -344,19 +410,19 @@ var ShortcutTrader = (function () {
         function addTradeRow(mode) {
             var resources   = GameDataSource.getResourceList();
             var firstRes    = resources[0].items[0], secondRes = resources[0].items[1];
-            var inputOffer  = createNumberInput('FT_AddOffer_' + mode);
-            var inputCost   = createNumberInput('FT_AddCost_' + mode);
-            var selectOffer = createResourceSelect('FT_OfferList_' + mode, resources);
-            var selectCost  = createResourceSelect('FT_CostList_' + mode, resources);
+            var inputOffer  = createNumberInput(UIMap.ids.addOfferInput(mode));
+            var inputCost   = createNumberInput(UIMap.ids.addCostInput(mode));
+            var selectOffer = createResourceSelect(UIMap.ids.offerSelect(mode), resources);
+            var selectCost  = createResourceSelect(UIMap.ids.costSelect(mode), resources);
 
             var targetSelect;
-            if (mode === 'friend') {
-                targetSelect = $('<select>', {id: 'FT_friend_selector_' + mode, 'class': 'form-control'});
+            if (mode === SCRIPT_CONST.TRADE_TYPES.FRIEND) {
+                targetSelect = $('<select>', {id: UIMap.ids.friendSelector(mode), 'class': 'form-control'});
                 GameDataSource.getFriendsList().forEach(function (friend) {
                     targetSelect.append($('<option>', {value: friend.id}).text(friend.name));
                 });
             } else {
-                targetSelect = $('<select>', {id: 'market_scroll_' + mode, 'class': 'form-control'});
+                targetSelect = $('<select>', {id: UIMap.ids.marketSelector(mode), 'class': 'form-control'});
                 targetSelect.append('<optgroup label="Ресурсы">');
                 [1, 2, 3, 4].forEach(function (res) {
                     targetSelect.append($('<option>', {value: res}).text(formatToFractionOrReturn(res)));
@@ -364,19 +430,16 @@ var ShortcutTrader = (function () {
                 targetSelect.append('</optgroup>');
             }
 
-            var row = createTableRow([
-                [2, $('<div>').append($('<div>').addClass('offer-res-img').css({
-                    display: 'inline-block', verticalAlign: 'middle'
-                }).html(getImageTag(firstRes.name, '24px')), $('<div>').css({
-                    display: 'inline-block',
-                    verticalAlign: 'middle'
-                }).append(inputOffer))],
+            var row = createTableRow([[2, $('<div>').append($('<div>').addClass(UIMap.classes.offerResourceImg).css({
+                display: 'inline-block', verticalAlign: 'middle'
+            }).html(getImageTag(firstRes.name, '24px')), $('<div>').css({
+                display: 'inline-block', verticalAlign: 'middle'
+            }).append(inputOffer))],
 
-                [2, $('<div>').append($('<div>').addClass('cost-res-img').css({
+                [2, $('<div>').append($('<div>').addClass(UIMap.classes.costResourceImg).css({
                     display: 'inline-block', verticalAlign: 'middle'
                 }).html(getImageTag(secondRes.name, '24px')), $('<div>').css({
-                    display: 'inline-block',
-                    verticalAlign: 'middle'
+                    display: 'inline-block', verticalAlign: 'middle'
                 }).append(inputCost))],
 
                 [2, selectOffer],
@@ -386,30 +449,26 @@ var ShortcutTrader = (function () {
                 [2, targetSelect],
 
                 [2, $('<div>', {
-                    'class': 'FT_AddTradeBtn',
-                    'data-mode': mode,
+                    'class': UIMap.classes.addTradeBtn,
+                    // 'data-mode': mode,
                     style: 'display:inline-block;cursor:pointer;background:wheat;border-radius:3px;'
                 }).html(getImageTag('AvatarAdd', '24px'))]], true);
 
-            $('#FriendTraderModalData .container-fluid .FT_AddRowContainer').append(row);
+            $('#' + UIMap.ids.modalData + ' .container-fluid .' + UIMap.classes.addRowContainer).append(row);
 
-            $('#FT_CostList_' + mode).find('option').eq(1).prop('selected', true);
+            $('#' + UIMap.ids.costSelect(mode)).find('option').eq(1).prop('selected', true);
         }
 
         function renderTradeRow(item, index) {
             var delBtn = $('<div>', {
-                'class': 'FT_delTrade',
-                'data-index': index,
-                css: {
-                    cursor: 'pointer',
-                    display: 'inline-block',
-                    marginRight: '5px'
+                'class': UIMap.classes.deleteTrade, 'data-index': index, css: {
+                    cursor: 'pointer', display: 'inline-block', marginRight: '5px'
                 }, // html: getImageTag('ButtonIconAbort', '24px')
                 html: getImageTag('Close', '24px')
             });
 
             var sendBtn = $('<div>', {
-                'class': 'FT_SendTrade',
+                'class': UIMap.classes.sendTrade,
                 'data-index': index,
                 css: {cursor: 'pointer', display: 'inline-block'},
                 html: getImageTag('Trade', '24px')
@@ -448,13 +507,13 @@ var ShortcutTrader = (function () {
                 .text(text)
         }
 
-        function getName(originalName){
-            locs = ['RES','BUI','SHI','ADN'];
+        function getName(originalName) {
+            locs     = ['RES', 'BUI', 'SHI', 'ADN'];
             var name = '[undefined text]';
-            for (loc in locs){
-                loc = locs[loc];
+            for (loc in locs) {
+                loc  = locs[loc];
                 name = loca.GetText(loc, originalName);
-                if (name !== '[undefined text]' && name !== '[undefined text] '){
+                if (name !== '[undefined text]' && name !== '[undefined text] ') {
                     return name;
                 }
             }
@@ -464,12 +523,18 @@ var ShortcutTrader = (function () {
         function createResourceSelect(id, resources) {
             var $select = $('<select>', {id: id, 'class': 'form-control'});
             resources.forEach(function (cat) {
+                //sort by local name (slowdown script)
+                // var items = cat.items.slice();
+                // items.sort(function (a, b) {
+                //     return getName(a.name).localeCompare(getName(b.name));
+                // });
+
                 $select.append('<optgroup label="' + loca.GetText("LAB", cat.categoryName) + '">');
                 cat.items.forEach(function (res) {
                     $select.append($('<option>', {
-                        value: res.name, 'data-max': res.maxLimit
+                        value: res.name
                     }).text(getName(res.name)));
-                })
+                });
             });
             $select.append('</optgroup>');
             return $select;
@@ -485,13 +550,13 @@ var ShortcutTrader = (function () {
     })();
 
     var GameDataSource = (function () {
-        var _friendsList = null;
+        var _friendsList  = null;
         var _resourceList = null;
 
         function getFriendsList() {
             if (!_friendsList) {
                 _friendsList = globalFlash.gui.mFriendsList.GetFilteredFriends("", true).map(function (f) {
-                    return { id: f.id, name: f.username };
+                    return {id: f.id, name: f.username};
                 });
             }
             return _friendsList;
@@ -505,7 +570,7 @@ var ShortcutTrader = (function () {
                     swmmo.getDefinitionByName("ServerState::gEconomics").mResourceDefaultDefinition_vector.forEach(function (product) {
                         if (product.tradable) {
                             var category = product.group_string || product.category_string || "WarehouseTab7";
-                            var clMatch = category.match(/^CL(\d+)$/);
+                            var clMatch  = category.match(/^CL(\d+)$/);
                             if (clMatch) {
                                 category = "WarehouseTab" + clMatch[1];
                             } else if (category === "Event") {
@@ -518,49 +583,49 @@ var ShortcutTrader = (function () {
                                 resourcesByCategory[category] = [];
                                 categoryNames.push(category);
                             }
-                            resourcesByCategory[category].push({ name: product.resourceName_string });
+                            resourcesByCategory[category].push({name: product.resourceName_string});
                         }
                     });
 
                     // Buffs
                     categoryNames.push('buffs');
                     resourcesByCategory['buffs'] = [];
-                    var items = swmmo.getDefinitionByName("global").map_BuffName_BuffDefinition;
+                    var items                    = swmmo.getDefinitionByName("global").map_BuffName_BuffDefinition;
                     for (var item in items) {
                         var definition = items[item];
-                        var name = definition.GetName_string();
+                        var name       = definition.GetName_string();
                         if (definition.IsTradable(name)) {
-                            resourcesByCategory['buffs'].push({ name: name });
+                            resourcesByCategory['buffs'].push({name: name});
                         }
                     }
 
                     // Adventures
                     categoryNames.push('adventures');
                     resourcesByCategory['adventures'] = [];
-                    items = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition").map_AdventureName_AdventureDefinition.valueSet();
+                    items                             = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition").map_AdventureName_AdventureDefinition.valueSet();
                     for (var item in items) {
                         var definition = items[item];
-                        var name = definition.GetName();
+                        var name       = definition.GetName();
                         if (definition.IsTradable()) {
-                            resourcesByCategory['adventures'].push({ name: name });
+                            resourcesByCategory['adventures'].push({name: name});
                         }
                     }
 
                     // Buildings
                     categoryNames.push('buildings');
                     resourcesByCategory['buildings'] = [];
-                    items = swmmo.getDefinitionByName("global").buildingGroup.mGOList_vector;
+                    items                            = swmmo.getDefinitionByName("global").buildingGroup.mGOList_vector;
                     for (var item in items) {
                         var definition = items[item];
-                        var name = definition.mGfxResourceListName_string;
+                        var name       = definition.mGfxResourceListName_string;
                         if (definition.isTradable()) {
-                            resourcesByCategory['buildings'].push({ name: name });
+                            resourcesByCategory['buildings'].push({name: name});
                         }
                     }
 
                     categoryNames.sort();
                     _resourceList = categoryNames.map(function (catName) {
-                        return { categoryName: catName, items: resourcesByCategory[catName] };
+                        return {categoryName: catName, items: resourcesByCategory[catName]};
                     });
                 } catch (e) {
                     debug(e);
@@ -571,14 +636,12 @@ var ShortcutTrader = (function () {
         }
 
         function invalidate() {
-            _friendsList = null;
+            _friendsList  = null;
             _resourceList = null;
         }
 
         return {
-            getFriendsList: getFriendsList,
-            getResourceList: getResourceList,
-            invalidate: invalidate
+            getFriendsList: getFriendsList, getResourceList: getResourceList, invalidate: invalidate
         };
     })();
 
@@ -589,10 +652,10 @@ var ShortcutTrader = (function () {
                 return;
             }
 
-            var queue            = new TimedQueue(SCRIPT_CONST.TRADE_QUEUE_DELAY);
-            var successCount     = 0;
-            var totalTrades      = trades.length;
-            var playerResources  = game.gi.mCurrentPlayerZone.GetResources(game.gi.mHomePlayer);
+            var queue           = new TimedQueue(SCRIPT_CONST.TRADE_QUEUE_DELAY);
+            var successCount    = 0;
+            var totalTrades     = trades.length;
+            var playerResources = game.gi.mCurrentPlayerZone.GetResources(game.gi.mHomePlayer);
 
             trades.forEach(function (trade) {
                 if (!TradeValidator.isTradeAllowed(trade)) {
@@ -638,7 +701,7 @@ var ShortcutTrader = (function () {
             if (SettingsService.getState().tradesData.isMarketTradeMode && trade.userId !== 0) {
                 return false;
             }
-            if (!SettingsService.getState().tradesData.isMarketTradeMode){
+            if (!SettingsService.getState().tradesData.isMarketTradeMode) {
                 var isFriend = GameDataSource.getFriendsList().some(function (f) {
                     return f.id == trade.userId;
                 });
@@ -652,8 +715,7 @@ var ShortcutTrader = (function () {
         }
 
         return {
-            isValidTradeArray: isValidTradeArray,
-            isTradeAllowed: isTradeAllowed
+            isValidTradeArray: isValidTradeArray, isTradeAllowed: isTradeAllowed
         };
     })();
 
@@ -679,9 +741,7 @@ var ShortcutTrader = (function () {
                 return;
             }
 
-            var freeSlots = SettingsService.getState().isTradeAlreadySent
-                ? 1
-                : game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0);
+            var freeSlots = SettingsService.getState().isTradeAlreadySent ? 1 : game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0);
 
             offer.lots     = trade.UserName;
             offer.slotType = freeSlots === 0 ? 0 : 2;
@@ -693,7 +753,7 @@ var ShortcutTrader = (function () {
 
             if (def) {
                 return TradeResources.applyOfferResource(offer, trade, playerResources);
-            }else{
+            } else {
                 return TradeResources.applyOfferBuff(offer, trade);
             }
         }
@@ -709,8 +769,7 @@ var ShortcutTrader = (function () {
         }
 
         return {
-            create: create,
-            applyRecipient: applyRecipient
+            create: create, applyRecipient: applyRecipient
         };
 
     })();
@@ -726,11 +785,7 @@ var ShortcutTrader = (function () {
             var result = null;
 
             game.gi.mHomePlayer.getBuffsSortedForStarMenu().some(function (item) {
-                if (
-                    (item.GetBuffDefinition().GetName_string() === name ||
-                        item.GetResourceName_string() === name) &&
-                    item.GetBuffDefinition().IsTradable(item.GetResourceName_string())
-                ) {
+                if ((item.GetBuffDefinition().GetName_string() === name || item.GetResourceName_string() === name) && item.GetBuffDefinition().IsTradable(item.GetResourceName_string())) {
                     result = item.CreateBuffVOFromBuff();
                     return true;
                 }
@@ -757,8 +812,8 @@ var ShortcutTrader = (function () {
                 return false;
             }
 
-            var res = new (game.def("Communication.VO::dResourceVO"));
-            res.amount = res.producedAmount = trade.offerResAmount;
+            var res         = new (game.def("Communication.VO::dResourceVO"));
+            res.amount      = res.producedAmount = trade.offerResAmount;
             res.name_string = trade.offerResName;
 
             offer.offerRes = res;
@@ -773,21 +828,21 @@ var ShortcutTrader = (function () {
                 return false;
             }
 
-            buff.amount = trade.offerResAmount;
+            buff.amount     = trade.offerResAmount;
             offer.offerBuff = buff;
             return true;
         }
 
         function applyCostResource(offer, trade) {
-            var res = new (game.def("Communication.VO::dResourceVO"));
-            res.amount = res.producedAmount = trade.costResAmount;
+            var res         = new (game.def("Communication.VO::dResourceVO"));
+            res.amount      = res.producedAmount = trade.costResAmount;
             res.name_string = trade.costResName;
 
             offer.costsRes = res;
         }
 
         function applyCostBuff(offer, trade) {
-            var buff = new (game.def("Communication.VO::dBuffVO"));
+            var buff                 = new (game.def("Communication.VO::dBuffVO"));
             buff.sourceZoneId        = game.gi.mCurrentViewedZoneID;
             buff.amount              = trade.costResAmount;
             buff.resourceName_string = trade.costResName;
@@ -796,7 +851,7 @@ var ShortcutTrader = (function () {
             offer.costsBuff = buff;
         }
 
-        function getResourceTypeByName(name){
+        function getResourceTypeByName(name) {
             var definition = swmmo.getDefinitionByName("global").buildingGroup.GetNrFromName(name)
             if (definition !== 195) return 'BuildBuilding'
             definition = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition")
@@ -820,39 +875,23 @@ var ShortcutTrader = (function () {
     var TradeQueue = {
         enqueue: function (queue, offer, trade, cb) {
             queue.add(function () {
-                game.gi.mClientMessages.SendMessagetoServer(
-                    SCRIPT_CONST.MESSAGE_TYPES.SEND_TRADE,
-                    game.gi.mCurrentViewedZoneID,
-                    offer
-                );
+                game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MESSAGE_TYPES.SEND_TRADE, game.gi.mCurrentViewedZoneID, offer);
                 cb();
                 globalFlash.gui.mAvatarMessageList.AddMessage('TradeInitiated');
             });
-        },
-        finishBatch: function () {
-            game.gi.mClientMessages.SendMessagetoServer(
-                SCRIPT_CONST.MESSAGE_TYPES.REFRESH_TRADES,
-                game.gi.mCurrentViewedZoneID,
-                null
-            );
+        }, finishBatch: function () {
+            game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MESSAGE_TYPES.REFRESH_TRADES, game.gi.mCurrentViewedZoneID, null);
         }
     };
 
     var TradeUI = {
         alertCannotAfford: function () {
             game.showAlert(loca.GetText('LAB', 'CannotAffordSendTrade'));
-        },
-        alertAddFriend: function () {
-            game.showAlert(
-                loca.GetText('QUL', 'SocialMedium8') + ' ' +
-                loca.GetText('LAB', 'AddFriend')
-            );
-        },
-        showSuccess: function (trade, success, total) {
+        }, alertAddFriend: function () {
+            game.showAlert(loca.GetText('QUL', 'SocialMedium8') + ' ' + loca.GetText('LAB', 'AddFriend'));
+        }, showSuccess: function (trade, success, total) {
             var msg = loca.GetText('LAB', 'TradeOffer') + ' ';
-            msg += trade.userId === 0
-                ? loca.GetText('MES', 'TradeInitiated')
-                : loca.GetText('LAB', 'User') + ': ' + trade.UserName;
+            msg += trade.userId === 0 ? loca.GetText('MES', 'TradeInitiated') : loca.GetText('LAB', 'User') + ': ' + trade.UserName;
             msg += ' (' + success + '/' + total + ')';
 
             game.showAlert(msg);
@@ -861,12 +900,12 @@ var ShortcutTrader = (function () {
 
     return {
         init: init,
-        TradeService:TradeService,
-        TradeValidator:TradeValidator,
-        TradeOfferFactory:TradeOfferFactory,
-        TradeResources:TradeResources,
-        TradeQueue:TradeQueue,
-        TradeUI:TradeUI,
+        TradeService: TradeService,
+        TradeValidator: TradeValidator,
+        TradeOfferFactory: TradeOfferFactory,
+        TradeResources: TradeResources,
+        TradeQueue: TradeQueue,
+        TradeUI: TradeUI,
     };
 })();
 
