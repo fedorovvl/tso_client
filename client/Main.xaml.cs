@@ -31,7 +31,7 @@ namespace client
         public static string setting_file = "settings.dat";
         public static string tso_folder = "tso_portable";
         public static string lang = string.Empty;
-        public static int http_timeout = 20000;
+        public static int http_timeout = 300000;
         public static string totpkey = string.Empty;
         public static bool isLoaded = false;
         public static string[] upstream_data = null;
@@ -46,7 +46,8 @@ namespace client
         private string _langRemember;
         private string _dropboxToken;
         private static string extraVersion = "#TESTTAG#";
-        public const string appversion = "1.5.8.1";
+        public const string appversion = "1.5.8.3";
+        public static bool forceFullAuth = false;
         public string version
         {
             get { return appversion; }
@@ -86,7 +87,7 @@ namespace client
             "--token - extra token for fastlogin",
             "--password - set password",
             "--autologin - allows to start client with login/password from setting.dat",
-            "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro] - changes the game interface language.",
+            "--lang [de|us|en|fr|ru|pl|es2|es|nl|cz|pt|it|el|ro|cn] - changes the game interface language.",
             "--window [fullscreen|maximized|minimized] - initital game window size",
             "--skip - allows to skip update checking of client.swf",
             "--tsofolder - set different tso folder name",
@@ -101,7 +102,6 @@ namespace client
 
         public Main()
         {
-            
             cmd = new Arguments(Environment.GetCommandLineArgs());
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
             System.Net.ServicePointManager.Expect100Continue = false;
@@ -181,22 +181,6 @@ namespace client
                 }
                 if (!debug)
                     unzip.ExtractToDirectory(ClientDirectory);
-            }
-            if (!debug)
-            {
-                if (System.Environment.Is64BitOperatingSystem && (cmd["x64"] != null || _settings.x64))
-                {
-                    using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x64)))
-                    {
-                        unzip.ExtractToDirectory(ClientDirectory);
-                    }
-                } else
-                {
-                    using (var unzip = new Unzip(new MemoryStream(Properties.Resources.runtime_x86)))
-                    {
-                        unzip.ExtractToDirectory(ClientDirectory);
-                    }
-                }
             }
             try
             {
@@ -410,7 +394,7 @@ namespace client
             }
             region_list.SelectedIndex = _settings.region;
             _region = (region_list.SelectedItem as ComboBoxItem).Tag.ToString();
-            tso_folder = _settings.tsofolder;
+            tso_folder = String.IsNullOrEmpty(_settings.tsofolder) ? "tso_portable" : _settings.tsofolder;
             totpkey = _settings.totpkey;
             SaveLogin.IsChecked = _settings.remember;
         }
@@ -605,6 +589,10 @@ namespace client
                 tsoUrl.Set("dropboxApiKey", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxkey)));
                 tsoUrl.Set("dropboxApiRefresh", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(_settings.dropboxrefresh)));
             }
+            if (_settings.useCache)
+            {
+                tsoUrl.Set("gfxcache", "true");
+            }
             return tsoUrl;
         }
 
@@ -624,7 +612,7 @@ namespace client
                 extraVersion = extraVersion != string.Format("#{0}#", "TESTTAG") ? "-" + extraVersion : "";
                 if (debug)
                     File.AppendAllText("debug.txt", "start tso with " + _settings.tsoArg + "\r\n");
-                System.Diagnostics.Process.Start(string.Format("{0}\\client.exe", ClientDirectory), string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion));
+                System.Diagnostics.Process.Start(string.Format("{0}\\client{1}.exe", ClientDirectory, _settings.x64 || cmd["x64"] != null ? "64" : ""), string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion));
             } catch
             {
                 MessageBox.Show(string.Format("{0}\\META-INF\\AIR\\application.xml", ClientDirectory) + " corrupted.. Remove it and try again");
@@ -680,8 +668,11 @@ namespace client
             langRun = Servers.getTrans("run");
             langExit = Servers.getTrans("exit");
             langRemember = Servers.getTrans("remember");
-            if(isLoaded)
+            if (isLoaded)
+            {
                 new Thread(checkVersion) { IsBackground = true }.Start();
+                forceFullAuth = true;
+            }
         }
 
         private void openTsoFolder_Click(object sender, RoutedEventArgs e)
@@ -695,11 +686,12 @@ namespace client
             if (settings_window.DialogResult == true)
             {
                 _settings = settings_window.setting;
-                tso_folder = _settings.tsofolder;
+                tso_folder = String.IsNullOrEmpty(_settings.tsofolder) ? "tso_portable" : _settings.tsofolder;
                 totpkey = _settings.totpkey;
                 if (isLoaded)
                     new Thread(checkVersion) { IsBackground = true }.Start();
                 File.WriteAllBytes(setting_file, ProtectedData.Protect(Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(_settings)), additionalEntropy, DataProtectionScope.LocalMachine));
+                ReadSettings();
             }
         }
         private void resetTsoFolder_Click(object sender, RoutedEventArgs e)
@@ -743,6 +735,7 @@ namespace client
         public bool tsoFolderNearLauncher { get; set; } = false;
         public bool x64 { get; set; } = false;
         public bool tryFast { get; set; } = false;
+        public bool useCache { get; set; } = false;
         public bool configNickname { get; set; } = false;
         public string username { get; set; } = string.Empty;
         public long accountId { get; set; } = 0;

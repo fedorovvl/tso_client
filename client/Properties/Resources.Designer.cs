@@ -69,25 +69,5 @@ namespace client.Properties {
                 return ((byte[])(obj));
             }
         }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Byte[].
-        /// </summary>
-        internal static byte[] runtime_x64 {
-            get {
-                object obj = ResourceManager.GetObject("runtime_x64", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Byte[].
-        /// </summary>
-        internal static byte[] runtime_x86 {
-            get {
-                object obj = ResourceManager.GetObject("runtime_x86", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
     }
 }
