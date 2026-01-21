@@ -40,6 +40,18 @@ LRUCache.prototype.put = function (key, value)
 	}
 };
 
+LRUCache.prototype.save = function()
+{
+    return { store: this.store, tracker: this.tracker };
+}
+
+LRUCache.prototype.load = function(data)
+{
+    this.store = data.store;
+    this.tracker = data.tracker;
+    updateLRUMenu();
+}
+
 LRUCache.prototype.check = function(key)
 {
 	debug(this.store[key]);

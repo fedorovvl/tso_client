@@ -133,7 +133,7 @@ namespace client
                         string postData)
         {
             string _host = new Uri(url).Host;
-            string _path = new Uri(url).AbsolutePath;
+            string _path = string.Format("{0}{1}", new Uri(url).AbsolutePath, string.IsNullOrEmpty(postData) || _mType == PostTypeEnum.Post ? "" : "?" + postData);
             string _method = (_mType == PostTypeEnum.Post) ? "POST" : "GET";
             using (var client = new TcpClient(_host, 443))
             {
@@ -157,6 +157,10 @@ namespace client
                         hdr.AppendLine("Cookie: " + string.Join("; ", cList.ToArray()));
                     }
                     hdr.AppendLine("Connection: close");
+                    for (var i = 0; i < _hValues.Count; i++)
+                    {
+                        hdr.AppendLine(string.Format("{0}: {1}", _hValues.GetKey(i), _hValues[i]));
+                    }
                     var bytes = new UTF8Encoding().GetBytes(postData);
                     if (_mType == PostTypeEnum.Post)
                     {
@@ -178,11 +182,16 @@ namespace client
                     string response = "";
 
                     byte[] buff = new byte[1000];
-                    do
+                    try
                     {
-                        totalRead = stream.Read(buff, 0, buff.Length);
-                        response += Encoding.ASCII.GetString(buff, 0, totalRead);
-                    } while (totalRead != 0);
+                        do
+                        {
+                            totalRead = stream.Read(buff, 0, buff.Length);
+                            response += Encoding.ASCII.GetString(buff, 0, totalRead);
+                        } while (totalRead != 0);
+                    }
+                    catch { }
+                    stream.Close();
                     string[] data = response.Split(new string[] { "\r\n\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (string header in data[0].Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
                     {
@@ -205,9 +214,15 @@ namespace client
                                 Cookies.Add(new Cookie(values[0], values[1]));
                             }
                         }
+                        if (header_entry[0] == "Location")
+                        {
+                            if (Main.debug)
+                                File.AppendAllText("debug.txt", "bc response data " + header_entry[1] + "\r\n");
+                            return header_entry[1];
+                        }
                     }
                     if (Main.debug)
-                        File.AppendAllText("debug.txt", "bc response data " + data[1] + "\r\n");
+                        File.AppendAllText("debug.txt", "bc response data " + string.Join("\r\n", data) + "\r\n");
 
                     return data[1];
                 }
@@ -278,7 +293,7 @@ namespace client
                 }
                 else
                 {
-                    var uri = new Uri(url + "?" + postData);
+                    var uri = new Uri(string.Format("{0}{1}", url, string.IsNullOrEmpty(postData) ? "" : "?" + postData));
                     request = (HttpWebRequest)WebRequest.Create(uri);
                     request.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.12 (KHTML, like Gecko) Chrome/9.0.570.0 Safari/534.12";
                     request.Referer = Servers.getRandReferer();
@@ -288,7 +303,7 @@ namespace client
                     {
                         request.CookieContainer.Add(Cookies);
                     }
-                    
+
                     request.Method = _mType.ToString();
                 }
                 if (Main.debug)
@@ -304,8 +319,7 @@ namespace client
                         using (var response = (HttpWebResponse)request.GetResponse())
                         {
                             //System.Windows.MessageBox.Show(response.ContentLength.ToString());
-                            if (_mType == PostTypeEnum.Post)
-                            {
+                            
                                 foreach (Cookie cookie in response.Cookies)
                                 {
                                     var isMatch = false;
@@ -324,8 +338,14 @@ namespace client
                                         Cookies.Add(cookie);
                                     }
                                 }
+                            
+                            string redirectUrl = response.GetResponseHeader("Location");
+                            if (!string.IsNullOrEmpty(redirectUrl))
+                            {
+                                result = redirectUrl;
+                                isResponceRecieved = true;
+                                break;
                             }
-
 
                             using (var responseStream = response.GetResponseStream())
                             {
@@ -349,13 +369,23 @@ namespace client
                         {
                             HttpWebResponse httpResponse = (HttpWebResponse)e.Response;
                             result = string.Format("ERROR. Statuscode {0}. Description {1} ", httpResponse.StatusCode, httpResponse.StatusDescription);
+
                             if (httpResponse.StatusCode == HttpStatusCode.Conflict)
                             {
                                 result = " CAPCHA ";
-                            }
-                            if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+                            } else if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
                             {
                                 result = " FAILED ";
+                            } else
+                            {
+                                using (var responseStream = httpResponse.GetResponseStream())
+                                {
+                                    using (var readStream = new StreamReader(responseStream,
+                                                                             Encoding.UTF8))
+                                    {
+                                        result += readStream.ReadToEnd();
+                                    }
+                                }
                             }
                             isResponceRecieved = true;
                         }

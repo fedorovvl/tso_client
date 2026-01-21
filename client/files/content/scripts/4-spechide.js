@@ -1,5 +1,6 @@
 var specHideVector = {};
 var hideSpecSelectedType = 1;
+var advRefreshed = 0;
 var hideSpecTracker = game.getTracker('specHide', hideSpecHandler);
 game.gi.channels.ZONE.addPropertyObserver("ZONE_REFRESHED", hideSpecTracker);
 $.extend(specHideVector, settings.read(null, "specHide"));
@@ -74,7 +75,17 @@ function hideSpecHandler(event)
 				item.SetPlayerID(game.player.GetPlayerId());
 			}
 		});
-		game.gi.isOnHomzone()&&setFilterHandler(mainSettings.defFilter);
+		if(game.gi.isOnHomzone()) {
+            setFilterHandler(mainSettings.defFilter);
+            if(advRefreshed != 0) {
+                shortcutsLoadSettings(true);
+            }
+            advRefreshed = 0;
+        }
+        if(game.gi.IsAdventureZone() && mainSettings.customShortcuts[game.gi.getAdventureName()]) {
+            advRefreshed++;
+            if(expZone == null) { shortcutsLoadSettings(true); }
+        }
 	} catch (e) {}
 }
 

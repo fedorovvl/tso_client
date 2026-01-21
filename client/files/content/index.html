@@ -25,7 +25,7 @@
 		{
 			updateApplication();
 			var nativeProcessStartupInfo = new window.runtime.flash.desktop.NativeProcessStartupInfo();
-			var file = air.File.applicationDirectory.resolvePath("client.exe");
+			var file = air.File.applicationDirectory.resolvePath(window.runtime.flash.system.Capabilities.cpuAddressSize == 32 ? "client.exe" : "client64.exe");
 			nativeProcessStartupInfo.executable = file;
 			var processArgs = new window.runtime.Vector["<String>"]();
 			rawArgs["window"] = mainSettings.mwWindowSize == 'same' ? rawArgs["window"] : mainSettings.mwWindowSize;

@@ -109,6 +109,12 @@ namespace client
         }
         private void FastAuth()
         {
+            if(Main.forceFullAuth)
+            {
+                fastSuccess = false;
+                MainAuth();
+                return;
+            }
             var tsoUrl = HttpUtility.ParseQueryString(_settings.tsoArg);
             AddToRich("Try fastlogin");
             CookieCollection _cookies = new CookieCollection();
@@ -138,15 +144,10 @@ namespace client
             }));
             return;
         }
-        public void MainAuth()
+        public void CipAuth()
         {
             try
             {
-                if(fastSuccess && _settings.tryFast && !string.IsNullOrEmpty(_settings.tsoArg))
-                {
-                    FastAuth();
-                    return;
-                }
                 PostSubmitter post;
                 string res;
                 CookieCollection _cookies = new CookieCollection();
@@ -158,120 +159,198 @@ namespace client
                 AddToRich(Servers.getTrans("tryauth") + attepts++);
                 post = new PostSubmitter
                 {
-                    Url = Servers.ubiServices,
+                    Url = string.Format("{0}{1}", Servers._servers[region].domain, "/oauth/start"),
+                    Type = PostSubmitter.PostTypeEnum.Get
+                };
+                res = post.Post(ref _cookies);
+                if(!res.Contains("https"))
+                {
+                    AddToRich(Servers.getTrans("autherr"));
+                    AddToRich(res);
+                    return;
+                }
+                post = new PostSubmitter
+                {
+                    Url = res,
+                    Type = PostSubmitter.PostTypeEnum.Get
+                };
+                AddToRich("Start oauth");
+                Uri redirectUrl = new Uri(post.Post(ref _cookies));
+                var redirectUrlOpts = HttpUtility.ParseQueryString(redirectUrl.Query);
+                AddToRich("ClientId "+ redirectUrlOpts.Get("client_id"));
+                AddToRich("Get access token");
+                post = new PostSubmitter
+                {
+                    Url = "https://connect.ubisoft.com/v2/webauth/public/ubiservices/oauthToken",
                     Type = PostSubmitter.PostTypeEnum.Post
                 };
-                post.HeaderItems.Add("Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(string.Format("{0}:{1}", username.Trim(), password.Trim()))));
                 post.ContentType = "application/json";
-                post.HeaderItems.Add("Ubi-AppId", "39164658-8187-4bf4-b46c-375f68356e3b");
-                post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
-                post.HeaderItems.Add("GenomeId", "978da00d-2533-4af4-a550-3ba09289084e");
-                post.PostItems.Add("{\"rememberMe\":true}", string.Empty);
+                post.useBC = true;
+                post.PostItems.Add("{\"headers\":{\"Content-Type\":\"application/json\",\"Accept\":\"application/json\"}}", string.Empty);
                 res = post.Post(ref _cookies);
-                AddToRich(Servers.getTrans("auth") + " ubi");
-                if (res.Contains("sessionKey"))
+                if(res.Contains("ERROR"))
                 {
-                    AddToRich(Servers.getTrans("authok"));
-                    UbiSession sessionData = Deserialize<UbiSession>(res);
-                    if (sessionData.twoFactorAuthenticationTicket != null)
+                    AddToRich(Servers.getTrans("autherr"));
+                    AddToRich(res);
+                    return;
+                }
+                UbioAuth oAuthData = Deserialize<UbioAuth>(res);
+                AddToRich("Get auth token");
+                post = new PostSubmitter
+                {
+                    Url = "https://api.partners.ubisoft.com/v1/profiles/authentication/token",
+                    Type = PostSubmitter.PostTypeEnum.Post
+                };
+                post.useBC = true;
+                post.ContentType = "application/json";
+                post.PostItems.Add("{\"rememberMe\":true}", string.Empty);
+                post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
+                post.HeaderItems.Add("Authorization", "Bearer " + oAuthData.accessToken);
+                post.HeaderItems.Add("Ubi-Profile-Authorization", "Basic " + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(string.Format("{0}:{1}", username.Trim(), password.Trim()))));
+                res = post.Post(ref _cookies);
+                if (res.Contains("ERROR"))
+                {
+                    AddToRich(Servers.getTrans("autherr"));
+                    AddToRich(res);
+                    return;
+                }
+                if (res.Contains("FAILED"))
+                {
+                    AddToRich(Servers.getTrans("loginerr"));
+                    return;
+                }
+                UbiAuth AuthData = Deserialize<UbiAuth>(res);
+                if (AuthData.twoFactorAuthenticationTicket != null)
+                {
+                    if (string.IsNullOrEmpty(totpKey))
                     {
-                        if (string.IsNullOrEmpty(totpKey))
-                        {
-                            AddToRich("2fa detected but no key present");
-                            attepts = 6;
-                            return;
-                        }
-                        Totp totp = new Totp(Base32.Base32Encoder.Decode(totpKey));
-                        post = new PostSubmitter
-                        {
-                            Url = Servers.ubiServices,
-                            Type = PostSubmitter.PostTypeEnum.Post
-                        };
-                        post.HeaderItems.Add("Authorization", "ubi_2fa_v1 t=" + sessionData.twoFactorAuthenticationTicket);
-                        post.ContentType = "application/json";
-                        post.HeaderItems.Add("Ubi-2FACode", totp.ComputeTotp());
-                        post.HeaderItems.Add("Ubi-AppId", "39164658-8187-4bf4-b46c-375f68356e3b");
-                        post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
-                        post.HeaderItems.Add("GenomeId", "978da00d-2533-4af4-a550-3ba09289084e");
-                        post.PostItems.Add("{\"rememberMe\":true}", string.Empty);
-                        res = post.Post(ref _cookies);
-                        AddToRich(Servers.getTrans("auth") + " 2fa");
-                        if (res.Contains("sessionKey"))
-                        {
-                            AddToRich(Servers.getTrans("authok"));
-                            sessionData = Deserialize<UbiSession>(res);
-                        } else
-                        {
-                            AddToRich(Servers.getTrans("autherr"));
-                            return;
-                        }
+                        AddToRich("2fa detected but no key present");
+                        attepts = 6;
+                        return;
                     }
+                    Totp totp = new Totp(Base32.Base32Encoder.Decode(totpKey));
                     post = new PostSubmitter
                     {
-                        Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].uplay),
+                        Url = "https://api.partners.ubisoft.com/v1/profiles/authentication/token",
                         Type = PostSubmitter.PostTypeEnum.Post
                     };
-                    DateTime dt = DateTime.Parse(sessionData.expiration).ToUniversalTime();
-                    Int32 unixTimestamp = (Int32)(dt.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-                    post.PostItems.Add("id", sessionData.userId);
-                    post.PostItems.Add("ticket", sessionData.ticket);
-                    post.PostItems.Add("expiration", unixTimestamp.ToString());
-                    post.PostItems.Add("undefined", sessionData.sessionId);
-                    post.PostItems.Add("activated", "true");
                     post.useBC = true;
-                    AddToRich(Servers.getTrans("auth") + " uplay");
+                    post.HeaderItems.Add("Ubi-Profile-Authorization", "ubi_2fa_v1 t=" + AuthData.twoFactorAuthenticationTicket);
+                    post.HeaderItems.Add("Authorization", "Bearer " + oAuthData.accessToken);
+                    post.ContentType = "application/json";
+                    post.HeaderItems.Add("Ubi-2FACode", totp.ComputeTotp());
+                    post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
+                    post.PostItems.Add("{}", string.Empty);
                     res = post.Post(ref _cookies);
-                    if (Main.debug)
-                        File.AppendAllText("debug.txt", "recieved "+ res + "\n");
-                    if (res.Contains("OKAY"))
+                    AddToRich(Servers.getTrans("auth") + " 2fa");
+                    if (res.Contains("token"))
                     {
                         AddToRich(Servers.getTrans("authok"));
-                        post = new PostSubmitter
-                        {
-                            Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].main),
-                            Type = PostSubmitter.PostTypeEnum.Post
-                        };
-                        post.PostItems.Add("start", "1");
-                        post.useBC = true;
-                        res = post.Post(ref _cookies);
-                        post = new PostSubmitter
-                        {
-                            Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].play),
-                            Type = PostSubmitter.PostTypeEnum.Get
-                        };
-                        AddToRich(Servers.getTrans("getplay"));
-                        post.useBC = true;
-                        string token = post.Post(ref _cookies);
-                        if (!token.Contains("thisProgram") && !token.Contains("return \"lang"))
-                        {
-                            AddToRich(Servers.getTrans("cookieerr"));
-                            return;
-                        }
-                        if (!PrepareFlash(token, token.Contains("thisProgram")))
-                        {
-                            AddToRich(Servers.getTrans("paramserr"));
-                            MainAuth();
-                        }
-                        foreach (Cookie cook in _cookies)
-                        {
-                            if (cook.Name.Contains("SESS"))
-                            {
-                                Session = cook.Value;
-                                break;
-                            }
-                        }
-                        Cookies = _cookies;
-                        return;
+                        AuthData = Deserialize<UbiAuth>(res);
                     }
                     else
                     {
-                        checkForError(res);
+                        AddToRich(Servers.getTrans("autherr"));
+                        return;
                     }
                 }
-                else
+                AddToRich(AuthData.token);
+                redirectUrlOpts.Add("token", AuthData.token);
+                post = new PostSubmitter
                 {
-                    checkForError(res);
+                    Url = "https://api.partners.ubisoft.com/v1/oauth/authorize/callback",
+                    Type = PostSubmitter.PostTypeEnum.Get
+                };
+                post.useBC = true;
+                post.PostItems.Add(redirectUrlOpts.ToString(), string.Empty);
+                AddToRich("Get profile_token");
+                res = post.Post(ref _cookies);
+                if (res.Contains("ERROR"))
+                {
+                    AddToRich(Servers.getTrans("autherr"));
+                    AddToRich(res);
+                    return;
                 }
+                var callbackOpts = HttpUtility.ParseQueryString(HttpUtility.ParseQueryString(new Uri(res).Query)["redirectUrl"]);
+                AddToRich(callbackOpts.Get("profile_token"));
+                redirectUrlOpts.Add("profile_token", callbackOpts.Get("profile_token"));
+                redirectUrlOpts.Remove("token");
+                post = new PostSubmitter
+                {
+                    Url = "https://api.partners.ubisoft.com/v1/oauth/consents",
+                    Type = PostSubmitter.PostTypeEnum.Post
+                };
+                post.useBC = true;
+                post.ContentType = "application/json";
+                post.HeaderItems.Add("Ubi-RequestedPlatformType", "uplay");
+                post.HeaderItems.Add("ClientId", redirectUrlOpts.Get("client_id"));
+                post.PostItems.Add("{\"scopesConsented\":[\"offline_access\",\"openid\",\"profile\",\"email\"],\"isConsented\":true,\"redirectUrl\":\"https://api.partners.ubisoft.com/v1/oauth/authorize/callback?" + redirectUrlOpts.ToString() + "\"}", string.Empty);
+                AddToRich("Get login url");
+                res = post.Post(ref _cookies);
+                post = new PostSubmitter
+                {
+                    Url = "https://api.partners.ubisoft.com/v1/oauth/authorize/callback",
+                    Type = PostSubmitter.PostTypeEnum.Get
+                };
+                post.useBC = true;
+                post.PostItems.Add(redirectUrlOpts.ToString(), string.Empty);
+                res = post.Post(ref _cookies);
+
+                post = new PostSubmitter
+                {
+                    Url = res.Replace("login", "login2"),
+                    Type = PostSubmitter.PostTypeEnum.Get
+                };
+                AddToRich("Post login url");
+                res = post.Post(ref _cookies);
+                post = new PostSubmitter
+                {
+                    Url = res,
+                    Type = PostSubmitter.PostTypeEnum.Get
+                };
+                AddToRich("Post login url");
+                res = post.Post(ref _cookies);
+                post = new PostSubmitter
+                {
+                    Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].main),
+                    Type = PostSubmitter.PostTypeEnum.Get
+                };
+                res = post.Post(ref _cookies);
+                post = new PostSubmitter
+                {
+                    Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].play),
+                    Type = PostSubmitter.PostTypeEnum.Get
+                };
+                AddToRich(Servers.getTrans("getplay"));
+                res = post.Post(ref _cookies);
+                if (!PrepareFlash(res, res.Contains("thisProgram")))
+                {
+                    AddToRich(Servers.getTrans("paramserr"));
+                    if (res.StartsWith("https://"))
+                    {
+                        AddToRich("Redirect detected. Maintenance?");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                string msg = e.Message;
+                if (Main.debug)
+                    msg += e.StackTrace;
+                AddToRich(Servers.getTrans("autherr") + msg);
+            }
+            return;
+        }
+        public void MainAuth()
+        {
+            try
+            {
+                if (fastSuccess && _settings.tryFast && !string.IsNullOrEmpty(_settings.tsoArg))
+                {
+                    FastAuth();
+                    return;
+                }
+                CipAuth();
             }
             catch (Exception e)
             {
@@ -282,40 +361,6 @@ namespace client
                 MainAuth();
             }
             return;
-        }
-
-        private void checkForError(string res)
-        {
-            if (res.Contains("FAILED"))
-            {
-                AddToRich(Servers.getTrans("loginerr"));
-                return;
-            }
-            if (res.Contains(" CAPCHA "))
-            {
-                AddToRich(Servers.getTrans("captchaerr"));
-                return;
-            }
-            if (res.Contains("UPLAY"))
-            {
-                AddToRich(Servers.getTrans("uplayerr"));
-                MainAuth();
-            }
-            if (res.Contains("EXCEPTION"))
-            {
-                AddToRich(Servers.getTrans("authex"));
-                MainAuth();
-            }
-
-            if (res.Trim() == "")
-            {
-                AddToRich(Servers.getTrans("emptyauth"));
-            }
-            else
-            {
-                AddToRich(Servers.getTrans("autherr") + res);
-                MainAuth();
-            }
         }
 
         public bool PrepareFlash(string htmlPage, bool old_auth)
@@ -354,32 +399,20 @@ namespace client
     }
 
     [DataContract]
-    public class UbiSession
+    public class UbiAuth
     {
-        [DataMember(Name = "platformType")]
-        public string platformType { get; set; }
-        [DataMember(Name = "ticket")]
-        public string ticket { get; set; }
+        [DataMember(Name = "token")]
+        public string token { get; set; }
+        [DataMember(Name = "rememberDeviceTicket")]
+        public string rememberDeviceTicket { get; set; }
         [DataMember(Name = "twoFactorAuthenticationTicket")]
         public string twoFactorAuthenticationTicket { get; set; }
-        [DataMember(Name = "profileId")]
-        public string profileId { get; set; }
-        [DataMember(Name = "userId")]
-        public string userId { get; set; }
-        [DataMember(Name = "nameOnPlatform")]
-        public string nameOnPlatform { get; set; }
-        [DataMember(Name = "environment")]
-        public string environment { get; set; }
-        [DataMember(Name = "expiration")]
-        public string expiration { get; set; }
-        [DataMember(Name = "spaceId")]
-        public string spaceId { get; set; }
-        [DataMember(Name = "sessionId")]
-        public string sessionId { get; set; }
-        [DataMember(Name = "sessionKey")]
-        public string sessionKey { get; set; }
-        [DataMember(Name = "rememberMeTicket")]
-        public string rememberMeTicket { get; set; }
 
+    }
+    [DataContract]
+    public class UbioAuth
+    {
+        [DataMember(Name = "accessToken")]
+        public string accessToken { get; set; }
     }
 }
