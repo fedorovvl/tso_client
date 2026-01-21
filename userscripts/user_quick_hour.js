@@ -38,12 +38,9 @@
         original.apply(this, arguments);
 
         if (specType === 1) {
-            debug('new');
             if (!isQuickHourExists()){
-                debug('start new logic');
                 initQuickHourUI();
                 bindQuickHourEvents();
-                debug('hour added');
             }
         } else if (isQuickHourExists()) {
             $('#' + quickHourUI.root).remove();
@@ -169,7 +166,6 @@
         var targetDiff = getTargetDiffMinutesFromHour(hour);
         var nextTime   = getNextTargetDateTime(hour);
         var specs      = collectSpecData();
-        debug(specs);
 
         $('#' + quickHourUI.selectedTime).text(nextTime);
         for (var i = 0; i < specs.length; i++) {
