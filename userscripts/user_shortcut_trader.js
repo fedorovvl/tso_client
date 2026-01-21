@@ -3,9 +3,8 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 var ShortcutTrader = (function () {
-    const NAME              = loca.GetText("QUL", "MiadTropicalSunQ2") + ', ' + loca.GetText("ACL", "SellGoods_1");
-
-    var CONSTANTS = {
+    const SCRIPT_CONST = {
+        NAME: loca.GetText("QUL", "MiadTropicalSunQ2") + ', ' + loca.GetText("ACL", "SellGoods_1"),
         TRADE_QUEUE_DELAY: 4000,
         BUTTON_COOLDOWN: 3000,
         MESSAGE_TYPES: {
@@ -13,12 +12,6 @@ var ShortcutTrader = (function () {
             REFRESH_TRADES: 1062,
             REQUEST_TRADE_DATA: 1061
         }
-    };
-
-    const MESSAGE_TYPES = {
-        SEND_TRADE: 1049,
-        REFRESH_TRADES: 1062,
-        REQUEST_TRADE_DATA: 1061
     };
     var buildTemplates;
 
@@ -33,7 +26,7 @@ var ShortcutTrader = (function () {
         }
         $("div[role='dialog']:not(#FriendTraderModal):visible").modal("hide");
         if (!SettingsService.getState().modalInitialized) $('#FriendTraderModal').remove();
-        createModalWindow('FriendTraderModal', NAME);
+        createModalWindow('FriendTraderModal', SCRIPT_CONST.NAME);
 
         buildTemplates = new SaveLoadTemplate('ml', function (data, name) {
             $("#FriendTraderModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
@@ -62,9 +55,9 @@ var ShortcutTrader = (function () {
 
     function init() {
         try {
-            game.gi.mClientMessages.SendMessagetoServer(MESSAGE_TYPES.REQUEST_TRADE_DATA, game.gi.mCurrentViewedZoneID, null)
+            game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MESSAGE_TYPES.REQUEST_TRADE_DATA, game.gi.mCurrentViewedZoneID, null)
             $.extend(SettingsService.getState().tradesData, settings.read(null, 'FT_SETTINGS'));
-            addToolsMenuItem(NAME, openModal);
+            addToolsMenuItem(SCRIPT_CONST.NAME, openModal);
         } catch (e) {
             debug(e);
         }
@@ -290,7 +283,7 @@ var ShortcutTrader = (function () {
             $('.FT_SendTrade').css({ opacity: 0.5, 'pointer-events': 'none' });
             setTimeout(function() {
                 $('.FT_SendTrade').css({ opacity: 1, 'pointer-events': '' });
-            }, 3000);
+            }, SCRIPT_CONST.BUTTON_COOLDOWN);
         }
 
         function sanitizeInput(element) {
@@ -596,7 +589,7 @@ var ShortcutTrader = (function () {
                 return;
             }
 
-            var queue            = new TimedQueue(4000);
+            var queue            = new TimedQueue(SCRIPT_CONST.TRADE_QUEUE_DELAY);
             var successCount     = 0;
             var totalTrades      = trades.length;
             var playerResources  = game.gi.mCurrentPlayerZone.GetResources(game.gi.mHomePlayer);
@@ -828,7 +821,7 @@ var ShortcutTrader = (function () {
         enqueue: function (queue, offer, trade, cb) {
             queue.add(function () {
                 game.gi.mClientMessages.SendMessagetoServer(
-                    MESSAGE_TYPES.SEND_TRADE,
+                    SCRIPT_CONST.MESSAGE_TYPES.SEND_TRADE,
                     game.gi.mCurrentViewedZoneID,
                     offer
                 );
@@ -838,7 +831,7 @@ var ShortcutTrader = (function () {
         },
         finishBatch: function () {
             game.gi.mClientMessages.SendMessagetoServer(
-                MESSAGE_TYPES.REFRESH_TRADES,
+                SCRIPT_CONST.MESSAGE_TYPES.REFRESH_TRADES,
                 game.gi.mCurrentViewedZoneID,
                 null
             );
