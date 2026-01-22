@@ -60,10 +60,6 @@ function openWikiHandler(event)
 	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki"));
 }
 
-function openDiscordHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/ScB7RsvxfB"));
-}
 function openDiscordFRHandler(event)
 {
 	air.navigateToURL(new air.URLRequest("https://discord.gg/9G5X7VhA"));
