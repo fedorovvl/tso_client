@@ -67,9 +67,9 @@
 
     const DM_lements        = {
         ON_OFF_RADIO: SCRIPT_PREFIX + 'StateSwitch',
-        ON_OFF_RADIO_TEXT: SCRIPT_PREFIX + 'StateSwitchStatus',
+        ON_OFF_RADIO_TEXT: SCRIPT_PREFIX + 'StateSwitch_TEXT',
         ON_OFF_AUTOMODE_RADIO: SCRIPT_PREFIX + 'AutoModeStateSwitch',
-        ON_OFF_AUTOMODE_RADIO_TEXT: SCRIPT_PREFIX + 'AutoModeStateSwitchStatus',
+        ON_OFF_AUTOMODE_RADIO_TEXT: SCRIPT_PREFIX + 'AutoModeStateSwitch_TEXT',
         BUILD_CHECKBX: SCRIPT_PREFIX + 'buildCheckBox',
         UPGR_CHECKBX: SCRIPT_PREFIX + 'upgrCheckBox',
         SAFE_BUFF_BTN: SCRIPT_PREFIX + 'toggleSafeBuffing',
