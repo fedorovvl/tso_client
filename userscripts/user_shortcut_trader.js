@@ -366,7 +366,7 @@ var ShortcutTrader = (function () {
     var UIRenderer = (function () {
 
         function renderHeader() {
-            var switchRadio   = '<div>' + createSwitch(UIMap.ids.mainSwitch, SettingsService.getState().tradesData.isMarketTradeMode) + '<div style="display:inline-block;vertical-align:top;margin-left: 10px;margin-bottom: 15px;" id="' + UIMap.ids.mainSwitchRadio + '">' + loca.GetText("LAB", "Marketplace") + '</div></div>';
+            var switchRadio   = '<div>' + createSwitch(UIMap.ids.mainSwitch, SettingsService.isMarketModeON()) + '<div style="display:inline-block;vertical-align:top;margin-left: 10px;margin-bottom: 15px;" id="' + UIMap.ids.mainSwitchRadio + '">' + loca.GetText("LAB", SettingsService.isMarketModeON() ? "Marketplace" : "Friends") + '</div></div>';
             var tableHeadHtml = createTableRow([[2, loca.GetText("LAB", "WareToDeliver")], [2, loca.GetText("LAB", "WareToRecieve")], [4, loca.GetText("LAB", "SelectTradeResources")], [2, loca.GetText("LAB", "BoughtFromSoldTo")], [2, loca.GetText('LAB', 'Tasks')]], true);
 
             var $modal = $('#' + UIMap.ids.modalData);
