@@ -240,17 +240,21 @@ var ShortcutTrader = (function () {
         }
 
         function handleMainSwitch() {
-            var mode = SettingsService.getTradeModeType();
-            if (mode === SCRIPT_CONST.TRADE_TYPES.FRIEND) {
-                $('#' + UIMap.ids.mainSwitchRadio).text(loca.GetText("LAB", "Friends"));
-                SettingsService.getState().tradesData.isMarketTradeMode = false;
-            } else {
-                $('#' + UIMap.ids.mainSwitchRadio).text(loca.GetText("LAB", "Marketplace"));
-                SettingsService.getState().tradesData.isMarketTradeMode = true;
-            }
+            var state = SettingsService.getState().tradesData;
+            state.isMarketTradeMode = !state.isMarketTradeMode;
+
+            var mode = state.isMarketTradeMode
+                ? SCRIPT_CONST.TRADE_TYPES.MARKET
+                : SCRIPT_CONST.TRADE_TYPES.FRIEND;
+
+            $('#' + UIMap.ids.mainSwitchRadio).text(
+                loca.GetText("LAB", state.isMarketTradeMode ? "Marketplace" : "Friends")
+            );
+
             $('.' + UIMap.classes.addRowContainer).empty();
             UIRenderer.addTradeRow(mode);
             UIRenderer.renderBody();
+
             SettingsService.saveSettings();
         }
 
