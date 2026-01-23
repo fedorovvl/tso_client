@@ -49,11 +49,11 @@
         },
         maxLevelDefaults: {
             IronOre: 1,
-            Coal: 1,
+            CoalOre: 1,
             BronzeOre: 1,
             GoldOre: 1,
             TitaniumOre: 1,
-            Salpeter: 1
+            SalpeterOre: 1
         }
     };
 
@@ -128,6 +128,7 @@
         createModalWindow('DrunkenMinerModal', 'Drunken Miner');
 
         DM_UpgradeSwitchStatus = DM_config.switchStatus;
+        DM_AutoModeSwitchStatus = DM_config.AutoModeStatus;
 
         //load
         DM_build_newTemplates = new SaveLoadTemplate('ml', function (data, name) {
@@ -166,6 +167,9 @@
 
         function buildSelect(ore) {
             var html = icon(null, RESOURCES.icons[ore], '');
+            if (ore === 'Coal' || ore === 'Salpeter'){
+                ore += 'Ore';
+            }
             html += '<select name="DM_maxUpgLvlFilter_' + ore + '">';
             for (var i = 1; i <= DM_MaxUpgradeLvl; i++) {
                 html += '<option value="' + i + '">' + i + '</option>';
@@ -278,8 +282,6 @@
 
                     if (buildingData) {
                         var resourceName = buildingData.name.replace('Mine', 'Ore');
-                        if (resourceName === 'CoalOre') resourceName = 'Coal';
-                        if (resourceName === 'SalpeterOre') resourceName = 'Salpeter';
 
                         var maxLevel = DM_config.maxLvl[resourceName] || DM_MaxUpgradeLvl;
 
@@ -385,13 +387,12 @@
         }
 
         if (!DM_AutoModeSwitchStatus || _DM_checkAllTasksCompleted(gridArr, isUpgradeMode)) {
-            DM_AutoModeSwitchStatus = false;
             game.showAlert(loca.GetText('ALT', 'ErrorRetrievingMail') + ' ' + loca.GetText('LAB', 'QuestCompleted'));
             return;
         }
 
         if (isUpgradeMode) {
-            _DM_upgradeMines(gridArr);
+            _DM_upgradeMines(gridArr.slice());
         } else {
             _DM_buildMines(gridArr);
         }
@@ -562,9 +563,13 @@
                 depositName   = bld.locName;
                 buffIcon      = bld.buffIcon;
 
-                timeHtml = _DM_ViewerSetTimeStr(bld.SecondsToDeplete, 2);
-                if (buffEndTime.length > 0) {
-                    timeHtml = '<span style="color: ' + _DM_formatBuffTimeColor(timeHtml, buffEndTime) + '">' + timeHtml + ' / ' + buffEndTime + '</span>';
+                if (bld.isUpgradeAllowed){
+                    timeHtml = _DM_ViewerSetTimeStr(bld.SecondsToDeplete, 2);
+                    if (buffEndTime.length > 0) {
+                        timeHtml = '<span style="color: ' + _DM_formatBuffTimeColor(timeHtml, buffEndTime) + '">' + timeHtml + ' / ' + buffEndTime + '</span>';
+                    }
+                }else if(bld.isUpgradeInProgress){
+                    timeHtml = loca.GetText('QUL', 'TutUpgrade')
                 }
             } else {
                 checkbox = '<input type="checkbox" id="DM_RebuildMines_' + deposit.grid + '" name="' + deposit.depositName + '" class="' + DM_lements.BUILD_CHECKBX + '" />';
@@ -574,7 +579,7 @@
             if (DM_UpgradeSwitchStatus && !bld) {
                 return;
             }
-            $rowHtml += createTableRow([
+            var $row = createTableRow([
                 [3, getImageTag(deposit.icon, '24px') + '<sup>' + bldLvl + '</sup>' + ' ' + depositName],
                 [1, checkbox],
                 [1, resourcesLeft],
@@ -582,6 +587,10 @@
                 [3, (buffIcon ? getImageTag(buffIcon, '24px') : '') + ' <small>' + buffName + '</small>'],
                 [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
             ], false);
+            if (bld && !bld.isUpgradeAllowed){
+                $row = $($row).css({opacity:'0.5'}).prop('outerHTML');
+            }
+            $rowHtml += $row;
         });
         deposits.depleted.forEach(function (deposit) {
             try {
@@ -757,7 +766,7 @@
         $('#DrunkenMinerModal .upgradeReset').off('click').click(function () {
             DM_config = {
                 build: [], upgrade: [], switchStatus: DM_UpgradeSwitchStatus, maxLvl: {
-                    "IronOre": 1, "Coal": 1, "BronzeOre": 1, "GoldOre": 1, "TitaniumOre": 1, "Salpeter": 1
+                    "IronOre": 1, "CoalOre": 1, "BronzeOre": 1, "GoldOre": 1, "TitaniumOre": 1, "SalpeterOre": 1
                 }
             };
 
@@ -813,17 +822,22 @@
         }
         $('[id^="DM_UpgradeMines_"]').prop('checked', false);
         $('[id^="DM_RebuildMines_"]').prop('checked', false);
-        DM_config.upgrade.forEach(function (grid) {
+        
+        DM_config.upgrade = DM_config.upgrade.filter(function(grid) {
+            return $('#DM_UpgradeMines_' + grid).length > 0;
+        });
+        DM_config.build = DM_config.build.filter(function(grid) {
+            return $('#DM_RebuildMines_' + grid).length > 0;
+        });
+
+        DM_config.upgrade.forEach(function(grid) {
             $('#DM_UpgradeMines_' + grid).prop('checked', true);
         });
-        DM_config.build.forEach(function (grid) {
+        DM_config.build.forEach(function(grid) {
             $('#DM_RebuildMines_' + grid).prop('checked', true);
         });
-        _DM_updateSelectAllOpacity();
-    }
 
-    function _DM_FindOriginalResource(buildingName) {
-        return RESOURCES.mineToOre[buildingName] || "";
+        _DM_updateSelectAllOpacity();
     }
 
     function _DM_GoTo(g) {
@@ -852,14 +866,16 @@
         QueueTotal       = swmmo.application.mGameInterface.mHomePlayer.mBuildQueue.GetTotalAvailableSlots();
         CurrentQueueFree = QueueTotal - CurrentQueue;
 
-        $.each(gridArr, function (i, grid) {
+        for (var i = gridArr.length - 1; i >= 0; i--) {
+            var grid = gridArr[i];
             if (CurrentQueueFree < 1) {
-                return false;
+                break;
             }
             var deposit = swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.get(grid);
             if (!deposit) {
+                // no deposit to build found
                 gridArr.splice(i, 1);
-                return;
+                continue;
             }
 
             var oreName = deposit.GetName_string();
@@ -867,55 +883,50 @@
 
             if (!mapping) {
                 gridArr.splice(i, 1);
-                return;
+                continue;
             }
 
             var bld = game.zone.GetBuildingFromGridPosition(grid);
             if (bld !== null) {
+                // build site already found
                 gridArr.splice(i, 1);
-                return;
+                continue;
             }
-
-            (function (currentGrid, currentMapping) {
-                x.add(function () {
+            x.add((function (currentGrid, currentMapping) {
+                return function () {
                     game.gi.SendServerAction(50, currentMapping.number, currentGrid, 0, null);
                     game.showAlert(loca.GetText("BUI", "DefenseModeGhostGarrison") + ' ' + loca.GetText("RES", currentMapping.text));
-                });
-            })(grid, mapping);
+                };
+            })(grid, mapping));
             CurrentQueueFree--;
             gridArr.splice(i, 1);
-        });
+        }
         x.run();
     }
 
     function _DM_upgradeMines(gridArr) {
         var x = new TimedQueue(1000);
-        $.each(gridArr, function (i, item) {
-            var building = game.zone.GetBuildingFromGridPosition(item);
+        for (var i = gridArr.length - 1; i >= 0; i--) {
+            var grid = gridArr[i];
+            var building = game.zone.GetBuildingFromGridPosition(grid);
             if (!building) {
-                return;
+                //need buildin to upgrade
+                gridArr.splice(i,1);
+                continue;
             }
             var name = building.GetBuildingName_string().replace('Mine', 'Ore');
-            if (name === 'CoalOre') {
-                name = 'Coal';
-            }
-            if (name === 'SalpeterOre') {
-                name = 'Salpeter';
-            }
             var maxUpgradeLevel = DM_config.maxLvl[name];
-
             if (building.GetUIUpgradeLevel() < maxUpgradeLevel && building.IsBuildingInProduction() && building.IsUpgradeAllowed(true)) {
-                x.add(function () {
-                    game.gi.SendServerAction(60, 0, building.GetGrid(), 0, null);
-                    var name    = building.GetBuildingName_string();
-                    var locName = loca.GetText('BUI', name);
-
-                    game.showAlert(loca.GetText("ALT", "UpgradeBuilding") + ' ' + locName);
-                });
-            } else if (building.GetUIUpgradeLevel() == maxUpgradeLevel) {
-                gridArr.splice(i, 1);
+                x.add((function (grid, name) {
+                    return function () {
+                        game.gi.SendServerAction(60, 0, grid, 0, null);
+                        var locName = loca.GetText('BUI', name);
+                        game.showAlert(loca.GetText("ALT", "UpgradeBuilding") + ' ' + locName);
+                    };
+                })(building.GetGrid(), building.GetBuildingName_string()));
             }
-        });
+            gridArr.splice(i, 1);
+        }
         x.run();
     }
 
