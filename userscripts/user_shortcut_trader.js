@@ -236,6 +236,7 @@ var ShortcutTrader = (function () {
             };
 
             SettingsService.getCurrentTrades().push(newTrade);
+            SettingsService.saveSettings();
             UIRenderer.renderBody();
         }
 
