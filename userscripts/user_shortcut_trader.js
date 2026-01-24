@@ -44,6 +44,8 @@ var ShortcutTrader = (function () {
                 UIRenderer.renderBody();
             });
             $.extend(state.tradesData, settings.read(null, SCRIPT_CONST.PREFIX + '_SETTINGS'));
+            SettingsService.setState(state);
+
             UIRenderer.renderHeader();
             UIRenderer.renderBody();
             UIRenderer.renderFooter();
