@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////Created by MadFX | Thanks for PiTi for source code. ////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-(function () {
+(function (global) {
     const SCRIPT_PREFIX    = 'DM_';
     const DM_MaxUpgradeLvl = 12;
     const RESOURCES = {
@@ -57,7 +57,8 @@
         }
     };
 
-    addToolsMenuItem(loca.GetText("RES", 'BuffAd_Drunken_Miner'), DM_MenuHandler);
+    global.DM_MenuHandler = DM_MenuHandler;
+    addToolsMenuItem(loca.GetText("RES", 'BuffAd_Drunken_Miner'), global.DM_MenuHandler);
 
     var _DM_ModalInitialized = false;
     var DM_build_newTemplates;
@@ -1128,4 +1129,4 @@
 
         return date1 > date2 ? "yellow" : "orange";
     }
-})();
+})(window);
