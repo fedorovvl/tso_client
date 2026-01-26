@@ -15,7 +15,7 @@ var ShortcutTrader = (function () {
     };
     var buildTemplates;
 
-    function openModal() {
+    function OpenShortCutTraderModal() {
         try {
             if (!game.gi.isOnHomzone()) {
                 game.showAlert(getText('not_home'));
@@ -44,6 +44,8 @@ var ShortcutTrader = (function () {
                 UIRenderer.renderBody();
             });
             $.extend(state.tradesData, settings.read(null, SCRIPT_CONST.PREFIX + '_SETTINGS'));
+            SettingsService.setState(state);
+
             UIRenderer.renderHeader();
             UIRenderer.renderBody();
             UIRenderer.renderFooter();
@@ -63,7 +65,8 @@ var ShortcutTrader = (function () {
         try {
             game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MESSAGE_TYPES.REQUEST_TRADE_DATA, game.gi.mCurrentViewedZoneID, null)
             $.extend(SettingsService.getState().tradesData, settings.read(null, SCRIPT_CONST.PREFIX + '_SETTINGS'));
-            addToolsMenuItem(SCRIPT_CONST.NAME, openModal);
+            window.OpenShortCutTraderModal = OpenShortCutTraderModal
+            addToolsMenuItem(SCRIPT_CONST.NAME, window.OpenShortCutTraderModal);
         } catch (e) {
             debug(e);
         }
@@ -903,15 +906,7 @@ var ShortcutTrader = (function () {
         }
     };
 
-    return {
-        init: init,
-        TradeService: TradeService,
-        TradeValidator: TradeValidator,
-        TradeOfferFactory: TradeOfferFactory,
-        TradeResources: TradeResources,
-        TradeQueue: TradeQueue,
-        TradeUI: TradeUI,
-    };
+    return { init:init, openModal:OpenShortCutTraderModal };
 })();
 
 ShortcutTrader.init();
