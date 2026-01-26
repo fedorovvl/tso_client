@@ -57,7 +57,8 @@
         }
     };
 
-    addToolsMenuItem(loca.GetText("RES", 'BuffAd_Drunken_Miner'), DM_MenuHandler);
+    window.DM_MenuHandler = DM_MenuHandler;
+    addToolsMenuItem(loca.GetText("RES", 'BuffAd_Drunken_Miner'), window.DM_MenuHandler);
 
     var _DM_ModalInitialized = false;
     var DM_build_newTemplates;
