@@ -959,8 +959,7 @@
 
                     game.gi.SendServerAction(50, currentMapping.number, currentGrid, 0, null);
                     game.showAlert(loca.GetText("BUI", "DefenseModeGhostGarrison") + ' ' + loca.GetText("RES", currentMapping.text));
-
-                    // Уменьшаем счетчик после отправки
+                    
                     window._DM_pendingBuilds--;
                 };
             })(grid, mapping));
