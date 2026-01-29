@@ -267,42 +267,46 @@
     }
 
     function _DM_checkAllTasksCompleted(gridArr, upgSwitchStatus) {
-        if (upgSwitchStatus) {
-            var allUpgraded = true;
-            for (var i = 0; i < gridArr.length; i++) {
-                var grid     = gridArr[i];
-                var building = game.zone.GetBuildingFromGridPosition(grid);
+        return upgSwitchStatus ? _DM_checkAllUpgradesCompleted(gridArr) : _DM_checkAllBuildsCompleted(gridArr);
+    }
 
-                if (building) {
-                    var buildingData = _DM_getBuildingDataFromDeposit({
-                        GetGrid: function () {
-                            return grid;
-                        }, GetAmount: function () {
-                            return grid;
-                        }
-                    });
-
-                    if (buildingData) {
-                        var resourceName = buildingData.name.replace('Mine', 'Ore');
-
-                        var maxLevel = DM_config.maxLvl[resourceName] || DM_MaxUpgradeLvl;
-
-                        if (buildingData.level < maxLevel || buildingData.isUpgradeInProgress) {
-                            allUpgraded = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return allUpgraded;
-        } else {
-            if (gridArr.length === 0) {
-                return true;
+    function _DM_checkAllUpgradesCompleted(gridArr) {
+        for (var i = 0; i < gridArr.length; i++) {
+            if (!_DM_isUpgradeCompleted(gridArr[i])) {
+                return false;
             }
         }
+        return true;
+    }
 
-        return false;
+    function _DM_checkAllBuildsCompleted(gridArr) {
+        return gridArr.length === 0;
+    }
+
+    function _DM_isUpgradeCompleted(grid) {
+        var building = game.zone.GetBuildingFromGridPosition(grid);
+        if (!building) {
+            return true;
+        }
+
+        var mockDeposit = {
+            GetGrid: function () {
+                return grid;
+            }, GetAmount: function () {
+                return 0;
+            }
+        };
+
+        var buildingData = _DM_getBuildingDataFromDeposit(mockDeposit);
+
+        if (!buildingData) {
+            return true;
+        }
+
+        var resourceName = buildingData.name.replace('Mine', 'Ore');
+        var maxLevel = DM_config.maxLvl[resourceName] || DM_MaxUpgradeLvl;
+
+        return !(buildingData.level < maxLevel || buildingData.isUpgradeInProgress);
     }
 
     function getNearestConstructionOrUpgradeTime(gridArr, upgSwitchStatus) {
@@ -310,58 +314,51 @@
             return null;
         }
 
-        var currentTimeMs      = game.gi.GetClientTime();
-        var nearestEventTimeMs = null;
-        var hasActiveProcess   = false;
+        var time = upgSwitchStatus ? _DM_getNearestUpgradeTime(gridArr) : _DM_getNearestBuildTime();
 
-        if (upgSwitchStatus) {
-            for (var i = 0; i < gridArr.length; i++) {
-                var grid     = gridArr[i];
-                var building = game.zone.GetBuildingFromGridPosition(grid);
+        if (time === null) {
+            time = 28000;
+        }
+        return Math.max(time, 5000);
+    }
+    function _DM_getNearestUpgradeTime(gridArr) {
+        var currentTimeMs = game.gi.GetClientTime();
+        var minTime = null;
 
-                if (building) {
-                    if (building.IsUpgradeInProgress && building.IsUpgradeInProgress()) {
-                        hasActiveProcess = true;
+        for (var i = 0; i < gridArr.length; i++) {
+            var grid = gridArr[i];
+            var building = game.zone.GetBuildingFromGridPosition(grid);
 
-                        var upgradeStartTimeSec = building.GetUpgradeStartTime ? building.GetUpgradeStartTime() : 0;
-                        var upgradeDurationSec  = building.GetUpgradeDuration ? building.GetUpgradeDuration() : 0;
+            if (building && building.IsUpgradeInProgress && building.IsUpgradeInProgress()) {
+                var startTime = building.GetUpgradeStartTime ? building.GetUpgradeStartTime() : 0;
+                var duration = building.GetUpgradeDuration ? building.GetUpgradeDuration() : 0;
+                var remaining = duration - (currentTimeMs - startTime);
 
-                        var upgradeEndTimeMs = upgradeDurationSec - (currentTimeMs - upgradeStartTimeSec);
-
-                        if (nearestEventTimeMs === null || upgradeEndTimeMs < nearestEventTimeMs) {
-                            nearestEventTimeMs = upgradeEndTimeMs;
-                        }
-                    }
-                }
-            }
-        } else {
-            var queueVector         = game.gi.mHomePlayer.mBuildQueue.GetQueue_vector ?
-                game.gi.mHomePlayer.mBuildQueue.GetQueue_vector() : [];
-            var totalAvailableSlots = game.gi.mHomePlayer.mBuildQueue.GetTotalAvailableSlots ?
-                game.gi.mHomePlayer.mBuildQueue.GetTotalAvailableSlots() : 0;
-            var currentQueueLength  = queueVector.length;
-            var freeSlots           = totalAvailableSlots - currentQueueLength;
-
-            if (freeSlots > 0) {
-                hasActiveProcess       = true;
-                nearestEventTimeMs     = 3000
-            } else {
-                var firstQueuedBuilding = queueVector[0];
-                if (firstQueuedBuilding) {
-                    hasActiveProcess   = true;
-                    nearestEventTimeMs = firstQueuedBuilding.GetRemainingConstructionDuration()
+                if (minTime === null || remaining < minTime) {
+                    minTime = remaining;
                 }
             }
         }
+        return minTime;
+    }
 
-        if (!hasActiveProcess) {
-            nearestEventTimeMs = 28000;
+    function _DM_getNearestBuildTime() {
+        var queue = game.gi.mHomePlayer.mBuildQueue;
+        var queueVector = queue.GetQueue_vector ? queue.GetQueue_vector() : [];
+        var totalSlots = queue.GetTotalAvailableSlots ? queue.GetTotalAvailableSlots() : 0;
+        var freeSlots = totalSlots - queueVector.length;
+
+        if (freeSlots > 0) {
+            return 10000;
         }
-        if (nearestEventTimeMs < 3000) {
-            nearestEventTimeMs = 5000;
+
+        var time  = 10000;
+        var first = queueVector[0];
+        if (first) {
+            time = first.GetRemainingConstructionDuration();
         }
-        nearestEventTimeMs += 2000;
-        return nearestEventTimeMs;
+
+        return Math.max(time, 10000);
     }
 
     function _DM_startAutoMode() {
@@ -481,7 +478,6 @@
 
         return resArr;
     }
-
 
     function _DM_GetBuildData() {
         var resArr = {
@@ -902,15 +898,11 @@
     }
 
     function _DM_buildMines(gridArr) {
-        if (typeof window._DM_pendingBuilds === 'undefined') {
-            window._DM_pendingBuilds = 0;
-        }
-
         var x = new TimedQueue(1000);
         var CurrentQueue = swmmo.application.mGameInterface.mHomePlayer.mBuildQueue.GetQueue_vector().length;
         var QueueTotal = swmmo.application.mGameInterface.mHomePlayer.mBuildQueue.GetTotalAvailableSlots();
+        var CurrentQueueFree = QueueTotal - CurrentQueue;
 
-        var CurrentQueueFree = QueueTotal - CurrentQueue - window._DM_pendingBuilds;
 
         for (var i = gridArr.length - 1; i >= 0; i--) {
             var grid = gridArr[i];
@@ -948,7 +940,6 @@
                 continue;
             }
 
-            window._DM_pendingBuilds++;
             CurrentQueueFree--;
 
             x.add((function (currentGrid, currentMapping) {
@@ -959,8 +950,6 @@
 
                     game.gi.SendServerAction(50, currentMapping.number, currentGrid, 0, null);
                     game.showAlert(loca.GetText("BUI", "DefenseModeGhostGarrison") + ' ' + loca.GetText("RES", currentMapping.text));
-                    
-                    window._DM_pendingBuilds--;
                 };
             })(grid, mapping));
 
@@ -968,7 +957,6 @@
         }
 
         x.run();
-
     }
 
     function _DM_upgradeMines(gridArr) {
