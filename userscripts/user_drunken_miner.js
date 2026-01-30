@@ -859,10 +859,7 @@
         }
         $('[id^="DM_UpgradeMines_"]').prop('checked', false);
         $('[id^="DM_RebuildMines_"]').prop('checked', false);
-
-
-        //todo it's remove mains swith config
-
+        
         if (DM_UpgradeSwitchStatus){
             DM_config.upgrade = DM_config.upgrade.filter(function(grid) {
                 return $('#DM_UpgradeMines_' + grid).length > 0;
