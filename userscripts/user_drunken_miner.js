@@ -253,17 +253,20 @@
     }
 
     function _DM_renderFooter() {
-        $("#DrunkenMinerModal .modal-footer").prepend([
+        $("#DrunkenMinerModal .modal-footer").prepend(
             $('<button>').attr({
                 "class": "btn btn-warning upgradeReset"
-            }).text(getText('btn_reset')), $('<button>').attr({
+            }).text(getText('btn_reset')),
+            $('<button>').attr({
                 "class": "btn btn-success upgradeSubmit"
-            }).text(getText('btn_submit')), $('<button>').attr({
+            }).text(getText('btn_submit')),
+            $('<button>').attr({
                 "class": "btn btn-primary pull-left build_newSaveTemplate"
-            }).text(getText('save_template')), $('<button>').attr({
+            }).text(getText('save_template')),
+            $('<button>').attr({
                 "class": "btn btn-primary pull-left build_newLoadTemplate"
             }).text(getText('load_template'))
-        ]);
+        );
     }
 
     function _DM_checkAllTasksCompleted(gridArr, upgSwitchStatus) {
@@ -508,8 +511,8 @@
 
             if (ores.indexOf(name) === -1) continue;
 
-            var grid = item.GetGrid();
-            var bld = zone.GetBuildingFromGridPosition(grid);
+            const grid = item.GetGrid();
+            const bld = zone.GetBuildingFromGridPosition(grid);
 
             if (!bld || bld.GetBuildingMode() === 1 || bld.GetBuildingMode() === 4) {
                 freeDeposits.push({
@@ -528,8 +531,8 @@
             var entry = freeDeposits[i];
             var deposit = entry.deposit;
 
-            var grid = deposit.GetGrid();
-            var bld = zone.GetBuildingFromGridPosition(grid);
+            const grid = deposit.GetGrid();
+            const bld = zone.GetBuildingFromGridPosition(grid);
 
             resArr.deposit.push({
                 grid: grid,
@@ -634,7 +637,7 @@
                 [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
             ], false);
 
-            if ((bld && !bld.isUpgradeAllowed) || (deposit.buildMode == 4 || deposit.buildMode == 1)){
+            if ((bld && !bld.isUpgradeAllowed) || (deposit.buildMode >= 1 && deposit.buildMode <= 4)){
                 $row = $($row).css({opacity:'0.5'}).prop('outerHTML');
             }
             $rowHtml += $row;
@@ -727,33 +730,43 @@
             _DM_updateSelectAllOpacity();
         });
 
-        $('[id^="DM_selectAll_"]').off('click').click(function () {
-            var ore = this.id.replace("DM_selectAll_", "");
+        $('[id^="DM_selectAll_"]').off('click').on('click', function (e) {
+            const el  = e.currentTarget;
+            const ore = el.id.replace('DM_selectAll_', '');
+            const $allCheckboxes = $('#DrunkenMinerModalData input[type="checkbox"]');
+
             var isChecked;
+
             if (ore === 'ALL') {
-                const anyChecked = $('#DrunkenMinerModalData input[type="checkbox"]').prop('checked');
-                isChecked        = !anyChecked;
-                $(this).css('opacity', isChecked ? '1' : '0.5');
+                const isChecked = $allCheckboxes.is(':checked');
             } else {
                 const selector   = '[name^="' + ore + '"]';
-                const anyChecked = $(selector).is(':checked');
-                isChecked        = !anyChecked;
-                $(this).css('opacity', isChecked ? '1' : '0.5');
+                const isChecked = $(selector).is(':checked');
             }
 
-            const $targets = (ore === 'ALL') ? $('#DrunkenMinerModalData input[type="checkbox"]') : $('[name^="' + ore + '"]');
+            $(el).css('opacity', isChecked ? '1' : '0.5');
+
+            const $targets = ore === 'ALL'
+                ? $allCheckboxes
+                : $('[name^="' + ore + '"]');
 
             $targets.each(function () {
-                $(this).prop('checked', isChecked);
+                const checkbox = this;
+                checkbox.checked = !isChecked;
 
-                if (this.id.indexOf('DM_UpgradeMines_') !== -1) {
-                    const grid = this.id.replace("DM_UpgradeMines_", "");
-                    _DM_pushUpgradeGridToConfig(grid, isChecked);
+                if (checkbox.id.indexOf('DM_UpgradeMines_') !== -1) {
+                    _DM_pushUpgradeGridToConfig(
+                        checkbox.id.replace('DM_UpgradeMines_', ''),
+                        checkbox.checked
+                    );
                     return;
                 }
-                if (this.id.indexOf('DM_RebuildMines_') !== -1) {
-                    const grid = this.id.replace("DM_RebuildMines_", "");
-                    _DM_pushBuildGridToConfig(grid, isChecked);
+
+                if (checkbox.id.indexOf('DM_RebuildMines_') !== -1) {
+                    _DM_pushBuildGridToConfig(
+                        checkbox.id.replace('DM_RebuildMines_', ''),
+                        checkbox.checked
+                    );
                 }
             });
 
@@ -859,7 +872,7 @@
         }
         $('[id^="DM_UpgradeMines_"]').prop('checked', false);
         $('[id^="DM_RebuildMines_"]').prop('checked', false);
-        
+
         if (DM_UpgradeSwitchStatus){
             DM_config.upgrade = DM_config.upgrade.filter(function(grid) {
                 return $('#DM_UpgradeMines_' + grid).length > 0;
@@ -901,6 +914,7 @@
         var CurrentQueueFree = QueueTotal - CurrentQueue;
 
 
+        gridArr.reverse();
         for (var i = gridArr.length - 1; i >= 0; i--) {
             var grid = gridArr[i];
 
@@ -1038,7 +1052,7 @@
         if (rcd != null) rcd_pck = rcd.amountRemoved; // resources removed base value
         var totalRemoved = bld.GetResourceInputFactor() * rcd_pck; // resources removed base * level * buffs
 
-        if (isWorking) resourcesRemovedEverySecond += (totalRemoved == 0 ? 0 : totalRemoved / cycleSeconds);
+        if (isWorking) resourcesRemovedEverySecond += (totalRemoved === 0 ? 0 : totalRemoved / cycleSeconds);
 
         return {
             'grid': grid,
