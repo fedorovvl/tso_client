@@ -738,10 +738,10 @@
             var isChecked;
 
             if (ore === 'ALL') {
-                const isChecked = $allCheckboxes.is(':checked');
+                isChecked = $allCheckboxes.is(':checked');
             } else {
                 const selector   = '[name^="' + ore + '"]';
-                const isChecked = $(selector).is(':checked');
+                isChecked = $(selector).is(':checked');
             }
 
             $(el).css('opacity', isChecked ? '1' : '0.5');
