@@ -488,12 +488,17 @@
             depleted: []
         };
 
-        var zone = swmmo.application.mGameInterface.mCurrentPlayerZone;
-        var streetMap = zone.mStreetDataMap;
         var ores = RESOURCES.ores;
         var oreOrder = RESOURCES.oreOrder || {};
         var icons = RESOURCES.icons;
         var depositLabel = '(' + loca.GetText('LAB', 'DetailsDeposit') + ')';
+
+        var zone = swmmo.application.mGameInterface.mCurrentPlayerZone;
+        var streetMap = zone.mStreetDataMap;
+        if (!streetMap || !streetMap.mBuildingContainer) {
+            debug('streetMap.mBuildingContainer is undefined');
+            return resArr;
+        }
 
         var freeDeposits = [];
         var deposits = streetMap.mDepositContainer.mContainer;
