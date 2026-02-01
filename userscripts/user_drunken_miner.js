@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 (function () {
     const SCRIPT_PREFIX    = 'DM_';
-    const DM_MaxUpgradeLvl = 12;
+    const DM_MaxUpgradeLvl = 7;
     const RESOURCES = {
         ores: ["BronzeOre", "IronOre", "Coal", "GoldOre", "TitaniumOre", "Salpeter"],
         oreOrder: {
