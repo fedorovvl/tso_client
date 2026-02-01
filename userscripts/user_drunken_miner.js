@@ -1,9 +1,10 @@
+// language=JavaScript; ECMAScript 5.1
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////Created by MadFX | Thanks for PiTi for source code. ////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 (function () {
     const SCRIPT_PREFIX    = 'DM_';
-    const DM_MaxUpgradeLvl = 12;
+    const DM_MaxUpgradeLvl = 7;
     const RESOURCES = {
         ores: ["BronzeOre", "IronOre", "Coal", "GoldOre", "TitaniumOre", "Salpeter"],
         oreOrder: {
@@ -252,58 +253,63 @@
     }
 
     function _DM_renderFooter() {
-        $("#DrunkenMinerModal .modal-footer").prepend([
+        $("#DrunkenMinerModal .modal-footer").prepend(
             $('<button>').attr({
                 "class": "btn btn-warning upgradeReset"
-            }).text(getText('btn_reset')), $('<button>').attr({
+            }).text(getText('btn_reset')),
+            $('<button>').attr({
                 "class": "btn btn-success upgradeSubmit"
-            }).text(getText('btn_submit')), $('<button>').attr({
+            }).text(getText('btn_submit')),
+            $('<button>').attr({
                 "class": "btn btn-primary pull-left build_newSaveTemplate"
-            }).text(getText('save_template')), $('<button>').attr({
+            }).text(getText('save_template')),
+            $('<button>').attr({
                 "class": "btn btn-primary pull-left build_newLoadTemplate"
             }).text(getText('load_template'))
-        ]);
+        );
     }
 
     function _DM_checkAllTasksCompleted(gridArr, upgSwitchStatus) {
-        if (upgSwitchStatus) {
-            var allUpgraded = true;
-            for (var i = 0; i < gridArr.length; i++) {
-                var grid     = gridArr[i];
-                var building = game.zone.GetBuildingFromGridPosition(grid);
+        return upgSwitchStatus ? _DM_checkAllUpgradesCompleted(gridArr) : _DM_checkAllBuildsCompleted(gridArr);
+    }
 
-                if (building) {
-                    var buildingData = _DM_getBuildingDataFromDeposit({
-                        GetGrid: function () {
-                            return grid;
-                        }, GetAmount: function () {
-                            return grid;
-                        }
-                    });
-
-                    if (buildingData) {
-                        var resourceName = buildingData.name.replace('Mine', 'Ore');
-
-                        var maxLevel = DM_config.maxLvl[resourceName] || DM_MaxUpgradeLvl;
-
-                        if (buildingData.level < maxLevel || buildingData.isUpgradeInProgress) {
-                            allUpgraded = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (allUpgraded) {
-                return true;
-            }
-        } else {
-            if (gridArr.length === 0) {
-                return true;
+    function _DM_checkAllUpgradesCompleted(gridArr) {
+        for (var i = 0; i < gridArr.length; i++) {
+            if (!_DM_isUpgradeCompleted(gridArr[i])) {
+                return false;
             }
         }
+        return true;
+    }
 
-        return false;
+    function _DM_checkAllBuildsCompleted(gridArr) {
+        return gridArr.length === 0;
+    }
+
+    function _DM_isUpgradeCompleted(grid) {
+        var building = game.zone.GetBuildingFromGridPosition(grid);
+        if (!building) {
+            return true;
+        }
+
+        var mockDeposit = {
+            GetGrid: function () {
+                return grid;
+            }, GetAmount: function () {
+                return 0;
+            }
+        };
+
+        var buildingData = _DM_getBuildingDataFromDeposit(mockDeposit);
+
+        if (!buildingData) {
+            return true;
+        }
+
+        var resourceName = buildingData.name.replace('Mine', 'Ore');
+        var maxLevel = DM_config.maxLvl[resourceName] || DM_MaxUpgradeLvl;
+
+        return !(buildingData.level < maxLevel || buildingData.isUpgradeInProgress);
     }
 
     function getNearestConstructionOrUpgradeTime(gridArr, upgSwitchStatus) {
@@ -311,58 +317,51 @@
             return null;
         }
 
-        var currentTimeMs      = game.gi.GetClientTime();
-        var nearestEventTimeMs = null;
-        var hasActiveProcess   = false;
+        var time = upgSwitchStatus ? _DM_getNearestUpgradeTime(gridArr) : _DM_getNearestBuildTime();
 
-        if (upgSwitchStatus) {
-            for (var i = 0; i < gridArr.length; i++) {
-                var grid     = gridArr[i];
-                var building = game.zone.GetBuildingFromGridPosition(grid);
+        if (time === null) {
+            time = 28000;
+        }
+        return Math.max(time, 5000);
+    }
+    function _DM_getNearestUpgradeTime(gridArr) {
+        var currentTimeMs = game.gi.GetClientTime();
+        var minTime = null;
 
-                if (building) {
-                    if (building.IsUpgradeInProgress && building.IsUpgradeInProgress()) {
-                        hasActiveProcess = true;
+        for (var i = 0; i < gridArr.length; i++) {
+            var grid = gridArr[i];
+            var building = game.zone.GetBuildingFromGridPosition(grid);
 
-                        var upgradeStartTimeSec = building.GetUpgradeStartTime ? building.GetUpgradeStartTime() : 0;
-                        var upgradeDurationSec  = building.GetUpgradeDuration ? building.GetUpgradeDuration() : 0;
+            if (building && building.IsUpgradeInProgress && building.IsUpgradeInProgress()) {
+                var startTime = building.GetUpgradeStartTime ? building.GetUpgradeStartTime() : 0;
+                var duration = building.GetUpgradeDuration ? building.GetUpgradeDuration() : 0;
+                var remaining = duration - (currentTimeMs - startTime);
 
-                        var upgradeEndTimeMs = upgradeDurationSec - (currentTimeMs - upgradeStartTimeSec);
-
-                        if (nearestEventTimeMs === null || upgradeEndTimeMs < nearestEventTimeMs) {
-                            nearestEventTimeMs = upgradeEndTimeMs;
-                        }
-                    }
-                }
-            }
-        } else {
-            var queueVector         = game.gi.mHomePlayer.mBuildQueue.GetQueue_vector ?
-                game.gi.mHomePlayer.mBuildQueue.GetQueue_vector() : [];
-            var totalAvailableSlots = game.gi.mHomePlayer.mBuildQueue.GetTotalAvailableSlots ?
-                game.gi.mHomePlayer.mBuildQueue.GetTotalAvailableSlots() : 0;
-            var currentQueueLength  = queueVector.length;
-            var freeSlots           = totalAvailableSlots - currentQueueLength;
-
-            if (freeSlots > 0) {
-                hasActiveProcess       = true;
-                var nearestEventTimeMs = 3000
-            } else {
-                var firstQueuedBuilding = queueVector[0];
-                if (firstQueuedBuilding) {
-                    hasActiveProcess   = true;
-                    nearestEventTimeMs = firstQueuedBuilding.GetRemainingConstructionDuration()
+                if (minTime === null || remaining < minTime) {
+                    minTime = remaining;
                 }
             }
         }
+        return minTime;
+    }
 
-        if (!hasActiveProcess) {
-            nearestEventTimeMs = 28000;
+    function _DM_getNearestBuildTime() {
+        var queue = game.gi.mHomePlayer.mBuildQueue;
+        var queueVector = queue.GetQueue_vector ? queue.GetQueue_vector() : [];
+        var totalSlots = queue.GetTotalAvailableSlots ? queue.GetTotalAvailableSlots() : 0;
+        var freeSlots = totalSlots - queueVector.length;
+
+        if (freeSlots > 0) {
+            return 10000;
         }
-        if (nearestEventTimeMs < 3000) {
-            nearestEventTimeMs = 3000;
+
+        var time  = 10000;
+        var first = queueVector[0];
+        if (first) {
+            time = first.GetRemainingConstructionDuration();
         }
-        nearestEventTimeMs += 2000;
-        return nearestEventTimeMs;
+
+        return Math.max(time, 10000);
     }
 
     function _DM_startAutoMode() {
@@ -409,125 +408,176 @@
     }
 
     function _DM_getUpgradeData() {
-        const resArr = { deposit: [], depleted: [] };
-        const deposits = [];
+        var resArr = { deposit: [], depleted: [] };
+        var zone = swmmo.application.mGameInterface.mCurrentPlayerZone;
+        var streetMap = zone.mStreetDataMap;
 
-        swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.forEach(function (item) {
-            var name = item.GetName_string();
-            if (RESOURCES.ores.indexOf(name) !== -1) {
-                var building = game.zone.GetBuildingFromGridPosition(item.GetGrid());
-                if (building) {
-                    deposits.push({ deposit: item, building: building });
-                }
+        var ores = RESOURCES.ores;
+        var oreOrder = RESOURCES.oreOrder || {};
+        var mineToOre = RESOURCES.mineToOre || {};
+        var icons = RESOURCES.icons;
+
+        var deposits = [];
+        var container = streetMap.mDepositContainer.mContainer;
+
+        for (var i = 0, len = container.length; i < len; i++) {
+            var item = container[i];
+            if (!item) continue;
+
+            var oreName;
+            try {
+                oreName = item.GetName_string();
+            } catch (e) {
+                continue;
             }
-        });
+
+            if (ores.indexOf(oreName) === -1) continue;
+
+            var grid = item.GetGrid();
+            var building = zone.GetBuildingFromGridPosition(grid);
+            if (!building) continue;
+
+            var buildingName;
+            try {
+                buildingName = building.GetBuildingName_string();
+            } catch (e) {
+                buildingName = null;
+            }
+
+            var ore = mineToOre[buildingName] || oreName;
+
+            deposits.push({
+                deposit: item,
+                ore: ore,
+                order: oreOrder[ore] || 999
+            });
+        }
 
         deposits.sort(function (a, b) {
-            var oreA = RESOURCES.mineToOre[a.building.GetBuildingName_string()] || a.deposit.GetName_string();
-            var oreB = RESOURCES.mineToOre[b.building.GetBuildingName_string()] || b.deposit.GetName_string();
-            var orderA = RESOURCES.oreOrder ? (RESOURCES.oreOrder[oreA] || 999) : 999;
-            var orderB = RESOURCES.oreOrder ? (RESOURCES.oreOrder[oreB] || 999) : 999;
-            return orderA - orderB;
+            return a.order - b.order;
         });
 
-        deposits.forEach(function (entry) {
+        for (i = 0, len = deposits.length; i < len; i++) {
+            var entry = deposits[i];
             var deposit = entry.deposit;
 
-            try {
-                var oreName = deposit.GetName_string();
-                var bldData = _DM_getBuildingDataFromDeposit(deposit);
+            var bldData = _DM_getBuildingDataFromDeposit(deposit);
+            if (!bldData) continue;
 
-                if (!bldData) {
-                    return;
-                }
+            var infoText = bldData.isUpgradeInProgress
+                ? loca.GetText('LAB', 'Upgrade')
+                : loca.GetText('QUL', 'TutBronzeMine');
 
-                var resItem = {
-                    grid: deposit.GetGrid(),
-                    buildingInfo: loca.GetText("LAB", "DetailsDeposit"),
-                    depositName: oreName,
-                    resourcesLeft: deposit.GetAmount(),
-                    icon: RESOURCES.icons[oreName] || 'ButtonIconUnknown',
-                    buffIcon: bldData.buffIcon || '',
-                    building: bldData
-                };
-
-                if (bldData.isUpgradeInProgress) {
-                    resItem.buildingInfo = loca.GetText('LAB', 'Upgrade');
-                } else {
-                    resItem.buildingInfo = loca.GetText('QUL', 'TutBronzeMine');
-                }
-
-                if (bldData.isUpgradeAllowed) {
-                    resArr.deposit.push(resItem);
-                }
-            } catch (e) {
-                debug(e);
-            }
-        });
+            resArr.deposit.push({
+                grid: deposit.GetGrid(),
+                buildingInfo: infoText,
+                depositName: entry.ore,
+                resourcesLeft: deposit.GetAmount(),
+                icon: icons[entry.ore] || 'ButtonIconUnknown',
+                buffIcon: bldData.buffIcon || '',
+                building: bldData
+            });
+        }
 
         return resArr;
     }
 
     function _DM_GetBuildData() {
-        const resArr = { deposit: [], depleted: [] };
+        var resArr = {
+            deposit: [],
+            depleted: []
+        };
 
-        const freeDeposits = [];
-        swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.forEach(function (item) {
-            const name = item.GetName_string();
-            if (RESOURCES.ores.indexOf(name) !== -1 && !game.zone.GetBuildingFromGridPosition(item.GetGrid())) {
-                freeDeposits.push(item);
+        var ores = RESOURCES.ores;
+        var oreOrder = RESOURCES.oreOrder || {};
+        var icons = RESOURCES.icons;
+        var depositLabel = '(' + loca.GetText('LAB', 'DetailsDeposit') + ')';
+
+        var zone = swmmo.application.mGameInterface.mCurrentPlayerZone;
+        var streetMap = zone.mStreetDataMap;
+        if (!streetMap || !streetMap.mBuildingContainer) {
+            debug('streetMap.mBuildingContainer is undefined');
+            return resArr;
+        }
+
+        var freeDeposits = [];
+        var deposits = streetMap.mDepositContainer.mContainer;
+
+        for (var i = 0, len = deposits.length; i < len; i++) {
+            var item = deposits[i];
+            if (!item) continue;
+
+            var name;
+            try {
+                name = item.GetName_string();
+            } catch (e) {
+                continue;
             }
-        });
+
+            if (ores.indexOf(name) === -1) continue;
+
+            const grid = item.GetGrid();
+            const bld = zone.GetBuildingFromGridPosition(grid);
+
+            if (!bld || bld.GetBuildingMode() === 1 || bld.GetBuildingMode() === 4) {
+                freeDeposits.push({
+                    deposit: item,
+                    ore: name,
+                    order: oreOrder[name] || 999
+                });
+            }
+        }
 
         freeDeposits.sort(function (a, b) {
-            var orderA = (RESOURCES.oreOrder && RESOURCES.oreOrder[a.GetName_string()]) || 999;
-            var orderB = (RESOURCES.oreOrder && RESOURCES.oreOrder[b.GetName_string()]) || 999;
-            return orderA - orderB;
+            return a.order - b.order;
         });
 
-        freeDeposits.forEach(function (deposit) {
-            try {
-                const oreName = deposit.GetName_string();
-                const resItem = {
-                    grid: deposit.GetGrid(),
-                    buildingInfo: '(' + loca.GetText("LAB", "DetailsDeposit") + ')',
-                    depositName: oreName,
-                    resourcesLeft: deposit.GetAmount(),
-                    icon: RESOURCES.icons[oreName] || 'ButtonIconMagnifier'
-                };
-                resArr.deposit.push(resItem);
-            } catch (e) {
-                debug(e);
-            }
-        });
+        for (i = 0, len = freeDeposits.length; i < len; i++) {
+            var entry = freeDeposits[i];
+            var deposit = entry.deposit;
 
+            const grid = deposit.GetGrid();
+            const bld = zone.GetBuildingFromGridPosition(grid);
+
+            resArr.deposit.push({
+                grid: grid,
+                buildingInfo: depositLabel,
+                depositName: entry.ore,
+                resourcesLeft: deposit.GetAmount(),
+                icon: icons[entry.ore] || 'ButtonIconMagnifier',
+                buildMode: bld ? bld.GetBuildingMode() : null
+            });
+        }
+
+        var buildings = streetMap.mBuildingContainer.mContainer;
+        var assertNames = RESOURCES.assertNames;
         var depleted = [];
-        swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mBuildingContainer.forEach(function (item) {
+
+        for (i = 0, len = buildings.length; i < len; i++) {
+            var b = buildings[i];
+            if (!b) continue;
+
+            if (!streetMap.IsADepletedDeposit(b)) continue;
+
+            var bName;
             try {
-                if (swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.IsADepletedDeposit(item)) {
-                    if (item == null || RESOURCES.assertNames.indexOf(item.GetBuildingName_string()) === -1) {
-                        return;
-                    }
-
-                    var buildingName = item.GetBuildingName_string();
-
-                    var ore = _DM_findOreInDepletedName(buildingName) || "";
-                    if (!ore) {
-                        debug('Unknown ore name');
-                        return;
-                    }
-
-                    depleted.push({
-                        grid: item.GetGrid(),
-                        icon: RESOURCES.icons[ore] || 'ButtonIconUnknown',
-                        name: buildingName,
-                        Resource: ore,
-                    });
-                }
+                bName = b.GetBuildingName_string();
             } catch (e) {
-                debug(e)
+                continue;
             }
-        });
+
+            if (assertNames.indexOf(bName) === -1) continue;
+
+            var ore = _DM_findOreInDepletedName(bName);
+            if (!ore) continue;
+
+            depleted.push({
+                grid: b.GetGrid(),
+                icon: icons[ore] || 'ButtonIconUnknown',
+                name: bName,
+                Resource: ore
+            });
+        }
 
         depleted.sort(function (a, b) {
             return a.Resource.localeCompare(b.Resource);
@@ -539,9 +589,8 @@
 
     function _DM_renderData(deposits) {
         var $rowHtml = '';
-
         deposits.deposit.forEach(function (deposit) {
-            var bld           = deposit.building;
+            var bld         = deposit.building;
             var checkbox      = '';
             var bldLvl        = '';
             var depositName   = deposit.depositName !== undefined ? loca.GetText('RES', deposit.depositName) : '';
@@ -572,8 +621,12 @@
                 }else if(bld.isUpgradeInProgress){
                     timeHtml = loca.GetText('QUL', 'TutUpgrade')
                 }
-            } else {
+            } else if(deposit.buildMode < 1 || deposit.buildMode > 4) {
                 checkbox = '<input type="checkbox" id="DM_RebuildMines_' + deposit.grid + '" name="' + deposit.depositName + '" class="' + DM_lements.BUILD_CHECKBX + '" />';
+            }
+
+            else if(deposit.buildMode >= 1 && deposit.buildMode <= 4){
+                timeHtml = loca.GetText('QUL', 'Birthday2018plus_Infrastructure_62-80_Main1_Sub5')
             }
 
             //for upgrade skip without mines
@@ -588,7 +641,8 @@
                 [3, (buffIcon ? getImageTag(buffIcon, '24px') : '') + ' <small>' + buffName + '</small>'],
                 [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
             ], false);
-            if (bld && !bld.isUpgradeAllowed){
+
+            if ((bld && !bld.isUpgradeAllowed) || (deposit.buildMode >= 1 && deposit.buildMode <= 4)){
                 $row = $($row).css({opacity:'0.5'}).prop('outerHTML');
             }
             $rowHtml += $row;
@@ -624,8 +678,6 @@
         //set switch animation
         var mainSwitch = $("#" + DM_lements.ON_OFF_RADIO);
         mainSwitch.off('change').change(function () {
-            DM_config.build   = [];
-            DM_config.upgrade = [];
             if ($(this).is(':checked')) {
                 $("#" + DM_lements.ON_OFF_RADIO_TEXT).text(DM_SwitchStatuses.UPGRADE);
                 $("." + DM_lements.BUILD_CHECKBX).hide();
@@ -636,10 +688,10 @@
                 DM_UpgradeSwitchStatus = false;
             }
             DM_config.switchStatus = DM_UpgradeSwitchStatus;
-
             _DM_renderBody();
             _DM_InitEvens();
             _DM_saveTmpSetting();
+            _DM_SetConfigValues();
         });
 
         if (mainSwitch.is(':checked')) {
@@ -664,14 +716,6 @@
             _DM_saveTmpSetting();
         });
 
-        if (mainSwitch.is(':checked')) {
-            $("." + DM_lements.BUILD_CHECKBX).hide();
-            $("." + DM_lements.UPGR_CHECKBX).show();
-        } else {
-            $("." + DM_lements.UPGR_CHECKBX).hide();
-            $("." + DM_lements.BUILD_CHECKBX).show();
-        }
-
         $('[id^="DM_UpgradeMines_"]').off('click').on('click', function () {
             var grid      = this.id.replace("DM_UpgradeMines_", "");
             var isChecked = $('#DM_UpgradeMines_' + grid).prop('checked');
@@ -691,33 +735,43 @@
             _DM_updateSelectAllOpacity();
         });
 
-        $('[id^="DM_selectAll_"]').off('click').click(function () {
-            var ore = this.id.replace("DM_selectAll_", "");
+        $('[id^="DM_selectAll_"]').off('click').on('click', function (e) {
+            const el  = e.currentTarget;
+            const ore = el.id.replace('DM_selectAll_', '');
+            const $allCheckboxes = $('#DrunkenMinerModalData input[type="checkbox"]');
+
             var isChecked;
+
             if (ore === 'ALL') {
-                const anyChecked = $('#DrunkenMinerModalData input[type="checkbox"]').prop('checked');
-                isChecked        = !anyChecked;
-                $(this).css('opacity', isChecked ? '1' : '0.5');
+                isChecked = $allCheckboxes.is(':checked');
             } else {
                 const selector   = '[name^="' + ore + '"]';
-                const anyChecked = $(selector).is(':checked');
-                isChecked        = !anyChecked;
-                $(this).css('opacity', isChecked ? '1' : '0.5');
+                isChecked = $(selector).is(':checked');
             }
 
-            const $targets = (ore === 'ALL') ? $('#DrunkenMinerModalData input[type="checkbox"]') : $('[name^="' + ore + '"]');
+            $(el).css('opacity', isChecked ? '1' : '0.5');
+
+            const $targets = ore === 'ALL'
+                ? $allCheckboxes
+                : $('[name^="' + ore + '"]');
 
             $targets.each(function () {
-                $(this).prop('checked', isChecked);
+                const checkbox = this;
+                checkbox.checked = !isChecked;
 
-                if (this.id.indexOf('DM_UpgradeMines_') !== -1) {
-                    const grid = this.id.replace("DM_UpgradeMines_", "");
-                    _DM_pushUpgradeGridToConfig(grid, isChecked);
+                if (checkbox.id.indexOf('DM_UpgradeMines_') !== -1) {
+                    _DM_pushUpgradeGridToConfig(
+                        checkbox.id.replace('DM_UpgradeMines_', ''),
+                        checkbox.checked
+                    );
                     return;
                 }
-                if (this.id.indexOf('DM_RebuildMines_') !== -1) {
-                    const grid = this.id.replace("DM_RebuildMines_", "");
-                    _DM_pushBuildGridToConfig(grid, isChecked);
+
+                if (checkbox.id.indexOf('DM_RebuildMines_') !== -1) {
+                    _DM_pushBuildGridToConfig(
+                        checkbox.id.replace('DM_RebuildMines_', ''),
+                        checkbox.checked
+                    );
                 }
             });
 
@@ -823,13 +877,16 @@
         }
         $('[id^="DM_UpgradeMines_"]').prop('checked', false);
         $('[id^="DM_RebuildMines_"]').prop('checked', false);
-        
-        DM_config.upgrade = DM_config.upgrade.filter(function(grid) {
-            return $('#DM_UpgradeMines_' + grid).length > 0;
-        });
-        DM_config.build = DM_config.build.filter(function(grid) {
-            return $('#DM_RebuildMines_' + grid).length > 0;
-        });
+
+        if (DM_UpgradeSwitchStatus){
+            DM_config.upgrade = DM_config.upgrade.filter(function(grid) {
+                return $('#DM_UpgradeMines_' + grid).length > 0;
+            });
+        }else{
+            DM_config.build = DM_config.build.filter(function(grid) {
+                return $('#DM_RebuildMines_' + grid).length > 0;
+            });
+        }
 
         DM_config.upgrade.forEach(function(grid) {
             $('#DM_UpgradeMines_' + grid).prop('checked', true);
@@ -856,25 +913,25 @@
     }
 
     function _DM_buildMines(gridArr) {
-        var x                = new TimedQueue(1000);
-        var CurrentQueue     = 0;
-        var CurrentQueueFree = 0;
-        var QueueTotal;
+        var x = new TimedQueue(1000);
+        var CurrentQueue = swmmo.application.mGameInterface.mHomePlayer.mBuildQueue.GetQueue_vector().length;
+        var QueueTotal = swmmo.application.mGameInterface.mHomePlayer.mBuildQueue.GetTotalAvailableSlots();
+        var CurrentQueueFree = QueueTotal - CurrentQueue;
 
-        $.each(swmmo.application.mGameInterface.mHomePlayer.mBuildQueue.GetQueue_vector(), function () {
-            CurrentQueue++;
-        });
-        QueueTotal       = swmmo.application.mGameInterface.mHomePlayer.mBuildQueue.GetTotalAvailableSlots();
-        CurrentQueueFree = QueueTotal - CurrentQueue;
 
+        gridArr.reverse();
         for (var i = gridArr.length - 1; i >= 0; i--) {
             var grid = gridArr[i];
+
             if (CurrentQueueFree < 1) {
                 break;
             }
-            var deposit = swmmo.application.mGameInterface.mCurrentPlayerZone.mStreetDataMap.mDepositContainer.get(grid);
+
+            var deposit = game.zone.mStreetDataMap.mDepositContainer.get(grid);
             if (!deposit) {
-                // no deposit to build found
+                DM_config.build = DM_config.build.filter(function (g) {
+                    return g !== grid;
+                });
                 gridArr.splice(i, 1);
                 continue;
             }
@@ -883,25 +940,38 @@
             var mapping = RESOURCES.buildMapping[oreName];
 
             if (!mapping) {
+                DM_config.build = DM_config.build.filter(function (g) {
+                    return g !== grid;
+                });
                 gridArr.splice(i, 1);
                 continue;
             }
 
             var bld = game.zone.GetBuildingFromGridPosition(grid);
             if (bld !== null) {
-                // build site already found
+                DM_config.build = DM_config.build.filter(function (g) {
+                    return g !== grid;
+                });
                 gridArr.splice(i, 1);
                 continue;
             }
+
+            CurrentQueueFree--;
+
             x.add((function (currentGrid, currentMapping) {
                 return function () {
+                    DM_config.build = DM_config.build.filter(function (g) {
+                        return g !== currentGrid;
+                    });
+
                     game.gi.SendServerAction(50, currentMapping.number, currentGrid, 0, null);
                     game.showAlert(loca.GetText("BUI", "DefenseModeGhostGarrison") + ' ' + loca.GetText("RES", currentMapping.text));
                 };
             })(grid, mapping));
-            CurrentQueueFree--;
+
             gridArr.splice(i, 1);
         }
+
         x.run();
     }
 
@@ -987,7 +1057,7 @@
         if (rcd != null) rcd_pck = rcd.amountRemoved; // resources removed base value
         var totalRemoved = bld.GetResourceInputFactor() * rcd_pck; // resources removed base * level * buffs
 
-        if (isWorking) resourcesRemovedEverySecond += (totalRemoved == 0 ? 0 : totalRemoved / cycleSeconds);
+        if (isWorking) resourcesRemovedEverySecond += (totalRemoved === 0 ? 0 : totalRemoved / cycleSeconds);
 
         return {
             'grid': grid,
