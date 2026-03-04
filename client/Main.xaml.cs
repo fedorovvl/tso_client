@@ -736,6 +736,7 @@ namespace client
         public bool x64 { get; set; } = false;
         public bool tryFast { get; set; } = false;
         public bool useCache { get; set; } = false;
+        public bool cipMigrated { get; set; } = false;
         public bool configNickname { get; set; } = false;
         public string username { get; set; } = string.Empty;
         public long accountId { get; set; } = 0;
