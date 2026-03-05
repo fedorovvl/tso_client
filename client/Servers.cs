@@ -141,12 +141,15 @@ namespace client
                 { "langDef", "Default" },
                 { "langNickConfig", "Client config filename as nickname" },
                 { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxAuth", "Get auth code" },
                 { "langDropboxRefresh", "Dropbox Refresh token" },
                 { "langTestDropbox", "Dropbox test" },
                 { "langAuthDropbox", "Dropbox auth" },
                 { "langTryFast", "Try fastlogin first" },
                 { "langUseCache", "Use local cache" },
-                { "langMigrated", "Account migrated to CipSoft" }
+                { "langMigrated", "Account migrated to CipSoft" },
+                { "langImport", "Import" },
+                { "langExport", "Export" },
              }
             },
             { "fr-fr", new Dictionary<string, string>() {
@@ -225,6 +228,25 @@ namespace client
                 { "run", "GRAJ" },
                 { "exit", "Wyjście" },
                 { "remember", "Zapamiętaj" },
+                { "langLang", "Wymuś język gry" },
+                { "langConf", "Nazwa pliku konfiguracyjnego" },
+                { "langtsoFolder", "Nazwa folderu w AppData" },
+                { "langx64", "Użyj wersji x64" },
+                { "langWinSize", "Rozmiar okna klienta" },
+                { "langTotp", "Klucz autoryzacji 2FA" },
+                { "langSave", "Zapisz" },
+                { "langDef", "Domyślny" },
+                { "langNickConfig", "Nazwa pliku konfiguracyjnego jako nick" },
+                { "langDropbox", "Dropbox APPKEY:APPSECRET" },
+                { "langDropboxAuth", "Pobierz kod autoryzacyjny" },
+                { "langDropboxRefresh", "Token Refresh dla Dropbox" },
+                { "langTestDropbox", "Test Dropbox" },
+                { "langAuthDropbox", "Zaloguj Dropbox" },
+                { "langTryFast", "Spróbuj najpierw szybkiego logowania" },
+                { "langUseCache", "Użyj lokalnego cache" },
+                { "langMigrated", "Konto przeniesione do CipSoft" },
+                { "langImport", "Importuj" },
+                { "langExport", "Exportuj" }
              }
            },
            { "de-de", new Dictionary<string, string>() {
@@ -334,7 +356,7 @@ namespace client
         {
             if (!trans.ContainsKey(_langs[Main._region]))
                 return trans["en-uk"][value];
-            if(!trans[_langs[Main._region]].ContainsKey(value))
+            if (!trans[_langs[Main._region]].ContainsKey(value))
                 return trans["en-uk"][value];
             return trans[_langs[Main._region]][value];
         }
