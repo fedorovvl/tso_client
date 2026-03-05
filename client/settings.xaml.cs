@@ -42,6 +42,10 @@ namespace client
         public string langTryFast { get { return Servers.getTrans("langTryFast"); } set { } }
         public string langUseCache { get { return Servers.getTrans("langUseCache"); } set { } }
         public string langMigrated { get { return Servers.getTrans("langMigrated"); } set { } }
+        public string langDropboxAuth { get { return Servers.getTrans("langDropboxAuth"); } set { } }
+        public string langImport { get { return Servers.getTrans("langImport"); } set { } }
+        public string langExport { get { return Servers.getTrans("langExport"); } set { } }
+
         public string[] winSizes = new string[] { "", "maximized", "minimized", "fullscreen" };
         public string[] langs = new string[] { "", "de", "us", "en", "fr", "ru", "pl", "es", "nl", "cz", "pt", "it", "el", "ro", "cn" };
 
@@ -187,9 +191,10 @@ namespace client
                         setting = new JavaScriptSerializer().Deserialize<clientSettings>(settings);
                         System.Windows.MessageBox.Show("OK");
                         this.DialogResult = true;
-                    } catch(Exception ex)
+                    }
+                    catch (Exception ex)
                     {
-                        System.Windows.MessageBox.Show("FAIL "+ex.Message);
+                        System.Windows.MessageBox.Show("FAIL " + ex.Message);
                     }
                 }
             }
