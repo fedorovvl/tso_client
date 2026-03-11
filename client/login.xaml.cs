@@ -186,11 +186,6 @@ namespace client
                     AddToRich(Servers.getTrans("getplay"));
                     post.useBC = true;
                     string token = post.Post(ref _cookies);
-                    if (!token.Contains("thisProgram") && !token.Contains("return \"lang"))
-                    {
-                        AddToRich(Servers.getTrans("cookieerr"));
-                        return;
-                    }
                     if (!PrepareFlash(token, token.Contains("thisProgram")))
                     {
                         AddToRich(Servers.getTrans("paramserr"));
