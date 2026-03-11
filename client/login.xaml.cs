@@ -162,6 +162,7 @@ namespace client
                     Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].uplay.Replace("uplay", "login")),
                     Type = PostSubmitter.PostTypeEnum.Post
                 };
+                post.useBC = true;
                 post.PostItems.Add("name", username.Trim());
                 post.PostItems.Add("password", password.Trim());
                 res = post.Post(ref _cookies);
