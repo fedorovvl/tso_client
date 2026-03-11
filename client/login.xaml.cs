@@ -176,6 +176,7 @@ namespace client
                     };
                     post.PostItems.Add("start", "1");
                     post.useBC = true;
+                    AddToRich("Get main page");
                     res = post.Post(ref _cookies);
                     post = new PostSubmitter
                     {

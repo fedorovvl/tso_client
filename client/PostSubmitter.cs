@@ -135,6 +135,10 @@ namespace client
             string _host = new Uri(url).Host;
             string _path = string.Format("{0}{1}", new Uri(url).AbsolutePath, string.IsNullOrEmpty(postData) || _mType == PostTypeEnum.Post ? "" : "?" + postData);
             string _method = (_mType == PostTypeEnum.Post) ? "POST" : "GET";
+            if (Main.debug)
+            {
+                File.AppendAllText("debug.txt", "bc begin request " + url + "\r\n");
+            }
             using (var client = new TcpClient(_host, 443))
             {
                 var sr = new SecureRandom();
