@@ -111,11 +111,18 @@
       "author": "MadFx",
       "url": ""
    },
-   "user_ext_translate.js": {
+  "user_quick_hour.js": {
+    "name": "Quick Hour",
+    "shortDesc": "Quickly align all researchers to a selected time.",
+    "longDesc": "Allows you to quickly select and configure all researchers for a target duration. Automatically picks the closest matching skill based on time. Supports both treasure hunts and adventures. Provides flexible matching modes: strictly not exceeding the selected time or allowing longer durations to find the closest possible skill.",
+    "author": "MadFx",
+    "url": ""
+  },
+  "user_ext_translate.js": {
       "name": "External translation",
       "shortDesc": "External translation source.",
       "longDesc": "Allows add missed translations or change translations of existing items.",
       "author": "SirriS",
       "url": ""
-   }
+  }
 }
