@@ -1,5 +1,3 @@
-//MADE BY MadFx (glebsky)
-
 var ChestOpener = (function () {
     var SCRIPT_CONST = {
         PREFIX: 'CO',
@@ -227,18 +225,12 @@ var ChestOpener = (function () {
                     textAlign:    'center'
                 });
 
-                var $openBtn = $('<button>', {
-                    'class':        'btn btn-sm ' + UIMap.classes.openOneBtn,
-                    'data-defname': group.defName
-                }).html('Open').css({
-                    background:   'linear-gradient(135deg,#b8860b,#daa520)',
-                    border:       'none',
-                    color:        '#1a0f00',
-                    fontWeight:   '700',
-                    fontSize:     '12px',
-                    borderRadius: '5px',
-                    cursor:       'pointer'
-                });
+                var $openBtn = $('<div>', {
+                    'class':        'btn ' + UIMap.classes.openOneBtn,
+                    'data-defname': group.defName,
+                    css: {cursor: 'pointer', display: 'inline-block',margin: '0 10px'},
+                    html: getImageTag('AchievementTriggerCheckboxCheckedIcon', '25px')
+                })
 
                 var $row = $('<tr>')
                     .addClass(UIMap.classes.chestRow)
