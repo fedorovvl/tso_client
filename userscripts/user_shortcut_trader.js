@@ -1,76 +1,254 @@
-//////////////////////////////////////////////////////////////////////////////////////
-// Created by MadFX //////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////
-
 var ShortcutTrader = (function () {
-    const SCRIPT_CONST = {
-        PREFIX: 'FT',
-        NAME: loca.GetText("QUL", "MiadTropicalSunQ2") + ', ' + loca.GetText("ACL", "SellGoods_1"),
-        TRADE_TYPES: {MARKET: 'market', FRIEND: 'friend'},
-        TRADE_QUEUE_DELAY: 4000,
-        BUTTON_COOLDOWN: 3000,
-        MESSAGE_TYPES: {
-            SEND_TRADE: 1049, REFRESH_TRADES: 1062, REQUEST_TRADE_DATA: 1061
+
+    var SCRIPT_CONST = {
+        PREFIX:            'FT',
+        NAME:              loca.GetText("QUL", "MiadTropicalSunQ2") + ', ' + loca.GetText("ACL", "SellGoods_1"),
+        TRADE_TYPES:       { MARKET: 'market', FRIEND: 'friend' },
+        TRADE_QUEUE_DELAY: 3000,
+        BUTTON_COOLDOWN:   3000,
+        SLOT_TYPE: {
+            FREE_SLOT:            0,
+            PAID_SLOT_WITH_GEMS:  1,
+            PAID_SLOT_WITH_COINS: 2,
+            FRIEND_TO_FRIEND:     4
+        },
+        TRADE_STATUS: {
+            ACTIVE:            0,
+            EXPIRED:           1,
+            EXPIRED_SOLDTO:    2,
+            EXPIRED_SOME_SOLD: 3,
+            EXPIRED_ALL_SOLD:  4
+        },
+        MSG: {
+            SEND_TRADE:         1049,
+            REFRESH_TRADES:     1062,
+            REQUEST_TRADE_DATA: 1061
+        },
+        MODE_ICONS: {
+            MARKET: 'ButtonIconTrade',
+            FRIEND: 'ButtonIconDiplomacy'
         }
     };
+
     var buildTemplates;
 
-    function OpenShortCutTraderModal() {
-        try {
-            if (!game.gi.isOnHomzone()) {
-                game.showAlert(getText('not_home'));
-                return;
+    // ─── User Trades Reader ───────────────────────────────────────────────────
+    //
+    // Reads placed orders from userPlaceOffersList.dataProvider.
+    // rearrangeOffers() fills empty slots with blank cTradeObjects
+    // (offer = new Object(), no name fields).
+    //
+    // isActiveOrder() mirrors exactly what getNextFreeSlotForType() counts:
+    //   (status === 0) OR (coolDownTime > 0)
+    // plus checks that offer has a real name field (not blank placeholder).
+
+    var UserTradesReader = (function () {
+
+        function getDataProvider() {
+            try {
+                var GuiBase = swmmo.getDefinitionByName("GUI::cGuiBaseElement");
+                var tw      = GuiBase.GetPanel("GAMESTATE_ID_TRADE_WINDOW");
+                if (!tw || !tw.userPlaceOffersList) return null;
+                return tw.userPlaceOffersList.dataProvider;
+            } catch (e) {
+                return null;
             }
-
-            var state = SettingsService.getState();
-            if (state.tradesData.zone_id !== game.gi.mCurrentViewedZoneID) {
-                SettingsService.resetState();
-            }
-            $("div[role='dialog']:not(#" + UIMap.ids.modal + "):visible").modal("hide");
-            if (!state.modalInitialized) $('#' + UIMap.ids.modal).remove();
-            createModalWindow(UIMap.ids.modal, SCRIPT_CONST.NAME);
-
-            buildTemplates = new SaveLoadTemplate('ml', function (data, name) {
-                $("#" + UIMap.ids.modal + " .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
-                if (SettingsService.isMarketModeON()) {
-                    data.friendsTrades = state.tradesData.friendsTrades;
-                } else {
-                    data.marketTrades = state.tradesData.marketTrades;
-                }
-                data.isMarketTradeMode = state.tradesData.isMarketTradeMode
-                state.tradesData       = data;
-                SettingsService.setState(state);
-                SettingsService.saveSettings();
-                UIRenderer.renderBody();
-            });
-            $.extend(state.tradesData, settings.read(null, SCRIPT_CONST.PREFIX + '_SETTINGS'));
-            SettingsService.setState(state);
-
-            UIRenderer.renderHeader();
-            UIRenderer.renderBody();
-            UIRenderer.renderFooter();
-
-            if (state.isTradeAlreadySent === false) {
-                state.isTradeAlreadySent = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0) !== 0;
-            }
-
-            ActionsService.init();
-            $('#' + UIMap.ids.modal + ':not(:visible)').modal({backdrop: "static"});
-        } catch (e) {
-            debug(e);
         }
-    }
 
-    function init() {
-        try {
-            game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MESSAGE_TYPES.REQUEST_TRADE_DATA, game.gi.mCurrentViewedZoneID, null)
-            $.extend(SettingsService.getState().tradesData, settings.read(null, SCRIPT_CONST.PREFIX + '_SETTINGS'));
-            window.OpenShortCutTraderModal = OpenShortCutTraderModal
-            addToolsMenuItem(SCRIPT_CONST.NAME, window.OpenShortCutTraderModal);
-        } catch (e) {
-            debug(e);
+        function isReady() {
+            var dp = getDataProvider();
+            return !!(dp && dp.length > 0);
         }
-    }
+
+        function isActiveOrder(t) {
+            if (!t || !t.offer) return false;
+            var hasOffer = !!(t.offer.name_string || t.offer.buffName_string || t.offer.resourceName_string);
+            if (!hasOffer) return false;
+            return (t.status === SCRIPT_CONST.TRADE_STATUS.ACTIVE) || (t.coolDownTime > 0);
+        }
+
+        function getUserTrades() {
+            var dp = getDataProvider();
+            if (!dp) return [];
+            var result = [];
+            for (var i = 0; i < dp.length; i++) {
+                var t = dp.getItemAt(i);
+                if (!isActiveOrder(t)) continue;
+                var offerName = t.offer.name_string || t.offer.resourceName_string || t.offer.buffName_string || '';
+                var costName  = t.costs
+                    ? (t.costs.name_string || t.costs.resourceName_string || t.costs.buffName_string || '')
+                    : '';
+                result.push({
+                    tradeID:       t.tradeID,
+                    slotType:      t.slotType,
+                    slotPos:       t.slotPos,
+                    status:        t.status,
+                    coolDownTime:  t.coolDownTime,
+                    runningTime:   t.runningTime || '',
+                    remainingLots: t.remainingLots,
+                    totalLots:     t.totalLots,
+                    lots:          t.totalLots || 1,
+                    offerResName:  offerName,
+                    offerResAmount:t.offer ? (t.offer.amount || 0) : 0,
+                    costResName:   costName,
+                    costResAmount: t.costs ? (t.costs.amount  || 0) : 0
+                });
+            }
+            return result;
+        }
+
+        // Returns the count of active market orders.
+        // Primary source: DataProvider (includes LocalInjector placeholders
+        // because they have offer name fields → pass isActiveOrder).
+        // Fallback: mTradeData.getNextFreeSlotForType (if TradeWindow not ready yet).
+        function getCountActiveTrades() {
+            if (isReady()) {
+                return getUserTrades().length;
+            }
+            // Fallback before TradeWindow is initialized
+            var free  = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(SCRIPT_CONST.SLOT_TYPE.FREE_SLOT);
+            var coins = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(SCRIPT_CONST.SLOT_TYPE.PAID_SLOT_WITH_COINS);
+            return free + coins;
+        }
+
+        return {
+            isReady:              isReady,
+            getUserTrades:        getUserTrades,
+            getCountActiveTrades: getCountActiveTrades
+        };
+    })();
+
+    // ─── Slot Capacity ────────────────────────────────────────────────────────
+
+    var SlotCapacity = (function () {
+
+        function getMaxCoinsSlots() {
+            try { return swmmo.getDefinitionByName("global").activateSlotsWithCoins_vector.length; }
+            catch (e) { return 10; }
+        }
+
+        function getUsedSlotsForType(slotType) {
+            return game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(slotType);
+        }
+
+        // Total = 1 free + N coins. Remaining = total - active orders.
+        function getRemainingMarketCapacity() {
+            var activeCount = UserTradesReader.getCountActiveTrades();
+            return Math.max(0, getMaxCoinsSlots() + 1 - activeCount);
+        }
+
+        // sessionOffset  — 0-based index within current batch
+        // baseFreeUsed   — snapshot of FREE_SLOT usage taken before batch loop
+        // baseCoinsUsed  — snapshot of COINS usage taken before batch loop
+        //
+        // Using pre-batch snapshots prevents mid-loop drift: LocalInjector
+        // updates mTradeData during queue execution, but slotPos for all
+        // offers in the batch is computed here before any send happens.
+        function resolveSlot(sessionOffset, baseFreeUsed, baseCoinsUsed) {
+            var maxCoins  = getMaxCoinsSlots();
+            var freeUsed  = (baseFreeUsed  !== undefined) ? baseFreeUsed  : getUsedSlotsForType(SCRIPT_CONST.SLOT_TYPE.FREE_SLOT);
+            var coinsUsed = (baseCoinsUsed !== undefined) ? baseCoinsUsed : getUsedSlotsForType(SCRIPT_CONST.SLOT_TYPE.PAID_SLOT_WITH_COINS);
+
+            // First order in batch AND free slot is still available
+            if (freeUsed === 0 && sessionOffset === 0) {
+                return { slotType: SCRIPT_CONST.SLOT_TYPE.FREE_SLOT, slotPos: 0 };
+            }
+
+            // Subsequent orders go to coins slots.
+            // If offset=0 consumed the free slot, offset=1 → coinsPos=0, etc.
+            var coinsOffset = (freeUsed === 0) ? (sessionOffset - 1) : sessionOffset;
+            var coinsPos    = coinsUsed + Math.max(0, coinsOffset);
+            if (coinsPos >= maxCoins) return null;
+
+            return { slotType: SCRIPT_CONST.SLOT_TYPE.PAID_SLOT_WITH_COINS, slotPos: coinsPos };
+        }
+
+        return {
+            getRemainingMarketCapacity: getRemainingMarketCapacity,
+            getUsedSlotsForType:        getUsedSlotsForType,
+            getMaxCoinsSlots:           getMaxCoinsSlots,
+            resolveSlot:                resolveSlot
+        };
+    })();
+
+    // ─── Local Trade Injector ─────────────────────────────────────────────────
+    //
+    // Injects placeholder entries into mPlacedOffer_vector so that
+    // getNextFreeSlotForType() returns correct values for subsequent orders
+    // processed in the same game tick.
+    //
+    // TIMING: must be called AFTER the server has processed INITIATE_TRADE.
+    // If called before (e.g. synchronously in the send callback),
+    // ValidateBuyTradeOneClickShopItems() sees the slot as already occupied
+    // and calls cancelTrade → "TradeFailed" popup even though the trade succeeds.
+    //
+    // Solution: injectMissing() is called from a trailing queue entry with a
+    // setTimeout(TRADE_QUEUE_DELAY) — well after all server responses have been
+    // processed. It only injects slots not yet confirmed by the server, so
+    // there are no phantom double-entries.
+
+    var LocalTradeInjector = (function () {
+        var _idCounter = -1000;
+
+        function inject(slotType, slotPos, offerName, offerAmount, costName, costAmount, lots) {
+            try {
+                var VOClass = game.def("Communication.VO.TradeWindow::dTradeObjectVO");
+                var ACClass = swmmo.getDefinitionByName("mx.collections::ArrayCollection");
+
+                var vo            = new VOClass();
+                vo.id             = _idCounter--;   // negative → won't collide with server IDs
+                vo.senderID       = game.gi.mHomePlayer.GetPlayerId();
+                vo.receiverID     = 0;
+                vo.type           = 0;
+                vo.slotType       = slotType;
+                vo.slotPos        = slotPos;
+                vo.created        = new Date().getTime();
+                vo.remainingTime  = 3600000 * 6;    // 6h placeholder
+                vo.lotsRemaining  = lots || 1;
+                vo.deleted        = 0;
+                vo.coolDownTime   = 0;
+                vo.isTradeCancled = false;
+                vo.senderName     = '';
+                vo.offer          = offerName + ',' + offerAmount + '|' + costName + ',' + costAmount + '|' + (lots || 1);
+
+                var col = new ACClass();
+                col.addItem(vo);
+                game.gi.mHomePlayer.mTradeData.setUserPlacedOffers(col);
+            } catch (e) {
+                debug('LocalTradeInjector.inject error: ' + e);
+            }
+        }
+
+        // Injects only slots from `slots` that are NOT yet in getUserTrades().
+        // Called after TRADE_QUEUE_DELAY ms so server confirmations arrive first.
+        function injectMissing(slots) {
+            var existing    = UserTradesReader.getUserTrades();
+            var existingKeys = {};
+            for (var e = 0; e < existing.length; e++) {
+                existingKeys[existing[e].slotType + '_' + existing[e].slotPos] = true;
+            }
+            for (var i = 0; i < slots.length; i++) {
+                var s = slots[i];
+                if (!s || !s.slot) continue;          // friend trades have slot=null
+                var key = s.slot.slotType + '_' + s.slot.slotPos;
+                if (existingKeys[key]) continue;      // server already confirmed it
+                inject(
+                    s.slot.slotType, s.slot.slotPos,
+                    s.tr.offerResName, s.tr.offerResAmount,
+                    s.tr.costResName,  s.tr.costResAmount,
+                    s.tr.UserName
+                );
+            }
+        }
+
+        return { inject: inject, injectMissing: injectMissing };
+    })();
+
+    // ─── Settings ─────────────────────────────────────────────────────────────
+    //
+    // getState() returns a REFERENCE — mutating nested fields directly changes
+    // STATE. setState() is only needed when replacing the whole object
+    // (resetState, template load).
 
     var SettingsService = (function () {
         var STATE = initStateData();
@@ -78,15 +256,18 @@ var ShortcutTrader = (function () {
         function initStateData() {
             return {
                 tradesData: {
-                    isMarketTradeMode: true, zone_id: game.gi.mCurrentViewedZoneID, friendsTrades: [], marketTrades: [],
-                }, isTradeAlreadySent: false, modalInitialized: false
+                    isMarketTradeMode: true,
+                    zone_id:           game.gi.mCurrentViewedZoneID,
+                    friendsTrades:     [],
+                    marketTrades:      []
+                },
+                modalInitialized: false
             };
         }
 
-        function resetState() {
-            STATE = initStateData();
-            return STATE;
-        }
+        function resetState()  { STATE = initStateData(); return STATE; }
+        function getState()    { return STATE; }
+        function setState(s)   { STATE = s; }
 
         function saveSettings() {
             settings.settings[SCRIPT_CONST.PREFIX + '_SETTINGS'] = {};
@@ -94,7 +275,9 @@ var ShortcutTrader = (function () {
         }
 
         function getCurrentTrades() {
-            return STATE.tradesData.isMarketTradeMode ? STATE.tradesData.marketTrades : STATE.tradesData.friendsTrades;
+            return STATE.tradesData.isMarketTradeMode
+                ? STATE.tradesData.marketTrades
+                : STATE.tradesData.friendsTrades;
         }
 
         function removeTrade(index) {
@@ -105,170 +288,467 @@ var ShortcutTrader = (function () {
             }
         }
 
-        function getState() {
-            return STATE;
-        }
-
-        function setState(state) {
-            STATE = state;
-        }
-
         function getTradeModeType() {
-            return STATE.tradesData.isMarketTradeMode ? SCRIPT_CONST.TRADE_TYPES.MARKET : SCRIPT_CONST.TRADE_TYPES.FRIEND
+            return STATE.tradesData.isMarketTradeMode
+                ? SCRIPT_CONST.TRADE_TYPES.MARKET
+                : SCRIPT_CONST.TRADE_TYPES.FRIEND;
         }
 
-        function getIsMarketMode() {
-            return STATE.tradesData.isMarketTradeMode;
-        }
+        function isMarketModeON() { return STATE.tradesData.isMarketTradeMode; }
 
         return {
-            getState: getState,
-            setState: setState,
-            resetState: resetState,
-            saveSettings: saveSettings,
-            removeTrade: removeTrade,
-            getCurrentTrades: getCurrentTrades,
-            getTradeModeType: getTradeModeType,
-            isMarketModeON: getIsMarketMode,
+            getState: getState, setState: setState, resetState: resetState,
+            saveSettings: saveSettings, removeTrade: removeTrade,
+            getCurrentTrades: getCurrentTrades, getTradeModeType: getTradeModeType,
+            isMarketModeON: isMarketModeON
         };
     })();
 
-    var ActionsService = (function () {
-        function init() {
+    // ─── UI Map ───────────────────────────────────────────────────────────────
+
+    var UIMap = {
+        ids: {
+            modal:           SCRIPT_CONST.PREFIX + '_FriendTraderModal',
+            modalData:       SCRIPT_CONST.PREFIX + '_FriendTraderModalData',
+            modeMarketBtn:   SCRIPT_CONST.PREFIX + '_ModeMarket',
+            modeFriendBtn:   SCRIPT_CONST.PREFIX + '_ModeFriend',
+            modeFriendLbl:   SCRIPT_CONST.PREFIX + '_MainModeLabel',
+            slotInfo:        SCRIPT_CONST.PREFIX + '_SlotInfo',
+            selectCounter:   SCRIPT_CONST.PREFIX + '_SelectCounter',
+
+            offerInputStr:   SCRIPT_CONST.PREFIX + '_AddOffer_',
+            costInputStr:    SCRIPT_CONST.PREFIX + '_AddCost_',
+            offerSelectStr:  SCRIPT_CONST.PREFIX + '_OfferList_',
+            costSelectStr:   SCRIPT_CONST.PREFIX + '_CostList_',
+
+            addOfferInput:  function (m) { return this.offerInputStr  + m; },
+            addCostInput:   function (m) { return this.costInputStr   + m; },
+            offerSelect:    function (m) { return this.offerSelectStr + m; },
+            costSelect:     function (m) { return this.costSelectStr  + m; },
+            friendSelector: function (m) { return SCRIPT_CONST.PREFIX + '_friend_selector_' + m; },
+            marketSelector: function (m) { return SCRIPT_CONST.PREFIX + '_market_scroll_'   + m; }
+        },
+        classes: {
+            modeBtn:         SCRIPT_CONST.PREFIX + '_ModeBtn',
+            addRowContainer: SCRIPT_CONST.PREFIX + '_AddRowContainer',
+            tradesContainer: SCRIPT_CONST.PREFIX + '_Trades',
+            offerResourceImg:'offer-res-img',
+            costResourceImg: 'cost-res-img',
+            deleteTrade:     SCRIPT_CONST.PREFIX + '_delTrade',
+            sendTrade:       SCRIPT_CONST.PREFIX + '_SendTrade',
+            addTradeBtn:     SCRIPT_CONST.PREFIX + '_AddTradeBtn',
+            resetBtn:        SCRIPT_CONST.PREFIX + '_reset-btn',
+            sendAllBtn:      SCRIPT_CONST.PREFIX + '_send-all-btn',
+            selectTrade:     SCRIPT_CONST.PREFIX + '_select-trade-chkbox',
+            selectAllBtn:    SCRIPT_CONST.PREFIX + '_select-trade-btn',
+            saveTemplateBtn: SCRIPT_CONST.PREFIX + '_save-temp-btn',
+            loadTemplateBtn: SCRIPT_CONST.PREFIX + '_load-temp-btn'
+        }
+    };
+
+    // ─── UI Renderer ──────────────────────────────────────────────────────────
+
+    var UIRenderer = (function () {
+
+        function renderHeader() {
+            var isMarket = SettingsService.isMarketModeON();
+
+            var marketIcon = '', friendIcon = '';
+            try { marketIcon = getImageTag(SCRIPT_CONST.MODE_ICONS.MARKET, '50px'); } catch (e) {}
+            try { friendIcon = getImageTag(SCRIPT_CONST.MODE_ICONS.FRIEND, '50px'); } catch (e) {}
+
+            var btnBase   = 'cursor:pointer;border:2px solid transparent;border-radius:5px;padding:3px 0;display:inline-block;vertical-align:middle;margin-right:6px;transition:opacity 0.15s;';
+            var marketBtn =
+                    '<span id="' + UIMap.ids.modeMarketBtn + '" class="' + UIMap.classes.modeBtn + '" ' +
+                    'data-mode="' + SCRIPT_CONST.TRADE_TYPES.MARKET + '" title="' + loca.GetText("LAB", "Marketplace") + '" ' +
+                    'style="' + btnBase + 'opacity:' + (isMarket ? '1' : '0.4') + '">' + marketIcon + '</span>';
+            var friendBtn =
+                    '<span id="' + UIMap.ids.modeFriendBtn + '" class="' + UIMap.classes.modeBtn + '" ' +
+                    'data-mode="' + SCRIPT_CONST.TRADE_TYPES.FRIEND + '" title="' + loca.GetText("LAB", "Friends") + '" ' +
+                    'style="' + btnBase + 'opacity:' + (!isMarket ? '1' : '0.4') + '">' + friendIcon + '</span>';
+            var modeLabel =
+                    '<span id="' + UIMap.ids.modeFriendLbl + '" ' +
+                    'style="vertical-align:middle;font-weight:600;font-size:13px;">' +
+                    loca.GetText("LAB", isMarket ? "Marketplace" : "Friends") + '</span>';
+
+            var modeRow = '<div style="margin-bottom:6px;">' + marketBtn + friendBtn + modeLabel + '</div>';
+
+            var tableHeadHtml = createTableRow([
+                [2, loca.GetText("LAB", "WareToDeliver")],
+                [2, loca.GetText("LAB", "WareToRecieve")],
+                [4, loca.GetText("LAB", "SelectTradeResources")],
+                [2, '<span id="tableHeader">' + loca.GetText("LAB", isMarket ? "Lot" : "Friends") + '</span>'],
+                [2, loca.GetText('LAB', 'Tasks')]
+            ], true);
+
             var $modal = $('#' + UIMap.ids.modalData);
+            $modal.append(
+                '<div class="container-fluid">' +
+                modeRow +
+                '<div style="margin-bottom:5px;padding:4px 8px;background:rgba(0,0,0,0.08);border-radius:4px;font-size:12px;">' +
+                '<span id="' + UIMap.ids.slotInfo + '"></span>' +
+                '<span id="' + UIMap.ids.selectCounter + '" style="float: right"></span>' +
+                '</div>' +
+                tableHeadHtml +
+                '</div>'
+            );
 
-            $modal.off('click', '.' + UIMap.classes.deleteTrade).on('click', '.' + UIMap.classes.deleteTrade, handleDeleteTrade)
-                .off('click', '.' + UIMap.classes.sendTrade).on('click', '.' + UIMap.classes.sendTrade, handleSendTrade)
-                .off('change', '.' + UIMap.classes.addTradeBtn).on('click', '.' + UIMap.classes.addTradeBtn, handleAddTrade)
-                .off('change', '#' + UIMap.ids.mainSwitch).on('change', '#' + UIMap.ids.mainSwitch, handleMainSwitch)
-                .off('change', '[id^="' + UIMap.ids.offerSelectStr + '"]').on('change', '[id^="' + UIMap.ids.offerSelectStr + '"]', handleOfferChange)
-                .off('change', '[id^="' + UIMap.ids.costSelectStr + '"]').on('change', '[id^="' + UIMap.ids.costSelectStr + '"]', handleCostChange)
-                .off('input change', '[id^="' + UIMap.ids.offerInputStr + '"]').on('input change', '[id^="' + UIMap.ids.offerInputStr + '"]', handleInputSanitize)
-                .off('input change', '[id^="' + UIMap.ids.costInputStr + '"]').on('input change', '[id^="' + UIMap.ids.costInputStr + '"]', handleInputSanitize);
+            $modal.find('.container-fluid').append('<div class="' + UIMap.classes.addRowContainer + '"></div>');
+            addTradeRow(SettingsService.getTradeModeType());
+            $modal.find('.container-fluid').append('<div class="' + UIMap.classes.tradesContainer + '"></div>');
 
-            $('#' + UIMap.ids.modal).off('click', '.' + UIMap.classes.resetBtn).on('click', '.' + UIMap.classes.resetBtn, handleReset)
-                .off('click', '.' + UIMap.classes.sendAllBtn).on('click', '.' + UIMap.classes.sendAllBtn, handleSubmitAll)
-                .off('click', '.' + UIMap.classes.saveTemplateBtn).on('click', '.' + UIMap.classes.saveTemplateBtn, handleSaveTemplate)
-                .off('click', '.' + UIMap.classes.loadTemplateBtn).on('click', '.' + UIMap.classes.loadTemplateBtn, handleLoadTemplate);
+            renderSlotInfo();
+            updateSelectCounter();
+        }
 
-            $("." + UIMap.classes.tradesContainer).sortable({
-                items: ".row", update: handleSortTrades
+        function renderBody() {
+            var isMarket = SettingsService.isMarketModeON();
+            var trades   = isMarket
+                ? SettingsService.getState().tradesData.marketTrades
+                : SettingsService.getState().tradesData.friendsTrades;
+
+            var $container = $('#' + UIMap.ids.modal)
+                .find('.container-fluid')
+                .find('.' + UIMap.classes.tradesContainer)
+                .empty();
+
+            for (var i = 0; i < trades.length; i++) {
+                var trade = trades[i];
+                if (isMarket  && trade.userId !== 0) continue;
+                if (!isMarket && trade.userId === 0) continue;
+                $container.append(renderTradeRow(trade, i));
+            }
+
+            renderSlotInfo();
+            updateSelectCounter();
+        }
+
+        function renderFooter() {
+            var $footer = $('#' + UIMap.ids.modal).find('.modal-footer');
+
+            // Counter label sits between the two action buttons so it's visible
+            // while the user is selecting rows.
+            $footer.prepend([
+                createButton(UIMap.classes.resetBtn      + ' btn-warning', getText('btn_reset')),
+                createButton(UIMap.classes.sendAllBtn    + ' btn-success', getText('btn_submit') + ' ' + loca.GetText("LAB", "All")),
+                createButton(UIMap.classes.selectAllBtn  + ' btn-success', getText('btn_submit') + ' ' + loca.GetText("LAB", "SelectedResource")),
+                createButton(UIMap.classes.saveTemplateBtn + ' btn-primary pull-left', getText('save_template')),
+                createButton(UIMap.classes.loadTemplateBtn + ' btn-primary pull-left', getText('load_template'))
+            ]);
+        }
+
+        function updateModeButtons() {
+            var isMarket = SettingsService.isMarketModeON();
+            $('#' + UIMap.ids.modeMarketBtn).css('opacity', isMarket  ? '1' : '0.4');
+            $('#' + UIMap.ids.modeFriendBtn).css('opacity', !isMarket ? '1' : '0.4');
+            $('#tableHeader').text(loca.GetText("LAB", isMarket ? "Lot" : "Friends"));
+            $('#' + UIMap.ids.modeFriendLbl).text(loca.GetText("LAB", isMarket ? "Marketplace" : "Friends"));
+        }
+
+        function renderSlotInfo() {
+            if (!SettingsService.isMarketModeON()) {
+                $('#' + UIMap.ids.slotInfo).hide();
+                return;
+            }
+            var remaining = SlotCapacity.getRemainingMarketCapacity();
+            var maxCoins  = SlotCapacity.getMaxCoinsSlots();
+            var total     = maxCoins + 1;
+            var used      = total - remaining;
+            var color     = remaining === 0 ? '#d9534f' : remaining <= 2 ? '#f0ad4e' : '#5cb85c';
+            var warn      = remaining === 0
+                ? ' &nbsp;<span style="color:#d9534f">&#9888; ' + (loca.GetText("LAB", "NoSlots")) + '</span>'
+                : ' &nbsp;<span style="color:#888">(' + (loca.GetText("LAB", "Available")) + ' ' + remaining + ')</span>';
+
+            $('#' + UIMap.ids.slotInfo)
+                .show()
+                .html('<span>' + (loca.GetText("LAB", "Slot")) + ': </span>' +
+                    '<strong style="color:' + color + '">' + used + ' / ' + total + '</strong>' + warn);
+        }
+
+        function updateSelectCounter() {
+            var $counter = $('#' + UIMap.ids.selectCounter);
+
+            if (!SettingsService.isMarketModeON()) {
+                $counter.text('');
+                // Make sure no boxes stay disabled when switching to friend mode
+                $('.' + UIMap.classes.selectTrade).prop('disabled', false);
+                return;
+            }
+
+            var remaining = SlotCapacity.getRemainingMarketCapacity();
+            var $boxes    = $('.' + UIMap.classes.selectTrade);
+            var checked   = $boxes.filter(':checked').length;
+
+            // Color: green while under limit, orange at limit, red if somehow over
+            var color = checked === 0 ? 'wheat'
+                : checked < remaining ? '#5cb85c'
+                    : checked === remaining ? '#f0ad4e'
+                        : '#d9534f';
+
+
+
+            $counter.html(loca.GetText("LAB", "OrdersWaiting") + ' <span style="color: '+color+'">' + checked + ' / ' + remaining + '</span>');
+
+            // Disable every unchecked box once the limit is reached
+            $boxes.each(function () {
+                if (!$(this).prop('checked')) {
+                    $(this).prop('disabled', checked >= remaining);
+                }
             });
+        }
+
+        function addTradeRow(mode) {
+            var resources   = GameDataSource.getResourceList();
+            var firstRes    = resources[0].items[0];
+            var secondRes   = resources[0].items[1];
+            var inputOffer  = createNumberInput(UIMap.ids.addOfferInput(mode));
+            var inputCost   = createNumberInput(UIMap.ids.addCostInput(mode));
+            var selectOffer = createResourceSelect(UIMap.ids.offerSelect(mode), resources);
+            var selectCost  = createResourceSelect(UIMap.ids.costSelect(mode), resources);
+
+            var targetSelect;
+            if (mode === SCRIPT_CONST.TRADE_TYPES.FRIEND) {
+                targetSelect = $('<select>', { id: UIMap.ids.friendSelector(mode), 'class': 'form-control' });
+                var friends  = GameDataSource.getFriendsList();
+                for (var f = 0; f < friends.length; f++) {
+                    targetSelect.append($('<option>', { value: friends[f].id }).text(friends[f].name));
+                }
+            } else {
+                targetSelect = $('<select>', { id: UIMap.ids.marketSelector(mode), 'class': 'form-control' });
+                targetSelect.append('<optgroup label="' + loca.GetText("LAB", "Lots") + '">');
+                for (var l = 1; l <= 4; l++) {
+                    targetSelect.append($('<option>', { value: l }).text(formatFraction(l)));
+                }
+                targetSelect.append('</optgroup>');
+            }
+
+            var offerCell = $('<div>').append(
+                $('<div>').addClass(UIMap.classes.offerResourceImg).css({ display: 'inline-block', verticalAlign: 'middle' }).html(getImageTag(firstRes.name, '24px')),
+                $('<div>').css({ display: 'inline-block', verticalAlign: 'middle' }).append(inputOffer)
+            );
+            var costCell = $('<div>').append(
+                $('<div>').addClass(UIMap.classes.costResourceImg).css({ display: 'inline-block', verticalAlign: 'middle' }).html(getImageTag(secondRes.name, '24px')),
+                $('<div>').css({ display: 'inline-block', verticalAlign: 'middle' }).append(inputCost)
+            );
+            var addBtn = $('<div>', {
+                'class': UIMap.classes.addTradeBtn,
+                style:   'display:inline-block;cursor:pointer;background:wheat;border-radius:3px;'
+            }).html(getImageTag('AvatarAdd', '24px'));
+
+            var row = createTableRow([
+                [2, offerCell], [2, costCell],
+                [2, selectOffer], [2, selectCost],
+                [2, targetSelect], [2, addBtn]
+            ], true);
+
+            $('#' + UIMap.ids.modalData + ' .container-fluid .' + UIMap.classes.addRowContainer).append(row);
+            $('#' + UIMap.ids.costSelect(mode)).find('option').eq(1).prop('selected', true);
+        }
+
+        function renderTradeRow(item, index) {
+            var delBtn = $('<div>', {
+                'class': UIMap.classes.deleteTrade, 'data-index': index,
+                css: { cursor: 'pointer', display: 'inline-block', marginRight: '5px' },
+                html: getImageTag('Close', '24px')
+            });
+            var sendBtn = $('<div>', {
+                'class': UIMap.classes.sendTrade, 'data-index': index,
+                css: { cursor: 'pointer', display: 'inline-block', margin: '0 10px' },
+                html: getImageTag('Trade', '24px')
+            });
+            var checkBox = $('<input>', {
+                type: 'checkbox', 'class': UIMap.classes.selectTrade,
+                'data-index': index, css: { cursor: 'pointer' }
+            });
+            var actions = $('<div>').append(sendBtn, checkBox, $('<span>').css('margin', '0 6px'), delBtn);
+            return createTableRow([
+                [2, getImageTag(item.offerResName, '24px') + ' ' + item.offerResAmount],
+                [2, getImageTag(item.costResName,  '24px') + ' ' + item.costResAmount],
+                [6, formatFraction(item.UserName)],
+                [2, $('<div>').append(actions)]
+            ], false);
+        }
+
+        // ── helpers ───────────────────────────────────────────────────────────
+
+        function createNumberInput(id, value) {
+            return $('<input>', {
+                type: 'number', id: id, name: id,
+                value: value || 1, 'class': 'form-control',
+                style: 'display:inline;width:100px;'
+            });
+        }
+
+        function formatFraction(input) {
+            var n = parseInt(input, 10);
+            return (n >= 1 && n <= 4) ? (n + '/4') : String(input);
+        }
+
+        function createButton(classes, text) {
+            return $('<button>').addClass('btn ' + classes).text(text);
+        }
+
+        function getLocalizedResourceName(name) {
+            var locs = ['RES', 'BUI', 'SHI', 'ADN'];
+            for (var i = 0; i < locs.length; i++) {
+                var t = loca.GetText(locs[i], name);
+                if (t && t.indexOf('[undefined') === -1) return t;
+            }
+            return '[' + name + ']';
+        }
+
+        function createResourceSelect(id, resources) {
+            var $select = $('<select>', { id: id, 'class': 'form-control' });
+            for (var c = 0; c < resources.length; c++) {
+                var cat = resources[c];
+                $select.append('<optgroup label="' + loca.GetText("LAB", cat.categoryName) + '">');
+                for (var r = 0; r < cat.items.length; r++) {
+                    $select.append($('<option>', { value: cat.items[r].name })
+                        .text(getLocalizedResourceName(cat.items[r].name)));
+                }
+            }
+            $select.append('</optgroup>');
+            return $select;
+        }
+
+        return {
+            renderHeader:        renderHeader,
+            renderBody:          renderBody,
+            renderFooter:        renderFooter,
+            addTradeRow:         addTradeRow,
+            renderTradeRow:      renderTradeRow,
+            renderSlotInfo:      renderSlotInfo,
+            updateModeButtons:   updateModeButtons,
+            updateSelectCounter: updateSelectCounter
+        };
+    })();
+
+    // ─── Actions ──────────────────────────────────────────────────────────────
+
+    var ActionsService = (function () {
+
+        function init() {
+            var $modal     = $('#' + UIMap.ids.modal);
+            var $modalData = $('#' + UIMap.ids.modalData).css({ 'padding-top': 0 });
+
+            $modalData
+                .off('click',  '.' + UIMap.classes.modeBtn)
+                .on( 'click',  '.' + UIMap.classes.modeBtn,     handleModeSwitch)
+                .off('click',  '.' + UIMap.classes.deleteTrade)
+                .on( 'click',  '.' + UIMap.classes.deleteTrade, handleDeleteTrade)
+                .off('click',  '.' + UIMap.classes.sendTrade)
+                .on( 'click',  '.' + UIMap.classes.sendTrade,   handleSendTrade)
+                .off('click',  '.' + UIMap.classes.addTradeBtn)
+                .on( 'click',  '.' + UIMap.classes.addTradeBtn, handleAddTrade)
+                // Checkbox change → re-run counter logic
+                .off('change', '.' + UIMap.classes.selectTrade)
+                .on( 'change', '.' + UIMap.classes.selectTrade, handleCheckboxChange)
+                .off('change', '[id^="' + UIMap.ids.offerSelectStr + '"]')
+                .on( 'change', '[id^="' + UIMap.ids.offerSelectStr + '"]', handleOfferChange)
+                .off('change', '[id^="' + UIMap.ids.costSelectStr  + '"]')
+                .on( 'change', '[id^="' + UIMap.ids.costSelectStr  + '"]', handleCostChange)
+                .off('input change', '[id^="' + UIMap.ids.offerInputStr + '"]')
+                .on( 'input change', '[id^="' + UIMap.ids.offerInputStr + '"]', handleInputSanitize)
+                .off('input change', '[id^="' + UIMap.ids.costInputStr  + '"]')
+                .on( 'input change', '[id^="' + UIMap.ids.costInputStr  + '"]', handleInputSanitize);
+
+            $modal
+                .off('click', '.' + UIMap.classes.resetBtn)
+                .on( 'click', '.' + UIMap.classes.resetBtn,        handleReset)
+                .off('click', '.' + UIMap.classes.sendAllBtn)
+                .on( 'click', '.' + UIMap.classes.sendAllBtn,       handleSubmitAll)
+                .off('click', '.' + UIMap.classes.selectAllBtn)
+                .on( 'click', '.' + UIMap.classes.selectAllBtn,     handleSubmitAllSelected)
+                .off('click', '.' + UIMap.classes.saveTemplateBtn)
+                .on( 'click', '.' + UIMap.classes.saveTemplateBtn,  handleSaveTemplate)
+                .off('click', '.' + UIMap.classes.loadTemplateBtn)
+                .on( 'click', '.' + UIMap.classes.loadTemplateBtn,  handleLoadTemplate);
+
+            $('.' + UIMap.classes.tradesContainer).sortable({ items: '.row', update: handleSortTrades });
+        }
+
+        // Called on every checkbox change — updates counter + enforces limit
+        function handleCheckboxChange() {
+            UIRenderer.updateSelectCounter();
+        }
+
+        function handleModeSwitch() {
+            var clickedMode = $(this).attr('data-mode');
+            var isMarket    = SettingsService.isMarketModeON();
+            var currentMode = isMarket ? SCRIPT_CONST.TRADE_TYPES.MARKET : SCRIPT_CONST.TRADE_TYPES.FRIEND;
+            if (clickedMode === currentMode) return;
+
+            SettingsService.getState().tradesData.isMarketTradeMode =
+                (clickedMode === SCRIPT_CONST.TRADE_TYPES.MARKET);
+
+            UIRenderer.updateModeButtons();
+            $('.' + UIMap.classes.addRowContainer).empty();
+            UIRenderer.addTradeRow(clickedMode);
+            UIRenderer.renderBody();
+            SettingsService.saveSettings();
         }
 
         function handleSendTrade() {
             if ($(this).css('pointer-events') === 'none') return;
-
             var index  = $(this).data('index');
             var trades = SettingsService.getCurrentTrades();
-
             disableSendButtons();
             TradeService.send([trades[index]]);
         }
 
         function handleSortTrades(event, ui) {
-            var currentIndex = ui.item.find("." + UIMap.classes.deleteTrade).data("index");
-
-            var nextElement = ui.item.nextAll(".row").find("." + UIMap.classes.deleteTrade).first();
-            var nextIndex   = nextElement.length ? nextElement.data("index") : null;
-
-            var state     = SettingsService.getState();
-            var trades    = SettingsService.getCurrentTrades();
-            var movedItem = trades[currentIndex];
-            if (movedItem === undefined) {
-                return;
-            }
-
+            var currentIndex = ui.item.find('.' + UIMap.classes.deleteTrade).data('index');
+            var nextElement  = ui.item.nextAll('.row').find('.' + UIMap.classes.deleteTrade).first();
+            var nextIndex    = nextElement.length ? nextElement.data('index') : null;
+            var state        = SettingsService.getState();
+            var trades       = SettingsService.getCurrentTrades();
+            var moved        = trades[currentIndex];
+            if (moved === undefined) return;
             trades.splice(currentIndex, 1);
-
             if (nextIndex !== null && trades[nextIndex] !== undefined) {
-                var newPosition = trades.indexOf(trades[nextIndex]);
-                trades.splice(newPosition, 0, movedItem);
+                trades.splice(trades.indexOf(trades[nextIndex]), 0, moved);
             } else {
-                trades.push(movedItem);
+                trades.push(moved);
             }
-
-            if (SettingsService.isMarketModeON()) {
-                state.tradesData.marketTrades = trades;
-            } else {
-                state.tradesData.friendsTrades = trades;
-            }
+            if (SettingsService.isMarketModeON()) { state.tradesData.marketTrades  = trades; }
+            else                                  { state.tradesData.friendsTrades = trades; }
             SettingsService.setState(state);
             SettingsService.saveSettings();
             UIRenderer.renderBody();
         }
 
         function handleDeleteTrade() {
-            const index = $(this).data('index');
-            SettingsService.removeTrade(index);
+            SettingsService.removeTrade($(this).data('index'));
             UIRenderer.renderBody();
             SettingsService.saveSettings();
         }
 
         function handleAddTrade() {
-            var mode = SettingsService.getTradeModeType();
-
+            var mode           = SettingsService.getTradeModeType();
             var offerResName   = $('#' + UIMap.ids.offerSelect(mode)).val();
             var offerResAmount = parseInt($('#' + UIMap.ids.addOfferInput(mode)).val(), 10);
             var costResName    = $('#' + UIMap.ids.costSelect(mode)).val();
             var costResAmount  = parseInt($('#' + UIMap.ids.addCostInput(mode)).val(), 10);
-
-            if (!offerResAmount || !costResAmount) {
-                TradeUI.alertCannotAfford();
-                return;
-            }
-
-            var userId = 0;
-            var userName;
-
+            if (!offerResAmount || !costResAmount) { TradeNotify.alertCannotAfford(); return; }
+            var userId = 0, userName;
             if (mode === SCRIPT_CONST.TRADE_TYPES.FRIEND) {
-                var $friendSel = $('#' + UIMap.ids.friendSelector(mode));
-                userId         = parseInt($friendSel.val(), 10);
-                userName       = $friendSel.find('option:selected').text();
+                var $fs = $('#' + UIMap.ids.friendSelector(mode));
+                userId   = parseInt($fs.val(), 10);
+                userName = $fs.find('option:selected').text();
             } else {
-                userName = $('#' + UIMap.ids.marketSelector(mode)).find('option:selected').val();
+                userName = parseInt($('#' + UIMap.ids.marketSelector(mode)).find('option:selected').val(), 10);
             }
-
-            var newTrade = {
-                offerResName: offerResName,
-                offerResAmount: offerResAmount,
-                costResName: costResName,
-                costResAmount: costResAmount,
-                userId: userId,
-                UserName: userName
-            };
-
-            SettingsService.getCurrentTrades().push(newTrade);
+            SettingsService.getCurrentTrades().push({
+                offerResName: offerResName, offerResAmount: offerResAmount,
+                costResName: costResName, costResAmount: costResAmount,
+                userId: userId, UserName: userName
+            });
             SettingsService.saveSettings();
             UIRenderer.renderBody();
         }
 
-        function handleMainSwitch() {
-            var state = SettingsService.getState().tradesData;
-            state.isMarketTradeMode = !state.isMarketTradeMode;
-
-            var mode = state.isMarketTradeMode
-                ? SCRIPT_CONST.TRADE_TYPES.MARKET
-                : SCRIPT_CONST.TRADE_TYPES.FRIEND;
-
-            $('#' + UIMap.ids.mainSwitchRadio).text(
-                loca.GetText("LAB", state.isMarketTradeMode ? "Marketplace" : "Friends")
-            );
-
-            $('.' + UIMap.classes.addRowContainer).empty();
-            UIRenderer.addTradeRow(mode);
-            UIRenderer.renderBody();
-
-            SettingsService.saveSettings();
-        }
-
-        function handleOfferChange() {
-            $('.' + UIMap.classes.offerResourceImg).html(getImageTag(this.value, '24px'));
-        }
-
-        function handleCostChange() {
-            $('.' + UIMap.classes.costResourceImg).html(getImageTag(this.value, '24px'));
-        }
+        function handleOfferChange() { $('.' + UIMap.classes.offerResourceImg).html(getImageTag(this.value, '24px')); }
+        function handleCostChange()  { $('.' + UIMap.classes.costResourceImg).html(getImageTag(this.value, '24px')); }
 
         function handleReset() {
             SettingsService.resetState();
@@ -277,285 +757,43 @@ var ShortcutTrader = (function () {
         }
 
         function handleSubmitAll() {
-            var $modal = $('#' + UIMap.ids.modal);
             var trades = SettingsService.getCurrentTrades();
-
-            if (!trades.length) {
-                return;
-            }
-
-            $modal.modal('hide');
+            if (!trades.length) return;
+            $('#' + UIMap.ids.modal).modal('hide');
             TradeService.send(trades);
         }
 
-        function handleSaveTemplate() {
-            var state = SettingsService.getState();
-            buildTemplates.save(state.tradesData);
+        function handleSubmitAllSelected() {
+            var current = SettingsService.getCurrentTrades();
+            var trades  = [];
+            $('.' + UIMap.classes.selectTrade + ':checked').each(function () {
+                var idx = $(this).data('index');
+                if (idx !== undefined) trades.push(current[parseInt(idx, 10)]);
+            });
+            if (!trades.length) return;
+            $('#' + UIMap.ids.modal).modal('hide');
+            TradeService.send(trades);
         }
 
-        function handleLoadTemplate() {
-            buildTemplates.load();
-        }
+        function handleSaveTemplate() { buildTemplates.save(SettingsService.getState().tradesData); }
+        function handleLoadTemplate() { buildTemplates.load(); }
 
         function handleInputSanitize() {
-            sanitizeInput(this);
+            var v = this.value.replace(/\D/g, '');
+            this.value = v || 1;
         }
 
         function disableSendButtons() {
-            $('.' + UIMap.classes.sendTrade).css({opacity: 0.5, 'pointer-events': 'none'});
+            $('.' + UIMap.classes.sendTrade).css({ opacity: 0.5, 'pointer-events': 'none' });
             setTimeout(function () {
-                $('.' + UIMap.classes.sendTrade).css({opacity: 1, 'pointer-events': ''});
+                $('.' + UIMap.classes.sendTrade).css({ opacity: 1, 'pointer-events': '' });
             }, SCRIPT_CONST.BUTTON_COOLDOWN);
         }
 
-        function sanitizeInput(element) {
-            var value     = element.value.replace(/\D/g, '');
-            element.value = value || 1;
-        }
-
-        return {
-            init: init
-        };
+        return { init: init };
     })();
 
-    var UIMap = {
-        ids: {
-            modal: SCRIPT_CONST.PREFIX + '_FriendTraderModal',
-            modalData: SCRIPT_CONST.PREFIX + '_FriendTraderModalData',
-            mainSwitch: SCRIPT_CONST.PREFIX + '_SWITCH',
-            mainSwitchRadio: SCRIPT_CONST.PREFIX + '_RadioText',
-
-            offerInputStr: SCRIPT_CONST.PREFIX + '_AddOffer_',
-            costInputStr: SCRIPT_CONST.PREFIX + '_AddCost_',
-            offerSelectStr: SCRIPT_CONST.PREFIX + '_OfferList_',
-            costSelectStr: SCRIPT_CONST.PREFIX + '_CostList_',
-
-            addOfferInput: function (mode) {
-                return this.offerInputStr + mode;
-            },
-            addCostInput: function (mode) {
-                return this.costInputStr + mode;
-            },
-            offerSelect: function (mode) {
-                return this.offerSelectStr + mode;
-            },
-            costSelect: function (mode) {
-                return this.costSelectStr + mode;
-            },
-            friendSelector: function (mode) {
-                return SCRIPT_CONST.PREFIX + '_friend_selector_' + mode;
-            },
-            marketSelector: function (mode) {
-                return SCRIPT_CONST.PREFIX + '_market_scroll_' + mode;
-            }
-        },
-
-        classes: {
-            addRowContainer: SCRIPT_CONST.PREFIX + '_AddRowContainer',
-            tradesContainer: SCRIPT_CONST.PREFIX + '_Trades',
-
-            offerResourceImg: 'offer-res-img',
-            costResourceImg: 'cost-res-img',
-            deleteTrade: SCRIPT_CONST.PREFIX + '_delTrade',
-            sendTrade: SCRIPT_CONST.PREFIX + '_SendTrade',
-            addTradeBtn: SCRIPT_CONST.PREFIX + '_AddTradeBtn',
-
-            resetBtn: SCRIPT_CONST.PREFIX + '_reset-btn',
-            sendAllBtn: SCRIPT_CONST.PREFIX + '_send-all-btn',
-            saveTemplateBtn: SCRIPT_CONST.PREFIX + '_save-temp-btn',
-            loadTemplateBtn: SCRIPT_CONST.PREFIX + '_load-temp-btn'
-        }
-    };
-
-    var UIRenderer = (function () {
-
-        function renderHeader() {
-            var switchRadio   = '<div>' + createSwitch(UIMap.ids.mainSwitch, SettingsService.isMarketModeON()) + '<div style="display:inline-block;vertical-align:top;margin-left: 10px;margin-bottom: 15px;" id="' + UIMap.ids.mainSwitchRadio + '">' + loca.GetText("LAB", SettingsService.isMarketModeON() ? "Marketplace" : "Friends") + '</div></div>';
-            var tableHeadHtml = createTableRow([[2, loca.GetText("LAB", "WareToDeliver")], [2, loca.GetText("LAB", "WareToRecieve")], [4, loca.GetText("LAB", "SelectTradeResources")], [2, loca.GetText("LAB", "BoughtFromSoldTo")], [2, loca.GetText('LAB', 'Tasks')]], true);
-
-            var $modal = $('#' + UIMap.ids.modalData);
-            $modal.append('<div class="container-fluid">' + switchRadio + tableHeadHtml + '</div>');
-            $modal.find('.container-fluid').append('<div class="' + UIMap.classes.addRowContainer + '"></div>');
-            UIRenderer.addTradeRow(SettingsService.getTradeModeType());
-            $modal.find('.container-fluid').append('<div class="' + UIMap.classes.tradesContainer + '"></div>');
-        }
-
-        function renderBody() {
-            function shouldRenderTrade(trade, isMarket) {
-                if (!isMarket) {
-                    return trade.userId !== 0;
-                }
-                return trade.userId === 0;
-            }
-
-            var state    = SettingsService.getState();
-            var isMarket = SettingsService.isMarketModeON();
-            var trades   = isMarket ? state.tradesData.marketTrades : state.tradesData.friendsTrades;
-
-            var $container = $('#' + UIMap.ids.modal)
-                .find('.container-fluid')
-                .find('.' + UIMap.classes.tradesContainer)
-                .empty();
-
-            trades.forEach(function (trade, index) {
-                if (!shouldRenderTrade(trade, isMarket)) {
-                    return;
-                }
-                $container.append(UIRenderer.renderTradeRow(trade, index));
-            });
-        }
-
-
-        function renderFooter() {
-            var $modal  = $('#' + UIMap.ids.modal);
-            var $footer = $modal.find('.modal-footer');
-
-            var buttons = [createButton(UIMap.classes.resetBtn + ' btn-warning', getText('btn_reset')), createButton(UIMap.classes.sendAllBtn + ' btn-success', getText('btn_submit') + ' ' + loca.GetText("LAB", "All")), createButton(UIMap.classes.saveTemplateBtn + ' btn-primary pull-left', getText('save_template')), createButton(UIMap.classes.loadTemplateBtn + ' btn-primary pull-left', getText('load_template'))];
-
-            $footer.prepend(buttons);
-        }
-
-        function addTradeRow(mode) {
-            var resources   = GameDataSource.getResourceList();
-            var firstRes    = resources[0].items[0], secondRes = resources[0].items[1];
-            var inputOffer  = createNumberInput(UIMap.ids.addOfferInput(mode));
-            var inputCost   = createNumberInput(UIMap.ids.addCostInput(mode));
-            var selectOffer = createResourceSelect(UIMap.ids.offerSelect(mode), resources);
-            var selectCost  = createResourceSelect(UIMap.ids.costSelect(mode), resources);
-
-            var targetSelect;
-            if (mode === SCRIPT_CONST.TRADE_TYPES.FRIEND) {
-                targetSelect = $('<select>', {id: UIMap.ids.friendSelector(mode), 'class': 'form-control'});
-                GameDataSource.getFriendsList().forEach(function (friend) {
-                    targetSelect.append($('<option>', {value: friend.id}).text(friend.name));
-                });
-            } else {
-                targetSelect = $('<select>', {id: UIMap.ids.marketSelector(mode), 'class': 'form-control'});
-                targetSelect.append('<optgroup label="Ресурсы">');
-                [1, 2, 3, 4].forEach(function (res) {
-                    targetSelect.append($('<option>', {value: res}).text(formatToFractionOrReturn(res)));
-                });
-                targetSelect.append('</optgroup>');
-            }
-
-            var row = createTableRow([[2, $('<div>').append($('<div>').addClass(UIMap.classes.offerResourceImg).css({
-                display: 'inline-block', verticalAlign: 'middle'
-            }).html(getImageTag(firstRes.name, '24px')), $('<div>').css({
-                display: 'inline-block', verticalAlign: 'middle'
-            }).append(inputOffer))],
-
-                [2, $('<div>').append($('<div>').addClass(UIMap.classes.costResourceImg).css({
-                    display: 'inline-block', verticalAlign: 'middle'
-                }).html(getImageTag(secondRes.name, '24px')), $('<div>').css({
-                    display: 'inline-block', verticalAlign: 'middle'
-                }).append(inputCost))],
-
-                [2, selectOffer],
-
-                [2, selectCost],
-
-                [2, targetSelect],
-
-                [2, $('<div>', {
-                    'class': UIMap.classes.addTradeBtn,
-                    // 'data-mode': mode,
-                    style: 'display:inline-block;cursor:pointer;background:wheat;border-radius:3px;'
-                }).html(getImageTag('AvatarAdd', '24px'))]], true);
-
-            $('#' + UIMap.ids.modalData + ' .container-fluid .' + UIMap.classes.addRowContainer).append(row);
-
-            $('#' + UIMap.ids.costSelect(mode)).find('option').eq(1).prop('selected', true);
-        }
-
-        function renderTradeRow(item, index) {
-            var delBtn = $('<div>', {
-                'class': UIMap.classes.deleteTrade, 'data-index': index, css: {
-                    cursor: 'pointer', display: 'inline-block', marginRight: '5px'
-                }, // html: getImageTag('ButtonIconAbort', '24px')
-                html: getImageTag('Close', '24px')
-            });
-
-            var sendBtn = $('<div>', {
-                'class': UIMap.classes.sendTrade,
-                'data-index': index,
-                css: {cursor: 'pointer', display: 'inline-block'},
-                html: getImageTag('Trade', '24px')
-            })
-
-            return createTableRow([[2, getImageTag(item.offerResName, '24px') + ' ' + item.offerResAmount], [2, getImageTag(item.costResName, '24px') + ' ' + item.costResAmount], [6, formatToFractionOrReturn(item.UserName)], [2, $('<div>').append(delBtn, sendBtn)]], false);
-        }
-
-        function createNumberInput(id, value) {
-            return $('<input>', {
-                type: 'number',
-                id: id,
-                name: id,
-                value: value || 1,
-                'class': 'form-control',
-                style: 'display:inline;width:100px;'
-            });
-        }
-
-        function formatToFractionOrReturn(input) {
-            var count = parseInt(input, 10);
-            switch (count) {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                    return count + "/4";
-                default:
-                    return input;
-            }
-        }
-
-        function createButton(classes, text) {
-            return $('<button>')
-                .addClass('btn ' + classes)
-                .text(text)
-        }
-
-        function getName(originalName) {
-            locs     = ['RES', 'BUI', 'SHI', 'ADN'];
-            var name = '[undefined text]';
-            for (loc in locs) {
-                loc  = locs[loc];
-                name = loca.GetText(loc, originalName);
-                if (name !== '[undefined text]' && name !== '[undefined text] ') {
-                    return name;
-                }
-            }
-            return name;
-        }
-
-        function createResourceSelect(id, resources) {
-            var $select = $('<select>', {id: id, 'class': 'form-control'});
-            resources.forEach(function (cat) {
-                //sort by local name (slowdown script)
-                // var items = cat.items.slice();
-                // items.sort(function (a, b) {
-                //     return getName(a.name).localeCompare(getName(b.name));
-                // });
-
-                $select.append('<optgroup label="' + loca.GetText("LAB", cat.categoryName) + '">');
-                cat.items.forEach(function (res) {
-                    $select.append($('<option>', {
-                        value: res.name
-                    }).text(getName(res.name)));
-                });
-            });
-            $select.append('</optgroup>');
-            return $select;
-        }
-
-        return {
-            renderHeader: renderHeader,
-            renderBody: renderBody,
-            renderFooter: renderFooter,
-            addTradeRow: addTradeRow,
-            renderTradeRow: renderTradeRow
-        };
-    })();
+    // ─── Game Data ────────────────────────────────────────────────────────────
 
     var GameDataSource = (function () {
         var _friendsList  = null;
@@ -563,350 +801,364 @@ var ShortcutTrader = (function () {
 
         function getFriendsList() {
             if (!_friendsList) {
-                _friendsList = globalFlash.gui.mFriendsList.GetFilteredFriends("", true).map(function (f) {
-                    return {id: f.id, name: f.username};
-                });
+                var raw  = globalFlash.gui.mFriendsList.GetFilteredFriends('', true);
+                _friendsList = [];
+                for (var i = 0; i < raw.length; i++) {
+                    _friendsList.push({ id: raw[i].id, name: raw[i].username });
+                }
             }
             return _friendsList;
         }
 
         function getResourceList() {
             if (!_resourceList) {
-                var resourcesByCategory = {};
-                var categoryNames       = [];
+                var byCategory = {}, catNames = [];
                 try {
-                    swmmo.getDefinitionByName("ServerState::gEconomics").mResourceDefaultDefinition_vector.forEach(function (product) {
-                        if (product.tradable) {
-                            var category = product.group_string || product.category_string || "WarehouseTab7";
-                            var clMatch  = category.match(/^CL(\d+)$/);
-                            if (clMatch) {
-                                category = "WarehouseTab" + clMatch[1];
-                            } else if (category === "Event") {
-                                category = "WarehouseTab6";
-                            }
-                            if (category === "WarehouseTab5") {
-                                category = "WarehouseTab8";
-                            }
-                            if (!resourcesByCategory.hasOwnProperty(category)) {
-                                resourcesByCategory[category] = [];
-                                categoryNames.push(category);
-                            }
-                            resourcesByCategory[category].push({name: product.resourceName_string});
-                        }
-                    });
-
-                    // Buffs
-                    categoryNames.push('buffs');
-                    resourcesByCategory['buffs'] = [];
-                    var items                    = swmmo.getDefinitionByName("global").map_BuffName_BuffDefinition;
-                    for (var item in items) {
-                        var definition = items[item];
-                        var name       = definition.GetName_string();
-                        if (definition.IsTradable(name)) {
-                            resourcesByCategory['buffs'].push({name: name});
-                        }
+                    var products = swmmo.getDefinitionByName("ServerState::gEconomics").mResourceDefaultDefinition_vector;
+                    for (var p = 0; p < products.length; p++) {
+                        var prod = products[p];
+                        if (!prod.tradable) continue;
+                        var cat     = prod.group_string || prod.category_string || "WarehouseTab7";
+                        var clMatch = cat.match(/^CL(\d+)$/);
+                        if (clMatch) { cat = "WarehouseTab" + clMatch[1]; }
+                        else if (cat === "Event") { cat = "WarehouseTab6"; }
+                        if (cat === "WarehouseTab5") cat = "WarehouseTab8";
+                        if (!byCategory.hasOwnProperty(cat)) { byCategory[cat] = []; catNames.push(cat); }
+                        byCategory[cat].push({ name: prod.resourceName_string });
                     }
-
-                    // Adventures
-                    categoryNames.push('adventures');
-                    resourcesByCategory['adventures'] = [];
-                    items                             = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition").map_AdventureName_AdventureDefinition.valueSet();
-                    for (var item in items) {
-                        var definition = items[item];
-                        var name       = definition.GetName();
-                        if (definition.IsTradable()) {
-                            resourcesByCategory['adventures'].push({name: name});
-                        }
+                    catNames.push('buffs'); byCategory['buffs'] = [];
+                    var buffMap = swmmo.getDefinitionByName("global").map_BuffName_BuffDefinition;
+                    for (var bk in buffMap) {
+                        var bd = buffMap[bk];
+                        if (bd.IsTradable(bd.GetName_string())) byCategory['buffs'].push({ name: bd.GetName_string() });
                     }
-
-                    // Buildings
-                    categoryNames.push('buildings');
-                    resourcesByCategory['buildings'] = [];
-                    items                            = swmmo.getDefinitionByName("global").buildingGroup.mGOList_vector;
-                    for (var item in items) {
-                        var definition = items[item];
-                        var name       = definition.mGfxResourceListName_string;
-                        if (definition.isTradable()) {
-                            resourcesByCategory['buildings'].push({name: name});
-                        }
+                    catNames.push('adventures'); byCategory['adventures'] = [];
+                    var advs = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition")
+                        .map_AdventureName_AdventureDefinition.valueSet();
+                    for (var ak in advs) {
+                        if (advs[ak].IsTradable()) byCategory['adventures'].push({ name: advs[ak].GetName() });
                     }
-
-                    categoryNames.sort();
-                    _resourceList = categoryNames.map(function (catName) {
-                        return {categoryName: catName, items: resourcesByCategory[catName]};
-                    });
-                } catch (e) {
-                    debug(e);
+                    catNames.push('buildings'); byCategory['buildings'] = [];
+                    var blds = swmmo.getDefinitionByName("global").buildingGroup.mGOList_vector;
+                    for (var bl in blds) {
+                        if (blds[bl].isTradable()) byCategory['buildings'].push({ name: blds[bl].mGfxResourceListName_string });
+                    }
+                    catNames.sort();
                     _resourceList = [];
-                }
+                    for (var cn = 0; cn < catNames.length; cn++) {
+                        _resourceList.push({ categoryName: catNames[cn], items: byCategory[catNames[cn]] });
+                    }
+                } catch (e) { debug(e); _resourceList = []; }
             }
             return _resourceList;
         }
 
-        function invalidate() {
-            _friendsList  = null;
-            _resourceList = null;
-        }
+        function invalidate() { _friendsList = null; _resourceList = null; }
 
-        return {
-            getFriendsList: getFriendsList, getResourceList: getResourceList, invalidate: invalidate
-        };
+        return { getFriendsList: getFriendsList, getResourceList: getResourceList, invalidate: invalidate };
     })();
+
+    // ─── Trade Service ────────────────────────────────────────────────────────
 
     var TradeService = (function () {
+
         function send(trades) {
-            if (!TradeValidator.isValidTradeArray(trades)) {
-                TradeUI.alertCannotAfford();
-                return;
+            if (!Array.isArray(trades) || !trades.length) { TradeNotify.alertCannotAfford(); return; }
+
+            var isMarket = SettingsService.isMarketModeON();
+
+            var filtered = [];
+            for (var t = 0; t < trades.length; t++) {
+                var ok = isMarket ? (trades[t].userId === 0) : (trades[t].userId !== 0);
+                if (ok) filtered.push(trades[t]);
+            }
+            if (!filtered.length) return;
+
+            if (isMarket) {
+                var remaining = SlotCapacity.getRemainingMarketCapacity();
+                if (remaining <= 0) { TradeNotify.alertNoSlots(); return; }
+                if (filtered.length > remaining) {
+                    TradeNotify.alertSlotsTrimmed(filtered.length, remaining);
+                    filtered = filtered.slice(0, remaining);
+                }
             }
 
+            var slots           = [];   // { slot, tr } — used by injectMissing at the end
             var queue           = new TimedQueue(SCRIPT_CONST.TRADE_QUEUE_DELAY);
             var successCount    = 0;
-            var totalTrades     = trades.length;
+            var totalTrades     = filtered.length;
             var playerResources = game.gi.mCurrentPlayerZone.GetResources(game.gi.mHomePlayer);
 
-            trades.forEach(function (trade) {
-                if (!TradeValidator.isTradeAllowed(trade)) {
-                    totalTrades--;
-                    return;
-                }
+            // Snapshot ONCE before the loop so resolveSlot doesn't drift
+            var baseFreeUsed  = isMarket ? SlotCapacity.getUsedSlotsForType(SCRIPT_CONST.SLOT_TYPE.FREE_SLOT) : 0;
+            var baseCoinsUsed = isMarket ? SlotCapacity.getUsedSlotsForType(SCRIPT_CONST.SLOT_TYPE.PAID_SLOT_WITH_COINS) : 0;
+            var sessionOffset = 0;
+
+            for (var i = 0; i < filtered.length; i++) {
+                var trade = filtered[i];
+                if (!TradeValidator.isTradeAllowed(trade)) { totalTrades--; continue; }
 
                 var tradeOffer = TradeOfferFactory.create(trade, playerResources);
-                if (!tradeOffer) {
-                    totalTrades--;
-                    return;
+                if (!tradeOffer) { totalTrades--; continue; }
+
+                var slotInfo = null;
+                if (isMarket) {
+                    slotInfo = SlotCapacity.resolveSlot(sessionOffset, baseFreeUsed, baseCoinsUsed);
+                    if (!slotInfo) { totalTrades--; continue; }
+                    TradeOfferFactory.applyMarketRecipient(tradeOffer, trade, slotInfo);
+                    sessionOffset++;
+                } else {
+                    TradeOfferFactory.applyFriendRecipient(tradeOffer, trade);
                 }
 
-                TradeOfferFactory.applyRecipient(tradeOffer, trade);
+                slots.push({ slot: slotInfo, tr: trade });  // slot=null for friend trades
 
-                TradeQueue.enqueue(queue, tradeOffer, trade, function () {
-                    successCount++;
-                    SettingsService.getState().isTradeAlreadySent = true;
-                    TradeUI.showSuccess(trade, successCount, totalTrades);
-                });
-            });
+                (function (offer, tr) {
+                    TradeQueue.enqueue(queue, offer, tr, function () {
+                        successCount++;
+                        TradeNotify.showSuccess(tr, successCount, totalTrades);
+                        UIRenderer.renderSlotInfo();
+                        UIRenderer.updateSelectCounter();
+                    });
+                })(tradeOffer, trade);
+            }
 
             if (queue.len() > 0) {
+                // Trailing entry: runs after the last timed send.
+                // Waits another TRADE_QUEUE_DELAY so the server has responded
+                // and updated mPlacedOffer_vector via TRADE_GET_USER_TRADES.
+                // Then injects only slots still missing and refreshes the panel.
+                (function (capturedSlots) {
+                    queue.add(function () {
+                        setTimeout(function () {
+                            LocalTradeInjector.injectMissing(capturedSlots);
+                            refreshTrades();
+                        }, SCRIPT_CONST.TRADE_QUEUE_DELAY);
+                    });
+                })(slots);
+
                 queue.run();
-                TradeQueue.finishBatch();
             }
         }
 
-        return {
-            send: send
-        };
+        function refreshTrades() {
+            game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MSG.REFRESH_TRADES,     game.gi.mCurrentViewedZoneID, null);
+            game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MSG.REQUEST_TRADE_DATA, game.gi.mCurrentViewedZoneID, null);
+        }
+
+        return { send: send, refreshTrades: refreshTrades };
     })();
 
+    // ─── Trade Validator ──────────────────────────────────────────────────────
+
     var TradeValidator = (function () {
-        function isValidTradeArray(trades) {
-            return Array.isArray(trades) && trades.length > 0;
-        }
-
         function isTradeAllowed(trade) {
-            if (!SettingsService.getState().tradesData.isMarketTradeMode && trade.userId === 0) {
-                return false;
-            }
-            if (SettingsService.getState().tradesData.isMarketTradeMode && trade.userId !== 0) {
-                return false;
-            }
-            if (!SettingsService.getState().tradesData.isMarketTradeMode) {
-                var isFriend = GameDataSource.getFriendsList().some(function (f) {
-                    return f.id == trade.userId;
-                });
-
-                if (!isFriend) {
-                    TradeUI.alertAddFriend();
-                    return false;
+            var isMarket = SettingsService.getState().tradesData.isMarketTradeMode;
+            if (!isMarket && trade.userId === 0)  return false;
+            if ( isMarket && trade.userId !== 0)  return false;
+            if (!isMarket) {
+                var friends  = GameDataSource.getFriendsList();
+                var isFriend = false;
+                for (var f = 0; f < friends.length; f++) {
+                    if (friends[f].id == trade.userId) { isFriend = true; break; }
                 }
+                if (!isFriend) { TradeNotify.alertAddFriend(); return false; }
             }
             return true;
         }
-
-        return {
-            isValidTradeArray: isValidTradeArray, isTradeAllowed: isTradeAllowed
-        };
+        return { isTradeAllowed: isTradeAllowed };
     })();
+
+    // ─── Trade Offer Factory ──────────────────────────────────────────────────
 
     var TradeOfferFactory = (function () {
         function create(trade, playerResources) {
             var offer = new (game.def("Communication.VO::dTradeOfferVO"));
-
-            if (!applyOffer(offer, trade, playerResources)) {
-                return null;
-            }
-
+            if (!applyOffer(offer, trade, playerResources)) return null;
             applyCost(offer, trade);
             return offer;
         }
-
-        function applyRecipient(offer, trade) {
-            offer.receipientId = trade.userId;
-            offer.lots         = 0;
-            offer.slotType     = 4;
-            offer.slotPos      = 0;
-
-            if (trade.userId !== 0) {
-                return;
-            }
-
-            var freeSlots = SettingsService.getState().isTradeAlreadySent ? 1 : game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(0);
-
+        function applyMarketRecipient(offer, trade, slotInfo) {
+            offer.receipientId = 0;
             offer.lots     = trade.UserName;
-            offer.slotType = freeSlots === 0 ? 0 : 2;
-            offer.slotPos  = game.gi.mHomePlayer.mTradeData.getNextFreeSlotForType(2);
+            offer.slotType = slotInfo.slotType;
+            offer.slotPos  = slotInfo.slotPos;
         }
-
+        function applyFriendRecipient(offer, trade) {
+            offer.receipientId = trade.userId;
+            offer.slotType = SCRIPT_CONST.SLOT_TYPE.FRIEND_TO_FRIEND;
+            offer.lots     = 0;
+            offer.slotPos  = 0;
+        }
         function applyOffer(offer, trade, playerResources) {
-            var def = TradeResources.getResourceDef(trade.offerResName);
-
-            if (def) {
-                return TradeResources.applyOfferResource(offer, trade, playerResources);
-            } else {
-                return TradeResources.applyOfferBuff(offer, trade);
-            }
+            return TradeResources.getResourceDef(trade.offerResName)
+                ? TradeResources.applyOfferResource(offer, trade, playerResources)
+                : TradeResources.applyOfferBuff(offer, trade);
         }
-
         function applyCost(offer, trade) {
-            var def = TradeResources.getResourceDef(trade.costResName);
-
-            if (def) {
-                TradeResources.applyCostResource(offer, trade);
-            } else {
-                TradeResources.applyCostBuff(offer, trade);
-            }
+            if (TradeResources.getResourceDef(trade.costResName)) { TradeResources.applyCostResource(offer, trade); }
+            else { TradeResources.applyCostBuff(offer, trade); }
         }
-
-        return {
-            create: create, applyRecipient: applyRecipient
-        };
-
+        return { create: create, applyMarketRecipient: applyMarketRecipient, applyFriendRecipient: applyFriendRecipient };
     })();
+
+    // ─── Trade Resources ──────────────────────────────────────────────────────
 
     var TradeResources = (function () {
         function getResourceDef(name) {
-            return swmmo
-                .getDefinitionByName("ServerState::gEconomics")
-                .GetResourcesDefaultDefinition(name);
+            return swmmo.getDefinitionByName("ServerState::gEconomics").GetResourcesDefaultDefinition(name);
         }
-
         function findTradableBuff(name) {
-            var result = null;
-
-            game.gi.mHomePlayer.getBuffsSortedForStarMenu().some(function (item) {
-                if ((item.GetBuffDefinition().GetName_string() === name || item.GetResourceName_string() === name) && item.GetBuffDefinition().IsTradable(item.GetResourceName_string())) {
-                    result = item.CreateBuffVOFromBuff();
-                    return true;
+            var buffs = game.gi.mHomePlayer.getBuffsSortedForStarMenu();
+            for (var i = 0; i < buffs.length; i++) {
+                var item = buffs[i];
+                if ((item.GetBuffDefinition().GetName_string() === name || item.GetResourceName_string() === name) &&
+                    item.GetBuffDefinition().IsTradable(item.GetResourceName_string())) {
+                    return item.CreateBuffVOFromBuff();
                 }
-                return false;
-            });
-
-            return result;
+            }
+            return null;
         }
-
         function applyOfferResource(offer, trade, playerResources) {
             var amount = trade.offerResAmount;
-
-            if (SettingsService.getState().tradesData.isMarketTradeMode) {
-                amount *= trade.UserName;
-            }
-
+            if (SettingsService.isMarketModeON()) amount *= trade.UserName;
             try {
-                if (!playerResources.HasPlayerResource(trade.offerResName, amount)) {
-                    TradeUI.alertCannotAfford();
-                    return false;
-                }
-            } catch (e) {
-                TradeUI.alertCannotAfford();
-                return false;
-            }
-
-            var res         = new (game.def("Communication.VO::dResourceVO"));
-            res.amount      = res.producedAmount = trade.offerResAmount;
+                if (!playerResources.HasPlayerResource(trade.offerResName, amount)) { TradeNotify.alertCannotAfford(); return false; }
+            } catch (e) { TradeNotify.alertCannotAfford(); return false; }
+            var res = new (game.def("Communication.VO::dResourceVO"));
+            res.amount = res.producedAmount = trade.offerResAmount;
             res.name_string = trade.offerResName;
-
             offer.offerRes = res;
             return true;
         }
-
         function applyOfferBuff(offer, trade) {
             var buff = findTradableBuff(trade.offerResName);
-
-            if (!buff || buff.amount < trade.offerResAmount) {
-                TradeUI.alertCannotAfford();
-                return false;
-            }
-
-            buff.amount     = trade.offerResAmount;
+            if (!buff || buff.amount < trade.offerResAmount) { TradeNotify.alertCannotAfford(); return false; }
+            buff.amount = trade.offerResAmount;
             offer.offerBuff = buff;
             return true;
         }
-
         function applyCostResource(offer, trade) {
-            var res         = new (game.def("Communication.VO::dResourceVO"));
-            res.amount      = res.producedAmount = trade.costResAmount;
+            var res = new (game.def("Communication.VO::dResourceVO"));
+            res.amount = res.producedAmount = trade.costResAmount;
             res.name_string = trade.costResName;
-
             offer.costsRes = res;
         }
-
         function applyCostBuff(offer, trade) {
-            var buff                 = new (game.def("Communication.VO::dBuffVO"));
-            buff.sourceZoneId        = game.gi.mCurrentViewedZoneID;
-            buff.amount              = trade.costResAmount;
+            var buff = new (game.def("Communication.VO::dBuffVO"));
+            buff.sourceZoneId = game.gi.mCurrentViewedZoneID;
+            buff.amount = trade.costResAmount;
             buff.resourceName_string = trade.costResName;
-            buff.buffName_string     = getResourceTypeByName(trade.costResName);
-
+            buff.buffName_string = getResourceTypeByName(trade.costResName);
             offer.costsBuff = buff;
         }
-
         function getResourceTypeByName(name) {
-            var definition = swmmo.getDefinitionByName("global").buildingGroup.GetNrFromName(name)
-            if (definition !== 195) return 'BuildBuilding'
-            definition = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition")
-                .map_AdventureName_AdventureDefinition
-                .getItem(name);
-            if (definition) return 'Adventure';
-
+            var nr = swmmo.getDefinitionByName("global").buildingGroup.GetNrFromName(name);
+            if (nr !== 195) return 'BuildBuilding';
+            var adv = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition")
+                .map_AdventureName_AdventureDefinition.getItem(name);
+            if (adv) return 'Adventure';
             return name;
         }
-
         return {
-            getResourceDef: getResourceDef,
-            applyOfferResource: applyOfferResource,
-            applyOfferBuff: applyOfferBuff,
-            applyCostResource: applyCostResource,
-            applyCostBuff: applyCostBuff
+            getResourceDef: getResourceDef, applyOfferResource: applyOfferResource,
+            applyOfferBuff: applyOfferBuff, applyCostResource: applyCostResource, applyCostBuff: applyCostBuff
         };
-
     })();
+
+    // ─── Trade Queue ──────────────────────────────────────────────────────────
 
     var TradeQueue = {
         enqueue: function (queue, offer, trade, cb) {
             queue.add(function () {
-                game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MESSAGE_TYPES.SEND_TRADE, game.gi.mCurrentViewedZoneID, offer);
+                game.gi.mClientMessages.SendMessagetoServer(
+                    SCRIPT_CONST.MSG.SEND_TRADE,
+                    game.gi.mCurrentViewedZoneID,
+                    offer
+                );
                 cb();
                 globalFlash.gui.mAvatarMessageList.AddMessage('TradeInitiated');
             });
-        }, finishBatch: function () {
-            game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MESSAGE_TYPES.REFRESH_TRADES, game.gi.mCurrentViewedZoneID, null);
         }
     };
 
-    var TradeUI = {
-        alertCannotAfford: function () {
-            game.showAlert(loca.GetText('LAB', 'CannotAffordSendTrade'));
-        }, alertAddFriend: function () {
-            game.showAlert(loca.GetText('QUL', 'SocialMedium8') + ' ' + loca.GetText('LAB', 'AddFriend'));
-        }, showSuccess: function (trade, success, total) {
-            var msg = loca.GetText('LAB', 'TradeOffer') + ' ';
-            msg += trade.userId === 0 ? loca.GetText('MES', 'TradeInitiated') : loca.GetText('LAB', 'User') + ': ' + trade.UserName;
-            msg += ' (' + success + '/' + total + ')';
+    // ─── Trade Notify ─────────────────────────────────────────────────────────
 
+    var TradeNotify = {
+        alertCannotAfford: function () { game.showAlert(loca.GetText('LAB', 'CannotAffordSendTrade')); },
+        alertAddFriend:    function () { game.showAlert(loca.GetText('QUL', 'SocialMedium8') + ' ' + loca.GetText('LAB', 'AddFriend')); },
+        alertNoSlots:      function () { game.showAlert(loca.GetText('LAB', 'NoSlots') || 'No free trade slots available.'); },
+        alertSlotsTrimmed: function (req, allowed) {
+            game.showAlert(loca.GetText('LAB', 'OrdersWaiting', [req]) + '. ' + loca.GetText('LAB', 'RemainingItemsPerPlayer', [allowed]));
+        },
+        showSuccess: function (trade, success, total) {
+            var msg = loca.GetText('LAB', 'TradeOffer') + ' ';
+            msg += trade.userId === 0
+                ? loca.GetText('MES', 'TradeInitiated')
+                : loca.GetText('LAB', 'User') + ': ' + trade.UserName;
+            msg += ' (' + success + '/' + total + ')';
             game.showAlert(msg);
         }
     };
 
-    return { init:init, openModal:OpenShortCutTraderModal };
+    // ─── Bootstrap ────────────────────────────────────────────────────────────
+
+    function OpenShortCutTraderModal() {
+        try {
+            if (!game.gi.isOnHomzone()) { game.showAlert(getText('not_home')); return; }
+
+            var state = SettingsService.getState();
+            if (state.tradesData.zone_id !== game.gi.mCurrentViewedZoneID) SettingsService.resetState();
+
+            $("div[role='dialog']:not(#" + UIMap.ids.modal + "):visible").modal('hide');
+            if (!state.modalInitialized) $('#' + UIMap.ids.modal).remove();
+
+            createModalWindow(UIMap.ids.modal, SCRIPT_CONST.NAME);
+
+            buildTemplates = new SaveLoadTemplate('short_trade', function (data, name) {
+                $("#" + UIMap.ids.modal + " .templateFile")
+                    .html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
+                if (SettingsService.isMarketModeON()) { data.friendsTrades = state.tradesData.friendsTrades; }
+                else                                  { data.marketTrades  = state.tradesData.marketTrades; }
+                data.isMarketTradeMode = state.tradesData.isMarketTradeMode;
+                // Replacing whole object → setState needed here
+                state.tradesData = data;
+                SettingsService.setState(state);
+                SettingsService.saveSettings();
+                UIRenderer.renderBody();
+            });
+
+            $.extend(state.tradesData, settings.read(null, SCRIPT_CONST.PREFIX + '_SETTINGS'));
+            SettingsService.setState(state);
+
+            UIRenderer.renderHeader();
+            UIRenderer.renderBody();
+            UIRenderer.renderFooter();
+
+            ActionsService.init();
+            $('#' + UIMap.ids.modal + ':not(:visible)').modal({ backdrop: 'static' });
+        } catch (e) {
+            debug(e);
+        }
+    }
+
+    function init() {
+        try {
+            TradeService.refreshTrades();
+            window.OpenShortCutTraderModal = OpenShortCutTraderModal;
+            addToolsMenuItem(SCRIPT_CONST.NAME, window.OpenShortCutTraderModal);
+        } catch (e) {
+            debug(e);
+        }
+    }
+
+    return {
+        init:      init,
+        openModal: OpenShortCutTraderModal,
+        getUserTrades:        function () { return UserTradesReader.getUserTrades(); },
+        getCountActiveTrades: function () { return UserTradesReader.getCountActiveTrades(); },
+        isTradesReady:        function () { return UserTradesReader.isReady(); }
+    };
 })();
 
 ShortcutTrader.init();
