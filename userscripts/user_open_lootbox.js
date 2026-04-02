@@ -1,9 +1,8 @@
-//MADE BY MadFx (glebsky)
-
 var ChestOpener = (function () {
     var SCRIPT_CONST = {
         PREFIX: 'CO',
-        OPEN_DELAY: 1500,
+        OPEN_DELAY: 1000,
+        FINISH_DELAY: 5000,
         LOOTTABLE_PREFIX: 'Loottable'
     };
 
@@ -51,7 +50,7 @@ var ChestOpener = (function () {
          *   displayName: String,   — localized name
          *   icon:        String,   — same as defName, used for getImageTag()
          *   totalCount:  Number,   — buff.GetAmount()
-         *   buff:        cBuff     — single instance; call buff.GetUniqueId() each open
+         *   buffs:       Array of cBuff     — single instance; call buff.GetUniqueId() each open
          * }
          */
         function getChestGroups() {
@@ -70,7 +69,7 @@ var ChestOpener = (function () {
                         displayName: getLocalizedName(defName),
                         icon:        defName,
                         totalCount:  0,
-                        buffs:       [] // лучше хранить все, а не один
+                        buffs:       []
                     };
                 }
                 groups[defName].totalCount += buff.GetAmount();
@@ -189,7 +188,7 @@ var ChestOpener = (function () {
             if (!groups.length) {
                 $list.html(
                     '<p style="text-align:center;padding:30px;color:#b8860b;font-size:15px;">' +
-                    'No lootable chests found in Star Menu</p>'
+                    loca.GetText('LAB','CannotAffordSendTrade')  + '</p>'
                 );
                 return;
             }
@@ -227,18 +226,12 @@ var ChestOpener = (function () {
                     textAlign:    'center'
                 });
 
-                var $openBtn = $('<button>', {
-                    'class':        'btn btn-sm ' + UIMap.classes.openOneBtn,
-                    'data-defname': group.defName
-                }).html('Open').css({
-                    background:   'linear-gradient(135deg,#b8860b,#daa520)',
-                    border:       'none',
-                    color:        '#1a0f00',
-                    fontWeight:   '700',
-                    fontSize:     '12px',
-                    borderRadius: '5px',
-                    cursor:       'pointer'
-                });
+                var $openBtn = $('<div>', {
+                    'class':        'btn ' + UIMap.classes.openOneBtn,
+                    'data-defname': group.defName,
+                    css: {cursor: 'pointer', display: 'inline-block',margin: '0 10px'},
+                    html: getImageTag('AchievementTriggerCheckboxCheckedIcon', '25px')
+                })
 
                 var $row = $('<tr>')
                     .addClass(UIMap.classes.chestRow)
@@ -297,7 +290,7 @@ var ChestOpener = (function () {
                 setTimeout(function () {
                     $('.' + UIMap.classes.progressBar + '_row[data-defname="' + defName + '"]').hide();
                     renderList();
-                }, SCRIPT_CONST.OPEN_DELAY + 5000);
+                }, SCRIPT_CONST.OPEN_DELAY + SCRIPT_CONST.FINISH_DELAY);
             }
         }
 
@@ -347,7 +340,7 @@ var ChestOpener = (function () {
             var count   = parseInt($inp.val(), 10) || 0;
 
             if (count <= 0) {
-                game.showAlert('Set amount > 0 to open chests.');
+                game.showAlert(loca.GetText('LAB','PleaseSelect'));
                 return;
             }
 
@@ -383,7 +376,7 @@ var ChestOpener = (function () {
                 })(group, count);
             }
 
-            if (!any) game.showAlert('Set at least one chest amount > 0.');
+            if (!any) game.showAlert(loca.GetText('LAB','PleaseSelect'));
         }
 
         function handleReset() {
@@ -395,11 +388,6 @@ var ChestOpener = (function () {
         function disableOpenButtons() {
             var selector = '.' + UIMap.classes.openOneBtn + ', #' + UIMap.ids.openAllBtn;
             $(selector).prop('disabled', true).css('opacity', 0.5);
-        }
-
-        function enableOpenButtons() {
-            var selector = '.' + UIMap.classes.openOneBtn + ', #' + UIMap.ids.openAllBtn;
-            $(selector).prop('disabled', false).css('opacity', 1);
         }
 
         return {
@@ -425,7 +413,7 @@ var ChestOpener = (function () {
     function OpenChestOpenerModal() {
         try {
             if (!game.gi.isOnHomzone()) {
-                game.showAlert('You must be on your home zone to open chests.');
+                game.showAlert(getText('not_home'));
                 return;
             }
 
