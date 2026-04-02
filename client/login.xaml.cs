@@ -144,6 +144,91 @@ namespace client
             }));
             return;
         }
+        public void CipMigratedAuth()
+        {
+            try
+            {
+                PostSubmitter post;
+                string res;
+                CookieCollection _cookies = new CookieCollection();
+                if (attepts > 5)
+                {
+                    AddToRich(Servers.getTrans("nomoretry"));
+                    return;
+                }
+                AddToRich(Servers.getTrans("tryauth") + attepts++);
+                post = new PostSubmitter
+                {
+                    Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].uplay.Replace("uplay", "login")),
+                    Type = PostSubmitter.PostTypeEnum.Post
+                };
+                post.useBC = true;
+                post.PostItems.Add("name", username.Trim());
+                post.PostItems.Add("password", password.Trim());
+                res = post.Post(ref _cookies);
+                if (res.Contains("OKAY"))
+                {
+                    AddToRich(Servers.getTrans("authok"));
+                    post = new PostSubmitter
+                    {
+                        Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].main),
+                        Type = PostSubmitter.PostTypeEnum.Post
+                    };
+                    post.PostItems.Add("start", "1");
+                    post.useBC = true;
+                    AddToRich("Get main page");
+                    res = post.Post(ref _cookies);
+                    post = new PostSubmitter
+                    {
+                        Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].play),
+                        Type = PostSubmitter.PostTypeEnum.Get
+                    };
+                    AddToRich(Servers.getTrans("getplay"));
+                    post.useBC = true;
+                    string token = post.Post(ref _cookies);
+                    if (!PrepareFlash(token, token.Contains("thisProgram")))
+                    {
+                        AddToRich(Servers.getTrans("paramserr"));
+                        if (token.StartsWith("https://"))
+                        {
+                            AddToRich("Redirect detected. Maintenance?");
+                        }
+                    }
+                    foreach (Cookie cook in _cookies)
+                    {
+                        if (cook.Name.Contains("SESS"))
+                        {
+                            Session = cook.Value;
+                            break;
+                        }
+                    }
+                    Cookies = _cookies;
+                    return;
+                } else
+                {
+                    if (res.Contains("Captcha incorrect") || res.Contains("Captcha required"))
+                    {
+                        AddToRich(Servers.getTrans("captchaerr"));
+                        return;
+                    }
+                    if (res.Contains("Login failed"))
+                    {
+                        AddToRich(Servers.getTrans("loginerr"));
+                        return;
+                    }
+                    AddToRich(Servers.getTrans("autherr") + Regex.Unescape(res));
+                }
+            }
+            catch (Exception e)
+            {
+                string msg = e.Message;
+                if (Main.debug)
+                    msg += e.StackTrace;
+                AddToRich(Servers.getTrans("autherr") + msg);
+            }
+            return;
+        }
+
         public void CipAuth()
         {
             try
@@ -350,7 +435,14 @@ namespace client
                     FastAuth();
                     return;
                 }
-                CipAuth();
+                if (_settings.cipMigrated)
+                {
+                    CipMigratedAuth();
+                }
+                else
+                {
+                    CipAuth();
+                }
             }
             catch (Exception e)
             {
@@ -358,7 +450,6 @@ namespace client
                 if (Main.debug)
                     msg += e.StackTrace;
                 AddToRich(Servers.getTrans("autherr") + msg);
-                MainAuth();
             }
             return;
         }
