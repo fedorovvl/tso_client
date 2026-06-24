@@ -124,5 +124,12 @@
       "longDesc": "Allows add missed translations or change translations of existing items.",
       "author": "SirriS",
       "url": ""
-  }
+  },
+   "user_spec_auto.js": {
+      "name": "Automatic search selection",
+      "shortDesc": "Automatically selects the most relevant search source based on specialist skills.",
+      "longDesc": "Analyzes the specialist's skills and profile, then automatically chooses the most suitable search source.",
+      "author": "MadFx",
+      "url": ""
+   }
 }
