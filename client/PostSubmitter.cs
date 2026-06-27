@@ -7,9 +7,11 @@ using System.Threading;
 using System.Web;
 using System.Security.Authentication;
 using Org.BouncyCastle.Crypto.Tls;
+using Org.BouncyCastle.Utilities;
 using System.Net.Sockets;
 using System.Collections.Generic;
 using Org.BouncyCastle.Security;
+using System.Collections;
 
 namespace client
 {
@@ -135,11 +137,15 @@ namespace client
             string _host = new Uri(url).Host;
             string _path = string.Format("{0}{1}", new Uri(url).AbsolutePath, string.IsNullOrEmpty(postData) || _mType == PostTypeEnum.Post ? "" : "?" + postData);
             string _method = (_mType == PostTypeEnum.Post) ? "POST" : "GET";
+            if (Main.debug)
+            {
+                File.AppendAllText("debug.txt", "bc begin request " + url + "\r\n");
+            }
             using (var client = new TcpClient(_host, 443))
             {
                 var sr = new SecureRandom();
                 var protocol = new TlsClientProtocol(client.GetStream(), sr);
-                protocol.Connect(new MyTlsClient());
+                protocol.Connect(new MyTlsClient(_host));
 
                 using (var stream = protocol.Stream)
                 {
@@ -456,13 +462,44 @@ namespace client
     }
     class MyTlsClient : DefaultTlsClient
     {
+        private readonly string _hostname;
+        public MyTlsClient(string hostname) : base()
+        {
+            _hostname = hostname;
+        }
         public override TlsAuthentication GetAuthentication()
         {
             return new MyTlsAuthentication();
         }
-        //public override int[] GetCipherSuites() => new[] { CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 };
         public override void NotifySecureRenegotiation(bool secureRenegotiation) { }
 
+        public override ProtocolVersion ClientVersion
+        {
+            get { return ProtocolVersion.TLSv12; }
+        }
+        public override IDictionary GetClientExtensions()
+        {
+            IDictionary extensions = base.GetClientExtensions();
+            if (extensions == null)
+            {
+                extensions = new Hashtable();
+            }
+
+            if (!string.IsNullOrEmpty(_hostname))
+            {
+                ServerName serverName = new ServerName(0, _hostname);
+                ServerNameList serverNameList = new ServerNameList(new[] { serverName });
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    serverNameList.Encode(ms);
+                    byte[] extensionData = ms.ToArray();
+                    extensions[ExtensionType.server_name] = extensionData;
+                }
+            }
+
+            return extensions;
+        }
     }
     class MyTlsAuthentication : TlsAuthentication
     {
