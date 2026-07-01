@@ -131,5 +131,12 @@
       "longDesc": "Provides automated opening of loot boxes, including mysterious and gift chests, with optimized timing and minimal user interaction.",
       "author": "MadFx",
       "url": ""
+   },
+   "user_spec_auto.js": {
+      "name": "Automatic search selection",
+      "shortDesc": "Automatically selects the most relevant search source based on specialist skills.",
+      "longDesc": "Analyzes the specialist's skills and profile, then automatically chooses the most suitable search source.",
+      "author": "MadFx",
+      "url": ""
    }
 }
