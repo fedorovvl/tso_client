@@ -138,5 +138,12 @@
       "longDesc": "Analyzes the specialist's skills and profile, then automatically chooses the most suitable search source.",
       "author": "MadFx",
       "url": ""
+   },
+   "user_showmyloot_pro.js": {
+      "name": "Show My Loot PRO",
+      "shortDesc": "Advanced loot history and statistics",
+      "longDesc": "Tracks normal and premium loot, stores loot history, provides summaries, sorting, filtering, item categories, Polish and English interface, missing translation reports and JSON export.",
+      "author": "T_O_M_A_S_Z",
+      "url": ""
    }
 }
