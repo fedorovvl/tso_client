@@ -71,7 +71,9 @@ var Menu = function(type){
 						{ label: loca.GetText("BUI", "GiftChristmasTree"), name: "GiftChristmasTree", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "FlyingHouse"), name: "FlyingHouse", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "BalloonMarket_mini"), name: "BalloonMarket_mini", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "GiftGhostShip"), name: "GiftGhostShip", onSelect: buiFastAccessMenuHandler }
+						{ label: loca.GetText("BUI", "GiftGhostShip"), name: "GiftGhostShip", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Depositorium"), name: "Depositorium", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Offshorelighthouse"), name: "Offshorelighthouse", onSelect: buiFastAccessMenuHandler }
 					]},
 					{ label: loca.GetText("LAB", "AdventureLevelSuperHigh"), mnemonicIndex: 0, items: [
 						{ label: loca.GetText("BUI", "Observatory"), name: "Observatory", onSelect: buiFastAccessMenuHandler },
@@ -113,7 +115,9 @@ var Menu = function(type){
 						{ label: loca.GetText("BUI", "BlackTree_Green"), name: "BlackTree_Green", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "BlackTree_Purple"), name: "BlackTree_Purple", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "BlackTree_Red"), name: "BlackTree_Red", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "CrystalShardPit"), name: "CrystalShardPit", onSelect: buiFastAccessMenuHandler }
+						{ label: loca.GetText("BUI", "CrystalShardPit"), name: "CrystalShardPit", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Prospector"), name: "Prospector", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Jewelcrafter"), name: "Jewelcrafter", onSelect: buiFastAccessMenuHandler }
 					]}
 				]}
 			]},
