@@ -29,7 +29,7 @@ namespace client
         private clientSettings _settings = new clientSettings();
         public static bool debug = false;
         public static string setting_file = "settings.dat";
-        public static string tso_folder = "tso_portable";
+        public static string tso_folder = "tso_portable2";
         public static string lang = string.Empty;
         public static int http_timeout = 300000;
         public static string totpkey = string.Empty;
@@ -162,7 +162,7 @@ namespace client
             AutoUpdater.InstalledVersion = new Version(appversion);
             AutoUpdater.ShowSkipButton = true;
             AutoUpdater.OpenDownloadPage = true;
-            AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
+            AutoUpdater.Start("https://raw.githubusercontent.com/pkozak2/tso_client/master/changelog.xml");
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
@@ -247,7 +247,7 @@ namespace client
                 {
                     post = new PostSubmitter
                     {
-                        Url = "https://raw.githubusercontent.com/fedorovvl/tso_client/master/upstream.json",
+                        Url = "https://raw.githubusercontent.com/pkozak2/tso_client/master/upstream.json",
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string upstream_json = post.Post(ref _cookies).Trim();
@@ -264,7 +264,7 @@ namespace client
                 {
                     post = new PostSubmitter
                     {
-                        Url = "https://api.github.com/repos/fedorovvl/tso_client/contents/" + swf_filename,
+                        Url = "https://api.github.com/repos/pkozak2/tso_client/contents/" + swf_filename,
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string rchksum = post.Post(ref _cookies).Trim();
@@ -278,7 +278,7 @@ namespace client
                 if (needDownload)
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
-                    byte[] client = DownloadFile("https://raw.githubusercontent.com/fedorovvl/tso_client/master/" + swf_filename);
+                    byte[] client = DownloadFile("https://raw.githubusercontent.com/pkozak2/tso_client/master/" + swf_filename);
                     File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
                 }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -738,7 +738,7 @@ namespace client
         public string clientconfig { get; set; } = string.Empty;
         public string lang { get; set; } = string.Empty;
         public string window { get; set; } = string.Empty;
-        public string tsofolder { get; set; } = "tso_portable";
+        public string tsofolder { get; set; } = "tso_portable2";
         public bool tsoFolderNearLauncher { get; set; } = false;
         public bool x64 { get; set; } = false;
         public bool tryFast { get; set; } = false;
