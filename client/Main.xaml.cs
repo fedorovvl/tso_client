@@ -39,6 +39,12 @@ namespace client
         public static string _region = string.Empty;
         public static VersionInfo winver;
         public static Arguments cmd;
+        // Serializes checkVersion() runs: it's fired from several places
+        // (initial load, region switch, settings save, folder reset) and
+        // concurrent runs would race writing the same client.swf/scripts
+        // files and mutating shared static state (_settings, upstream_data,
+        // _cookies).
+        private static readonly object checkVersionLock = new object();
         private string _langLogin;
         private string _langPass;
         private string _langRun;
@@ -159,6 +165,8 @@ namespace client
 
         public void checkVersion()
         {
+            lock (checkVersionLock)
+            {
             AutoUpdater.InstalledVersion = new Version(appversion);
             AutoUpdater.ShowSkipButton = true;
             AutoUpdater.OpenDownloadPage = true;
@@ -203,7 +211,7 @@ namespace client
                 }
                 catch { }
             }
-            if (cmd["skip"] != null && File.Exists(Path.Combine(ClientDirectory, "client.swf")))
+            if ((cmd["skip"] != null || _settings.skipUpdate) && File.Exists(Path.Combine(ClientDirectory, "client.swf")))
             {
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
                 if (cmd["autologin"] != null)
@@ -305,50 +313,63 @@ namespace client
                 MessageBox.Show(e.Message + e.StackTrace);
             }
             return;
+            }
         }
 
         public byte[] DownloadFile(string remoteFilename)
         {
             int bytesProcessed = 0;
+            int lastReportedPercent = -1;
             Stream remoteStream = null;
             WebResponse response = null;
-            List<byte> resultArray = new List<byte>();
-            try
+            using (MemoryStream resultStream = new MemoryStream())
             {
-                WebRequest request = WebRequest.Create(remoteFilename);
-                request.Method = "GET";
-                if (request != null)
+                try
                 {
-                    response = request.GetResponse();
-                    if (response != null)
+                    WebRequest request = WebRequest.Create(remoteFilename);
+                    request.Method = "GET";
+                    if (request != null)
                     {
-                        remoteStream = response.GetResponseStream();
-                        byte[] buffer = new byte[4096];
-                        long bytesTotal = response.ContentLength;
-                        int bytesRead;
-                        do
+                        response = request.GetResponse();
+                        if (response != null)
                         {
-                            bytesRead = remoteStream.Read(buffer, 0, buffer.Length);
-                            byte[] Buf = new byte[bytesRead];
-                            Buffer.BlockCopy(buffer, 0, Buf, 0, bytesRead);
-                            resultArray.AddRange(Buf);
-                            bytesProcessed += bytesRead;
-                            Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = string.Format(Servers.getTrans("downloading") + " {0}%", (100 * bytesProcessed / bytesTotal).ToString()); }));
-                        } while (bytesRead > 0);
+                            remoteStream = response.GetResponseStream();
+                            byte[] buffer = new byte[4096];
+                            long bytesTotal = response.ContentLength;
+                            int bytesRead;
+                            do
+                            {
+                                bytesRead = remoteStream.Read(buffer, 0, buffer.Length);
+                                if (bytesRead > 0)
+                                {
+                                    resultStream.Write(buffer, 0, bytesRead);
+                                    bytesProcessed += bytesRead;
+                                }
+                                // Only touch the UI when the displayed percentage actually
+                                // changes, instead of once per 4KB chunk (thousands of
+                                // Dispatcher.BeginInvoke calls for a multi-MB file).
+                                int percent = bytesTotal > 0 ? (int)(100 * bytesProcessed / bytesTotal) : 0;
+                                if (percent != lastReportedPercent)
+                                {
+                                    lastReportedPercent = percent;
+                                    Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = string.Format(Servers.getTrans("downloading") + " {0}%", percent); }));
+                                }
+                            } while (bytesRead > 0);
+                        }
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-            finally
-            {
-                if (response != null) response.Close();
-                if (remoteStream != null) remoteStream.Close();
-            }
+                catch (Exception e)
+                {
+                    throw new Exception(e.Message);
+                }
+                finally
+                {
+                    if (response != null) response.Close();
+                    if (remoteStream != null) remoteStream.Close();
+                }
 
-            return resultArray.ToArray();
+                return resultStream.ToArray();
+            }
         }
 
         public void ReadSettings()
@@ -365,7 +386,10 @@ namespace client
                 {
                     try
                     {
-                        //convert
+                        //convert legacy plaintext pipe-delimited settings file.
+                        //ProtectedData.Unprotect above throws before assigning `settings`
+                        //for this old format, so re-read the file as plain text here.
+                        settings = File.ReadAllText(setting_file);
                         string[] settings_convert = settings.Split(new[] { '|' }, StringSplitOptions.None);
                         _settings = new clientSettings()
                         {
@@ -382,7 +406,15 @@ namespace client
                     }
                     catch
                     {
-                        File.Move(setting_file, string.Format("bad_{0}", setting_file));
+                        _settings = new clientSettings();
+                        try
+                        {
+                            string badFile = string.Format("bad_{0}", setting_file);
+                            if (File.Exists(badFile))
+                                File.Delete(badFile);
+                            File.Move(setting_file, badFile);
+                        }
+                        catch { }
                     }
                 }
             }
@@ -568,7 +600,7 @@ namespace client
                     tsoUrl.Set("lang", Servers._langs[(region_list.Items[_settings.region] as ComboBoxItem).Tag.ToString()]);
             }
             catch { }
-            if (!string.IsNullOrEmpty(_settings.lang))
+            if (!string.IsNullOrEmpty(_settings.lang) && Servers._langs.ContainsKey(_settings.lang))
                 tsoUrl.Set("lang", Servers._langs[_settings.lang]);
             if (!string.IsNullOrEmpty(lang))
                 tsoUrl.Set("lang", lang);
@@ -744,6 +776,7 @@ namespace client
         public bool tryFast { get; set; } = false;
         public bool useCache { get; set; } = false;
         public bool cipMigrated { get; set; } = false;
+        public bool skipUpdate { get; set; } = false;
         public bool configNickname { get; set; } = false;
         public string username { get; set; } = string.Empty;
         public long accountId { get; set; } = 0;

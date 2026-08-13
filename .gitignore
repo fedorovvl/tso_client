@@ -5,3 +5,5 @@
 packages
 client/bin
 client/obj
+settings.dat
+bad_settings.dat
