@@ -206,6 +206,42 @@ namespace client
             return bestOwner;
         }
 
+        // changelog.xml drives AutoUpdater's own self-update prompt, so unlike
+        // client.swf/upstream.json it can't just go with whichever repo's file
+        // was committed most recently -- a fork can maintain its own version
+        // sequence independent of upstream's, and "most recently touched" says
+        // nothing about which one is actually newer. Compare the <version>
+        // each repo's changelog.xml actually declares instead, so this keeps
+        // working correctly regardless of which repo a given build belongs to.
+        private string GetNewestChangelogOwner()
+        {
+            string bestOwner = repoOwners[0];
+            Version bestVersion = null;
+            foreach (var owner in repoOwners)
+            {
+                try
+                {
+                    var post = new PostSubmitter
+                    {
+                        Url = string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/changelog.xml", owner),
+                        Type = PostSubmitter.PostTypeEnum.Get
+                    };
+                    string xml = post.Post(ref _cookies);
+                    XmlDocument doc = new XmlDocument();
+                    doc.LoadXml(xml);
+                    XmlNode versionNode = doc.SelectSingleNode("//version");
+                    Version version = new Version(versionNode.InnerText.Trim());
+                    if (bestVersion == null || version > bestVersion)
+                    {
+                        bestVersion = version;
+                        bestOwner = owner;
+                    }
+                }
+                catch { }
+            }
+            return bestOwner;
+        }
+
         public void checkVersion()
         {
             lock (checkVersionLock)
@@ -213,7 +249,7 @@ namespace client
             AutoUpdater.InstalledVersion = new Version(appversion);
             AutoUpdater.ShowSkipButton = true;
             AutoUpdater.OpenDownloadPage = true;
-            string changelogOwner = GetNewestRepoOwner("changelog.xml");
+            string changelogOwner = GetNewestChangelogOwner();
             AutoUpdater.Start(string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/changelog.xml", changelogOwner));
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
