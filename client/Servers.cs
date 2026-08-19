@@ -98,7 +98,9 @@ namespace client
                 { "langAuthDropbox", "Авторизация Dropbox" },
                 { "langTryFast", "Пробовать быструю авторизацию" },
                 { "langUseCache", "Использовать локальный кеш" },
-                { "langMigrated", "Аккаунт перенесен в CipSoft" }
+                { "langMigrated", "Аккаунт перенесен в CipSoft" },
+                { "langSkipUpdate", "Пропускать проверку обновления клиента" },
+                { "checkMigratedHint", "Аккаунт перенесен в CipSoft? Не забудьте отметить эту опцию в настройках." }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -107,6 +109,8 @@ namespace client
                 { "letsplay", "lets play" },
                 { "checking", "Checking client" },
                 { "downloading", "Downloading.." },
+                { "newswfconfirmtitle", "Update available" },
+                { "newswfconfirm", "Your local client.swf is different from the one on GitHub.\nYour local version is dated: {0}\nGitHub's version is dated: {1}\nDo you still want to download and replace it?" },
                 { "emptypass", "Empty password." },
                 { "emptylogin", "Empty login." },
                 { "collect", "Highlight" },
@@ -148,6 +152,8 @@ namespace client
                 { "langTryFast", "Try fastlogin first" },
                 { "langUseCache", "Use local cache" },
                 { "langMigrated", "Account migrated to CipSoft" },
+                { "langSkipUpdate", "Skip client update check" },
+                { "checkMigratedHint", "Have you migrated your account to CipSoft? Remember to check that option in settings." },
                 { "langImport", "Import" },
                 { "langExport", "Export" },
              }
@@ -245,6 +251,8 @@ namespace client
                 { "langTryFast", "Spróbuj najpierw szybkiego logowania" },
                 { "langUseCache", "Użyj lokalnego cache" },
                 { "langMigrated", "Konto przeniesione do CipSoft" },
+                { "langSkipUpdate", "Pomiń sprawdzanie aktualizacji klienta" },
+                { "checkMigratedHint", "Czy przeniosłeś konto do CipSoft? Pamiętaj, aby zaznaczyć tę opcję w ustawieniach." },
                 { "langImport", "Importuj" },
                 { "langExport", "Exportuj" }
              }
