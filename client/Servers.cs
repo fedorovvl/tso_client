@@ -109,6 +109,8 @@ namespace client
                 { "letsplay", "lets play" },
                 { "checking", "Checking client" },
                 { "downloading", "Downloading.." },
+                { "newswfconfirmtitle", "Update available" },
+                { "newswfconfirm", "Your local client.swf is different from the one on GitHub.\nYour local version is dated: {0}\nGitHub's version is dated: {1}\nDo you still want to download and replace it?" },
                 { "emptypass", "Empty password." },
                 { "emptylogin", "Empty login." },
                 { "collect", "Highlight" },

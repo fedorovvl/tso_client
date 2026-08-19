@@ -170,6 +170,12 @@ namespace client
         // (or vice versa) and the freshest one is always used.
         private string GetNewestRepoOwner(string path)
         {
+            DateTime unused;
+            return GetNewestRepoOwner(path, out unused);
+        }
+
+        private string GetNewestRepoOwner(string path, out DateTime newestDate)
+        {
             string bestOwner = repoOwners[0];
             DateTime bestDate = DateTime.MinValue;
             var json = new JavaScriptSerializer();
@@ -196,6 +202,7 @@ namespace client
                 }
                 catch { }
             }
+            newestDate = bestDate;
             return bestOwner;
         }
 
@@ -306,7 +313,8 @@ namespace client
                 bool upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
                 string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
-                string swfOwner = GetNewestRepoOwner(swf_filename);
+                DateTime swfRemoteDate;
+                string swfOwner = GetNewestRepoOwner(swf_filename, out swfRemoteDate);
                 if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
@@ -324,9 +332,33 @@ namespace client
                 }
                 if (needDownload)
                 {
-                    Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
-                    byte[] client = DownloadFile(string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/{1}", swfOwner, swf_filename));
-                    File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
+                    // Only prompt when the local client.swf is actually newer than
+                    // GitHub's -- that's the one case where auto-downloading could
+                    // silently overwrite something more recent than what's published.
+                    // If GitHub is newer (the normal case) or dates can't be
+                    // determined, just download like before, no prompt.
+                    bool hasLocalFile = !string.IsNullOrEmpty(chksum);
+                    bool confirmedDownload = true;
+                    if (hasLocalFile)
+                    {
+                        DateTime localDate = File.GetLastWriteTime(System.IO.Path.Combine(ClientDirectory, "client.swf"));
+                        bool haveRemoteDate = swfRemoteDate != DateTime.MinValue;
+                        bool localIsNewer = haveRemoteDate && localDate > swfRemoteDate.ToLocalTime();
+                        if (localIsNewer)
+                        {
+                            confirmedDownload = MessageBox.Show(
+                                string.Format(Servers.getTrans("newswfconfirm"), localDate.ToString("g"), swfRemoteDate.ToLocalTime().ToString("g")),
+                                Servers.getTrans("newswfconfirmtitle"),
+                                System.Windows.MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning) == MessageBoxResult.Yes;
+                        }
+                    }
+                    if (confirmedDownload)
+                    {
+                        Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
+                        byte[] client = DownloadFile(string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/{1}", swfOwner, swf_filename));
+                        File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
+                    }
                 }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
                 if (cmd["autologin"] != null)
