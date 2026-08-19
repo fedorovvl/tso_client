@@ -163,6 +163,42 @@ namespace client
             }
         }
 
+        private static readonly string[] repoOwners = { "fedorovvl", "skelgaard" };
+
+        // Checks which of repoOwners last touched `path` (via the commits API)
+        // and returns that owner, so a fork can carry newer fixes than upstream
+        // (or vice versa) and the freshest one is always used.
+        private string GetNewestRepoOwner(string path)
+        {
+            string bestOwner = repoOwners[0];
+            DateTime bestDate = DateTime.MinValue;
+            var json = new JavaScriptSerializer();
+            foreach (var owner in repoOwners)
+            {
+                try
+                {
+                    var post = new PostSubmitter
+                    {
+                        Url = string.Format("https://api.github.com/repos/{0}/tso_client/commits?path={1}&per_page=1", owner, path),
+                        Type = PostSubmitter.PostTypeEnum.Get
+                    };
+                    string result = post.Post(ref _cookies);
+                    gitCommitInfo[] commits = json.Deserialize<gitCommitInfo[]>(result);
+                    if (commits != null && commits.Length > 0 && commits[0].commit != null && commits[0].commit.committer != null)
+                    {
+                        DateTime date = DateTime.Parse(commits[0].commit.committer.date, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                        if (date > bestDate)
+                        {
+                            bestDate = date;
+                            bestOwner = owner;
+                        }
+                    }
+                }
+                catch { }
+            }
+            return bestOwner;
+        }
+
         public void checkVersion()
         {
             lock (checkVersionLock)
@@ -170,7 +206,8 @@ namespace client
             AutoUpdater.InstalledVersion = new Version(appversion);
             AutoUpdater.ShowSkipButton = true;
             AutoUpdater.OpenDownloadPage = true;
-            AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
+            string changelogOwner = GetNewestRepoOwner("changelog.xml");
+            AutoUpdater.Start(string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/changelog.xml", changelogOwner));
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
@@ -253,9 +290,10 @@ namespace client
                     needDownload = true;
                 if (upstream_data == null)
                 {
+                    string upstreamOwner = GetNewestRepoOwner("upstream.json");
                     post = new PostSubmitter
                     {
-                        Url = "https://raw.githubusercontent.com/fedorovvl/tso_client/master/upstream.json",
+                        Url = string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/upstream.json", upstreamOwner),
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string upstream_json = post.Post(ref _cookies).Trim();
@@ -268,11 +306,12 @@ namespace client
                 bool upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
                 string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
+                string swfOwner = GetNewestRepoOwner(swf_filename);
                 if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
                     {
-                        Url = "https://api.github.com/repos/fedorovvl/tso_client/contents/" + swf_filename,
+                        Url = string.Format("https://api.github.com/repos/{0}/tso_client/contents/{1}", swfOwner, swf_filename),
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string rchksum = post.Post(ref _cookies).Trim();
@@ -286,7 +325,7 @@ namespace client
                 if (needDownload)
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
-                    byte[] client = DownloadFile("https://raw.githubusercontent.com/fedorovvl/tso_client/master/" + swf_filename);
+                    byte[] client = DownloadFile(string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/{1}", swfOwner, swf_filename));
                     File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
                 }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -760,6 +799,18 @@ namespace client
     {
         public string sha { get; set; }
         public string download_url { get; set; }
+    }
+    public class gitCommitInfo
+    {
+        public gitCommitDetail commit { get; set; }
+    }
+    public class gitCommitDetail
+    {
+        public gitCommitter committer { get; set; }
+    }
+    public class gitCommitter
+    {
+        public string date { get; set; }
     }
 
     public class clientSettings
