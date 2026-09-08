@@ -458,7 +458,7 @@
                 '#WellFieldModal .modal-content { display: flex !important; flex-direction: column !important; height: auto !important; max-height: 100% !important; overflow: hidden !important; }' +
                 '#WellFieldModal .modal-header { flex: 0 0 auto !important; }' +
                 '#WellFieldModal .modal-footer { flex: 0 0 auto !important; }' +
-                '#WellFieldModal .modal-body { flex: 0 1 auto !important; min-height: 0 !important; height: auto !important; overflow-y: auto !important; overflow-x: hidden !important; padding: 4px 15px !important; }' +
+                '#WellFieldModal .modal-body { flex: 0 1 auto !important; min-height: 180px !important; height: auto !important; overflow-y: auto !important; overflow-x: hidden !important; padding: 4px 15px !important; }' +
                 '#WellFieldModal .modal-body > .container-fluid { padding-bottom: 2px !important; }' +
                 '#WellFieldModal .WF_autoModeBox { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; line-height: 1.15 !important; }' +
                 '#WellFieldModal .WF_autoModeBox > * { vertical-align: middle !important; }' +
@@ -608,10 +608,10 @@
             ], false);
 
             var rowHeader = createTableRow([
-                [5, Loca.colName()],
+                [4, '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + Loca.colName() + '</div>'],
                 [2, 'Grid'],
-                [4, '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + Loca.colRebuild() + '</div>'],
-                [1, '<div style="text-align:right;">' + Loca.colVisit() + '</div>']
+                [4, '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + Loca.colRebuild() + '">' + Loca.colRebuild() + '</div>'],
+                [2, '<div style="text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + Loca.colVisit() + '">' + Loca.colVisit() + '</div>']
             ], true);
 
             $('#WellFieldModal .modal-header .WF_headerContent').remove();
@@ -645,22 +645,27 @@
             var visible = this.getVisibleItems();
 
             var html = '<div class="container-fluid" style="overflow-x:hidden;padding-right:15px;padding-left:15px;height: auto">';
+ 
+            if (visible.length === 0) {
+                html += '<div style="text-align:center;color:#999;padding:65px 0;font-size:13px;">' +
+                    getText('NoData') + '</div>';
+            } else {
+                visible.forEach(function (item) {
+                    var iconImg = getImageTag(item.icon, '20px', '20px');
+                    var isChecked = State.selectedGrids.indexOf(item.grid) !== -1 ? ' checked' : '';
+                    var checkbox = '<input type="checkbox" class="WF_gridCheckbox" id="WF_cb_' + item.grid + '" data-grid="' + item.grid + '"' + isChecked + ' />';
+                    var gotoBtn = getImageTag('accuracy.png', '20px', '20px')
+                        .replace('<img', '<img class="WF_gotoGrid" data-grid="' + item.grid + '"')
+                        .replace('style="', 'style="cursor: pointer;');
 
-            visible.forEach(function (item) {
-                var iconImg = getImageTag(item.icon, '20px', '20px');
-                var isChecked = State.selectedGrids.indexOf(item.grid) !== -1 ? ' checked' : '';
-                var checkbox = '<input type="checkbox" class="WF_gridCheckbox" id="WF_cb_' + item.grid + '" data-grid="' + item.grid + '"' + isChecked + ' />';
-                var gotoBtn = getImageTag('accuracy.png', '20px', '20px')
-                    .replace('<img', '<img class="WF_gotoGrid" data-grid="' + item.grid + '"')
-                    .replace('style="', 'style="cursor: pointer;');
-
-                html += createTableRow([
-                    [5, iconImg + ' ' + item.locName],
-                    [2, item.grid],
-                    [4, checkbox],
-                    [1, '<div style="text-align: right;">' + gotoBtn + '</div>']
-                ], false);
-            });
+                    html += createTableRow([
+                        [4, '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + iconImg + ' ' + item.locName + '</div>'],
+                        [2, item.grid],
+                        [4, checkbox],
+                        [2, '<div style="text-align: right;">' + gotoBtn + '</div>']
+                    ], false);
+                });
+            }
 
             html += '</div>';
             $('#WellFieldModalData').html(html);
@@ -843,8 +848,13 @@
 
             var header = $modal.find('.modal-header').outerHeight(true) || 0;
             var footer = $modal.find('.modal-footer').outerHeight(true) || 0;
-            var bodyMax = Math.max(60, available - header - footer - 12);
+            var bodyMin = Math.min(180, Math.max(60, available - header - footer - 12));
+            var bodyMax = Math.max(bodyMin, available - header - footer - 12);
             var natural = ($body.length && $body[0]) ? $body[0].scrollHeight : 0;
+
+            if ($body.length && $body[0]) {
+                $body[0].style.setProperty('min-height', bodyMin + 'px', 'important');
+            }
 
             $body.css({
                 'max-height': bodyMax + 'px',
