@@ -942,6 +942,7 @@ var ShortcutTrader = (function () {
         }
 
         function refreshTrades() {
+            if (!game.gi.isOnHomzone()) { return; }
             game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MSG.REFRESH_TRADES,     game.gi.mCurrentViewedZoneID, null);
             game.gi.mClientMessages.SendMessagetoServer(SCRIPT_CONST.MSG.REQUEST_TRADE_DATA, game.gi.mCurrentViewedZoneID, null);
         }
