@@ -145,5 +145,12 @@
       "longDesc": "Tracks normal and premium loot, stores loot history, provides summaries, sorting, filtering, item categories, Polish and English interface, missing translation reports and JSON export.",
       "author": "T_O_M_A_S_Z",
       "url": ""
+   },
+   "user_well_field.js": {
+      "name": "Wells & Fields Rebuild",
+      "shortDesc": "Automatic rebuilding of depleted wells and wheat fields.",
+      "longDesc": "Finds depleted wells and wheat fields and automatically rebuilds them. Supports choosing building tiers (Normal, Deep) batch building, queue slot detection, and background auto-building.",
+      "author": "MadFx",
+      "url": ""
    }
 }
