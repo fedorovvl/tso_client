@@ -230,7 +230,9 @@ namespace client
                     if (Main.debug)
                         File.AppendAllText("debug.txt", "bc response data " + string.Join("\r\n", data) + "\r\n");
 
-                    return data[1];
+                    // A header-only response (no "\r\n\r\n" body separator, e.g. an
+                    // empty/truncated reply) leaves `data` with just one element.
+                    return data.Length > 1 ? data[1] : string.Empty;
                 }
             }
         }

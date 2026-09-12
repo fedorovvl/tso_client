@@ -69,8 +69,12 @@ namespace client
 
         void login_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            try { authlogin.Abort(); }
-            catch { }
+            // Note: intentionally NOT calling authlogin.Abort() here.
+            // Thread.Abort() against a thread that's blocked inside a native
+            // network call (HttpWebRequest) can crash the whole process
+            // outright instead of raising a catchable exception. The thread
+            // is IsBackground = true, so it's torn down safely when the app
+            // exits or simply finishes its current request on its own.
             GC.Collect();
         }
 
@@ -94,18 +98,10 @@ namespace client
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            try { authlogin.Abort(); }
-            catch { }
+            // See login_Closing: deliberately not aborting the background
+            // auth thread, since Thread.Abort() can crash the process if it
+            // hits the thread mid-network-call.
             DialogResult = false;
-        }
-        public T Deserialize<T>(string aJSON) where T : new()
-        {
-            T deserializedObj = new T();
-            MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(aJSON));
-            DataContractJsonSerializer ser = new DataContractJsonSerializer(deserializedObj.GetType());
-            deserializedObj = (T)ser.ReadObject(ms);
-            ms.Close();
-            return deserializedObj;
         }
         private void FastAuth()
         {
@@ -279,7 +275,7 @@ namespace client
                     AddToRich(res);
                     return;
                 }
-                UbioAuth oAuthData = Deserialize<UbioAuth>(res);
+                UbioAuth oAuthData = Main.Deserialize<UbioAuth>(res);
                 AddToRich("Get auth token");
                 post = new PostSubmitter
                 {
@@ -304,7 +300,7 @@ namespace client
                     AddToRich(Servers.getTrans("loginerr"));
                     return;
                 }
-                UbiAuth AuthData = Deserialize<UbiAuth>(res);
+                UbiAuth AuthData = Main.Deserialize<UbiAuth>(res);
                 if (AuthData.twoFactorAuthenticationTicket != null)
                 {
                     if (string.IsNullOrEmpty(totpKey))
@@ -331,7 +327,7 @@ namespace client
                     if (res.Contains("token"))
                     {
                         AddToRich(Servers.getTrans("authok"));
-                        AuthData = Deserialize<UbiAuth>(res);
+                        AuthData = Main.Deserialize<UbiAuth>(res);
                     }
                     else
                     {
@@ -414,6 +410,7 @@ namespace client
                     if (res.StartsWith("https://"))
                     {
                         AddToRich("Redirect detected. Maintenance?");
+                        AddToRich(Servers.getTrans("checkMigratedHint"));
                     }
                 }
             }

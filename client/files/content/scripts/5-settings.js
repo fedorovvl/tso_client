@@ -226,10 +226,16 @@ function mainSettingsHandler(event)
 	html += utils.createTableRow([[9, getText('sound_desc')], [3, createSwitch('sound', notifySettings.sound)]]);
 	html += utils.createTableRow([[9, getText("compact_desc")], [3, createSwitch('compact', notifySettings.compact)]]);
 	html += utils.createTableRow([[3, ''],[6, createButton('testnotify', getText("notifitest_desc"))],[3, '']]);
+	html += utils.createTableRow([[9, getText('newsexplorerstarted_desc')], [3, createSwitch('newsExplorerStarted', notifySettings.newsExplorerStarted)]]);
+	html += utils.createTableRow([[9, getText('newsgeologiststarted_desc')], [3, createSwitch('newsGeologistStarted', notifySettings.newsGeologistStarted)]]);
+	html += utils.createTableRow([[9, getText('newsstorehouseadded_desc')], [3, createSwitch('newsStorehouseAdded', notifySettings.newsStorehouseAdded)]]);
 	html += utils.createTableRow([[9, getText('newschattrigger_desc')], [3, createSwitch('news', notifySettings.news)]]);
 	html += utils.createTableRow([[9, getText('customwordsnewschannel_desc')], [3, createSwitch('newsCustom', notifySettings.newsCustom)]]);
 	html += utils.createTableRow([[9, getText('groupchatmentiontrigger_desc')], [3, createSwitch('mentionGroup', notifySettings.mentionGroup)]]);
 	html += utils.createTableRow([[3, getText('customwordstrigger_desc')], [9, '<input type="text" value="'+notifySettings.mentionWords.join(",")+'" id="mentionWords" class="form-control">']]);
+	html += utils.createTableRow([[9, getText('explorerdonetrigger_desc')], [3, createSwitch('explorerDone', notifySettings.explorerDone)]]);
+	html += utils.createTableRow([[9, getText('geologistdonetrigger_desc')], [3, createSwitch('geologistDone', notifySettings.geologistDone)]]);
+	html += utils.createTableRow([[9, getText('generaldonetrigger_desc')], [3, createSwitch('generalDone', notifySettings.generalDone)]]);
 	tabcontent.append($('<div>', { 'class': 'tab-pane fade', 'id': 'menunotify' }).append(html+'</div>'));
 	var html = '<div class="container-fluid" style="user-select: all;">';
 	html += utils.createTableRow([[6, loca.GetText("LAB", "Name")], [6, loca.GetText("LAB", "AvatarCurrentSelection")]], true);
@@ -387,7 +393,13 @@ function mainSettingsHandler(event)
 	w.withBody('#sound').change(function(e) { notifySettings.sound = $(e.target).is(':checked'); });
 	w.withBody('#news').change(function(e) { notifySettings.news = $(e.target).is(':checked'); });
 	w.withBody('#newsCustom').change(function(e) { notifySettings.newsCustom = $(e.target).is(':checked'); });
+	w.withBody('#newsExplorerStarted').change(function(e) { notifySettings.newsExplorerStarted = $(e.target).is(':checked'); });
+	w.withBody('#newsGeologistStarted').change(function(e) { notifySettings.newsGeologistStarted = $(e.target).is(':checked'); });
+	w.withBody('#newsStorehouseAdded').change(function(e) { notifySettings.newsStorehouseAdded = $(e.target).is(':checked'); });
 	w.withBody('#mentionGroup').change(function(e) { notifySettings.mentionGroup = $(e.target).is(':checked'); });
+	w.withBody('#explorerDone').change(function(e) { notifySettings.explorerDone = $(e.target).is(':checked'); });
+	w.withBody('#geologistDone').change(function(e) { notifySettings.geologistDone = $(e.target).is(':checked'); });
+	w.withBody('#generalDone').change(function(e) { notifySettings.generalDone = $(e.target).is(':checked'); });
 	w.Footer().prepend($("<button>").attr({'class':"btn btn-primary pull-left"}).text(loca.GetText("LAB","Save")).click(function(){
 		$.each(game.def("defines").soundEffects, function(k, v) { mainSettings.effectSounds[k] = v;	});
 		settings.settings["global"] = {};

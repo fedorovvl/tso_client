@@ -42,6 +42,7 @@ namespace client
         public string langTryFast { get { return Servers.getTrans("langTryFast"); } set { } }
         public string langUseCache { get { return Servers.getTrans("langUseCache"); } set { } }
         public string langMigrated { get { return Servers.getTrans("langMigrated"); } set { } }
+        public string langSkipUpdate { get { return Servers.getTrans("langSkipUpdate"); } set { } }
         public string langDropboxAuth { get { return Servers.getTrans("langDropboxAuth"); } set { } }
         public string langImport { get { return Servers.getTrans("langImport"); } set { } }
         public string langExport { get { return Servers.getTrans("langExport"); } set { } }
@@ -58,7 +59,12 @@ namespace client
         }
         private void settings_Loaded(object sender, RoutedEventArgs e)
         {
-            game_lang_list.SelectedIndex = Array.IndexOf(langs, setting.lang);
+            // Array.IndexOf returns -1 for a value that isn't a valid option
+            // (e.g. a hand-edited or imported settings file) -- fall back to
+            // the "Default" entry (index 0) instead of leaving the combo box
+            // unselected, which would crash Button_Click on Save.
+            int langIndex = Array.IndexOf(langs, setting.lang);
+            game_lang_list.SelectedIndex = langIndex >= 0 ? langIndex : 0;
             totpkey.Text = setting.totpkey;
             dropboxKey.Text = setting.dropboxkey;
             dropboxRefresh.Text = setting.dropboxrefresh;
@@ -70,9 +76,11 @@ namespace client
             tryFast.IsChecked = setting.tryFast;
             useCache.IsChecked = setting.useCache;
             cipMigrated.IsChecked = setting.cipMigrated;
+            skipUpdate.IsChecked = setting.skipUpdate;
             if (!string.IsNullOrEmpty(setting.window))
             {
-                window_size.SelectedIndex = Array.IndexOf(winSizes, setting.window);
+                int windowIndex = Array.IndexOf(winSizes, setting.window);
+                window_size.SelectedIndex = windowIndex >= 0 ? windowIndex : 0;
             }
         }
 
@@ -88,7 +96,6 @@ namespace client
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            setting.lang = (game_lang_list.SelectedItem as ComboBoxItem).Tag.ToString();
             setting.totpkey = totpkey.Text.Trim();
             setting.dropboxkey = dropboxKey.Text.Trim();
             setting.dropboxrefresh = dropboxRefresh.Text.Trim();
@@ -98,10 +105,14 @@ namespace client
             setting.useCache = (bool)useCache.IsChecked;
             setting.tsofolder = tsofolder.Text.Trim();
             setting.clientconfig = clientconfig.Text.Trim();
-            setting.window = winSizes[window_size.SelectedIndex];
-            setting.lang = langs[game_lang_list.SelectedIndex];
+            // Defensive clamp: SelectedIndex can only be -1 here if nothing
+            // in the combo box is selected at all, but guard against it
+            // anyway instead of throwing on Save.
+            setting.window = winSizes[Math.Max(0, window_size.SelectedIndex)];
+            setting.lang = langs[Math.Max(0, game_lang_list.SelectedIndex)];
             setting.tsoFolderNearLauncher = (bool)tsoFolderNearLauncher.IsChecked;
             setting.cipMigrated = (bool)cipMigrated.IsChecked;
+            setting.skipUpdate = (bool)skipUpdate.IsChecked;
             this.DialogResult = true;
         }
 

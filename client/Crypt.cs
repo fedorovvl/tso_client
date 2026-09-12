@@ -57,9 +57,9 @@ namespace client
                 tDes.Clear();
                 return UTF8Encoding.UTF8.GetString(resultArray, 0, resultArray.Length);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
     }
