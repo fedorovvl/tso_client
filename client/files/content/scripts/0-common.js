@@ -81,6 +81,7 @@ function reloadScripts(event)
 {
 	menu.clearTools();
 	air.File.applicationDirectory.resolvePath("userscripts").getDirectoryListing().forEach(function(item) {
+		if (item.isDirectory || item.name.match(/\.js$/i) === null) { return; }
 		if(enabledScripts[item.name] || enabledScripts[item.name] == undefined) {
 			$('head').append($("<script>").attr({ "src": "userscripts/" + item.name + "?" + new Date().getTime(), "id": "user", "type": "text/javascript"}));
 		}
