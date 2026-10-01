@@ -122,7 +122,7 @@ var ChestOpener = (function () {
                     (function (buffRef) {
                         queue.add(function () {
                             try {
-                                game.gi.SendServerAction(61, 0, grid, 0, buffRef.GetUniqueId());
+                                game.gi.SendServerAction(61, 0, grid, 1, buffRef.GetUniqueId());
                                 globalFlash.gui.mMysteryBoxPanel.SetData(buffRef);
                             } catch (e) {
                                 debug(e);
