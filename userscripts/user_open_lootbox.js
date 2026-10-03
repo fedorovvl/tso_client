@@ -102,11 +102,6 @@ var ChestOpener = (function () {
 
     var OpenerService = (function () {
 
-        /**
-         * Opens `count` chests.
-         * Re-reads buff.GetUniqueId() on every tick — the game updates it
-         * server-side as the stack decreases.
-         */
         function openChests(group, count, onDone) {
             var queue  = new TimedQueue(SCRIPT_CONST.OPEN_DELAY);
             var opened = 0;
