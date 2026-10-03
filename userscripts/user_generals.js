@@ -362,7 +362,8 @@ try {
 		var massCheckbox = $('<input>', { 'type': 'checkbox', 'class': '_exudSelectAllGeneralsBtn', 'data-toggle': 'tooltip', 'data-placement': 'top', 'title': _exudGeneralsGetLabel('SelectAll') }).prop('outerHTML') + '&nbsp;&nbsp;';
 		if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone) {
 		    out += createTableRow([
-			[7, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[6, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[1, "1-Up Used"],
 			[2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
 			[1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))],
 			[1, _exudGeneralsGetLabel("ColumnOwner")],
@@ -370,7 +371,8 @@ try {
 		    ], true) ;
 		} else {
 		    out += createTableRow([
-			[9, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[8, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[1, "1-Up Used"],
 			[2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
 			[1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))]
 		    ], true) ;
@@ -648,7 +650,8 @@ function _exudMakeGeneralsTable(templateData)
 				if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
 				{
 					out += createTableRow([
-						[7, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
+						[6, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
+						[1, item.OneUpUsed],
 						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
 						[1, (item.TotalArmy>0?item.TotalArmy:'')],
 						[1, (item.Owner ? loca.GetText("LAB", "YES"): IconMap)],
@@ -657,7 +660,8 @@ function _exudMakeGeneralsTable(templateData)
 				}
 				else{
 						out += createTableRow([
-						[9, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name : checkbox],
+						[8, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name : checkbox],
+						[1, item.OneUpUsed],
 						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): IconMap)],
 						[1, (item.TotalArmy>0?item.TotalArmy:'')]
 					]);
@@ -853,6 +857,26 @@ function _exudGetSpecialists()
 	return listS;
 }
 
+// The counter belongs to the currently viewed adventure, not the general globally.
+function _exudGeneralsGetOneUpUsed(item) {
+	try {
+		var gi = swmmo.application.mGameInterface;
+		if (!gi.IsAdventureZone()) {
+			return '<span title="Only applies on an adventure">-</span>';
+		}
+		var modifier = item.GetModifier("CombatModifier", "InstantRecover");
+		if (!modifier || modifier.value <= 0) {
+			return '<span title="No 1-Up revival ability">-</span>';
+		}
+		var activityType = swmmo.getDefinitionByName("Enums::ZONE_SPECIALIST_ACTIVITY_TYPE").ONEUP_SKILL_PROC;
+		var count = gi.mZoneSpecialistActivityTracker.GetActivityCount(
+			gi.mCurrentViewedZoneID, item.getPlayerID(), item.GetUniqueID(), activityType);
+		return count > 0 ? 'Yes' : 'No';
+	} catch (e) {
+		return '<span title="1-Up status unavailable">?</span>';
+	}
+}
+
 function _exudGeneralsGetGeneralStruct(item, playerID) {
 	try {
 		const itemPlayerId = item.getPlayerID(),
@@ -870,6 +894,7 @@ function _exudGeneralsGetGeneralStruct(item, playerID) {
 			"IsGeneral": true,
 			"Name": item.getName(false).replace('<b>', '').replace('</b>',''),
 			"Owner": isOwner,
+			"OneUpUsed": _exudGeneralsGetOneUpUsed(item),
 			"PlayerID": itemPlayerId,
 			"PlayerName": (itemPlayerId > 0 && !isOwner ? swmmo.application.mGameInterface.GetPlayerName_string(itemPlayerId) : null),
 			"Skills": _exudGeneralsGetSkills(item),
