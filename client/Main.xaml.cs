@@ -39,6 +39,12 @@ namespace client
         public static string _region = string.Empty;
         public static VersionInfo winver;
         public static Arguments cmd;
+        // Serializes checkVersion() runs: it's fired from several places
+        // (initial load, region switch, settings save, folder reset) and
+        // concurrent runs would race writing the same client.swf/scripts
+        // files and mutating shared static state (_settings, upstream_data,
+        // _cookies).
+        private static readonly object checkVersionLock = new object();
         private string _langLogin;
         private string _langPass;
         private string _langRun;
@@ -157,12 +163,94 @@ namespace client
             }
         }
 
+        private static readonly string[] repoOwners = { "fedorovvl", "skelgaard" };
+
+        // Checks which of repoOwners last touched `path` (via the commits API)
+        // and returns that owner, so a fork can carry newer fixes than upstream
+        // (or vice versa) and the freshest one is always used.
+        private string GetNewestRepoOwner(string path)
+        {
+            DateTime unused;
+            return GetNewestRepoOwner(path, out unused);
+        }
+
+        private string GetNewestRepoOwner(string path, out DateTime newestDate)
+        {
+            string bestOwner = repoOwners[0];
+            DateTime bestDate = DateTime.MinValue;
+            var json = new JavaScriptSerializer();
+            foreach (var owner in repoOwners)
+            {
+                try
+                {
+                    var post = new PostSubmitter
+                    {
+                        Url = string.Format("https://api.github.com/repos/{0}/tso_client/commits?path={1}&per_page=1", owner, path),
+                        Type = PostSubmitter.PostTypeEnum.Get
+                    };
+                    string result = post.Post(ref _cookies);
+                    gitCommitInfo[] commits = json.Deserialize<gitCommitInfo[]>(result);
+                    if (commits != null && commits.Length > 0 && commits[0].commit != null && commits[0].commit.committer != null)
+                    {
+                        DateTime date = DateTime.Parse(commits[0].commit.committer.date, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                        if (date > bestDate)
+                        {
+                            bestDate = date;
+                            bestOwner = owner;
+                        }
+                    }
+                }
+                catch { }
+            }
+            newestDate = bestDate;
+            return bestOwner;
+        }
+
+        // changelog.xml drives AutoUpdater's own self-update prompt, so unlike
+        // client.swf/upstream.json it can't just go with whichever repo's file
+        // was committed most recently -- a fork can maintain its own version
+        // sequence independent of upstream's, and "most recently touched" says
+        // nothing about which one is actually newer. Compare the <version>
+        // each repo's changelog.xml actually declares instead, so this keeps
+        // working correctly regardless of which repo a given build belongs to.
+        private string GetNewestChangelogOwner()
+        {
+            string bestOwner = repoOwners[0];
+            Version bestVersion = null;
+            foreach (var owner in repoOwners)
+            {
+                try
+                {
+                    var post = new PostSubmitter
+                    {
+                        Url = string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/changelog.xml", owner),
+                        Type = PostSubmitter.PostTypeEnum.Get
+                    };
+                    string xml = post.Post(ref _cookies);
+                    XmlDocument doc = new XmlDocument();
+                    doc.LoadXml(xml);
+                    XmlNode versionNode = doc.SelectSingleNode("//version");
+                    Version version = new Version(versionNode.InnerText.Trim());
+                    if (bestVersion == null || version > bestVersion)
+                    {
+                        bestVersion = version;
+                        bestOwner = owner;
+                    }
+                }
+                catch { }
+            }
+            return bestOwner;
+        }
+
         public void checkVersion()
         {
+            lock (checkVersionLock)
+            {
             AutoUpdater.InstalledVersion = new Version(appversion);
             AutoUpdater.ShowSkipButton = true;
             AutoUpdater.OpenDownloadPage = true;
-            AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
+            string changelogOwner = GetNewestChangelogOwner();
+            AutoUpdater.Start(string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/changelog.xml", changelogOwner));
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
@@ -203,7 +291,7 @@ namespace client
                 }
                 catch { }
             }
-            if (cmd["skip"] != null && File.Exists(Path.Combine(ClientDirectory, "client.swf")))
+            if ((cmd["skip"] != null || _settings.skipUpdate) && File.Exists(Path.Combine(ClientDirectory, "client.swf")))
             {
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
                 if (cmd["autologin"] != null)
@@ -245,9 +333,10 @@ namespace client
                     needDownload = true;
                 if (upstream_data == null)
                 {
+                    string upstreamOwner = GetNewestRepoOwner("upstream.json");
                     post = new PostSubmitter
                     {
-                        Url = "https://raw.githubusercontent.com/fedorovvl/tso_client/master/upstream.json",
+                        Url = string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/upstream.json", upstreamOwner),
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string upstream_json = post.Post(ref _cookies).Trim();
@@ -260,11 +349,13 @@ namespace client
                 bool upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
                 string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
+                DateTime swfRemoteDate;
+                string swfOwner = GetNewestRepoOwner(swf_filename, out swfRemoteDate);
                 if (!string.IsNullOrEmpty(chksum))
                 {
                     post = new PostSubmitter
                     {
-                        Url = "https://api.github.com/repos/fedorovvl/tso_client/contents/" + swf_filename,
+                        Url = string.Format("https://api.github.com/repos/{0}/tso_client/contents/{1}", swfOwner, swf_filename),
                         Type = PostSubmitter.PostTypeEnum.Get
                     };
                     string rchksum = post.Post(ref _cookies).Trim();
@@ -277,9 +368,33 @@ namespace client
                 }
                 if (needDownload)
                 {
-                    Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
-                    byte[] client = DownloadFile("https://raw.githubusercontent.com/fedorovvl/tso_client/master/" + swf_filename);
-                    File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
+                    // Only prompt when the local client.swf is actually newer than
+                    // GitHub's -- that's the one case where auto-downloading could
+                    // silently overwrite something more recent than what's published.
+                    // If GitHub is newer (the normal case) or dates can't be
+                    // determined, just download like before, no prompt.
+                    bool hasLocalFile = !string.IsNullOrEmpty(chksum);
+                    bool confirmedDownload = true;
+                    if (hasLocalFile)
+                    {
+                        DateTime localDate = File.GetLastWriteTime(System.IO.Path.Combine(ClientDirectory, "client.swf"));
+                        bool haveRemoteDate = swfRemoteDate != DateTime.MinValue;
+                        bool localIsNewer = haveRemoteDate && localDate > swfRemoteDate.ToLocalTime();
+                        if (localIsNewer)
+                        {
+                            confirmedDownload = MessageBox.Show(
+                                string.Format(Servers.getTrans("newswfconfirm"), localDate.ToString("g"), swfRemoteDate.ToLocalTime().ToString("g")),
+                                Servers.getTrans("newswfconfirmtitle"),
+                                System.Windows.MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning) == MessageBoxResult.Yes;
+                        }
+                    }
+                    if (confirmedDownload)
+                    {
+                        Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
+                        byte[] client = DownloadFile(string.Format("https://raw.githubusercontent.com/{0}/tso_client/master/{1}", swfOwner, swf_filename));
+                        File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
+                    }
                 }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
                 if (cmd["autologin"] != null)
@@ -305,50 +420,63 @@ namespace client
                 MessageBox.Show(e.Message + e.StackTrace);
             }
             return;
+            }
         }
 
         public byte[] DownloadFile(string remoteFilename)
         {
             int bytesProcessed = 0;
+            int lastReportedPercent = -1;
             Stream remoteStream = null;
             WebResponse response = null;
-            List<byte> resultArray = new List<byte>();
-            try
+            using (MemoryStream resultStream = new MemoryStream())
             {
-                WebRequest request = WebRequest.Create(remoteFilename);
-                request.Method = "GET";
-                if (request != null)
+                try
                 {
-                    response = request.GetResponse();
-                    if (response != null)
+                    WebRequest request = WebRequest.Create(remoteFilename);
+                    request.Method = "GET";
+                    if (request != null)
                     {
-                        remoteStream = response.GetResponseStream();
-                        byte[] buffer = new byte[4096];
-                        long bytesTotal = response.ContentLength;
-                        int bytesRead;
-                        do
+                        response = request.GetResponse();
+                        if (response != null)
                         {
-                            bytesRead = remoteStream.Read(buffer, 0, buffer.Length);
-                            byte[] Buf = new byte[bytesRead];
-                            Buffer.BlockCopy(buffer, 0, Buf, 0, bytesRead);
-                            resultArray.AddRange(Buf);
-                            bytesProcessed += bytesRead;
-                            Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = string.Format(Servers.getTrans("downloading") + " {0}%", (100 * bytesProcessed / bytesTotal).ToString()); }));
-                        } while (bytesRead > 0);
+                            remoteStream = response.GetResponseStream();
+                            byte[] buffer = new byte[4096];
+                            long bytesTotal = response.ContentLength;
+                            int bytesRead;
+                            do
+                            {
+                                bytesRead = remoteStream.Read(buffer, 0, buffer.Length);
+                                if (bytesRead > 0)
+                                {
+                                    resultStream.Write(buffer, 0, bytesRead);
+                                    bytesProcessed += bytesRead;
+                                }
+                                // Only touch the UI when the displayed percentage actually
+                                // changes, instead of once per 4KB chunk (thousands of
+                                // Dispatcher.BeginInvoke calls for a multi-MB file).
+                                int percent = bytesTotal > 0 ? (int)(100 * bytesProcessed / bytesTotal) : 0;
+                                if (percent != lastReportedPercent)
+                                {
+                                    lastReportedPercent = percent;
+                                    Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = string.Format(Servers.getTrans("downloading") + " {0}%", percent); }));
+                                }
+                            } while (bytesRead > 0);
+                        }
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-            finally
-            {
-                if (response != null) response.Close();
-                if (remoteStream != null) remoteStream.Close();
-            }
+                catch (Exception e)
+                {
+                    throw new Exception(e.Message);
+                }
+                finally
+                {
+                    if (response != null) response.Close();
+                    if (remoteStream != null) remoteStream.Close();
+                }
 
-            return resultArray.ToArray();
+                return resultStream.ToArray();
+            }
         }
 
         public void ReadSettings()
@@ -365,7 +493,10 @@ namespace client
                 {
                     try
                     {
-                        //convert
+                        //convert legacy plaintext pipe-delimited settings file.
+                        //ProtectedData.Unprotect above throws before assigning `settings`
+                        //for this old format, so re-read the file as plain text here.
+                        settings = File.ReadAllText(setting_file);
                         string[] settings_convert = settings.Split(new[] { '|' }, StringSplitOptions.None);
                         _settings = new clientSettings()
                         {
@@ -382,7 +513,15 @@ namespace client
                     }
                     catch
                     {
-                        File.Move(setting_file, string.Format("bad_{0}", setting_file));
+                        _settings = new clientSettings();
+                        try
+                        {
+                            string badFile = string.Format("bad_{0}", setting_file);
+                            if (File.Exists(badFile))
+                                File.Delete(badFile);
+                            File.Move(setting_file, badFile);
+                        }
+                        catch { }
                     }
                 }
             }
@@ -568,7 +707,7 @@ namespace client
                     tsoUrl.Set("lang", Servers._langs[(region_list.Items[_settings.region] as ComboBoxItem).Tag.ToString()]);
             }
             catch { }
-            if (!string.IsNullOrEmpty(_settings.lang))
+            if (!string.IsNullOrEmpty(_settings.lang) && Servers._langs.ContainsKey(_settings.lang))
                 tsoUrl.Set("lang", Servers._langs[_settings.lang]);
             if (!string.IsNullOrEmpty(lang))
                 tsoUrl.Set("lang", lang);
@@ -729,6 +868,18 @@ namespace client
         public string sha { get; set; }
         public string download_url { get; set; }
     }
+    public class gitCommitInfo
+    {
+        public gitCommitDetail commit { get; set; }
+    }
+    public class gitCommitDetail
+    {
+        public gitCommitter committer { get; set; }
+    }
+    public class gitCommitter
+    {
+        public string date { get; set; }
+    }
 
     public class clientSettings
     {
@@ -744,6 +895,7 @@ namespace client
         public bool tryFast { get; set; } = false;
         public bool useCache { get; set; } = false;
         public bool cipMigrated { get; set; } = false;
+        public bool skipUpdate { get; set; } = false;
         public bool configNickname { get; set; } = false;
         public string username { get; set; } = string.Empty;
         public long accountId { get; set; } = 0;

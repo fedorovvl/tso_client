@@ -30,11 +30,26 @@ namespace client
             // Examples: 
             // -param1 value1 --param2 /param3:"Test-:-work" 
             //   /param4=happy -param5 '--=nice=--'
+            Regex FlagPrefix = new Regex(@"^-{1,2}|^/", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
             foreach (string Txt in Args)
             {
-                // Look for new parameters (-,/ or --) and a
-                // possible enclosed value (=,:)
-                Parts = Spliter.Split(Txt, 3);
+                // Only tokens that actually start with -, -- or / can be a
+                // flag (optionally with an embedded :value/=value). Anything
+                // else is a plain value and must NOT be split on '=' or ':'
+                // found inside it -- otherwise an absolute Windows path like
+                // "C:\Users\..." passed as a parameter's value gets its drive
+                // letter's colon misread as a --param:value separator.
+                if (FlagPrefix.IsMatch(Txt))
+                {
+                    // Look for new parameters (-,/ or --) and a
+                    // possible enclosed value (=,:)
+                    Parts = Spliter.Split(Txt, 3);
+                }
+                else
+                {
+                    Parts = new string[] { Txt };
+                }
 
                 switch (Parts.Length)
                 {
