@@ -251,9 +251,7 @@ namespace client
                     }
                     catch { }
                 }
-                bool upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
-                Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
-                string swf_filename = upstream_swf ? "client-upstream.swf" : _region == "ts" ? "client-testing.swf" : "client.swf";
+                string swf_filename = _region == "ts" ? "client-testing.swf" : "client.swf";
                 if (!string.IsNullOrEmpty(chksum))
                 {
                     chksum = "sha256:" + chksum;
