@@ -1,86 +1,132 @@
+var feedbackApiUrl = "https://tsofeedback.sirris.su/api.php";
+var feedbackPollIntervalId = null;
+
+function feedbackStorageGet() {
+	var data = settings.read(null, "feedback");
+	return data && data.session ? data.session : null;
+}
+
+function feedbackStorageSet(value) {
+	var data = settings.read(null, "feedback") || {};
+	data.session = value;
+	settings.store(data, "feedback");
+}
+
+function feedbackClientId() {
+	var data = settings.read(null, "feedback") || {};
+	var id = data.clientId;
+	if(!id) {
+		id = Date.now().toString(36) + Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+		data.clientId = id;
+		settings.store(data, "feedback");
+	}
+	return id;
+}
+
+function feedbackLabels() {
+	var language = String(gameLang || "en").toLowerCase();
+	if(language.indexOf("ru") == 0) {
+		return { empty: "Ответов пока нет.", you: "Вы", support: "Поддержка", placeholder: "Введите сообщение...", sent: "Сообщение отправлено", error: "Не удалось связаться с сервером" };
+	}
+	return { empty: "No replies yet.", you: "You", support: "Support", placeholder: "Enter your message...", sent: "Message sent", error: "Could not reach the server" };
+}
 
 function feedbackMenuHandler(event)
 {
 	var w = new Modal('feedbackWindow', utils.getImageTag('ValentineAdventureRewardBoostConditional', '45px') + ' ' + getText('feedbacktitle'));
 	w.create();
-	if(w.withFooter('.feedbackSend').length == 0) {
-		w.Footer().prepend([$('<button>').attr({ "class": "btn btn-primary pull-left feedbackSend" }).text(loca.GetText("LAB", "Send"))]);
-		var html = '<div class="container-fluid" style="user-select: all;">';
-		html += '<p>{1}</p><p style="float: right;"><small>{2} (aka SirriS)</small></p>'.format(getText('feedbacktitle'),getText('feedbackdescription'),getText('feedbackregards'));
-		html += '<textarea maxlength=2000 id="feedbackContent" style="width:100%;height:70%;background:none;"/>';
-		w.Body().html(html + '<div>');
-		w.withFooter('.feedbackSend').click(function() {
-			var val = w.withBody('#feedbackContent').val();
-			if(val.length < 5) { return; }
-			feedbackSendMessage(val);
-		});
-	}
+	var labels = feedbackLabels();
+	var html = '<div class="container-fluid"><p>' + getText('feedbackdescription') + '</p>';
+	html += '<div id="feedbackMessages" style="height:260px;overflow-y:auto;border:1px solid #777;padding:8px;margin-bottom:8px;background:rgba(0,0,0,.08);"></div>';
+	html += '<textarea maxlength="2000" id="feedbackContent" placeholder="' + labels.placeholder + '" style="width:100%;height:30px;resize:vertical;background:none;"></textarea>';
+	html += '<div id="feedbackStatus" style="min-height:20px;padding-top:4px;"></div></div>';
+	w.Body().html(html);
+	w.Footer().prepend([$('<button>').attr({ "class": "btn btn-primary pull-left feedbackSend" }).text(loca.GetText("LAB", "Send"))]);
+	w.withFooter('.feedbackSend').click(function() { feedbackSendMessage(w); });
+	$(w.id).on('hidden.bs.modal', function() {
+		if(feedbackPollIntervalId !== null) {
+			clearInterval(feedbackPollIntervalId);
+			feedbackPollIntervalId = null;
+		}
+	});
 	w.show();
-	setTimeout(function() { w.withBody('#feedbackContent').focus() }, 1000);
+	feedbackLoadMessages(w);
+	feedbackPollIntervalId = setInterval(function() { feedbackLoadMessages(w); }, 15000);
+	setTimeout(function() { w.withBody('#feedbackContent').focus(); }, 300);
 }
 
-function feedbackSendMessage(e) {
-    var z = ['aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd', '2ViaG9va3MvMTA4MzQ2NjU5NTU1MDEy', 'MjAyNC9peGhjUEs1aXlMQm1vMXlKSlR', '5R3RwSkxDNnlYZGFVWTFRVUI5VzlVU2tqZ3'],
-        a = {
-            username: "Client",
-            content: "",
-            embeds: [{
-                author: {
-                    name: document.title
-                },
-                title: gameLang,
-                description: "`" + e + "`",
-                color: 15258703
-            }]
-        },
-        t = new(game.def("mx.utils::Base64Decoder"));
-    t.decode(z.join('') + "pBUDNmZVVUME9RTkR5bGJiLWM5WVozVAo="), $.ajax({
-        type: "POST",
-        url: t.toByteArray(),
-        data: JSON.stringify(a),
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(e) {
-            $("#feedbackContent").val(getText('feedbacksended'));
-			$('.feedbackSend').hide();
-        },
-        error: function(e) {
-            $("#feedbackContent").val(getText('feedbackerror') + " " + e)
-        }
-    })
-};
-
-function navigateToURL(url)
-{
-	air.navigateToURL(new air.URLRequest(url));
+function feedbackSetStatus(w, text, isError) {
+	w.withBody('#feedbackStatus').text(text || '').css('color', isError ? '#b00000' : '');
 }
 
-function openWikiHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://github.com/fedorovvl/tso_client/wiki"));
+function feedbackFormatTime(value) {
+	var match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
+	if(!match) return '';
+	var date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6])));
+	function pad(number) { return number < 10 ? '0' + number : String(number); }
+	return pad(date.getDate()) + '.' + pad(date.getMonth() + 1) + '.' + date.getFullYear() + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
 }
 
-function openDiscordFRHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/9G5X7VhA"));
+function feedbackRequest(options) {
+	return $.ajax($.extend({ url: feedbackApiUrl, dataType: 'json', cache: false, timeout: 15000 }, options));
 }
-function openDiscordENHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/jQZnNAXg99"));
+
+function feedbackSendMessage(w) {
+	var content = String(w.withBody('#feedbackContent').val() || '').replace(/^\s+|\s+$/g, '');
+	if(content.length < 2) { return; }
+	var session = feedbackStorageGet();
+	var payload = { action: session ? 'message' : 'create', content: content, clientId: feedbackClientId(), displayName: document.title, language: gameLang };
+	if(session) {
+		payload.ticketId = session.ticketId;
+		payload.token = session.token;
+	}
+	w.withFooter('.feedbackSend').prop('disabled', true);
+	feedbackSetStatus(w, '', false);
+	feedbackRequest({ type: 'POST', data: JSON.stringify(payload), contentType: 'application/json; charset=utf-8' })
+	.done(function(response) {
+		if(response.ticketId && response.token) feedbackStorageSet({ ticketId: response.ticketId, token: response.token });
+		w.withBody('#feedbackContent').val('').focus();
+		feedbackSetStatus(w, feedbackLabels().sent, false);
+		feedbackLoadMessages(w);
+	}).fail(function(xhr) {
+		var detail = xhr.responseJSON && xhr.responseJSON.error ? ': ' + xhr.responseJSON.error : '';
+		feedbackSetStatus(w, feedbackLabels().error + detail, true);
+	}).always(function() { w.withFooter('.feedbackSend').prop('disabled', false); });
 }
-function openDiscordDEHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/rm6kmzhPg2"));
+
+function feedbackLoadMessages(w) {
+	var session = feedbackStorageGet();
+	if(!session || !session.ticketId || !session.token) {
+		w.withBody('#feedbackMessages').html('<div class="text-muted">' + feedbackLabels().empty + '</div>');
+		return;
+	}
+	feedbackRequest({ type: 'GET', data: { action: 'messages', ticketId: session.ticketId, token: session.token } }).done(function(response) {
+		var box = w.withBody('#feedbackMessages');
+		box.empty();
+		var messages = response.messages || [];
+		if(messages.length == 0) {
+			box.html('<div class="text-muted">' + feedbackLabels().empty + '</div>');
+			return;
+		}
+		$.each(messages, function(index, message) {
+			var own = message.sender == 'client';
+			var row = $('<div>').css({ 'margin-bottom': '8px', 'text-align': own ? 'right' : 'left' });
+			var caption = own ? feedbackLabels().you : (message.senderName || feedbackLabels().support);
+			var messageTime = feedbackFormatTime(message.createdAt);
+			if(messageTime) caption += ' · ' + messageTime;
+			$('<div>').css({ 'font-weight': 'bold', 'font-size': '12px' }).text(caption).appendTo(row);
+			$('<div>').css({ 'display': 'inline-block', 'max-width': '85%', 'padding': '6px 9px', 'border-radius': '6px', 'white-space': 'pre-wrap', 'word-break': 'break-word', 'background': own ? '#d9edf7' : '#eee', 'color': '#222', 'text-align': 'left' }).text(message.content).appendTo(row);
+			box.append(row);
+		});
+		box.scrollTop(box[0].scrollHeight);
+	});
 }
-function openDiscordESHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://discord.gg/Gkt2DYtUyn"));
-}
-function openDonateHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://ko-fi.com/sirris"));
-}
-function openDonateTfHandler(event)
-{
-	air.navigateToURL(new air.URLRequest("https://www.tinkoff.ru/cf/7qUyCUSg6ju"));
-}
+
+function navigateToURL(url) { air.navigateToURL(new air.URLRequest(url)); }
+function openWikiHandler(event) { navigateToURL("https://github.com/fedorovvl/tso_client/wiki"); }
+function openDiscordFRHandler(event) { navigateToURL("https://discord.gg/9G5X7VhA"); }
+function openDiscordENHandler(event) { navigateToURL("https://discord.gg/jQZnNAXg99"); }
+function openDiscordDEHandler(event) { navigateToURL("https://discord.gg/rm6kmzhPg2"); }
+function openDiscordESHandler(event) { navigateToURL("https://discord.gg/Gkt2DYtUyn"); }
+function openDonateHandler(event) { navigateToURL("https://ko-fi.com/sirris"); }
+function openDonateTfHandler(event) { navigateToURL("https://www.tinkoff.ru/cf/7qUyCUSg6ju"); }
