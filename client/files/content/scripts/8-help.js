@@ -39,9 +39,9 @@ function feedbackClientId() {
 function feedbackLabels() {
 	var language = String(gameLang || "en").toLowerCase();
 	if(language.indexOf("ru") == 0) {
-		return { empty: "Ответов пока нет.", you: "Вы", support: "Поддержка", placeholder: "Введите сообщение...", sent: "Сообщение отправлено", error: "Не удалось связаться с сервером" };
+		return { empty: "Ответов пока нет.", you: "Вы", support: "Поддержка", placeholder: "Введите сообщение...", sent: "Сообщение отправлено", error: "Не удалось связаться с сервером", newmessage: "Новое сообщение" };
 	}
-	return { empty: "No replies yet.", you: "You", support: "Support", placeholder: "Enter your message...", sent: "Message sent", error: "Could not reach the server" };
+	return { empty: "No replies yet.", you: "You", support: "Support", placeholder: "Enter your message...", sent: "Message sent", error: "Could not reach the server", newmessage: "New message" };
 }
 
 function feedbackMenuHandler(event)
@@ -141,7 +141,7 @@ function feedbackLoadMessages(w) {
 function feedbackNotifySupportMessage(message) {
 	var text = String(message.content || '');
 	if(text.length > 180) text = text.substring(0, 177) + '...';
-	var notificationText = feedbackLabels().support + ': ' + text;
+	var notificationText = feedbackLabels().support + ': ' + feedbackLabels().newmessage;
 	if(!window.nativeWindow.active && typeof notificationShow == 'function' && typeof notifySettings != 'undefined' && notifySettings.enabled) {
 		notificationShow(notificationText);
 	} else {
