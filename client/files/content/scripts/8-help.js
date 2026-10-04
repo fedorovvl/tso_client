@@ -63,7 +63,11 @@ function feedbackMenuHandler(event)
 	w.Body().html(html);
 	w.Footer().prepend([$('<button>').attr({ "class": "btn btn-primary pull-left feedbackSend" }).text(loca.GetText("LAB", "Send"))]);
 	w.withFooter('.feedbackSend').click(function() { feedbackSendMessage(w); });
+	$(w.id).on('shown.bs.modal', function() {
+		window.nativeWindow.stage.removeEventListener("keyDown", stageKeyDownListener);
+	});
 	$(w.id).on('hidden.bs.modal', function() {
+		window.nativeWindow.stage.addEventListener("keyDown", stageKeyDownListener);
 		feedbackWindowOpen = false;
 		if(feedbackPollIntervalId !== null) {
 			clearInterval(feedbackPollIntervalId);
