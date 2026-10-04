@@ -2,6 +2,7 @@ var feedbackApiUrl = "https://tsofeedback.sirris.su/api.php";
 var feedbackPollIntervalId = null;
 var feedbackBackgroundPollIntervalId = null;
 var feedbackWindowOpen = false;
+var feedbackUnreadReminderShown = false;
 
 function feedbackStorageGet() {
 	var data = settings.read(null, "feedback");
@@ -14,15 +15,21 @@ function feedbackStorageSet(value) {
 	settings.store(data, "feedback");
 }
 
-function feedbackRememberLastSupportMessage(session, messages) {
-	var lastId = Number(session.lastSupportMessageId || 0);
+function feedbackLatestSupportMessage(messages) {
+	var latest = null;
 	$.each(messages || [], function(index, message) {
-		if(message.sender == 'support' && Number(message.id) > lastId) lastId = Number(message.id);
+		if(message.sender == 'support' && (!latest || Number(message.id) > Number(latest.id))) latest = message;
 	});
-	if(lastId != Number(session.lastSupportMessageId || 0)) {
-		session.lastSupportMessageId = lastId;
-		feedbackStorageSet(session);
-	}
+	return latest;
+}
+
+function feedbackUpdateMenuBadge(unreadCount) {
+	try {
+		var helpMenu = menu.nativeMenu.getItemByName('Help');
+		var feedbackItem = helpMenu && helpMenu.submenu ? helpMenu.submenu.getItemByName('Feedback') : null;
+		if(helpMenu) helpMenu.label = loca.GetText("LAB", "ChatHelp") + (unreadCount > 0 ? ' (' + unreadCount + ')' : '');
+		if(feedbackItem) feedbackItem.label = getText('feedbacktitle') + (unreadCount > 0 ? ' (' + unreadCount + ')' : '');
+	} catch(e) {}
 }
 
 function feedbackClientId() {
@@ -82,6 +89,12 @@ function feedbackFormatTime(value) {
 	return pad(date.getDate()) + '.' + pad(date.getMonth() + 1) + '.' + date.getFullYear() + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
 }
 
+function feedbackScrollToBottom(box) {
+	setTimeout(function() {
+		if(box && box.length && box[0]) box.scrollTop(box[0].scrollHeight);
+	}, 50);
+}
+
 function feedbackRequest(options) {
 	return $.ajax($.extend({ url: feedbackApiUrl, dataType: 'json', cache: false, timeout: 15000 }, options));
 }
@@ -99,7 +112,7 @@ function feedbackSendMessage(w) {
 	feedbackSetStatus(w, '', false);
 	feedbackRequest({ type: 'POST', data: JSON.stringify(payload), contentType: 'application/json; charset=utf-8' })
 	.done(function(response) {
-		if(response.ticketId && response.token) feedbackStorageSet({ ticketId: response.ticketId, token: response.token, lastSupportMessageId: 0 });
+		if(response.ticketId && response.token) feedbackStorageSet({ ticketId: response.ticketId, token: response.token, lastNotifiedSupportMessageId: 0, lastReadSupportMessageId: 0 });
 		w.withBody('#feedbackContent').val('').focus();
 		feedbackSetStatus(w, feedbackLabels().sent, false);
 		feedbackLoadMessages(w);
@@ -119,7 +132,13 @@ function feedbackLoadMessages(w) {
 		var box = w.withBody('#feedbackMessages');
 		box.empty();
 		var messages = response.messages || [];
-		feedbackRememberLastSupportMessage(session, messages);
+		var latestSupportMessage = feedbackLatestSupportMessage(messages);
+		if(latestSupportMessage) {
+			session.lastReadSupportMessageId = Number(latestSupportMessage.id);
+			session.lastNotifiedSupportMessageId = Number(latestSupportMessage.id);
+			feedbackStorageSet(session);
+		}
+		feedbackUpdateMenuBadge(0);
 		if(messages.length == 0) {
 			box.html('<div class="text-muted">' + feedbackLabels().empty + '</div>');
 			return;
@@ -134,7 +153,7 @@ function feedbackLoadMessages(w) {
 			$('<div>').css({ 'display': 'inline-block', 'max-width': '85%', 'padding': '6px 9px', 'border-radius': '6px', 'white-space': 'pre-wrap', 'word-break': 'break-word', 'background': own ? '#d9edf7' : '#eee', 'color': '#222', 'text-align': 'left' }).text(message.content).appendTo(row);
 			box.append(row);
 		});
-		box.scrollTop(box[0].scrollHeight);
+		feedbackScrollToBottom(box);
 	});
 }
 
@@ -154,13 +173,23 @@ function feedbackCheckNewMessages() {
 	var session = feedbackStorageGet();
 	if(!session || !session.ticketId || !session.token) return;
 	feedbackRequest({ type: 'GET', data: { action: 'messages', ticketId: session.ticketId, token: session.token } }).done(function(response) {
-		var previousId = Number(session.lastSupportMessageId || 0);
-		var newestMessage = null;
+		var previousNotifiedId = Number(session.lastNotifiedSupportMessageId || session.lastSupportMessageId || 0);
+		var lastReadId = Number(session.lastReadSupportMessageId || 0);
+		var newestMessage = feedbackLatestSupportMessage(response.messages || []);
+		var unreadCount = 0;
 		$.each(response.messages || [], function(index, message) {
-			if(message.sender == 'support' && Number(message.id) > previousId && (!newestMessage || Number(message.id) > Number(newestMessage.id))) newestMessage = message;
+			if(message.sender == 'support' && Number(message.id) > lastReadId) unreadCount++;
 		});
-		feedbackRememberLastSupportMessage(session, response.messages || []);
-		if(newestMessage) feedbackNotifySupportMessage(newestMessage);
+		feedbackUpdateMenuBadge(unreadCount);
+		if(newestMessage && Number(newestMessage.id) > previousNotifiedId) {
+			session.lastNotifiedSupportMessageId = Number(newestMessage.id);
+			feedbackStorageSet(session);
+			feedbackUnreadReminderShown = true;
+			feedbackNotifySupportMessage(newestMessage);
+		} else if(newestMessage && unreadCount > 0 && !feedbackUnreadReminderShown) {
+			feedbackUnreadReminderShown = true;
+			feedbackNotifySupportMessage(newestMessage);
+		}
 	});
 }
 
