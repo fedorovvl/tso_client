@@ -1,5 +1,7 @@
 var feedbackApiUrl = "https://tsofeedback.sirris.su/api.php";
 var feedbackPollIntervalId = null;
+var feedbackBackgroundPollIntervalId = null;
+var feedbackWindowOpen = false;
 
 function feedbackStorageGet() {
 	var data = settings.read(null, "feedback");
@@ -10,6 +12,17 @@ function feedbackStorageSet(value) {
 	var data = settings.read(null, "feedback") || {};
 	data.session = value;
 	settings.store(data, "feedback");
+}
+
+function feedbackRememberLastSupportMessage(session, messages) {
+	var lastId = Number(session.lastSupportMessageId || 0);
+	$.each(messages || [], function(index, message) {
+		if(message.sender == 'support' && Number(message.id) > lastId) lastId = Number(message.id);
+	});
+	if(lastId != Number(session.lastSupportMessageId || 0)) {
+		session.lastSupportMessageId = lastId;
+		feedbackStorageSet(session);
+	}
 }
 
 function feedbackClientId() {
@@ -44,11 +57,13 @@ function feedbackMenuHandler(event)
 	w.Footer().prepend([$('<button>').attr({ "class": "btn btn-primary pull-left feedbackSend" }).text(loca.GetText("LAB", "Send"))]);
 	w.withFooter('.feedbackSend').click(function() { feedbackSendMessage(w); });
 	$(w.id).on('hidden.bs.modal', function() {
+		feedbackWindowOpen = false;
 		if(feedbackPollIntervalId !== null) {
 			clearInterval(feedbackPollIntervalId);
 			feedbackPollIntervalId = null;
 		}
 	});
+	feedbackWindowOpen = true;
 	w.show();
 	feedbackLoadMessages(w);
 	feedbackPollIntervalId = setInterval(function() { feedbackLoadMessages(w); }, 15000);
@@ -84,7 +99,7 @@ function feedbackSendMessage(w) {
 	feedbackSetStatus(w, '', false);
 	feedbackRequest({ type: 'POST', data: JSON.stringify(payload), contentType: 'application/json; charset=utf-8' })
 	.done(function(response) {
-		if(response.ticketId && response.token) feedbackStorageSet({ ticketId: response.ticketId, token: response.token });
+		if(response.ticketId && response.token) feedbackStorageSet({ ticketId: response.ticketId, token: response.token, lastSupportMessageId: 0 });
 		w.withBody('#feedbackContent').val('').focus();
 		feedbackSetStatus(w, feedbackLabels().sent, false);
 		feedbackLoadMessages(w);
@@ -104,6 +119,7 @@ function feedbackLoadMessages(w) {
 		var box = w.withBody('#feedbackMessages');
 		box.empty();
 		var messages = response.messages || [];
+		feedbackRememberLastSupportMessage(session, messages);
 		if(messages.length == 0) {
 			box.html('<div class="text-muted">' + feedbackLabels().empty + '</div>');
 			return;
@@ -121,6 +137,35 @@ function feedbackLoadMessages(w) {
 		box.scrollTop(box[0].scrollHeight);
 	});
 }
+
+function feedbackNotifySupportMessage(message) {
+	var text = String(message.content || '');
+	if(text.length > 180) text = text.substring(0, 177) + '...';
+	var notificationText = feedbackLabels().support + ': ' + text;
+	if(!window.nativeWindow.active && typeof notificationShow == 'function' && typeof notifySettings != 'undefined' && notifySettings.enabled) {
+		notificationShow(notificationText);
+	} else {
+		game.showAlert(notificationText);
+	}
+}
+
+function feedbackCheckNewMessages() {
+	if(feedbackWindowOpen) return;
+	var session = feedbackStorageGet();
+	if(!session || !session.ticketId || !session.token) return;
+	feedbackRequest({ type: 'GET', data: { action: 'messages', ticketId: session.ticketId, token: session.token } }).done(function(response) {
+		var previousId = Number(session.lastSupportMessageId || 0);
+		var newestMessage = null;
+		$.each(response.messages || [], function(index, message) {
+			if(message.sender == 'support' && Number(message.id) > previousId && (!newestMessage || Number(message.id) > Number(newestMessage.id))) newestMessage = message;
+		});
+		feedbackRememberLastSupportMessage(session, response.messages || []);
+		if(newestMessage) feedbackNotifySupportMessage(newestMessage);
+	});
+}
+
+feedbackBackgroundPollIntervalId = setInterval(feedbackCheckNewMessages, 30000);
+setTimeout(feedbackCheckNewMessages, 5000);
 
 function navigateToURL(url) { air.navigateToURL(new air.URLRequest(url)); }
 function openWikiHandler(event) { navigateToURL("https://github.com/fedorovvl/tso_client/wiki"); }
