@@ -98,7 +98,8 @@ namespace client
                 { "langAuthDropbox", "Авторизация Dropbox" },
                 { "langTryFast", "Пробовать быструю авторизацию" },
                 { "langUseCache", "Использовать локальный кеш" },
-                { "langMigrated", "Аккаунт перенесен в CipSoft" }
+                { "langMigrated", "Аккаунт перенесен в CipSoft" },
+                { "langskipUpdate", "Пропускать проверку обновления клиента" }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -150,6 +151,7 @@ namespace client
                 { "langMigrated", "Account migrated to CipSoft" },
                 { "langImport", "Import" },
                 { "langExport", "Export" },
+                { "langskipUpdate", "Skip client update check" }
              }
             },
             { "fr-fr", new Dictionary<string, string>() {
@@ -245,6 +247,7 @@ namespace client
                 { "langTryFast", "Spróbuj najpierw szybkiego logowania" },
                 { "langUseCache", "Użyj lokalnego cache" },
                 { "langMigrated", "Konto przeniesione do CipSoft" },
+                { "langskipUpdate", "Pomiń sprawdzanie aktualizacji klienta" },
                 { "langImport", "Importuj" },
                 { "langExport", "Exportuj" }
              }

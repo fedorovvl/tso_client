@@ -124,7 +124,10 @@ function debug(obj)
 		air.Introspector.Console.log(obj);
 	}
 }
-
+function openLogHandler(event) 
+{
+	air.File.applicationStorageDirectory.resolvePath("client.log").openWithDefaultApplication();
+}
 function specNameSorter(a, b)
 {
 	try {

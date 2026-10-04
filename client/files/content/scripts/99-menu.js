@@ -39,7 +39,8 @@ var Menu = function(type){
 					{ label: "Toggle showDepositMap", onSelect: menuDebugShowHandler },
 					{ label: "Toggle showLandingFields", onSelect: menuDebugShowHandler },
 					{ label: "Toggle showWatchAreas", onSelect: menuDebugShowHandler },
-				    { label: "Copy AuthToken", onSelect: copyAuthTokenHandler }
+				    { label: "Copy AuthToken", onSelect: copyAuthTokenHandler },
+					{ label: "Open logfile", onSelect: openLogHandler }
 				]}
 			]},
 			{ label: "LRU", name: 'LRU', mnemonicIndex: 0, items: [] },
@@ -232,19 +233,13 @@ setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem:
 setInterval(function() { 
     try {
         var conn = swmmo.application.blueFireComponent.getFacade().retrieveMediator("XIFFConnectionMediator").getViewComponent();
-		var isLoggedIn = typeof conn.isLoggedIn === "function" ? conn.isLoggedIn() : Boolean(conn.loggedIn);
-        if(!isLoggedIn) { return; }
+        if(!conn.isLoggedIn) { return; }
         var br = new(game.def("org.igniterealtime.xiff.core::Browser"))(conn);
         br.getServiceInfo(new(game.def("org.igniterealtime.xiff.core::EscapedJID"))("help@conference."+conn.server), function(result_iq) {
-			online = null;
-            try {
-                var online = result_iq.getExtension("query").getNode().childNodes.filter(function(x) { return x.nodeName == "x" })[0].childNodes.filter(function(x) { return x.attributes["var"] == "muc#roominfo_occupants"; })[0].lastChild.lastChild.toString();
-            } catch (ex) {
-				var online = result_iq.getExtension("query").getAllExtensionsByNS("jabber:x:data")[0].getFormField("muc#roominfo_occupants").value;
-			}
-			if (online != null) {
-	            menu.nativeMenu.getItemByName("online").label = 'Online: ' + online;
-			}
+            var online = result_iq.getExtension("query").getAllExtensionsByNS("jabber:x:data")[0].getFormField("muc#roominfo_occupants").value;
+            if (online != null) {
+                menu.nativeMenu.getItemByName("online").label = 'Online: ' + online;
+            }
         });
     } catch(e) { }
 }, 60000);

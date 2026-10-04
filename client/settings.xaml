@@ -364,7 +364,7 @@
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="39,239,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langDropboxRefresh, Mode=OneWay}" VerticalAlignment="Top" Width="195" Grid.ColumnSpan="2" />
                 <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,324,0,-12" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langTryFast, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
                 <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,353,0,-41" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langUseCache, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
-                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,382,0,-70" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langMigrated, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
+                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,382,0,-70" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langskipUpdate, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
 
                 <CheckBox Height="25" IsChecked="True" x:Name="tryFast" Margin="292,323,23.2,-12" Width="24" Grid.Column="1">
                     <CheckBox.Template>
@@ -408,7 +408,7 @@
                         </ControlTemplate>
                     </CheckBox.Template>
                 </CheckBox>
-                <CheckBox Height="25" IsChecked="True" x:Name="cipMigrated" Margin="291,381,24.2,-70" Width="24" Grid.Column="1">
+                <CheckBox Height="25" IsChecked="True" x:Name="skipUpdate" Margin="291,381,24.2,-70" Width="24" Grid.Column="1">
                     <CheckBox.Template>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <StackPanel Orientation="Horizontal">
