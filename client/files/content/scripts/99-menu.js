@@ -141,7 +141,7 @@ var Menu = function(type){
 				{ type: 'separator' },
 				{ label: getText('feedbacktitle'), onSelect: feedbackMenuHandler }
 			]},
-			{ label: 'v' + version + (mainSettings.experimental ? "-Ex" : ""), enabled: false },
+			{ label: 'v' + version, enabled: false },
 			{ label: '', name: 'memusage', enabled: false },
 			{ label: '', name: 'online', enabled: false }
 		];
