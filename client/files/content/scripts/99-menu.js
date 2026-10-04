@@ -130,6 +130,7 @@ var Menu = function(type){
 			]},
 			{ type: 'separator' },
 			{ label: loca.GetText("LAB", "ChatHelp"), name: 'Help', mnemonicIndex: 0, items: [
+				{ label: "Changelog", onSelect: changelogMenuHandler },
 				{ label: "Wiki", onSelect: openWikiHandler },
 				{ label: "Discord (RU/EN)", onSelect: openDiscordENHandler },
 				{ label: "Discord (DE)", onSelect: openDiscordDEHandler },
