@@ -234,7 +234,7 @@ setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem:
 setInterval(function() { 
     try {
         var conn = swmmo.application.blueFireComponent.getFacade().retrieveMediator("XIFFConnectionMediator").getViewComponent();
-        if(!conn.isLoggedIn) { return; }
+        if(!conn.loggedIn) { return; }
         var br = new(game.def("org.igniterealtime.xiff.core::Browser"))(conn);
         br.getServiceInfo(new(game.def("org.igniterealtime.xiff.core::EscapedJID"))("help@conference."+conn.server), function(result_iq) {
             var online = result_iq.getExtension("query").getAllExtensionsByNS("jabber:x:data")[0].getFormField("muc#roominfo_occupants").value;
