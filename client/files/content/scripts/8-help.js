@@ -51,6 +51,12 @@ function feedbackLabels() {
 	return { empty: "No replies yet.", you: "You", support: "Support", placeholder: "Enter your message...", sent: "Message sent", error: "Could not reach the server", newmessage: "New message" };
 }
 
+function feedbackSetGameHotkeysEnabled(enabled) {
+	try {
+		game.def("com.bluebyte.tso.util::HotkeyManager").getInstance().SetEnabled(enabled);
+	} catch(e) {}
+}
+
 function feedbackMenuHandler(event)
 {
 	var w = new Modal('feedbackWindow', utils.getImageTag('ValentineAdventureRewardBoostConditional', '45px') + ' ' + getText('feedbacktitle'));
@@ -65,8 +71,10 @@ function feedbackMenuHandler(event)
 	w.withFooter('.feedbackSend').click(function() { feedbackSendMessage(w); });
 	$(w.id).on('shown.bs.modal', function() {
 		window.nativeWindow.stage.removeEventListener("keyDown", stageKeyDownListener);
+		feedbackSetGameHotkeysEnabled(false);
 	});
 	$(w.id).on('hidden.bs.modal', function() {
+		feedbackSetGameHotkeysEnabled(true);
 		window.nativeWindow.stage.addEventListener("keyDown", stageKeyDownListener);
 		feedbackWindowOpen = false;
 		if(feedbackPollIntervalId !== null) {
