@@ -588,15 +588,6 @@ var ShortcutTrader = (function () {
             return $('<button>').addClass('btn ' + classes).text(text);
         }
 
-        function getLocalizedResourceName(name) {
-            var locs = ['RES', 'BUI', 'SHI', 'ADN'];
-            for (var i = 0; i < locs.length; i++) {
-                var t = loca.GetText(locs[i], name);
-                if (t && t.indexOf('[undefined') === -1) return t;
-            }
-            return '[' + name + ']';
-        }
-
         function createResourceSelect(id, resources) {
             var $select = $('<select>', { id: id, 'class': 'form-control' });
             for (var c = 0; c < resources.length; c++) {
@@ -604,7 +595,7 @@ var ShortcutTrader = (function () {
                 $select.append('<optgroup label="' + loca.GetText("LAB", cat.categoryName) + '">');
                 for (var r = 0; r < cat.items.length; r++) {
                     $select.append($('<option>', { value: cat.items[r].name })
-                        .text(getLocalizedResourceName(cat.items[r].name)));
+                        .text(cat.items[r].localized));
                 }
             }
             $select.append('</optgroup>');
@@ -810,6 +801,15 @@ var ShortcutTrader = (function () {
             return _friendsList;
         }
 
+        function getLocalizedResourceName(name) {
+            var locs = ['RES', 'BUI', 'SHI', 'ADN'];
+            for (var i = 0; i < locs.length; i++) {
+                var t = loca.GetText(locs[i], name);
+                if (t && t.indexOf('[undefined') === -1) return t;
+            }
+            return '[' + name + ']';
+        }
+
         function getResourceList() {
             if (!_resourceList) {
                 var byCategory = {}, catNames = [];
@@ -824,25 +824,39 @@ var ShortcutTrader = (function () {
                         else if (cat === "Event") { cat = "WarehouseTab6"; }
                         if (cat === "WarehouseTab5") cat = "WarehouseTab8";
                         if (!byCategory.hasOwnProperty(cat)) { byCategory[cat] = []; catNames.push(cat); }
-                        byCategory[cat].push({ name: prod.resourceName_string });
+                        byCategory[cat].push({ name: prod.resourceName_string , localized: getLocalizedResourceName(prod.resourceName_string) });
+                    }
+                    for(cat in byCategory) {
+                        byCategory[cat].sort(function (a, b) {
+                            return a.localized.localeCompare(b.localized);
+                        });
                     }
                     catNames.push('buffs'); byCategory['buffs'] = [];
                     var buffMap = swmmo.getDefinitionByName("global").map_BuffName_BuffDefinition;
                     for (var bk in buffMap) {
                         var bd = buffMap[bk];
-                        if (bd.IsTradable(bd.GetName_string())) byCategory['buffs'].push({ name: bd.GetName_string() });
+                        if (bd.IsTradable(bd.GetName_string())) byCategory['buffs'].push({ name: bd.GetName_string() , localized: getLocalizedResourceName(bd.GetName_string()) });
                     }
+                    byCategory['buffs'].sort(function (a, b) {
+                        return a.localized.localeCompare(b.localized);
+                    });
                     catNames.push('adventures'); byCategory['adventures'] = [];
                     var advs = swmmo.getDefinitionByName("AdventureSystem::cAdventureDefinition")
                         .map_AdventureName_AdventureDefinition.valueSet();
                     for (var ak in advs) {
-                        if (advs[ak].IsTradable()) byCategory['adventures'].push({ name: advs[ak].GetName() });
+                        if (advs[ak].IsTradable()) byCategory['adventures'].push({ name: advs[ak].GetName() , localized: getLocalizedResourceName(advs[ak].GetName()) });
                     }
+                    byCategory['adventures'].sort(function (a, b) {
+                        return a.localized.localeCompare(b.localized);
+                    });
                     catNames.push('buildings'); byCategory['buildings'] = [];
                     var blds = swmmo.getDefinitionByName("global").buildingGroup.mGOList_vector;
                     for (var bl in blds) {
-                        if (blds[bl].isTradable()) byCategory['buildings'].push({ name: blds[bl].mGfxResourceListName_string });
+                        if (blds[bl].isTradable()) byCategory['buildings'].push({ name: blds[bl].mGfxResourceListName_string , localized: getLocalizedResourceName(blds[bl].mGfxResourceListName_string) });
                     }
+                    byCategory['buildings'].sort(function (a, b) {
+                        return a.localized.localeCompare(b.localized);
+                    });
                     catNames.sort();
                     _resourceList = [];
                     for (var cn = 0; cn < catNames.length; cn++) {
