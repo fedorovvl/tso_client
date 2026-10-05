@@ -1,0 +1,25 @@
+<Window x:Class="client.CaptchaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="CAPTCHA" Height="650" Width="500"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip">
+    <Grid Background="#FF242424">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="instructions" Margin="12" TextWrapping="Wrap"
+                   Foreground="White" FontSize="14" TextAlignment="Center" />
+        <wv2:WebView2 x:Name="browser" Grid.Row="1" Margin="8,0" />
+        <Grid Grid.Row="2" Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="status" VerticalAlignment="Center" Foreground="#FFFFB0B0" TextWrapping="Wrap" />
+            <Button x:Name="cancelButton" Grid.Column="1" MinWidth="100" Padding="12,6" Click="CancelButton_Click" />
+        </Grid>
+    </Grid>
+</Window>

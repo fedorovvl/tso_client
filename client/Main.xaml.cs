@@ -159,10 +159,15 @@ namespace client
 
         public void checkVersion()
         {
-            AutoUpdater.InstalledVersion = new Version(appversion);
-            AutoUpdater.ShowSkipButton = true;
-            AutoUpdater.OpenDownloadPage = true;
-            AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
+            try
+            {
+                CaptchaWindow.PrepareWebView2Loader();
+                AutoUpdater.InstalledVersion = new Version(appversion);
+                AutoUpdater.ShowSkipButton = true;
+                AutoUpdater.OpenDownloadPage = true;
+                AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
+            }
+            catch { }
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);

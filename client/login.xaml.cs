@@ -154,7 +154,7 @@ namespace client
             try
             {
                 PostSubmitter post;
-                string res;
+                string res = null;
                 CookieCollection _cookies = new CookieCollection();
                 if (attepts > 5)
                 {
@@ -162,15 +162,34 @@ namespace client
                     return;
                 }
                 AddToRich(Servers.getTrans("tryauth") + attepts++);
-                post = new PostSubmitter
+                string captchaToken = null;
+                const int maxCaptchaAttempts = 3;
+                for (int requestAttempt = 0; requestAttempt <= maxCaptchaAttempts; requestAttempt++)
                 {
-                    Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].uplay.Replace("uplay", "login")),
-                    Type = PostSubmitter.PostTypeEnum.Post
-                };
-                post.useBC = true;
-                post.PostItems.Add("name", username.Trim());
-                post.PostItems.Add("password", password.Trim());
-                res = post.Post(ref _cookies);
+                    post = new PostSubmitter
+                    {
+                        Url = string.Format("{0}{1}", Servers._servers[region].domain, Servers._servers[region].uplay.Replace("uplay", "login")),
+                        Type = PostSubmitter.PostTypeEnum.Post
+                    };
+                    post.useBC = true;
+                    post.PostItems.Add("name", username.Trim());
+                    post.PostItems.Add("password", password.Trim());
+                    if (!string.IsNullOrEmpty(captchaToken)) post.PostItems.Add("recaptcha", captchaToken);
+                    res = post.Post(ref _cookies);
+
+                    if (res.Contains("OKAY")) break;
+                    if (!(res.Contains("Captcha incorrect") || res.Contains("Captcha required") || res.Contains("CAPTCHA"))) break;
+
+                    Match captchaMatch = Regex.Match(res, "\"captcha\"\\s*:\\s*\"(?<key>[^\"]+)\"", RegexOptions.IgnoreCase);
+                    if (!captchaMatch.Success || requestAttempt == maxCaptchaAttempts)
+                    {
+                        AddToRich(Servers.getTrans("captchaerr"));
+                        return;
+                    }
+
+                    captchaToken = ShowCaptcha(captchaMatch.Groups["key"].Value);
+                    if (string.IsNullOrEmpty(captchaToken)) return;
+                }
                 if (res.Contains("OKAY"))
                 {
                     AddToRich(Servers.getTrans("authok"));
@@ -211,7 +230,7 @@ namespace client
                     return;
                 } else
                 {
-                    if (res.Contains("Captcha incorrect") || res.Contains("Captcha required"))
+                    if (res.Contains("Captcha incorrect") || res.Contains("Captcha required") || res.Contains("CAPTCHA"))
                     {
                         AddToRich(Servers.getTrans("captchaerr"));
                         return;
@@ -232,6 +251,24 @@ namespace client
                 AddToRich(Servers.getTrans("autherr") + msg);
             }
             return;
+        }
+
+        private string ShowCaptcha(string siteKey)
+        {
+            string token = null;
+            Dispatcher.Invoke(new Action(delegate
+            {
+                string languagePath = Servers._servers[region].uplay.Split(new string[] { "/api/" }, StringSplitOptions.None)[0];
+                var captcha = new CaptchaWindow(
+                    Servers._servers[region].domain + languagePath,
+                    siteKey,
+                    Servers._langs[region].Split('-')[0])
+                {
+                    Owner = this
+                };
+                if (captcha.ShowDialog() == true) token = captcha.ResponseToken;
+            }));
+            return token;
         }
 
         public bool PrepareFlash(string htmlPage, bool old_auth)
