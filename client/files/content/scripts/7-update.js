@@ -35,7 +35,7 @@ function clientShowUpdateMenuItem()
 		var item = new air.NativeMenuItem(clientUpdateMenuLabel());
 		item.name = 'clientUpdateAvailable';
 		item.enabled = false;
-		if(onlineMenu) rootMenu.addItemAt(item, rootMenu.getItemIndex(onlineMenu));
+		if(onlineMenu) rootMenu.addItemAt(item, rootMenu.getItemIndex(onlineMenu) + 1);
 		else rootMenu.addItem(item);
 	}
 	catch(e) {}
