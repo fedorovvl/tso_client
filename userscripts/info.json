@@ -152,5 +152,12 @@
       "longDesc": "Finds depleted wells and wheat fields and automatically rebuilds them. Supports choosing building tiers (Normal, Deep) batch building, queue slot detection, and background auto-building.",
       "author": "MadFx",
       "url": ""
+   },
+   "skel_quest_auto_hide.js": {
+      "name": "Quest auto-hide",
+      "shortDesc": "Collapse chosen quest categories automatically.",
+      "longDesc": "Collapses the quest categories you pick every time the quest book opens, so long lists like Skill bonus stay out of the way. Categories are read from the quest book at runtime, so any category this client has can be configured. Nothing is collapsed until you enable it under Tools -> Quest auto-hide.",
+      "author": "skelgaard",
+      "url": ""
    }
 }
