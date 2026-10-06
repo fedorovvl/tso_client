@@ -152,5 +152,12 @@
       "longDesc": "Finds depleted wells and wheat fields and automatically rebuilds them. Supports choosing building tiers (Normal, Deep) batch building, queue slot detection, and background auto-building.",
       "author": "MadFx",
       "url": ""
+   },
+   "user_supress_alerts.js": {
+      "name": "Avatar Message Filter",
+      "shortDesc": "Choose which avatar messages are shown.",
+      "longDesc": "Provides a localized, categorized list of avatar notifications and saves the messages that should be suppressed.",
+      "author": "SirriS",
+      "url": ""
    }
 }
