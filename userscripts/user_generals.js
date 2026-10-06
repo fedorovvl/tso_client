@@ -2,6 +2,12 @@
 // ========== Generals COMMAND
 const _exudGeneralsLang = {
 	"en-uk": {
+		"OneUpUsed": "1-Up Used",
+		"OneUpYes": "Yes",
+		"OneUpNo": "No",
+		"OneUpAdventureOnly": "Only applies on an adventure",
+		"OneUpNoAbility": "No 1-Up revival ability",
+		"OneUpUnavailable": "1-Up status unavailable",
 		"ByName": "Sort by Name",
 		"ByType": "Sort by Type",
 		"ShowGuest": "Show Guests",
@@ -19,6 +25,12 @@ const _exudGeneralsLang = {
 		"SkillTip": "Click on general icon to open the Skill Tree."
 	},
 	"pt-br": {
+		"OneUpUsed": "1-Up usado",
+		"OneUpYes": "Sim",
+		"OneUpNo": "Não",
+		"OneUpAdventureOnly": "Aplica-se apenas em uma aventura",
+		"OneUpNoAbility": "Sem habilidade de ressurreição 1-Up",
+		"OneUpUnavailable": "Status de 1-Up indisponível",
 		"ByName": "Classificar por nome",
 		"ByType": "Classificar por tipo",
 		"ShowGuest": "Todos",
@@ -34,6 +46,12 @@ const _exudGeneralsLang = {
 		"SkillTip" : "Clicar no icone do general para abrir a arvore das abilidades"
 	},
 	"pl-pl": {
+		"OneUpUsed": "1-Up wykorzystany",
+		"OneUpYes": "Tak",
+		"OneUpNo": "Nie",
+		"OneUpAdventureOnly": "Dotyczy tylko przygody",
+		"OneUpNoAbility": "Brak umiejętności odrodzenia 1-Up",
+		"OneUpUnavailable": "Status 1-Up niedostępny",
 		"ByName": "Sortuj po nazwie",
 		"ByType": "Sortuj po typie",
 		"ShowGuest": "Pokaż gości",
@@ -50,6 +68,12 @@ const _exudGeneralsLang = {
 		"SkillTip": "Kliknij na ikonie generała, aby zobaczyć drzewo umiejętności."
 	},
 	"ru-ru": {
+		"OneUpUsed": "1-Up использован",
+		"OneUpYes": "Да",
+		"OneUpNo": "Нет",
+		"OneUpAdventureOnly": "Применяется только в приключении",
+		"OneUpNoAbility": "Нет способности возрождения 1-Up",
+		"OneUpUnavailable": "Статус 1-Up недоступен",
 		"ByName": "Сортировать по имени",
 		"ByType": "Сортировать по типу",
 		"ShowGuest": "Показать генералов гостя",
@@ -66,6 +90,12 @@ const _exudGeneralsLang = {
 		"ExcludeStarMenu": "Без звездного меню",
     },
 	"fr-fr": {
+		"OneUpUsed": "1-Up utilisé",
+		"OneUpYes": "Oui",
+		"OneUpNo": "Non",
+		"OneUpAdventureOnly": "Applicable uniquement dans une aventure",
+		"OneUpNoAbility": "Aucune capacité de résurrection 1-Up",
+		"OneUpUnavailable": "Statut 1-Up indisponible",
 		"ByName": "Trier par Nom",
 		"ByType": "Trier par Type",
 		"ShowGuest": "Afficher Invité",
@@ -82,6 +112,12 @@ const _exudGeneralsLang = {
 		 "SkillTip" : "Cliquer sur Général pour voir ses compétences."
 	},
 	"it-it": {
+		"OneUpUsed": "1-Up utilizzato",
+		"OneUpYes": "Sì",
+		"OneUpNo": "No",
+		"OneUpAdventureOnly": "Si applica solo in un’avventura",
+		"OneUpNoAbility": "Nessuna abilità di resurrezione 1-Up",
+		"OneUpUnavailable": "Stato di 1-Up non disponibile",
 		"ByName": "Ordina per nome",
 		"ByType": "Ordina per tipo",
 		"ShowGuest": "Di tutti",
@@ -94,6 +130,12 @@ const _exudGeneralsLang = {
 		"IsGuest": " (* = invitato) "
 	},
 	"es-es": {
+		"OneUpUsed": "1-Up usado",
+		"OneUpYes": "Sí",
+		"OneUpNo": "No",
+		"OneUpAdventureOnly": "Solo se aplica en una aventura",
+		"OneUpNoAbility": "Sin habilidad de resurrección 1-Up",
+		"OneUpUnavailable": "Estado de 1-Up no disponible",
 		"ByName": "Ordenar por nombre",
 		"ByType": "Ordenar por tipo",
 		"ShowGuest": "Ver generales de amigos",
@@ -110,6 +152,12 @@ const _exudGeneralsLang = {
 		"SkillTip" : "Haz click en el icono del general para ver su árbol de habilidades."
 	},
 	"es-mx": {
+		"OneUpUsed": "1-Up usado",
+		"OneUpYes": "Sí",
+		"OneUpNo": "No",
+		"OneUpAdventureOnly": "Solo se aplica en una aventura",
+		"OneUpNoAbility": "Sin habilidad de resurrección 1-Up",
+		"OneUpUnavailable": "Estado de 1-Up no disponible",
 		"ByName": "Ordenar: Nombre",
 		"ByType": "Ordenar: Tipo",
 		"ShowGuest": "Ver generales de amigos",
@@ -123,6 +171,12 @@ const _exudGeneralsLang = {
 		"IsGuest": " (* = invitado) "
     },
 	"de-de": {
+		"OneUpUsed": "1-Up usado",
+		"OneUpYes": "Sí",
+		"OneUpNo": "No",
+		"OneUpAdventureOnly": "Solo se aplica en una aventura",
+		"OneUpNoAbility": "Sin habilidad de resurrección 1-Up",
+		"OneUpUnavailable": "Estado de 1-Up no disponible",
 		"ByName": "Name sortieren",
 		"ByType": "Type sortieren",
 		"ShowGuest": "Gäste zeigen",
@@ -362,7 +416,8 @@ try {
 		var massCheckbox = $('<input>', { 'type': 'checkbox', 'class': '_exudSelectAllGeneralsBtn', 'data-toggle': 'tooltip', 'data-placement': 'top', 'title': _exudGeneralsGetLabel('SelectAll') }).prop('outerHTML') + '&nbsp;&nbsp;';
 		if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone) {
 		    out += createTableRow([
-			[7, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[6, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[1, _exudGeneralsGetLabel("OneUpUsed")],
 			[2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
 			[1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))],
 			[1, _exudGeneralsGetLabel("ColumnOwner")],
@@ -370,7 +425,8 @@ try {
 		    ], true) ;
 		} else {
 		    out += createTableRow([
-			[9, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[8, _exudGeneralsCreateSortingField("&#8597;&nbsp;" + massCheckbox) + _exudGeneralsCreateSortingField(loca.GetText("LAB","Name"))],
+			[1, _exudGeneralsGetLabel("OneUpUsed")],
 			[2, _exudGeneralsCreateSortingField(loca.GetText("LAB", "StarMenu"))],
 			[1, _exudGeneralsCreateSortingField(loca.GetText("LAB", "Army"))]
 		    ], true) ;
@@ -648,7 +704,8 @@ function _exudMakeGeneralsTable(templateData)
 				if (swmmo.application.mGameInterface.mCurrentPlayer.mIsAdventureZone)
 				{
 					out += createTableRow([
-						[7, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
+						[6, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name  + (item.PlayerName != null ? ' (' + item.PlayerName + ')' : '' ): checkbox],
+						[1, item.OneUpUsed],
 						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): '')],
 						[1, (item.TotalArmy>0?item.TotalArmy:'')],
 						[1, (item.Owner ? loca.GetText("LAB", "YES"): IconMap)],
@@ -657,7 +714,8 @@ function _exudMakeGeneralsTable(templateData)
 				}
 				else{
 						out += createTableRow([
-						[9, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name : checkbox],
+						[8, !_exudGeneralsIsSelectable(item) ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + Icon + item.Name : checkbox],
+						[1, item.OneUpUsed],
 						[2, (item.GridPosition <= 0 ? loca.GetText("LAB", "YES"): IconMap)],
 						[1, (item.TotalArmy>0?item.TotalArmy:'')]
 					]);
@@ -853,6 +911,26 @@ function _exudGetSpecialists()
 	return listS;
 }
 
+// The counter belongs to the currently viewed adventure, not the general globally.
+function _exudGeneralsGetOneUpUsed(item) {
+	try {
+		var gi = swmmo.application.mGameInterface;
+		if (!gi.IsAdventureZone()) {
+			return '<span title="' + _exudGeneralsGetLabel("OneUpAdventureOnly") + '">-</span>';
+		}
+		var modifier = item.GetModifier("CombatModifier", "InstantRecover");
+		if (!modifier || modifier.value <= 0) {
+			return '<span title="' + _exudGeneralsGetLabel("OneUpNoAbility") + '">-</span>';
+		}
+		var activityType = swmmo.getDefinitionByName("Enums::ZONE_SPECIALIST_ACTIVITY_TYPE").ONEUP_SKILL_PROC;
+		var count = gi.mZoneSpecialistActivityTracker.GetActivityCount(
+			gi.mCurrentViewedZoneID, item.getPlayerID(), item.GetUniqueID(), activityType);
+		return _exudGeneralsGetLabel(count > 0 ? "OneUpYes" : "OneUpNo");
+	} catch (e) {
+		return '<span title="' + _exudGeneralsGetLabel("OneUpUnavailable") + '">?</span>';
+	}
+}
+
 function _exudGeneralsGetGeneralStruct(item, playerID) {
 	try {
 		const itemPlayerId = item.getPlayerID(),
@@ -870,6 +948,7 @@ function _exudGeneralsGetGeneralStruct(item, playerID) {
 			"IsGeneral": true,
 			"Name": item.getName(false).replace('<b>', '').replace('</b>',''),
 			"Owner": isOwner,
+			"OneUpUsed": _exudGeneralsGetOneUpUsed(item),
 			"PlayerID": itemPlayerId,
 			"PlayerName": (itemPlayerId > 0 && !isOwner ? swmmo.application.mGameInterface.GetPlayerName_string(itemPlayerId) : null),
 			"Skills": _exudGeneralsGetSkills(item),
