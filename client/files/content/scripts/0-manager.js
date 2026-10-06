@@ -12,9 +12,13 @@ function scriptsManagerWindow() {
 
     if ($('#managerModal .managerSubmit').length === 0) {
         $('#managerModal .modal-footer').prepend([
+            $('<button>').attr({'class': 'btn btn-default managerUpdaterSettings'}).text(String(gameLang || '').toLowerCase().indexOf('ru') === 0 ? 'Настройки обновлений' : 'Update settings'),
             $('<button>').attr({'class': 'btn btn-primary managerFix'}).text(getText('btn_fix')),
             $('<button>').attr({'class': 'btn btn-primary managerSubmit'}).text(getText('btn_submit'))
         ]);
+        $('#managerModal .managerUpdaterSettings').click(function () {
+            if (typeof userScriptUpdaterOpenSettings === 'function') userScriptUpdaterOpenSettings();
+        });
         $('#managerModal .managerFix').click(managerReinstall);
         $('#managerModal .managerSubmit').click(managerProceed);
     }
