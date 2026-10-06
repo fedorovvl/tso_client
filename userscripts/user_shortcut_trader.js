@@ -927,6 +927,7 @@ var ShortcutTrader = (function () {
                 '  overflow: hidden !important;' +
                 '  user-select: none !important;' +
                 '}' +
+                '.st-item-tile.st-hidden { display: none !important; }' +
                 '.st-item-tile:hover {' +
                 '  border: 1px solid #ffd88a !important;' +
                 '  box-shadow: 0 0 6px rgba(255,216,138,0.85), inset 1px 1px 0 rgba(255,255,255,0.25) !important;' +
@@ -1545,15 +1546,18 @@ var ShortcutTrader = (function () {
             var idx   = 0;
             function step() {
                 if (job !== _iconJob) return;
-                var end = Math.min(idx + 24, boxes.length);
-                for (; idx < end; idx++) {
-                    var box  = boxes[idx];
+                var t0 = Date.now();
+                while (idx < boxes.length) {
+                    var box  = boxes[idx++];
                     var tile = box.parentNode;
-                    var nm   = tile ? tile.getAttribute('data-name') : null;
+                    if (!tile || !box.getAttribute('data-pending')) continue;
+                    if ((' ' + tile.className + ' ').indexOf(' st-hidden ') !== -1) continue;
+                    var nm   = tile.getAttribute('data-name');
                     if (!nm) continue;
                     var inf  = GameDataSource.getItemInfo(nm);
                     try { box.innerHTML = getItemIconTag(nm, inf ? inf.type : null, '34px'); } catch (eIc) {}
                     box.removeAttribute('data-pending');
+                    if (Date.now() - t0 >= 12) break;
                 }
                 if (idx < boxes.length) setTimeout(step, 0);
             }
@@ -1561,7 +1565,10 @@ var ShortcutTrader = (function () {
         }
 
         function create() {
+            if (_initialized && $('#' + MODAL_ID).length) return;
             $('#' + MODAL_ID).remove();
+            _tiles   = null;
+            _emptyEl = null;
 
             var modalHtml =
                 '<div class="modal fade" id="' + MODAL_ID + '" role="dialog" tabindex="-1">' +
@@ -1625,6 +1632,7 @@ var ShortcutTrader = (function () {
 
             $('#' + MODAL_ID + '_IncludeStar').on('change', function () {
                 _includeStar = $(this).is(':checked');
+                refreshStock();
                 renderGrid();
             });
 
@@ -1639,6 +1647,8 @@ var ShortcutTrader = (function () {
 
             $('#' + MODAL_ID).on('hidden.bs.modal', function () {
                 _iconJob++;
+                _buildJob++;
+                if (_searchTimer) { clearTimeout(_searchTimer); _searchTimer = null; }
                 try { $('.tooltip').remove(); } catch (eTip) {}
             });
 
@@ -1697,6 +1707,7 @@ var ShortcutTrader = (function () {
             _includeStar      = true;
             _stockMap         = null;
             _onlyInStock      = false;
+            if (_searchTimer) { clearTimeout(_searchTimer); _searchTimer = null; }
             _curCategory      = 'ALL';
             _selectedItemName = null;
 
@@ -1728,9 +1739,20 @@ var ShortcutTrader = (function () {
             }
 
             renderTabs();
-            renderGrid();
-
             $('#' + MODAL_ID).modal({ backdrop: 'static', show: true });
+
+            var buildJob = ++_buildJob;
+            if (_tiles) {
+                refreshStock();
+                renderGrid();
+            } else {
+                $('#' + MODAL_ID + '_Grid').html('<div style="text-align:center;padding:25px;color:#8a7050;">' +
+                    safeLoca("LAB", "Loading", "Загрузка...") + '</div>');
+                setTimeout(function () {
+                    if (buildJob !== _buildJob) return;
+                    renderGrid();
+                }, 30);
+            }
             setTimeout(function () {
                 $('#' + MODAL_ID + '_Search').focus();
             }, 200);
@@ -1755,73 +1777,103 @@ var ShortcutTrader = (function () {
             $('#' + MODAL_ID + '_Tabs').html(tabsHtml.join(''));
         }
 
-        function renderGrid() {
-            try { $('.tooltip').remove(); } catch (eRem) {}
-            _iconJob++;
-            var categories = GameDataSource.getResourceList();
-            _filteredList = [];
-            var seenNames = {};
+        var _tiles    = null;
+        var _emptyEl  = null;
+        var _buildJob = 0;
+        var _stockTs  = 0;
+        var STOCK_TTL = 5000;
 
-            // Refresh on every render (tabs/search/toggles), not only on open.
+        function tileTitle(item, stk) {
+            return (item.localizedName || item.name) + (stk > 0 ? ' — ' + formatExactNumber(stk) : '');
+        }
+
+        // Re-read warehouse/star stock and patch only tiles whose amount changed.
+        function refreshStock() {
             _stockMap = GameDataSource.getPlayerStockMap(_includeStar);
+            _stockTs  = Date.now();
+            if (!_tiles) return;
+            for (var i = 0; i < _tiles.length; i++) {
+                var t   = _tiles[i];
+                var stk = GameDataSource.getItemStock(t.item, _stockMap);
+                if (stk === t.stock) continue;
+                t.stock = stk;
+                if (t.badge) t.badge.innerHTML = stk > 0 ? formatStockBadge(stk) : '';
+                t.el.setAttribute('title', tileTitle(t.item, stk));
+            }
+        }
+
+        // Build every tile once per picker window; filters then just hide/show.
+        function buildTiles() {
+            var grid = document.getElementById(MODAL_ID + '_Grid');
+            if (!grid) return;
+            var categories = GameDataSource.getResourceList();
+            if (!_stockMap) refreshStock();
+            var byName = {}, list = [], html = [];
 
             for (var c = 0; c < categories.length; c++) {
                 var cat = categories[c];
-                if (_curCategory !== 'ALL' && _curCategory !== cat.categoryName) continue;
-
                 for (var i = 0; i < cat.items.length; i++) {
                     var item = cat.items[i];
                     if (!item || !item.name) continue;
-                    if (seenNames[item.name]) continue;
-                    seenNames[item.name] = true;
-
-                    var stock = GameDataSource.getItemStock(item, _stockMap);
-                    if (_onlyInStock && stock <= 0) continue;
-
-                    if (_searchQuery) {
-                        if (item._searchKey === undefined) {
-                            item._searchKey = ((item.localizedName || '') + '\n' + (item.name || '') + '\n' +
-                                               (cat.localizedCategoryName || '')).toLowerCase();
-                        }
-                        if (item._searchKey.indexOf(_searchQuery) === -1) continue;
+                    if (byName[item.name]) { byName[item.name].cats[cat.categoryName] = true; continue; }
+                    if (item._searchKey === undefined) {
+                        item._searchKey = ((item.localizedName || '') + '\n' + (item.name || '') + '\n' +
+                                           (cat.localizedCategoryName || '')).toLowerCase();
                     }
+                    var stk  = GameDataSource.getItemStock(item, _stockMap);
+                    var cats = {}; cats[cat.categoryName] = true;
+                    var entry = { item: item, cats: cats, stock: stk, visible: true, el: null, badge: null };
+                    byName[item.name] = entry;
+                    list.push(entry);
 
-                    _filteredList.push({ item: item, stock: stock });
+                    var iconHtml = getCachedIconTag(item.name, item.type, '34px');
+                    html.push(
+                        '<div class="st-item-tile' + (item.name === _selectedItemName ? ' selected' : '') + '" data-name="' + escAttr(item.name) +
+                        '" title="' + escAttr(tileTitle(item, stk)) + '">' +
+                        '<div class="st-tile-icon-box"' + (iconHtml ? '' : ' data-pending="1"') + '>' + iconHtml + '</div>' +
+                        '<div class="st-tile-stock">' + (stk > 0 ? formatStockBadge(stk) : '') + '</div>' +
+                        '</div>'
+                    );
                 }
             }
+            html.push('<div class="st-picker-empty" style="display:none;text-align:center;padding:25px;color:#8a7050;">' +
+                      safeLoca("LAB", "NotFound", "Ничего не найдено") + '</div>');
+
+            grid.innerHTML = html.join('');
+            var nodes = grid.children;
+            for (var k = 0; k < list.length; k++) {
+                list[k].el    = nodes[k];
+                list[k].badge = nodes[k].children[1] || null;
+            }
+            _emptyEl = nodes[list.length] || null;
+            _tiles   = list;
+        }
+
+        function renderGrid() {
+            try { $('.tooltip').remove(); } catch (eRem) {}
+            _iconJob++;
+            if (!_tiles) buildTiles();
+            if (!_tiles) return;
+            if (!_stockMap || (Date.now() - _stockTs) > STOCK_TTL) refreshStock();
+
+            var shown = 0;
+            for (var i = 0; i < _tiles.length; i++) {
+                var t   = _tiles[i];
+                var vis = (_curCategory === 'ALL' || t.cats[_curCategory] === true) &&
+                          (!_onlyInStock || t.stock > 0) &&
+                          (!_searchQuery || t.item._searchKey.indexOf(_searchQuery) !== -1);
+                if (vis !== t.visible) {
+                    t.visible = vis;
+                    if (vis) t.el.className = (' ' + t.el.className + ' ').replace(' st-hidden ', ' ').replace(/^\s+|\s+$/g, '');
+                    else     t.el.className += ' st-hidden';
+                }
+                if (vis) shown++;
+            }
+            if (_emptyEl) _emptyEl.style.display = shown ? 'none' : 'block';
 
             var $grid = $('#' + MODAL_ID + '_Grid');
-            $grid.empty().scrollTop(0);
-
-            if (_filteredList.length === 0) {
-                $grid.html('<div style="text-align:center;padding:25px;color:#8a7050;">' + safeLoca("LAB", "NotFound", "Ничего не найдено") + '</div>');
-                return;
-            }
-
-            var html = [];
-            for (var k = 0; k < _filteredList.length; k++) {
-                var entry    = _filteredList[k];
-                var itm      = entry.item;
-                if (!itm || !itm.name) continue;
-                var stk      = entry.stock;
-                var stockTxt = stk > 0 ? formatStockBadge(stk) : '';
-                var tooltip  = (itm.localizedName || itm.name) + (stk > 0 ? ' — ' + formatExactNumber(stk) : '');
-                var isSel    = (itm.name === _selectedItemName);
-                var safeName = escAttr(itm.name);
-                var safeTip  = escAttr(tooltip);
-                var iconHtml = getCachedIconTag(itm.name, itm.type, '34px');
-                var iconAttr = iconHtml ? '' : ' data-pending="1"';
-
-
-                html.push(
-                    '<div class="st-item-tile' + (isSel ? ' selected' : '') + '" data-name="' + safeName + '" title="' + safeTip + '">' +
-                    '  <div class="st-tile-icon-box"' + iconAttr + '>' + iconHtml + '</div>' +
-                    '  <div class="st-tile-stock">' + stockTxt + '</div>' +
-                    '</div>'
-                );
-            }
-            $grid.html(html.join(''));
-            loadPendingIcons($grid);
+            $grid.scrollTop(0);
+            if (shown) loadPendingIcons($grid);
         }
 
         return { open: open };
@@ -1939,7 +1991,12 @@ var ShortcutTrader = (function () {
         }
 
         function hasPending() {
-            for (var k in _pending) { if (_pending.hasOwnProperty(k)) return true; }
+            var now = Date.now();
+            for (var k in _pending) {
+                if (!_pending.hasOwnProperty(k)) continue;
+                if ((now - _pending[k]) > PENDING_TTL) { delete _pending[k]; continue; }
+                return true;
+            }
             return false;
         }
 
