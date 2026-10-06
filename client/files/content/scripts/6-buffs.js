@@ -246,7 +246,7 @@ function buffDoJob()
 	$.each(buffRecordFiltered, function(i, item) {
 		if(buffsAvailable[item.buffName].count > 0) {
 			buffsAvailable[item.buffName].count -= 1;
-			x.add(function(){ sendBuffPacket(buffsAvailable[item.buffName].id, item.buiGrid); });
+			x.addTask(getBuffPacket(buffsAvailable[item.buffName].id, item.buiGrid));
 		}
 	});
 	x.run();
@@ -254,12 +254,12 @@ function buffDoJob()
 	game.showAlert(getText('command_sent'));
 }
 
-function sendBuffPacket(buffId, grid)
+function getBuffPacket(buffId, grid)
 {
 	try{
 		var uniqueIdArr = buffId.split("_"),
 			uniqueID = game.def("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
-		game.gi.SendServerAction(61, 0, grid, 0, uniqueID);
+		return game.def("Communication.VO::dServerAction").createForCommand(61, 0, grid, 0, uniqueID);
 	} catch (ex) {
 		alert(ex);
 	}

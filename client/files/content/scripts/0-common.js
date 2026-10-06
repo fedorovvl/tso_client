@@ -436,6 +436,8 @@ function readLastDir(type) {
 var TimedQueue = function(delay) {
     this.queue = [], 
 	this.index = 0, 
+	this.batchSize = 5,
+	this.tasksQueue = [],
 	this.defaultDelay = delay || 1000, 
 	this.stamp = 0,
 	this.inId = void 0
@@ -447,11 +449,18 @@ TimedQueue.prototype = {
             delay: delay
         })
     },
+    addTask: function(task) {
+        this.tasksQueue.push(task)
+    },
     run: function(index) {
         if (index || 0 === index) {
-			this.index = index;
-		}
-		this.next();
+            this.index = index;
+        }
+        if (this.queue[this.index]) {
+            this.next();
+        } else {
+            this.nextTaskBatch();
+        }
     },
     len: function() {
         return this.queue.length
@@ -461,22 +470,41 @@ TimedQueue.prototype = {
             targetIndex = this.index++,
             current = this.queue[targetIndex],
             next = this.queue[this.index];
-		if(current) {
-			current.fn();
-			if(next) {
-				e.tick(next.delay || this.defaultDelay);
-			}
-		}
+        if(current) {
+            current.fn();
+            if(next) {
+                e.tick(next.delay || this.defaultDelay);
+            } else if(this.tasksQueue.length) {
+                e.tick(this.defaultDelay, function() {
+                    e.nextTaskBatch();
+                });
+            }
+        }
     },
-	tick: function(delay) {
-		var e = this;
-		e.stamp = Date.now() + delay;
-		e.inId = setInterval(function() {
-			if(Date.now() >= e.stamp) {
-				clearInterval(e.inId);
-				e.next();
-			}
-		}, 50);
+    nextTaskBatch: function() {
+        var e = this,
+            batch = this.tasksQueue.splice(0, Math.max(1, this.batchSize));
+        if(!batch.length) {
+            return;
+        }
+        game.gi.SendServerActionBatch(batch);
+        if(this.tasksQueue.length) {
+            e.tick(this.defaultDelay, function() {
+                e.nextTaskBatch();
+            });
+        }
+    },
+    tick: function(delay, callback) {
+        var e = this;
+        e.stamp = Date.now() + delay;
+        e.inId = setInterval(function() {
+            if(Date.now() >= e.stamp) {
+                clearInterval(e.inId);
+                (callback || function() {
+                    e.next();
+                })();
+            }
+        }, 50);
 	},
     reset: function() {
         "number" == typeof this.inId && clearInterval(this.inId), this.index = 0
