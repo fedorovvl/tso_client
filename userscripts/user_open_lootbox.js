@@ -102,11 +102,6 @@ var ChestOpener = (function () {
 
     var OpenerService = (function () {
 
-        /**
-         * Opens `count` chests.
-         * Re-reads buff.GetUniqueId() on every tick — the game updates it
-         * server-side as the stack decreases.
-         */
         function openChests(group, count, onDone) {
             var queue  = new TimedQueue(SCRIPT_CONST.OPEN_DELAY);
             var opened = 0;
@@ -122,7 +117,7 @@ var ChestOpener = (function () {
                     (function (buffRef) {
                         queue.add(function () {
                             try {
-                                game.gi.SendServerAction(61, 0, grid, 0, buffRef.GetUniqueId());
+                                game.gi.SendServerAction(61, 0, grid, 1, buffRef.GetUniqueId());
                                 globalFlash.gui.mMysteryBoxPanel.SetData(buffRef);
                             } catch (e) {
                                 debug(e);

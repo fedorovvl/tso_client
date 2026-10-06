@@ -385,7 +385,67 @@ air.Introspector.extend(air.Introspector, {
 	       air.Introspector.highlightText.graphics.drawRect(0, 0, 250, 40);
 	       air.Introspector.highlightText.visible = false;
 	       air.Introspector.highlightLine1 = air.Introspector.createTextField(air.Introspector.highlightText, 16, true);
-	       air.Introspector.highlightLine2 = air.Introspector.createTextField(air.Introspector.highlightText, 10, false);
+	       air.Introspector.highlightLine2 = air.Introspector.createTextField(air.Introspector.highlightText, 10, false);
+
+	       // Pick ActionScript DisplayObjects under the cursor as well as HTML nodes.
+	       var flashObjectAt = function(stageX, stageY){
+	           try {
+	               var point = new runtime.flash.geom.Point(stageX, stageY);
+	               var objects = htmlLoader.stage.getObjectsUnderPoint(point);
+	               for(var i = objects.length - 1; i >= 0; i--){
+	                   var target = objects[i];
+	                   if(target == sprite || target == air.Introspector.highlightText || target.parent == air.Introspector.highlightText)
+	                       continue;
+	                   var owner = target;
+	                   var belongsToHtml = false;
+	                   while(owner){
+	                       if(owner == htmlLoader){
+	                           belongsToHtml = true;
+	                           break;
+	                       }
+	                       owner = owner.parent;
+	                   }
+	                   if(belongsToHtml)
+	                       continue;
+	                   while(target.parent && target.mouseEnabled === false)
+	                       target = target.parent;
+	                   if(target != htmlLoader.stage)
+	                       return target;
+	               }
+	           } catch(e){}
+	           return null;
+	       };
+
+	       air.Introspector.addEventListener(htmlLoader.stage, runtime.flash.events.MouseEvent.MOUSE_MOVE, function(e){
+	           if(!(air.Introspector.inspect || air.Introspector.remoteInspect))
+	               return;
+	           var target = flashObjectAt(e.stageX, e.stageY);
+	           air.Introspector.hoverDisplayObject = target;
+	           if(!target)
+	               return;
+	           try {
+	               var bounds = target.getBounds(htmlLoader.stage);
+	               air.Introspector.showHighlight({x:bounds.x, y:bounds.y, width:bounds.width, height:bounds.height, scaleX:1, scaleY:1});
+	               sprite.graphics.clear();
+	               sprite.graphics.beginFill(0x00CCFF, 0.18);
+	               sprite.graphics.lineStyle(2, 0x00CCFF, 0.95, false);
+	               sprite.graphics.drawRect(0, 0, bounds.width, bounds.height);
+	               air.Introspector.highlightLine1.text = target.name || "DisplayObject";
+	               air.Introspector.highlightLine2.text = String(target);
+	               air.Introspector.highlightText.visible = true;
+	           } catch(error){}
+	       }, true, 2100000);
+
+	       air.Introspector.addEventListener(htmlLoader.stage, runtime.flash.events.MouseEvent.CLICK, function(e){
+	           if(!(air.Introspector.inspect || air.Introspector.remoteInspect))
+	               return;
+	           var target = air.Introspector.hoverDisplayObject;
+	           if(!target)
+	               return;
+	           window.$inspect = target;
+	           window.$0 = target;
+	           air.Introspector.Console.log("[Flash inspect] $inspect / $0 =", target);
+	       }, true, 2100000);
        }else{
 			//should not be here
 	   }

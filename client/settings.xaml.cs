@@ -41,7 +41,7 @@ namespace client
         public string langAuthDropbox { get { return Servers.getTrans("langAuthDropbox"); } set { } }
         public string langTryFast { get { return Servers.getTrans("langTryFast"); } set { } }
         public string langUseCache { get { return Servers.getTrans("langUseCache"); } set { } }
-        public string langMigrated { get { return Servers.getTrans("langMigrated"); } set { } }
+        public string langskipUpdate { get { return Servers.getTrans("langskipUpdate"); } set { } }
         public string langDropboxAuth { get { return Servers.getTrans("langDropboxAuth"); } set { } }
         public string langImport { get { return Servers.getTrans("langImport"); } set { } }
         public string langExport { get { return Servers.getTrans("langExport"); } set { } }
@@ -69,7 +69,7 @@ namespace client
             tsoFolderNearLauncher.IsChecked = setting.tsoFolderNearLauncher;
             tryFast.IsChecked = setting.tryFast;
             useCache.IsChecked = setting.useCache;
-            cipMigrated.IsChecked = setting.cipMigrated;
+            skipUpdate.IsChecked = setting.skipUpdate;
             if (!string.IsNullOrEmpty(setting.window))
             {
                 window_size.SelectedIndex = Array.IndexOf(winSizes, setting.window);
@@ -101,7 +101,7 @@ namespace client
             setting.window = winSizes[window_size.SelectedIndex];
             setting.lang = langs[game_lang_list.SelectedIndex];
             setting.tsoFolderNearLauncher = (bool)tsoFolderNearLauncher.IsChecked;
-            setting.cipMigrated = (bool)cipMigrated.IsChecked;
+            setting.skipUpdate = (bool)skipUpdate.IsChecked;
             this.DialogResult = true;
         }
 

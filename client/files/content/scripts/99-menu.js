@@ -39,7 +39,8 @@ var Menu = function(type){
 					{ label: "Toggle showDepositMap", onSelect: menuDebugShowHandler },
 					{ label: "Toggle showLandingFields", onSelect: menuDebugShowHandler },
 					{ label: "Toggle showWatchAreas", onSelect: menuDebugShowHandler },
-				    { label: "Copy AuthToken", onSelect: copyAuthTokenHandler }
+				    { label: "Copy AuthToken", onSelect: copyAuthTokenHandler },
+					{ label: "Open logfile", onSelect: openLogHandler }
 				]}
 			]},
 			{ label: "LRU", name: 'LRU', mnemonicIndex: 0, items: [] },
@@ -129,6 +130,7 @@ var Menu = function(type){
 			]},
 			{ type: 'separator' },
 			{ label: loca.GetText("LAB", "ChatHelp"), name: 'Help', mnemonicIndex: 0, items: [
+				{ label: "Changelog", onSelect: changelogMenuHandler },
 				{ label: "Wiki", onSelect: openWikiHandler },
 				{ label: "Discord (RU/EN)", onSelect: openDiscordENHandler },
 				{ label: "Discord (DE)", onSelect: openDiscordDEHandler },
@@ -139,7 +141,7 @@ var Menu = function(type){
 				{ type: 'separator' },
 				{ label: getText('feedbacktitle'), onSelect: feedbackMenuHandler }
 			]},
-			{ label: 'v' + version + (mainSettings.experimental ? "-Ex" : ""), enabled: false },
+			{ label: 'v' + version, enabled: false },
 			{ label: '', name: 'memusage', enabled: false },
 			{ label: '', name: 'online', enabled: false }
 		];
@@ -232,13 +234,13 @@ setInterval(function() { menu.nativeMenu.getItemByName("memusage").label = 'Mem:
 setInterval(function() { 
     try {
         var conn = swmmo.application.blueFireComponent.getFacade().retrieveMediator("XIFFConnectionMediator").getViewComponent();
-        if(!conn.isLoggedIn()) { return; }
+        if(!conn.loggedIn) { return; }
         var br = new(game.def("org.igniterealtime.xiff.core::Browser"))(conn);
         br.getServiceInfo(new(game.def("org.igniterealtime.xiff.core::EscapedJID"))("help@conference."+conn.server), function(result_iq) {
-            try {
-                var online = result_iq.getExtension("query").getNode().childNodes.filter(function(x) { return x.nodeName == "x" })[0].childNodes.filter(function(x) { return x.attributes["var"] == "muc#roominfo_occupants"; })[0].lastChild.lastChild.toString();
+            var online = result_iq.getExtension("query").getAllExtensionsByNS("jabber:x:data")[0].getFormField("muc#roominfo_occupants").value;
+            if (online != null) {
                 menu.nativeMenu.getItemByName("online").label = 'Online: ' + online;
-            } catch (ex) { }
+            }
         });
     } catch(e) { }
 }, 60000);

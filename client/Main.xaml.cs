@@ -46,7 +46,7 @@ namespace client
         private string _langRemember;
         private string _dropboxToken;
         private static string extraVersion = "#TESTTAG#";
-        public const string appversion = "1.5.8.6";
+        public const string appversion = "1.6.0.1";
         public static bool forceFullAuth = false;
         public string version
         {
@@ -159,18 +159,23 @@ namespace client
 
         public void checkVersion()
         {
-            AutoUpdater.InstalledVersion = new Version(appversion);
-            AutoUpdater.ShowSkipButton = true;
-            AutoUpdater.OpenDownloadPage = true;
-            AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
+            try
+            {
+                CaptchaWindow.PrepareWebView2Loader();
+                AutoUpdater.InstalledVersion = new Version(appversion);
+                AutoUpdater.ShowSkipButton = true;
+                AutoUpdater.OpenDownloadPage = true;
+                AutoUpdater.Start("https://raw.githubusercontent.com/fedorovvl/tso_client/master/changelog.xml");
+            }
+            catch { }
             Dispatcher.BeginInvoke(new ThreadStart(delegate { butt.IsEnabled = false; error.Text = Servers.getTrans("checking"); }));
             if (!Directory.Exists(ClientDirectory))
                 Directory.CreateDirectory(ClientDirectory);
-            
+
             using (var unzip = new Unzip(new MemoryStream(Properties.Resources.content)))
             {
                 // ensure that scripts dir always fresh
-                if(Directory.Exists(Path.Combine(ClientDirectory, "scripts")))
+                if (Directory.Exists(Path.Combine(ClientDirectory, "scripts")))
                 {
                     DirectoryInfo dir = new DirectoryInfo(Path.Combine(ClientDirectory, "scripts"));
                     foreach (FileInfo fi in dir.GetFiles())
@@ -203,7 +208,7 @@ namespace client
                 }
                 catch { }
             }
-            if (cmd["skip"] != null && File.Exists(Path.Combine(ClientDirectory, "client.swf")))
+            if ((cmd["skip"] != null || _settings.skipUpdate) && File.Exists(Path.Combine(ClientDirectory, "client.swf")))
             {
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
                 if (cmd["autologin"] != null)
@@ -234,13 +239,7 @@ namespace client
                 bool needDownload = false;
                 if (File.Exists(System.IO.Path.Combine(ClientDirectory, "client.swf"))) {
                     byte[] chksumdata = File.ReadAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"));
-                    byte[] chksumheader = UTF8Encoding.UTF8.GetBytes("blob " + chksumdata.Length + "\0");
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        ms.Write(chksumheader, 0, chksumheader.Length);
-                        ms.Write(chksumdata, 0, chksumdata.Length);
-                        chksum = BitConverter.ToString(SHA1.Create().ComputeHash(ms.ToArray())).ToLower().Replace("-", "");
-                    }
+                    chksum = BitConverter.ToString(SHA256.Create().ComputeHash(chksumdata)).ToLower().Replace("-", "");
                 } else
                     needDownload = true;
                 if (upstream_data == null)
@@ -257,28 +256,21 @@ namespace client
                     }
                     catch { }
                 }
-                bool upstream_swf = upstream_data != null && Array.IndexOf(upstream_data, _region) >= 0;
-                Dispatcher.BeginInvoke(new ThreadStart(delegate { swf_upsteam.IsChecked = upstream_swf; }));
-                string swf_filename = upstream_swf ? "client_upstream.swf" : _region == "ts" ? "client_testing.swf" : "client.swf";
+                string swf_filename = _region == "ts" ? "client-testing.swf" : "client.swf";
                 if (!string.IsNullOrEmpty(chksum))
                 {
-                    post = new PostSubmitter
-                    {
-                        Url = "https://api.github.com/repos/fedorovvl/tso_client/contents/" + swf_filename,
-                        Type = PostSubmitter.PostTypeEnum.Get
-                    };
-                    string rchksum = post.Post(ref _cookies).Trim();
+                    chksum = "sha256:" + chksum;
                     try
                     {
-                        gitFile data = json.Deserialize<gitFile>(rchksum);
-                        if (chksum != data.sha)
+                        string rchksum = getGithubAssetDigest(swf_filename);
+                        if (chksum != rchksum)
                             needDownload = true;
                     } catch { needDownload = true; }
                 }
                 if (needDownload)
                 {
                     Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("downloading"); }));
-                    byte[] client = DownloadFile("https://raw.githubusercontent.com/fedorovvl/tso_client/master/" + swf_filename);
+                    byte[] client = DownloadFile("https://github.com/fedorovvl/tso_client_swf/releases/download/latest/" + swf_filename);
                     File.WriteAllBytes(System.IO.Path.Combine(ClientDirectory, "client.swf"), client);
                 }
                 Dispatcher.BeginInvoke(new ThreadStart(delegate { error.Text = Servers.getTrans("letsplay"); butt.IsEnabled = true; }));
@@ -288,7 +280,7 @@ namespace client
                 }
                 if (cmd["fastlogin"] != null && !string.IsNullOrEmpty(_settings.tsoArg))
                 {
-                    if(cmd["token"] != null)
+                    if (cmd["token"] != null)
                     {
                         var tsoUrl = HttpUtility.ParseQueryString(_settings.tsoArg);
                         tsoUrl.Set("dsoAuthToken", cmd["token"].Trim());
@@ -305,6 +297,19 @@ namespace client
                 MessageBox.Show(e.Message + e.StackTrace);
             }
             return;
+        }
+
+        public string getGithubAssetDigest(string filename)
+        {
+            var json = new JavaScriptSerializer();
+            var post = new PostSubmitter
+            {
+                Url = "https://api.github.com/repos/fedorovvl/tso_client_swf/releases/latest",
+                Type = PostSubmitter.PostTypeEnum.Get
+            };
+            string responce = post.Post(ref _cookies).Trim();
+            gitAssets assets_data = json.Deserialize<gitAssets>(responce);
+            return assets_data.assets.Find(x => x.name == filename).digest;
         }
 
         public byte[] DownloadFile(string remoteFilename)
@@ -374,7 +379,7 @@ namespace client
                             nickName = settings_convert[3].Trim(),
                             region = int.Parse(settings_convert[5].Trim())
                         };
-                        if(!string.IsNullOrEmpty(_settings.nickName) && _settings.nickName != "0")
+                        if (!string.IsNullOrEmpty(_settings.nickName) && _settings.nickName != "0")
                         {
                             _settings.tsoArg = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(settings_convert[4].Trim()));
                         }
@@ -447,7 +452,7 @@ namespace client
             post.HeaderItems.Add("Dropbox-API-Arg", string.Format(@"{{""path"":""/{0}"", ""mode"": {{"".tag"": ""overwrite""}}}}", filename));
             post.PostItems.Add(data, string.Empty);
             string result = post.Post(ref _cookies);
-            return result.Contains("error") ? false: true;
+            return result.Contains("error") ? false : true;
         }
 
         private void dropboxGetToken()
@@ -497,7 +502,7 @@ namespace client
 
         private void password_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if((sender as TextBox).Text == Servers.getTrans("login") || (sender as TextBox).Text == Servers.getTrans("password"))
+            if ((sender as TextBox).Text == Servers.getTrans("login") || (sender as TextBox).Text == Servers.getTrans("password"))
             {
                 (sender as TextBox).Text = "";
             }
@@ -539,7 +544,7 @@ namespace client
             log.ShowDialog();
             if (log.DialogResult == true)
             {
-                if(_settings.tryFast && log.FastLoginSuccess)
+                if (_settings.tryFast && log.FastLoginSuccess)
                 {
                     run_tso();
                     return;
@@ -619,7 +624,12 @@ namespace client
             }
             try
             {
-                System.Diagnostics.Process.Start(string.Format("{0}\\client{1}.exe", ClientDirectory, _settings.x64 || cmd["x64"] != null ? "64" : ""), string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion));
+                System.Diagnostics.Process.Start(new ProcessStartInfo
+                {
+                    FileName = string.Format("{0}\\client{1}.exe", ClientDirectory, _settings.x64 || cmd["x64"] != null ? "64" : ""),
+                    Arguments = string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion),
+                    WorkingDirectory = ClientDirectory
+                });
             } catch (Exception e)
             {
                 MessageBox.Show(string.Format("Error start client {0}", e.Message), "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -726,10 +736,15 @@ namespace client
 
     public class gitFile
     {
-        public string sha { get; set; }
-        public string download_url { get; set; }
+        public string digest { get; set; }
+        public string name { get; set; }
+        public string browser_download_url { get; set; }
     }
 
+    public class gitAssets
+    {
+        public List<gitFile> assets { get; set; }
+    }
     public class clientSettings
     {
         public string totpkey { get; set; } = string.Empty;
@@ -743,7 +758,7 @@ namespace client
         public bool x64 { get; set; } = false;
         public bool tryFast { get; set; } = false;
         public bool useCache { get; set; } = false;
-        public bool cipMigrated { get; set; } = false;
+        public bool skipUpdate { get; set; } = false;
         public bool configNickname { get; set; } = false;
         public string username { get; set; } = string.Empty;
         public long accountId { get; set; } = 0;
