@@ -624,7 +624,12 @@ namespace client
             }
             try
             {
-                System.Diagnostics.Process.Start(string.Format("{0}\\client{1}.exe", ClientDirectory, _settings.x64 || cmd["x64"] != null ? "64" : ""), string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion));
+                System.Diagnostics.Process.Start(new ProcessStartInfo
+                {
+                    FileName = string.Format("{0}\\client{1}.exe", ClientDirectory, _settings.x64 || cmd["x64"] != null ? "64" : ""),
+                    Arguments = string.Format("{0}&version={1}{2}", _settings.tsoArg, appversion, extraVersion),
+                    WorkingDirectory = ClientDirectory
+                });
             } catch (Exception e)
             {
                 MessageBox.Show(string.Format("Error start client {0}", e.Message), "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
