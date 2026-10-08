@@ -708,22 +708,59 @@ Modal.prototype = {
 
 var Settings = function() {
     this.file = new air.File("file:///" + air.File.applicationDirectory.resolvePath(settingsFile).nativePath), 
-	this.fs = new air.FileStream, 
-	this.settings = {}
+	this.settings = {},
+	this.ioReported = !1
 };
 Settings.prototype = {
+    // One stream per call, always closed. A shared FileStream stays open if
+    // anything between open() and close() throws, and every later save then
+    // fails with Error #3013 for the rest of the session.
+    withStream: function(mode, fn) {
+        var fs = new air.FileStream();
+        try {
+            fs.open(this.file, mode);
+            return fn(fs)
+        } finally {
+            try { fs.close() } catch (e) {}
+        }
+    },
+    // Report once, and never with alert() once the game is up: that dialog is
+    // modal and blocks the client until it is dismissed, which is what made a
+    // failed save look like a freeze. Before the game exists there is nothing
+    // to block, so a plain alert is still the only way to be seen.
+    ioError: function(what, e) {
+        debug("Settings " + what + " failed: " + e);
+        if (this.ioReported) return;
+        this.ioReported = !0;
+        var msg = "Error " + what + " settings " + e;
+        try {
+            if (typeof game !== "undefined" && game && game.showAlert) return game.showAlert(msg)
+        } catch (t) {}
+        alert(msg)
+    },
     load: function() {
         try {
-            this.file.exists && (this.fs.open(this.file, "read"), this.settings = JSON.parse(this.fs.readUTFBytes(this.fs.bytesAvailable)), this.fs.close())
+            if (!this.file.exists) return;
+            this.settings = this.withStream("read", function(fs) {
+                return JSON.parse(fs.readUTFBytes(fs.bytesAvailable))
+            })
         } catch (t) {
-            alert("Error loading settings " + t)
+            this.ioError("loading", t)
         }
     },
     save: function() {
+        // Serialise first: opening in "write" truncates the file, so failing
+        // after that would leave an empty settings file behind.
+        var data;
         try {
-            this.fs.open(this.file, "write"), this.fs.writeUTFBytes(JSON.stringify(this.settings, null, "  ")), this.fs.close()
+            data = JSON.stringify(this.settings, null, "  ")
         } catch (t) {
-            alert("Error saving settings " + t)
+            return this.ioError("saving", t)
+        }
+        try {
+            this.withStream("write", function(fs) { fs.writeUTFBytes(data) })
+        } catch (t) {
+            this.ioError("saving", t)
         }
     },
     store: function(t, s) {
