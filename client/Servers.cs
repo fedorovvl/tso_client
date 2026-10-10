@@ -29,6 +29,7 @@ namespace client
             { "el", new Server(){ domain = "https://www.thesettlersonline.gr", uplay = "/el/api/user/uplay", main = "/el/%CE%B1%CF%81%CF%87%CE%B9%CE%BA%CE%AE-%CF%83%CE%B5%CE%BB%CE%AF%CE%B4%CE%B1", play = "/el/play" } },
             { "ro", new Server(){ domain = "https://www.thesettlersonline.ro", uplay = "/ro/api/user/uplay", main = "/ro/pagina-de-start", play = "/ro/play" } },
             { "ts", new Server(){ domain = "https://www.tsotesting.com", uplay = "/en/api/user/uplay", main = "/en/homepage", play = "/en/play" } },
+            { "si", new Server(){ domain = "https://tso.sirris.su", uplay = "/en/api/user/uplay", main = "/homepage", play = "/play" } },
         };
 
         public static Dictionary<string, string> _langs = new Dictionary<string, string>()
@@ -105,7 +106,8 @@ namespace client
                 { "langTryFast", "Пробовать быструю авторизацию" },
                 { "langUseCache", "Использовать локальный кеш" },
                 { "langMigrated", "Аккаунт перенесен в CipSoft" },
-                { "langskipUpdate", "Пропускать проверку обновления клиента" }
+                { "langskipUpdate", "Пропускать проверку обновления клиента" },
+                { "langStaticUrl", "Адрес статики" }
              }
             },
             { "en-uk", new Dictionary<string, string>() {
@@ -163,7 +165,8 @@ namespace client
                 { "langMigrated", "Account migrated to CipSoft" },
                 { "langImport", "Import" },
                 { "langExport", "Export" },
-                { "langskipUpdate", "Skip client update check" }
+                { "langskipUpdate", "Skip client update check" },
+                { "langStaticUrl", "Static CDN Url" }
              }
             },
             { "fr-fr", new Dictionary<string, string>() {

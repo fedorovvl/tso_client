@@ -1,7 +1,7 @@
 ﻿<Window x:Class="client.settings"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TSO Game Client" Icon="files/icon.ico" Height="523.761" Width="550" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="true">
+        Title="TSO Game Client" Icon="files/icon.ico" Height="571.761" Width="550" MouseLeftButtonDown="titleBar_MouseLeftButtonDown" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="true">
     <Window.Background>
         <ImageBrush ImageSource="files/settings.png" />
     </Window.Background>
@@ -328,8 +328,8 @@
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,42,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langLang, Mode=OneWay}" VerticalAlignment="Top" Width="196" Grid.ColumnSpan="2" />
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,77,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langConf, Mode=OneWay}" VerticalAlignment="Top" Width="196" Grid.ColumnSpan="2" />
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,113,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langtsoFolder, Mode=OneWay}" VerticalAlignment="Top" Width="196" Grid.ColumnSpan="2" />
-                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,268,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langx64, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
-                <CheckBox Height="25" IsChecked="True" Name="x64runtime" Margin="292,264,23.2,47" Width="24" Grid.Column="1">
+                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,313,0,-1" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langx64, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
+                <CheckBox Height="25" IsChecked="True" Name="x64runtime" Margin="292,309,23.2,2" Width="24" Grid.Column="1">
                     <CheckBox.Template>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <StackPanel Orientation="Horizontal">
@@ -345,7 +345,7 @@
                 </CheckBox>
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,146,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langWinSize, Mode=OneWay}" VerticalAlignment="Top" Width="196" Grid.ColumnSpan="2" />
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="39,178,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langTotp, Mode=OneWay}" VerticalAlignment="Top" Width="195" Grid.ColumnSpan="2" />
-                <CheckBox Height="25" IsChecked="True" x:Name="nicknameConfig" Margin="292,294,23.2,17" Width="24" Grid.Column="1">
+                <CheckBox Height="25" IsChecked="True" x:Name="nicknameConfig" Margin="292,339,23.2,-28" Width="24" Grid.Column="1">
                     <CheckBox.Template>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <StackPanel Orientation="Horizontal">
@@ -359,14 +359,14 @@
                         </ControlTemplate>
                     </CheckBox.Template>
                 </CheckBox>
-                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,295,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langNickConfig, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
+                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,340,0,-28" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langNickConfig, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
                 <TextBlock Height="23" HorizontalAlignment="Left" Margin="39,211,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langDropbox, Mode=OneWay}" VerticalAlignment="Top" Width="195" Grid.ColumnSpan="2" />
-                <TextBlock Height="23" HorizontalAlignment="Left" Margin="39,239,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langDropboxRefresh, Mode=OneWay}" VerticalAlignment="Top" Width="195" Grid.ColumnSpan="2" />
-                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,324,0,-12" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langTryFast, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
-                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,353,0,-41" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langUseCache, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
-                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,382,0,-70" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langskipUpdate, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
+                <TextBlock Height="23" HorizontalAlignment="Left" Margin="39,242,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langDropboxRefresh, Mode=OneWay}" VerticalAlignment="Top" Width="195" Grid.ColumnSpan="2" />
+                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,369,0,-57" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langTryFast, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
+                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,398,0,-86" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langUseCache, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
+                <TextBlock Height="24" HorizontalAlignment="Left" Margin="38,427,0,-115" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langskipUpdate, Mode=OneWay}" VerticalAlignment="Top" Width="370" Grid.ColumnSpan="2" />
 
-                <CheckBox Height="25" IsChecked="True" x:Name="tryFast" Margin="292,323,23.2,-12" Width="24" Grid.Column="1">
+                <CheckBox Height="25" IsChecked="True" x:Name="tryFast" Margin="292,368,23.2,-57" Width="24" Grid.Column="1">
                     <CheckBox.Template>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <StackPanel Orientation="Horizontal">
@@ -394,7 +394,7 @@
                         </ControlTemplate>
                     </CheckBox.Template>
                 </CheckBox>
-                <CheckBox Height="25" IsChecked="True" x:Name="useCache" Margin="292,352,23.2,-41" Width="24" Grid.Column="1">
+                <CheckBox Height="25" IsChecked="True" x:Name="useCache" Margin="292,397,23.2,-86" Width="24" Grid.Column="1">
                     <CheckBox.Template>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <StackPanel Orientation="Horizontal">
@@ -408,7 +408,7 @@
                         </ControlTemplate>
                     </CheckBox.Template>
                 </CheckBox>
-                <CheckBox Height="25" IsChecked="True" x:Name="skipUpdate" Margin="291,381,24.2,-70" Width="24" Grid.Column="1">
+                <CheckBox Height="25" IsChecked="True" x:Name="skipUpdate" Margin="291,426,24.2,-115" Width="24" Grid.Column="1">
                     <CheckBox.Template>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <StackPanel Orientation="Horizontal">
@@ -422,12 +422,19 @@
                         </ControlTemplate>
                     </CheckBox.Template>
                 </CheckBox>
+                <ComboBox MaxDropDownHeight="200" SelectedIndex="0" HorizontalAlignment="Left" Margin="86,271,0,0" Foreground="AliceBlue" x:Name="static_url" BorderThickness="0" BorderBrush="#00000000" Width="229" Grid.Column="1" Height="28" VerticalAlignment="Top">
+                    <ComboBox.Background>
+                        <ImageBrush ImageSource="files/input.png" />
+                    </ComboBox.Background>
+                    <ComboBoxItem Tag="def" Content="{Binding langDef, Mode=OneWay}"/>
+                </ComboBox>
+                <TextBlock Height="23" HorizontalAlignment="Left" Margin="38,275,0,0" Foreground="#E9CB6F" FontWeight="Bold" Text="{Binding langStaticUrl, Mode=OneWay}" VerticalAlignment="Top" Width="196" Grid.ColumnSpan="2" />
             </Grid>
         </GroupBox>
-        <Button BorderThickness="0" Content="{Binding langSave, Mode=OneWay}" Click="Button_Click" Height="23" HorizontalAlignment="Left" Margin="363,436,0,0" VerticalAlignment="Top" Width="77" />
-        <Button BorderThickness="0" Content="{Binding langExit, Mode=OneWay}" Click="Button_Click_1" Height="23" HorizontalAlignment="Left" Margin="445,436,0,0" VerticalAlignment="Top" Width="77" />
-        <Button BorderThickness="0" Content="{Binding langTestDropbox, Mode=OneWay}" Click="Button_Click_2" Height="23" HorizontalAlignment="Left" Margin="28,436,0,0" VerticalAlignment="Top" Width="135" />
-        <Button BorderThickness="0" Content="{Binding langAuthDropbox, Mode=OneWay}" Click="Button_Click_3" Height="23" HorizontalAlignment="Left" Margin="168,436,0,0" VerticalAlignment="Top" Width="135" />
+        <Button BorderThickness="0" Content="{Binding langSave, Mode=OneWay}" Click="Button_Click" Height="23" HorizontalAlignment="Left" Margin="362,485,0,0" VerticalAlignment="Top" Width="77" />
+        <Button BorderThickness="0" Content="{Binding langExit, Mode=OneWay}" Click="Button_Click_1" Height="23" HorizontalAlignment="Left" Margin="444,485,0,0" VerticalAlignment="Top" Width="77" />
+        <Button BorderThickness="0" Content="{Binding langTestDropbox, Mode=OneWay}" Click="Button_Click_2" Height="23" HorizontalAlignment="Left" Margin="27,485,0,0" VerticalAlignment="Top" Width="135" />
+        <Button BorderThickness="0" Content="{Binding langAuthDropbox, Mode=OneWay}" Click="Button_Click_3" Height="23" HorizontalAlignment="Left" Margin="167,485,0,0" VerticalAlignment="Top" Width="135" />
         <Button BorderThickness="0" Content="֎" ToolTip="{Binding langDropboxAuth, Mode=OneWay}" Click="Button_Click_4" Height="29" HorizontalAlignment="Left" Margin="485,217,0,0" VerticalAlignment="Top" Width="34" FontSize="20" />
         <Image HorizontalAlignment="Left" Height="30" Margin="446,12,0,0" VerticalAlignment="Top" Width="31" Source="files/upload.png" Cursor="Hand" ToolTip="{Binding langExport, Mode=OneWay}" MouseDown="export_MouseDown"/>
         <Image HorizontalAlignment="Left" Height="30" Margin="488,12,0,0" VerticalAlignment="Top" Width="31" Source="files/download.png" Cursor="Hand" ToolTip="{Binding langImport, Mode=OneWay}" MouseDown="import_MouseDown"/>

@@ -598,6 +598,10 @@ namespace client
             {
                 tsoUrl.Set("gfxcache", "true");
             }
+            if (_settings.static_url != "def")
+            {
+                tsoUrl.Set("s", string.Format("{0}/frontend|{1}/frontend", Servers._servers[_settings.static_url].domain, Servers._servers[_settings.static_url].domain));
+            }
             return tsoUrl;
         }
 
@@ -765,6 +769,7 @@ namespace client
         public string password { get; set; } = string.Empty;
         public string nickName { get; set; } = string.Empty;
         public string tsoArg { get; set; } = string.Empty;
+        public string static_url { get; set; } = "def";
         public bool remember { get; set; } = true;
         public int region { get; set; } = 16;
     }
