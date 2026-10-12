@@ -436,7 +436,7 @@ function readLastDir(type) {
 var TimedQueue = function(delay) {
     this.queue = [], 
 	this.index = 0, 
-	this.batchSize = 5,
+	this.batchSize = 1,
 	this.tasksQueue = [],
 	this.defaultDelay = delay || 1000, 
 	this.stamp = 0,
