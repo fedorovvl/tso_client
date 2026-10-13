@@ -323,59 +323,146 @@ var ShortcutTrader = (function () {
     // Cache of single-key lookups: hits forever, misses for 60s (each miss in
     // gAssetManager.GetGfx logs a warning and scans loadedGfxVector - expensive).
     var _singleIconCache = {};
-    function tryLoadSingleIcon(key, size) {
+
+    function isWarehouseResource(name) {
+        if (!name || typeof name !== 'string') return false;
+        try {
+            if (typeof swmmo !== 'undefined' && swmmo && swmmo.getDefinitionByName) {
+                var gEconomics = swmmo.getDefinitionByName("ServerState::gEconomics");
+                if (gEconomics && gEconomics.GetResourcesDefaultDefinition) {
+                    if (gEconomics.GetResourcesDefaultDefinition(name)) return true;
+                }
+            }
+        } catch (e) {}
+        try {
+            if (typeof GameDataSource !== 'undefined' && GameDataSource.getItemInfo) {
+                var info = GameDataSource.getItemInfo(name);
+                if (info && info.type === 'resource') return true;
+            }
+        } catch (e2) {}
+        return false;
+    }
+
+    function tryLoadSingleIcon(key, size, type) {
         if (!key || typeof key !== 'string') return '';
-        var ck = key + '|' + size;
+        var ck = key + '|' + (type || '') + '|' + size;
         var hit = _singleIconCache[ck];
         var now = Date.now();
         if (hit && (hit.v || (now - hit.t) < 60000)) return hit.v;
-        var v = tryLoadSingleIconRaw(key, size);
+        var v = tryLoadSingleIconRaw(key, size, type);
         _singleIconCache[ck] = { v: v, t: now };
         return v;
     }
 
-    function tryLoadSingleIconRaw(key, size) {
+    function tryLoadSingleIconRaw(key, size, type) {
         if (!key || typeof key !== 'string') return '';
         var k = key.trim();
         if (!k) return '';
+        if (!type && isWarehouseResource(k)) type = 'resource';
         var tag = '';
 
         if (typeof assets !== 'undefined' && assets) {
-            // 1. Buff icon
-            if (!tag && assets.GetBuffIcon) {
-                try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (e1) {}
+            if (type === 'resource') {
+                // 1. Resource icon first
+                if (!tag && assets.GetResourceIcon) {
+                    try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eR1) {}
+                }
+                // 2. Dummy Icon resources
+                if (!tag && assets.GetDummyIcon) {
+                    try { tag = safeGetImage(assets.GetDummyIcon("resources:" + k), size); } catch (eR2) {}
+                }
+                // 3. Direct BitmapData
+                if (!tag && assets.GetBitmapData) {
+                    try {
+                        tag = safeGetImage(assets.GetBitmapData(k), size) ||
+                              safeGetImage(assets.GetBitmapData(k + '.png'), size);
+                    } catch (eR3) {}
+                }
+                // 4. getImageByModule helper from 0-common.js
+                if (!tag && typeof getImageByModule === 'function') {
+                    try { tag = getImageByModule('resources', k, size, size); } catch (eR4) {}
+                }
+            } else if (type === 'building') {
+                if (!tag && assets.GetBuildingIcon) {
+                    try { tag = safeGetImage(assets.GetBuildingIcon(k, true), size); } catch (eB1) {}
+                }
+                if (!tag && assets.GetDummyIcon) {
+                    try { tag = safeGetImage(assets.GetDummyIcon("buildings:" + k), size); } catch (eB2) {}
+                }
+                if (!tag && assets.GetBitmapData) {
+                    try {
+                        tag = safeGetImage(assets.GetBitmapData(k), size) ||
+                              safeGetImage(assets.GetBitmapData(k + '.png'), size);
+                    } catch (eB3) {}
+                }
+            } else if (type === 'buff' || type === 'adventure') {
+                if (!tag && assets.GetBuffIcon) {
+                    try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (eA1) {}
+                }
+                if (!tag && assets.GetDummyIcon) {
+                    try {
+                        tag = safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
+                              safeGetImage(assets.GetDummyIcon("shopitems:" + k), size);
+                    } catch (eA2) {}
+                }
+                if (!tag && assets.GetBitmapData) {
+                    try {
+                        tag = safeGetImage(assets.GetBitmapData(k), size) ||
+                              safeGetImage(assets.GetBitmapData(k + '.png'), size);
+                    } catch (eA3) {}
+                }
+                if (!tag && typeof getImageByModule === 'function') {
+                    try { tag = getImageByModule('buffs', k, size, size); } catch (eA4) {}
+                }
             }
-            // 2. Resource icon
+
+            // General fallbacks: resource icon before buff icon when type is not explicitly buff/adv/bld
+            if (!tag && assets.GetResourceIcon && (type === 'resource' || !type)) {
+                try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eF1) {}
+            }
+            if (!tag && assets.GetBuffIcon && type !== 'resource') {
+                try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (eF2) {}
+            }
             if (!tag && assets.GetResourceIcon) {
-                try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (e2) {}
+                try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eF3) {}
             }
-            // 3. Direct BitmapData
             if (!tag && assets.GetBitmapData) {
                 try {
                     tag = safeGetImage(assets.GetBitmapData(k), size) ||
                           safeGetImage(assets.GetBitmapData(k + '.png'), size);
-                } catch (e3) {}
+                } catch (eF4) {}
             }
-            // 4. Dummy Icon with lowercase module prefixes (matching AS3 getIconFromLookupName)
             if (!tag && assets.GetDummyIcon) {
                 try {
-                    tag = safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
-                          safeGetImage(assets.GetDummyIcon("resources:" + k), size) ||
-                          safeGetImage(assets.GetDummyIcon("shopitems:" + k), size) ||
-                          safeGetImage(assets.GetDummyIcon("buildings:" + k), size);
-                } catch (e4) {}
+                    tag = (type === 'resource' || !type)
+                        ? (safeGetImage(assets.GetDummyIcon("resources:" + k), size) ||
+                           safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
+                           safeGetImage(assets.GetDummyIcon("shopitems:" + k), size) ||
+                           safeGetImage(assets.GetDummyIcon("buildings:" + k), size))
+                        : (safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
+                           safeGetImage(assets.GetDummyIcon("resources:" + k), size) ||
+                           safeGetImage(assets.GetDummyIcon("shopitems:" + k), size) ||
+                           safeGetImage(assets.GetDummyIcon("buildings:" + k), size));
+                } catch (eF5) {}
             }
-            // 5. Building icon
             if (!tag && assets.GetBuildingIcon) {
-                try { tag = safeGetImage(assets.GetBuildingIcon(k, true), size); } catch (e5) {}
+                try { tag = safeGetImage(assets.GetBuildingIcon(k, true), size); } catch (eF6) {}
+            }
+            if (!tag && assets.GetBuffIcon) {
+                try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (eF7) {}
             }
         }
 
         // 6. getImageByModule helper from 0-common.js
         if (!tag && typeof getImageByModule === 'function') {
             try {
-                tag = getImageByModule('buffs', k, size, size) ||
-                      getImageByModule('resources', k, size, size);
+                if (type === 'buff' || type === 'adventure') {
+                    tag = getImageByModule('buffs', k, size, size) ||
+                          getImageByModule('resources', k, size, size);
+                } else {
+                    tag = getImageByModule('resources', k, size, size) ||
+                          getImageByModule('buffs', k, size, size);
+                }
             } catch (e6) {}
         }
 
@@ -387,9 +474,26 @@ var ShortcutTrader = (function () {
         if (!name || typeof name !== 'string') {
             return '<span style="display:inline-block;width:' + size + ';height:' + size + ';background:rgba(0,0,0,0.3);border-radius:3px;"></span>';
         }
+
+        if (!type) {
+            if (isWarehouseResource(name)) {
+                type = 'resource';
+            } else {
+                try {
+                    if (typeof GameDataSource !== 'undefined' && GameDataSource.getItemInfo) {
+                        var info = GameDataSource.getItemInfo(name);
+                        if (info && info.type) type = info.type;
+                    }
+                } catch (eType) {}
+            }
+        }
+
         var cacheKey = name + '_' + (type || '') + '_' + size;
         if (_iconCache[cacheKey]) {
             return _iconCache[cacheKey];
+        }
+        if (!type && _iconCache[name + '_resource_' + size]) {
+            return _iconCache[name + '_resource_' + size];
         }
 
         var isDepositRefill = false;
@@ -415,7 +519,8 @@ var ShortcutTrader = (function () {
         }
 
         var candidates = [];
-        if (isDepositRefill) {            if (rawRes && DEPOSIT_ICON_MAP[rawRes]) {
+        if (isDepositRefill) {
+            if (rawRes && DEPOSIT_ICON_MAP[rawRes]) {
                 var depCandidates = DEPOSIT_ICON_MAP[rawRes];
                 for (var dc = 0; dc < depCandidates.length; dc++) {
                     if (candidates.indexOf(depCandidates[dc]) === -1) candidates.push(depCandidates[dc]);
@@ -451,11 +556,12 @@ var ShortcutTrader = (function () {
 
         var tag = '';
         for (var c = 0; c < candidates.length && !tag; c++) {
-            tag = tryLoadSingleIcon(candidates[c], size);
+            tag = tryLoadSingleIcon(candidates[c], size, type);
         }
 
         // Star Menu live icon data if present in inventory (cached lookup)
-        if (!tag && typeof game !== 'undefined' && game.gi) {
+        // Never look in star buffs for warehouse resources
+        if (!tag && type !== 'resource' && typeof game !== 'undefined' && game.gi) {
             var sMap = getStarBuffIconMap();
             for (var sc = 0; sc < candidates.length && !tag; sc++) {
                 var sData = sMap[candidates[sc]];
@@ -479,6 +585,9 @@ var ShortcutTrader = (function () {
         }
 
         _iconCache[cacheKey] = tag;
+        if (type === 'resource') {
+            _iconCache[name + '__' + size] = tag;
+        }
         return tag;
     }
 
@@ -509,7 +618,10 @@ var ShortcutTrader = (function () {
 
     function getCachedIconTag(name, type, size) {
         if (!name || typeof name !== 'string') return '';
-        return _iconCache[name + '_' + (type || '') + '_' + size] || '';
+        if (!type && isWarehouseResource(name)) type = 'resource';
+        return _iconCache[name + '_' + (type || '') + '_' + size] ||
+               _iconCache[name + '_resource_' + size] ||
+               _iconCache[name + '__' + size] || '';
     }
 
     function formatFraction(input) {
@@ -2477,6 +2589,9 @@ var ShortcutTrader = (function () {
 
             var offerCol, costCol;
 
+            var offerItemInfo = GameDataSource.getItemInfo(_selectedOfferRes);
+            var costItemInfo  = GameDataSource.getItemInfo(_selectedCostRes);
+
             if (isClassic) {
                 var categories = GameDataSource.getResourceList();
                 var selectOffer = createResourceSelect(UIMap.ids.offerSelect(mode), categories, _selectedOfferRes);
@@ -2485,13 +2600,13 @@ var ShortcutTrader = (function () {
                 var offerIcon = $('<div>', {
                     'class': UIMap.classes.offerResourceImg,
                     style:   'display:inline-block;vertical-align:middle;margin-right:4px;',
-                    html:    getItemIconTag(_selectedOfferRes, null, '20px')
+                    html:    getItemIconTag(_selectedOfferRes, offerItemInfo ? offerItemInfo.type : null, '20px')
                 });
 
                 var costIcon = $('<div>', {
                     'class': UIMap.classes.costResourceImg,
                     style:   'display:inline-block;vertical-align:middle;margin-right:4px;',
-                    html:    getItemIconTag(_selectedCostRes, null, '20px')
+                    html:    getItemIconTag(_selectedCostRes, costItemInfo ? costItemInfo.type : null, '20px')
                 });
 
                 offerCol = $('<div>', { style: 'white-space:nowrap;line-height:26px;' })
@@ -2499,24 +2614,22 @@ var ShortcutTrader = (function () {
                 costCol  = $('<div>', { style: 'white-space:nowrap;line-height:26px;' })
                     .append(costIcon, inputCost, selectCost);
             } else {
-                var offerItemInfo = GameDataSource.getItemInfo(_selectedOfferRes);
                 var offerItemName = offerItemInfo ? offerItemInfo.localizedName : getItemLocalizedName(_selectedOfferRes);
                 var offerSlotBtn  = $('<div>', {
                     id:        UIMap.ids.offerSlotBtn,
                     'class':   'st-slot-btn',
                     title:     offerItemName + ' (' + safeLoca("LAB", "Select", "Нажмите для выбора") + ')',
                     style:     'display:inline-block;vertical-align:middle;margin-right:6px;',
-                    html:      getItemIconTag(_selectedOfferRes, null, '20px')
+                    html:      getItemIconTag(_selectedOfferRes, offerItemInfo ? offerItemInfo.type : null, '20px')
                 });
 
-                var costItemInfo = GameDataSource.getItemInfo(_selectedCostRes);
                 var costItemName = costItemInfo ? costItemInfo.localizedName : getItemLocalizedName(_selectedCostRes);
                 var costSlotBtn  = $('<div>', {
                     id:        UIMap.ids.costSlotBtn,
                     'class':   'st-slot-btn',
                     title:     costItemName + ' (' + safeLoca("LAB", "Select", "Нажмите для выбора") + ')',
                     style:     'display:inline-block;vertical-align:middle;margin-right:6px;',
-                    html:      getItemIconTag(_selectedCostRes, null, '20px')
+                    html:      getItemIconTag(_selectedCostRes, costItemInfo ? costItemInfo.type : null, '20px')
                 });
 
                 offerCol = $('<div>', { style: 'white-space:nowrap;line-height:26px;' })
@@ -2600,8 +2713,10 @@ var ShortcutTrader = (function () {
             var actions = $('<div>', { css: { 'white-space': 'nowrap', 'line-height': '24px' } })
                 .append(sendBtn, checkBox, delBtn);
 
-            var offerIconTag = getItemIconTag(item.offerResName, null, '22px');
-            var costIconTag  = getItemIconTag(item.costResName, null, '22px');
+            var offerItemInfo = GameDataSource.getItemInfo(item.offerResName);
+            var costItemInfo  = GameDataSource.getItemInfo(item.costResName);
+            var offerIconTag = getItemIconTag(item.offerResName, offerItemInfo ? offerItemInfo.type : null, '22px');
+            var costIconTag  = getItemIconTag(item.costResName, costItemInfo ? costItemInfo.type : null, '22px');
             var offerName    = getItemLocalizedName(item.offerResName);
             var costName     = getItemLocalizedName(item.costResName);
 
@@ -2708,7 +2823,7 @@ var ShortcutTrader = (function () {
                         var info = GameDataSource.getItemInfo(selectedName);
                         var locName = info ? info.localizedName : getItemLocalizedName(selectedName);
                         $('#' + UIMap.ids.offerSlotBtn)
-                            .html(getItemIconTag(selectedName, null, '20px'))
+                            .html(getItemIconTag(selectedName, info ? info.type : null, '20px'))
                             .attr('title', locName + ' (' + safeLoca("LAB", "Select", "Нажмите для выбора") + ')');
                     }, _selectedOfferRes);
                 })
@@ -2719,7 +2834,7 @@ var ShortcutTrader = (function () {
                         var info = GameDataSource.getItemInfo(selectedName);
                         var locName = info ? info.localizedName : getItemLocalizedName(selectedName);
                         $('#' + UIMap.ids.costSlotBtn)
-                            .html(getItemIconTag(selectedName, null, '20px'))
+                            .html(getItemIconTag(selectedName, info ? info.type : null, '20px'))
                             .attr('title', locName + ' (' + safeLoca("LAB", "Select", "Нажмите для выбора") + ')');
                     }, _selectedCostRes);
                 })
@@ -2738,13 +2853,15 @@ var ShortcutTrader = (function () {
                 .on('change',  '[id^="' + UIMap.ids.offerSelectStr + '"]', function () {
                     var val = $(this).val();
                     _selectedOfferRes = val;
-                    $('.' + UIMap.classes.offerResourceImg).html(getItemIconTag(val, null, '20px'));
+                    var info = GameDataSource.getItemInfo(val);
+                    $('.' + UIMap.classes.offerResourceImg).html(getItemIconTag(val, info ? info.type : null, '20px'));
                 })
                 .off('change', '[id^="' + UIMap.ids.costSelectStr + '"]')
                 .on('change',  '[id^="' + UIMap.ids.costSelectStr + '"]', function () {
                     var val = $(this).val();
                     _selectedCostRes = val;
-                    $('.' + UIMap.classes.costResourceImg).html(getItemIconTag(val, null, '20px'));
+                    var info = GameDataSource.getItemInfo(val);
+                    $('.' + UIMap.classes.costResourceImg).html(getItemIconTag(val, info ? info.type : null, '20px'));
                 })
                 .off('change', '.' + UIMap.classes.selectTrade)
                 .on('change',  '.' + UIMap.classes.selectTrade, handleCheckboxChange)
