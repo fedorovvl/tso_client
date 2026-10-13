@@ -188,6 +188,10 @@ var ShortcutTrader = (function () {
     function getItemLocalizedName(name, type) {
         if (!name) return '';
         try {
+            if (name.indexOf("Adventure_") === 0) {
+                var rawAdv = name.replace("Adventure_", "");
+                return getItemLocalizedName(rawAdv, 'adventure');
+            }
             if (name.indexOf("FillDeposit_") === 0) {
                 var resKey1 = name.replace("FillDeposit_", "");
                 return getFillDepositLocalizedName(resKey1);
@@ -260,8 +264,12 @@ var ShortcutTrader = (function () {
                             var sData = sItem.GetBuffIconData();
                             if (sData) {
                                 if (sbName && !_starBuffIconMap[sbName]) _starBuffIconMap[sbName] = sData;
-                                if (srName && !_starBuffIconMap[srName]) _starBuffIconMap[srName] = sData;
+                                if (srName && !_starBuffIconMap[srName] && !isWarehouseResource(srName)) _starBuffIconMap[srName] = sData;
                                 if (sType === 'FillDeposit' && srName) _starBuffIconMap['FillDeposit_' + srName] = sData;
+                                if ((sType === 'Adventure' || sbName === 'Adventure') && srName) {
+                                    _starBuffIconMap['Adventure_' + srName] = sData;
+                                    _starBuffIconMap['Adventure|' + srName] = sData;
+                                }
                             }
                         }
                     }
@@ -326,6 +334,7 @@ var ShortcutTrader = (function () {
 
     function isWarehouseResource(name) {
         if (!name || typeof name !== 'string') return false;
+        if (name.indexOf('Adventure_') === 0 || name.indexOf('FillDeposit_') === 0) return false;
         try {
             if (typeof swmmo !== 'undefined' && swmmo && swmmo.getDefinitionByName) {
                 var gEconomics = swmmo.getDefinitionByName("ServerState::gEconomics");
@@ -345,6 +354,9 @@ var ShortcutTrader = (function () {
 
     function tryLoadSingleIcon(key, size, type) {
         if (!key || typeof key !== 'string') return '';
+        if (key.indexOf('Adventure_') === 0) {
+            if (!type) type = 'adventure';
+        }
         var ck = key + '|' + (type || '') + '|' + size;
         var hit = _singleIconCache[ck];
         var now = Date.now();
@@ -358,6 +370,10 @@ var ShortcutTrader = (function () {
         if (!key || typeof key !== 'string') return '';
         var k = key.trim();
         if (!k) return '';
+        if (k.indexOf('Adventure_') === 0) {
+            k = k.replace('Adventure_', '').trim();
+            type = 'adventure';
+        }
         if (!type && isWarehouseResource(k)) type = 'resource';
         var tag = '';
 
@@ -476,7 +492,9 @@ var ShortcutTrader = (function () {
         }
 
         if (!type) {
-            if (isWarehouseResource(name)) {
+            if (name.indexOf('Adventure_') === 0) {
+                type = 'adventure';
+            } else if (isWarehouseResource(name)) {
                 type = 'resource';
             } else {
                 try {
@@ -498,7 +516,11 @@ var ShortcutTrader = (function () {
 
         var isDepositRefill = false;
         var rawRes = '';
-        if (name.indexOf('FillDeposit_') === 0) {
+        var rawAdv = '';
+        if (name.indexOf('Adventure_') === 0) {
+            rawAdv = name.replace('Adventure_', '').trim();
+            type = 'adventure';
+        } else if (name.indexOf('FillDeposit_') === 0) {
             isDepositRefill = true;
             rawRes = name.replace('FillDeposit_', '').trim();
         } else if (name.indexOf('FillDeposit') === 0) {
@@ -519,7 +541,11 @@ var ShortcutTrader = (function () {
         }
 
         var candidates = [];
-        if (isDepositRefill) {
+        if (rawAdv) {
+            candidates.push(rawAdv);
+            candidates.push('Adventure|' + rawAdv);
+            candidates.push(name);
+        } else if (isDepositRefill) {
             if (rawRes && DEPOSIT_ICON_MAP[rawRes]) {
                 var depCandidates = DEPOSIT_ICON_MAP[rawRes];
                 for (var dc = 0; dc < depCandidates.length; dc++) {
@@ -585,7 +611,7 @@ var ShortcutTrader = (function () {
         }
 
         _iconCache[cacheKey] = tag;
-        if (type === 'resource') {
+        if (type === 'resource' || type === 'adventure') {
             _iconCache[name + '__' + size] = tag;
         }
         return tag;
@@ -618,9 +644,13 @@ var ShortcutTrader = (function () {
 
     function getCachedIconTag(name, type, size) {
         if (!name || typeof name !== 'string') return '';
-        if (!type && isWarehouseResource(name)) type = 'resource';
+        if (!type) {
+            if (name.indexOf('Adventure_') === 0) type = 'adventure';
+            else if (isWarehouseResource(name)) type = 'resource';
+        }
         return _iconCache[name + '_' + (type || '') + '_' + size] ||
                _iconCache[name + '_resource_' + size] ||
+               _iconCache[name + '_adventure_' + size] ||
                _iconCache[name + '__' + size] || '';
     }
 
@@ -1436,12 +1466,18 @@ var ShortcutTrader = (function () {
                             var advName = adv.GetName ? adv.GetName() : adv.mName_string;
                             if (advName && typeof advName === 'string') advName = advName.trim();
                             if (!advName) continue;
+                            var keyName = advName;
+                            if (_itemsMap[keyName] || isWarehouseResource(keyName)) {
+                                keyName = 'Adventure_' + advName;
+                            }
                             addItem('Adventures', {
-                                name:          advName,
+                                name:          keyName,
                                 type:          'adventure',
-                                stockKeys:     ['Adventure|' + advName, String(adv.mName_string || '')],
+                                buffName:      'Adventure',
+                                resourceName:  advName,
+                                stockKeys:     ['Adventure|' + advName, 'Adventure_' + advName, advName, String(adv.mName_string || '')],
                                 category:      'Adventures',
-                                localizedName: getItemLocalizedName(advName, 'adventure')
+                                localizedName: getItemLocalizedName(keyName, 'adventure')
                             });
                         }
                     }
@@ -1577,13 +1613,20 @@ var ShortcutTrader = (function () {
                                 if (bName) stockMap[bName] = (stockMap[bName] || 0) + amt;
                                 var isDepositBuff = (String(bName || '').indexOf('FillDeposit') === 0 ||
                                                      String(sType || '').indexOf('FillDeposit') === 0);
-                                if (rName && rName !== bName && !isDepositBuff) stockMap[rName] = (stockMap[rName] || 0) + amt;
+                                var isAdventureBuff = (String(bName || '').indexOf('Adventure') === 0 ||
+                                                       String(sType || '').indexOf('Adventure') === 0);
+                                if (rName && rName !== bName && !isDepositBuff && (!isAdventureBuff || !isWarehouseResource(rName))) {
+                                    stockMap[rName] = (stockMap[rName] || 0) + amt;
+                                }
                                 if (rName) stockMap[bName + '|' + rName] = (stockMap[bName + '|' + rName] || 0) + amt;
 
                                 if (sType === 'FillDeposit' || bName === 'FillDeposit') {
                                     if (rName) {
                                         stockMap['FillDeposit_' + rName] = (stockMap['FillDeposit_' + rName] || 0) + amt;
                                     }
+                                }
+                                if (isAdventureBuff && rName) {
+                                    stockMap['Adventure_' + rName] = (stockMap['Adventure_' + rName] || 0) + amt;
                                 }
                                 } catch (eItem) {
                                     debug('getPlayerStockMap star item error: ' + eItem);
@@ -2025,6 +2068,9 @@ var ShortcutTrader = (function () {
             var nName = itemVO.name_string || '';
             if (bName === 'FillDeposit' || nName === 'FillDeposit') {
                 return rName ? ('FillDeposit_' + rName) : 'FillDeposit';
+            }
+            if ((bName === 'Adventure' || nName === 'Adventure') && rName && isWarehouseResource(rName)) {
+                return 'Adventure_' + rName;
             }
             return nName || rName || bName || '';
         }
@@ -3310,6 +3356,7 @@ var ShortcutTrader = (function () {
     var TradeResources = (function () {
 
         function getResourceDef(name) {
+            if (!name || name.indexOf('Adventure_') === 0) return null;
             try {
                 return swmmo.getDefinitionByName("ServerState::gEconomics").GetResourcesDefaultDefinition(name);
             } catch (e) {
@@ -3328,6 +3375,9 @@ var ShortcutTrader = (function () {
                 if (name.indexOf('FillDeposit_') === 0) {
                     targetBuffName = 'FillDeposit';
                     targetResName = name.replace('FillDeposit_', '');
+                } else if (name.indexOf('Adventure_') === 0) {
+                    targetBuffName = 'Adventure';
+                    targetResName = name.replace('Adventure_', '');
                 }
 
                 var buffs = getStarBuffs();
@@ -3348,6 +3398,8 @@ var ShortcutTrader = (function () {
 
                     if (targetBuffName === 'FillDeposit' || name.indexOf('FillDeposit_') === 0) {
                         if ((buffName === 'FillDeposit' || bType === 'FillDeposit') && resName === targetResName) isMatch = true;
+                    } else if (targetBuffName === 'Adventure' || name.indexOf('Adventure_') === 0) {
+                        if ((buffName === 'Adventure' || bType === 'Adventure') && resName === targetResName) isMatch = true;
                     } else if (buffName === name || resName === name || (buffName === targetBuffName && (!targetResName || resName === targetResName))) {
                         isMatch = true;
                     }
@@ -3414,7 +3466,7 @@ var ShortcutTrader = (function () {
             if (itemInfo) {
                 if (itemInfo.type === 'adventure') {
                     buff.buffName_string = 'Adventure';
-                    buff.resourceName_string = itemInfo.resourceName || trade.costResName;
+                    buff.resourceName_string = itemInfo.resourceName || trade.costResName.replace('Adventure_', '');
                 } else if (itemInfo.type === 'building') {
                     buff.buffName_string = 'BuildBuilding';
                     buff.resourceName_string = itemInfo.resourceName || trade.costResName;
@@ -3430,6 +3482,9 @@ var ShortcutTrader = (function () {
             } else if (trade.costResName.indexOf('FillDeposit_') === 0) {
                 buff.buffName_string = 'FillDeposit';
                 buff.resourceName_string = trade.costResName.replace('FillDeposit_', '');
+            } else if (trade.costResName.indexOf('Adventure_') === 0) {
+                buff.buffName_string = 'Adventure';
+                buff.resourceName_string = trade.costResName.replace('Adventure_', '');
             } else {
                 buff.buffName_string = getResourceTypeByName(trade.costResName);
             }
