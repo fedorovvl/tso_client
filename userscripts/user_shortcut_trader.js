@@ -264,7 +264,7 @@ var ShortcutTrader = (function () {
                             var sData = sItem.GetBuffIconData();
                             if (sData) {
                                 if (sbName && !_starBuffIconMap[sbName]) _starBuffIconMap[sbName] = sData;
-                                if (srName && !_starBuffIconMap[srName] && !isWarehouseResource(srName)) _starBuffIconMap[srName] = sData;
+                                if (srName && !_starBuffIconMap[srName] && srName !== 'Gunpowder') _starBuffIconMap[srName] = sData;
                                 if (sType === 'FillDeposit' && srName) _starBuffIconMap['FillDeposit_' + srName] = sData;
                                 if ((sType === 'Adventure' || sbName === 'Adventure') && srName) {
                                     _starBuffIconMap['Adventure_' + srName] = sData;
@@ -332,30 +332,10 @@ var ShortcutTrader = (function () {
     // gAssetManager.GetGfx logs a warning and scans loadedGfxVector - expensive).
     var _singleIconCache = {};
 
-    function isWarehouseResource(name) {
-        if (!name || typeof name !== 'string') return false;
-        if (name.indexOf('Adventure_') === 0 || name.indexOf('FillDeposit_') === 0) return false;
-        try {
-            if (typeof swmmo !== 'undefined' && swmmo && swmmo.getDefinitionByName) {
-                var gEconomics = swmmo.getDefinitionByName("ServerState::gEconomics");
-                if (gEconomics && gEconomics.GetResourcesDefaultDefinition) {
-                    if (gEconomics.GetResourcesDefaultDefinition(name)) return true;
-                }
-            }
-        } catch (e) {}
-        try {
-            if (typeof GameDataSource !== 'undefined' && GameDataSource.getItemInfo) {
-                var info = GameDataSource.getItemInfo(name);
-                if (info && info.type === 'resource') return true;
-            }
-        } catch (e2) {}
-        return false;
-    }
-
     function tryLoadSingleIcon(key, size, type) {
         if (!key || typeof key !== 'string') return '';
-        if (key.indexOf('Adventure_') === 0) {
-            if (!type) type = 'adventure';
+        if (key.indexOf('Adventure_') === 0 && !type) {
+            type = 'adventure';
         }
         var ck = key + '|' + (type || '') + '|' + size;
         var hit = _singleIconCache[ck];
@@ -374,30 +354,26 @@ var ShortcutTrader = (function () {
             k = k.replace('Adventure_', '').trim();
             type = 'adventure';
         }
-        if (!type && isWarehouseResource(k)) type = 'resource';
         var tag = '';
 
         if (typeof assets !== 'undefined' && assets) {
             if (type === 'resource') {
-                // 1. Resource icon first
                 if (!tag && assets.GetResourceIcon) {
                     try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eR1) {}
                 }
-                // 2. Dummy Icon resources
                 if (!tag && assets.GetDummyIcon) {
                     try { tag = safeGetImage(assets.GetDummyIcon("resources:" + k), size); } catch (eR2) {}
                 }
-                // 3. Direct BitmapData
                 if (!tag && assets.GetBitmapData) {
                     try {
                         tag = safeGetImage(assets.GetBitmapData(k), size) ||
                               safeGetImage(assets.GetBitmapData(k + '.png'), size);
                     } catch (eR3) {}
                 }
-                // 4. getImageByModule helper from 0-common.js
                 if (!tag && typeof getImageByModule === 'function') {
                     try { tag = getImageByModule('resources', k, size, size); } catch (eR4) {}
                 }
+                return tag;
             } else if (type === 'building') {
                 if (!tag && assets.GetBuildingIcon) {
                     try { tag = safeGetImage(assets.GetBuildingIcon(k, true), size); } catch (eB1) {}
@@ -411,6 +387,10 @@ var ShortcutTrader = (function () {
                               safeGetImage(assets.GetBitmapData(k + '.png'), size);
                     } catch (eB3) {}
                 }
+                if (!tag && typeof getImageByModule === 'function') {
+                    try { tag = getImageByModule('buildings', k, size, size); } catch (eB4) {}
+                }
+                return tag;
             } else if (type === 'buff' || type === 'adventure') {
                 if (!tag && assets.GetBuffIcon) {
                     try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (eA1) {}
@@ -430,56 +410,54 @@ var ShortcutTrader = (function () {
                 if (!tag && typeof getImageByModule === 'function') {
                     try { tag = getImageByModule('buffs', k, size, size); } catch (eA4) {}
                 }
+                return tag;
             }
 
-            // General fallbacks: resource icon before buff icon when type is not explicitly buff/adv/bld
-            if (!tag && assets.GetResourceIcon && (type === 'resource' || !type)) {
+            // Untyped fallback: if k is Gunpowder, default to resource icon (barrels)
+            if (k === 'Gunpowder') {
+                if (!tag && assets.GetResourceIcon) {
+                    try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eG1) {}
+                }
+                if (!tag && assets.GetDummyIcon) {
+                    try { tag = safeGetImage(assets.GetDummyIcon("resources:" + k), size); } catch (eG2) {}
+                }
+                if (!tag && typeof getImageByModule === 'function') {
+                    try { tag = getImageByModule('resources', k, size, size); } catch (eG3) {}
+                }
+                if (tag) return tag;
+            }
+
+            // General fallbacks: resource icon before buff icon
+            if (!tag && assets.GetResourceIcon) {
                 try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eF1) {}
             }
-            if (!tag && assets.GetBuffIcon && type !== 'resource') {
+            if (!tag && assets.GetBuffIcon) {
                 try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (eF2) {}
-            }
-            if (!tag && assets.GetResourceIcon) {
-                try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eF3) {}
             }
             if (!tag && assets.GetBitmapData) {
                 try {
                     tag = safeGetImage(assets.GetBitmapData(k), size) ||
                           safeGetImage(assets.GetBitmapData(k + '.png'), size);
-                } catch (eF4) {}
+                } catch (eF3) {}
             }
             if (!tag && assets.GetDummyIcon) {
                 try {
-                    tag = (type === 'resource' || !type)
-                        ? (safeGetImage(assets.GetDummyIcon("resources:" + k), size) ||
-                           safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
-                           safeGetImage(assets.GetDummyIcon("shopitems:" + k), size) ||
-                           safeGetImage(assets.GetDummyIcon("buildings:" + k), size))
-                        : (safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
-                           safeGetImage(assets.GetDummyIcon("resources:" + k), size) ||
-                           safeGetImage(assets.GetDummyIcon("shopitems:" + k), size) ||
-                           safeGetImage(assets.GetDummyIcon("buildings:" + k), size));
-                } catch (eF5) {}
+                    tag = safeGetImage(assets.GetDummyIcon("resources:" + k), size) ||
+                          safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
+                          safeGetImage(assets.GetDummyIcon("shopitems:" + k), size) ||
+                          safeGetImage(assets.GetDummyIcon("buildings:" + k), size);
+                } catch (eF4) {}
             }
             if (!tag && assets.GetBuildingIcon) {
-                try { tag = safeGetImage(assets.GetBuildingIcon(k, true), size); } catch (eF6) {}
-            }
-            if (!tag && assets.GetBuffIcon) {
-                try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (eF7) {}
+                try { tag = safeGetImage(assets.GetBuildingIcon(k, true), size); } catch (eF5) {}
             }
         }
 
-        // 6. getImageByModule helper from 0-common.js
         if (!tag && typeof getImageByModule === 'function') {
             try {
-                if (type === 'buff' || type === 'adventure') {
-                    tag = getImageByModule('buffs', k, size, size) ||
-                          getImageByModule('resources', k, size, size);
-                } else {
-                    tag = getImageByModule('resources', k, size, size) ||
-                          getImageByModule('buffs', k, size, size);
-                }
-            } catch (e6) {}
+                tag = getImageByModule('resources', k, size, size) ||
+                      getImageByModule('buffs', k, size, size);
+            } catch (eF6) {}
         }
 
         return tag;
@@ -494,8 +472,6 @@ var ShortcutTrader = (function () {
         if (!type) {
             if (name.indexOf('Adventure_') === 0) {
                 type = 'adventure';
-            } else if (isWarehouseResource(name)) {
-                type = 'resource';
             } else {
                 try {
                     if (typeof GameDataSource !== 'undefined' && GameDataSource.getItemInfo) {
@@ -644,10 +620,7 @@ var ShortcutTrader = (function () {
 
     function getCachedIconTag(name, type, size) {
         if (!name || typeof name !== 'string') return '';
-        if (!type) {
-            if (name.indexOf('Adventure_') === 0) type = 'adventure';
-            else if (isWarehouseResource(name)) type = 'resource';
-        }
+        if (!type && name.indexOf('Adventure_') === 0) type = 'adventure';
         return _iconCache[name + '_' + (type || '') + '_' + size] ||
                _iconCache[name + '_resource_' + size] ||
                _iconCache[name + '_adventure_' + size] ||
@@ -1229,6 +1202,7 @@ var ShortcutTrader = (function () {
         var _friendsList  = null;
         var _resourceList = null;
         var _itemsMap     = {};
+        var _loading      = false;
 
         function getFriendsList() {
             if (!_friendsList) {
@@ -1252,6 +1226,8 @@ var ShortcutTrader = (function () {
 
         function getResourceList() {
             if (_resourceList) return _resourceList;
+            if (_loading) return [];
+            _loading = true;
 
             var byCategory = {};
             var catNames = [];
@@ -1467,7 +1443,7 @@ var ShortcutTrader = (function () {
                             if (advName && typeof advName === 'string') advName = advName.trim();
                             if (!advName) continue;
                             var keyName = advName;
-                            if (_itemsMap[keyName] || isWarehouseResource(keyName)) {
+                            if (_itemsMap[keyName]) {
                                 keyName = 'Adventure_' + advName;
                             }
                             addItem('Adventures', {
@@ -1541,6 +1517,8 @@ var ShortcutTrader = (function () {
             } catch (e) {
                 debug("getResourceList error: " + e);
                 _resourceList = [];
+            } finally {
+                _loading = false;
             }
             return _resourceList;
         }
@@ -1615,7 +1593,7 @@ var ShortcutTrader = (function () {
                                                      String(sType || '').indexOf('FillDeposit') === 0);
                                 var isAdventureBuff = (String(bName || '').indexOf('Adventure') === 0 ||
                                                        String(sType || '').indexOf('Adventure') === 0);
-                                if (rName && rName !== bName && !isDepositBuff && (!isAdventureBuff || !isWarehouseResource(rName))) {
+                                if (rName && rName !== bName && !isDepositBuff && (!isAdventureBuff || rName !== 'Gunpowder')) {
                                     stockMap[rName] = (stockMap[rName] || 0) + amt;
                                 }
                                 if (rName) stockMap[bName + '|' + rName] = (stockMap[bName + '|' + rName] || 0) + amt;
@@ -1656,7 +1634,7 @@ var ShortcutTrader = (function () {
         }
 
         function getItemInfo(name) {
-            if (!_resourceList) getResourceList();
+            if (!_resourceList && !_loading) getResourceList();
             return _itemsMap[name] || null;
         }
 
@@ -1664,6 +1642,7 @@ var ShortcutTrader = (function () {
             _friendsList  = null;
             _resourceList = null;
             _itemsMap     = {};
+            _loading      = false;
         }
 
         return {
@@ -2069,8 +2048,8 @@ var ShortcutTrader = (function () {
             if (bName === 'FillDeposit' || nName === 'FillDeposit') {
                 return rName ? ('FillDeposit_' + rName) : 'FillDeposit';
             }
-            if ((bName === 'Adventure' || nName === 'Adventure') && rName && isWarehouseResource(rName)) {
-                return 'Adventure_' + rName;
+            if ((bName === 'Adventure' || nName === 'Adventure') && rName === 'Gunpowder') {
+                return 'Adventure_Gunpowder';
             }
             return nName || rName || bName || '';
         }
