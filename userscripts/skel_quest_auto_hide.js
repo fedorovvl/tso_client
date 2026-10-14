@@ -34,12 +34,16 @@ function skelQAH_toggle(item) {
     } catch (e) { debug('[skel_quest_auto_hide] toggle: ' + e); return false; }
 }
 
-function skelQAH_headerHeight(children) {
-    var min = -1;
-    children.forEach(function (item) {
-        if (item && item.categoryId && (min < 0 || item.height < min)) { min = item.height; }
-    });
-    return min;
+// A row is expanded when it is meaningfully taller than its own title button.
+// The old test compared every row against the shortest row in the book, which
+// is only a header height if at least one category happens to be collapsed or
+// empty. Measuring each row against its own header drops that assumption.
+function skelQAH_isExpanded(item) {
+    try {
+        var h = item.btnTitle ? item.btnTitle.height : 0;
+        if (!h) { return false; }
+        return item.height > h * 1.4;
+    } catch (e) { return false; }
 }
 
 function skelQAH_scan(collapse) {
@@ -48,19 +52,34 @@ function skelQAH_scan(collapse) {
         var list = swmmo.application.GAMESTATE_ID_QUEST_BOOK.list;
         if (!list) { return false; }
         var children = list.getChildren();
-        var headerH = skelQAH_headerHeight(children);
+        var clicked = [];
         children.forEach(function (item) {
             if (!item || !item.categoryId) { return; }
             if (skelQAH_config.known.indexOf(item.categoryId) === -1) {
                 skelQAH_config.known.push(item.categoryId);
                 discovered = true;
             }
-            if (collapse && skelQAH_config.hide[item.categoryId] && item.height > headerH) {
+            if (collapse && skelQAH_config.hide[item.categoryId] && skelQAH_isExpanded(item)) {
+                clicked.push({ item: item, height: item.height });
                 skelQAH_toggle(item);
             }
         });
+        if (clicked.length) { skelQAH_undoMisses(clicked); }
     } catch (e) { debug('[skel_quest_auto_hide] ' + e); }
     return discovered;
+}
+
+// btnTitle is a toggle, so a row we misjudge as expanded gets opened rather
+// than closed. Re-measure once layout settles and click back anything that
+// grew; that converges even where the height test guessed wrong.
+function skelQAH_undoMisses(clicked) {
+    setTimeout(function () {
+        clicked.forEach(function (c) {
+            try {
+                if (c.item.height > c.height) { skelQAH_toggle(c.item); }
+            } catch (e) {}
+        });
+    }, 150);
 }
 
 var skelQuestBookTracker = game.getTracker('skelQuestBookTracker', function (ev) {
@@ -71,15 +90,19 @@ if (!window.skelQAH_observing) {
     window.skelQAH_observing = true;
 }
 
+// Ready once the rows have been measured. The old test also demanded that the
+// rows differ in height, which never comes true in a book where every category
+// is already collapsed, so it just retried ten times and gave up.
 function skelQAH_ready(children) {
     if (!children || children.length === 0) { return false; }
-    var min = -1, max = -1;
+    var sized = 0;
     children.forEach(function (item) {
         if (!item || !item.categoryId) { return; }
-        if (min < 0 || item.height < min) { min = item.height; }
-        if (item.height > max) { max = item.height; }
+        try {
+            if (item.height > 0 && item.btnTitle && item.btnTitle.height > 0) { sized++; }
+        } catch (e) {}
     });
-    return min > 0 && max > min;
+    return sized > 0;
 }
 
 function skelQAH_scanWhenReady(attempt) {
