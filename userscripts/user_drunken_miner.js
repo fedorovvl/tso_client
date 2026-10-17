@@ -3,9 +3,24 @@
 ///////////////////////////Created by MadFX | Thanks for PiTi for source code. ////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 (function () {
-    const SCRIPT_PREFIX    = 'DM_';
-    const DM_MaxUpgradeLvl = 7;
-    const RESOURCES = {
+    // The legacy version kept its runs in an inaccessible closure. Do not create
+    // a parallel engine beside it: leave it running until a one-time client restart.
+    var previousRuntime = window.TSO_DrunkenMiner;
+    if ((!previousRuntime && typeof window.DM_MenuHandler === 'function') ||
+        (previousRuntime && (previousRuntime.apiVersion !== 2 || typeof previousRuntime.prepareReload !== 'function'))) {
+        var previousMenu = previousRuntime && previousRuntime.menuHandler || window.DM_MenuHandler;
+        if (typeof previousMenu === 'function') {
+            window.DM_MenuHandler = previousMenu;
+            addToolsMenuItem(loca.GetText('RES', 'BuffAd_Drunken_Miner'), previousMenu);
+        }
+        try {
+            _DM_debug('DM/legacy_runtime_requires_restart');
+        } catch (ignored) {}
+        return;
+    }
+    var SCRIPT_PREFIX    = 'DM_';
+    var DM_MaxUpgradeLvl = 7;
+    var RESOURCES = {
         ores: ["BronzeOre", "IronOre", "Coal", "GoldOre", "TitaniumOre", "Salpeter"],
         oreOrder: {
             BronzeOre: 1, IronOre: 2, Coal: 3, GoldOre: 4, TitaniumOre: 5, Salpeter: 6
@@ -65,23 +80,14 @@
         }
     };
 
-    // COMMAND.STOP_PRODUCTION = 107
-    // SendServerAction(107, 0, grid, 0, null) → stop production
-    // SendServerAction(107, 1, grid, 0, null) → run production
-    const CMD_STOP_PRODUCTION = 107;
-    const CMD_BUILD           = 50;
-    const CMD_UPGRADE         = 60;
+    var CMD_BUILD = 50; // Existing build action; native upgrade/production methods below.
 
-    window.DM_MenuHandler = DM_MenuHandler;
-    addToolsMenuItem(loca.GetText("RES", 'BuffAd_Drunken_Miner'), window.DM_MenuHandler);
-
-    var _DM_ModalInitialized = false;
     var DM_build_newTemplates;
 
     var DM_AutoModeSwitchStatus    = false;
     var DM_UpgradeSwitchStatus     = false;
 
-    const DM_lements = {
+    var DM_lements = {
         ON_OFF_RADIO:             SCRIPT_PREFIX + 'StateSwitch',
         ON_OFF_RADIO_TEXT:        SCRIPT_PREFIX + 'StateSwitch_TEXT',
         ON_OFF_AUTOMODE_RADIO:    SCRIPT_PREFIX + 'AutoModeStateSwitch',
@@ -94,7 +100,7 @@
         STOP_AFTER_BUILD_LABEL:   SCRIPT_PREFIX + 'stopAfterBuildLabel',
     };
 
-    const DM_SwitchStatuses = {
+    var DM_SwitchStatuses = {
         UPGRADE:      loca.GetText('ACL', 'Upgrades'),
         BUILD:        loca.GetText('BUI', 'TwinTown_building_spot'),
         AUTOMODE_ON:  loca.GetText('ACL', 'BuildQueueSlotTemp') + ' ' + loca.GetText('LAB', 'Yes'),
@@ -117,162 +123,194 @@
     DM_config.build   = Array.isArray(DM_config.build)   ? DM_config.build   : [];
     DM_config.upgrade = Array.isArray(DM_config.upgrade) ? DM_config.upgrade : [];
 
-    // =====================================================================================
-    //  Движок автоматизации
-    //  - две независимые очереди (DM_runs.build / DM_runs.upgrade), у каждой свой id:
-    //    перезапуск очереди гасит только её старый таймер/команды;
-    //  - пробуждение к ближайшему завершению стройки/улучшения + страховочный опрос;
-    //  - событий завершения стройки/улучшения клиент не рассылает (cBuilding.Upgrade() и
-    //    завершение стройки в cComputeResourceCreation ничего не шлют в channels), поэтому
-    //    используется точный таймер по данным игры (время старта + длительность);
-    //  - каждая команда имеет состояние "отправлено" и проверяется по факту в игре.
-    // =====================================================================================
-    // Время строительства (сек) из gfx_settings (constructionDuration). Для сортировки стройки.
-    var DM_BUILD_DURATION = { BronzeOre: 300, IronOre: 300, Coal: 600, GoldOre: 600, Salpeter: 1200, TitaniumOre: 1500 };
-
-    var DM_SEND_INTERVAL       = 1000;   // пауза между командами серверу
-    var DM_BUILD_VERIFY_MS     = 15000;  // сколько ждём появления стройки после команды
-    var DM_UPGRADE_PENDING_MS  = 20000;  // сколько ждём подтверждения улучшения
+    // Runtime survives reloadScripts. Only a new submission replaces its own run type.
+    // Sent commands cannot be cancelled: receipts survive replacements and reloads.
+    var DM_SEND_INTERVAL       = 1000;
+    var DM_BUILD_VERIFY_MS     = 15000;
+    var DM_UPGRADE_PENDING_MS  = 20000;
+    var DM_RECONCILE_MS        = 120000;
     var DM_MIN_DELAY           = 3000;
-    var DM_MAX_DELAY           = 60000;  // страховочный опрос
-    var DM_OFFZONE_DELAY       = 30000;
+    var DM_MAX_DELAY           = 60000;
+    var DM_OFFZONE_DELAY       = 15000;
     var DM_STOPWATCH_DELAY     = 15000;
+    var DM_BUILD_DURATION = { BronzeOre: 300, IronOre: 300, Coal: 600, GoldOre: 600, Salpeter: 1200, TitaniumOre: 1500 };
+    var DM_BUILD_NAME = {
+        BronzeOre: 'BronzeMine', IronOre: 'IronMine', Coal: 'CoalMine',
+        GoldOre: 'GoldMine', TitaniumOre: 'TitaniumMine', Salpeter: 'SalpeterMine'
+    };
+    var DM_alive = true;
+    var DM_previous = window.TSO_DrunkenMiner;
+    if (DM_previous && DM_previous.apiVersion === 2 && typeof DM_previous.prepareReload === 'function') {
+        DM_previous.prepareReload();
+    }
+    var DM_runtime = DM_previous && DM_previous.apiVersion === 2 ? DM_previous : {
+        apiVersion: 2, runs: { build: _DM_newRun(false), upgrade: _DM_newRun(true) },
+        receipts: { build: {}, upgrade: {} }, stopWatch: {}, serviceTimer: null,
+        sender: { items: [], timer: null, lastSentAt: 0 }, saveTimer: null,
+        lastSaved: null, config: null, ui: { closing: false, opening: false, reopen: false },
+        uiWaitTimer: null, uiWaitNodes: [], uiReopenTimer: null
+    };
+    var DM_runs = DM_runtime.runs;
+    var DM_stopWatch = DM_runtime.stopWatch;
+    var DM_sender = DM_runtime.sender;
+    var DM_rowData = {};
+    var DM_iconCache = {};
+    var DM_iconCacheSize = 0;
+    var DM_economics = null;
+    DM_config = _DM_normalizeConfig(DM_runtime.config || DM_config);
+    DM_runtime.config = DM_config;
 
-    var DM_runs           = { build: _DM_newRun(false), upgrade: _DM_newRun(true) };
-    var DM_stopWatch      = {};   // grid -> {type: 'build'|'upgrade', since: ms}
-    var DM_stopWatchTimer = null;
+    function _DM_debug(error) {
+        try { if (typeof debug === 'function') debug(error); } catch (ignored) {}
+    }
 
     function _DM_notify(text) {
-        try { game.showAlert(text); } catch (e) { debug(e); }
+        try { game.showAlert(text); } catch (e) { _DM_debug(e); }
     }
 
-    function _DM_bld(grid) {
-        try { return game.gi.mCurrentPlayerZone.GetBuildingFromGridPosition(Number(grid)); } catch (e) { return null; }
+    function _DM_grid(value) {
+        if (typeof value !== 'string' && typeof value !== 'number') return null;
+        var text = String(value);
+        if (!/^\d+$/.test(text)) return null;
+        var n = Number(text);
+        return isFinite(n) && n > 0 && Math.floor(n) === n && n <= 2147483647 ? String(n) : null;
     }
 
-    function _DM_depositOre(grid) {
+    function _DM_grids(values) {
+        var seen = {}, result = [];
+        if (!Array.isArray(values)) return result;
+        values.forEach(function (value) {
+            var grid = _DM_grid(value);
+            if (grid && !seen[grid]) { seen[grid] = true; result.push(grid); }
+        });
+        return result;
+    }
+
+    function _DM_normalizeConfig(data) {
+        data = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+        var result = {
+            schemaVersion: 2, build: _DM_grids(data.build), upgrade: _DM_grids(data.upgrade),
+            switchStatus: data.switchStatus === true, AutoModeStatus: data.AutoModeStatus === true,
+            maxLvl: {}, safeBuffing: data.safeBuffing === true, stopAfterBuild: data.stopAfterBuild === true
+        };
+        Object.keys(RESOURCES.maxLevelDefaults).forEach(function (key) {
+            var raw = data.maxLvl && data.maxLvl[key];
+            var level = (typeof raw === 'number' || typeof raw === 'string') ? Number(raw) : NaN;
+            result.maxLvl[key] = isFinite(level) && level >= 1 ? Math.min(DM_MaxUpgradeLvl, Math.floor(level)) : 1;
+        });
+        return result;
+    }
+
+    function _DM_isHomeZone(gi) {
+        if (!gi) return false;
+        if (typeof gi.isOnHomzone === 'function' && !gi.isOnHomzone()) return false;
+        var cur = gi.mCurrentPlayer;
+        var home = gi.mHomePlayer;
+        if (!cur || !home) return false;
+        if (typeof cur.GetPlayerId === 'function' && typeof home.GetPlayerId === 'function') {
+            if (cur.GetPlayerId() !== home.GetPlayerId()) return false;
+        }
+        var curHomeZone = typeof cur.GetHomeZoneId === 'function' ? cur.GetHomeZoneId() : (typeof home.GetHomeZoneId === 'function' ? home.GetHomeZoneId() : null);
+        if (curHomeZone == null || Number(curHomeZone) <= 0) return false;
+        if (String(gi.mCurrentViewedZoneID) !== String(curHomeZone)) return false;
+        return true;
+    }
+
+    function _DM_context(homeZoneId) {
         try {
-            var d = game.zone.mStreetDataMap.mDepositContainer.get(Number(grid));
-            return d ? d.GetName_string() : null;
+            var gi = typeof swmmo !== 'undefined' && swmmo.application ? swmmo.application.mGameInterface : null;
+            if (!gi && typeof game !== 'undefined') gi = game.gi;
+            if (!gi || !gi.mCurrentPlayerZone || !gi.mCurrentPlayerZone.mStreetDataMap) return null;
+            if (!_DM_isHomeZone(gi)) return null;
+            var cur = gi.mCurrentPlayer;
+            var homePlayer = (gi.mHomePlayer && gi.mHomePlayer.mBuildQueue) ? gi.mHomePlayer : cur;
+            var curHomeZone = typeof cur.GetHomeZoneId === 'function' ? cur.GetHomeZoneId() : homePlayer.GetHomeZoneId();
+            var id = String(curHomeZone);
+            if (homeZoneId != null && String(homeZoneId) !== id) return null;
+            return { gi: gi, zone: gi.mCurrentPlayerZone, home: homePlayer, homeZoneId: id };
         } catch (e) { return null; }
     }
 
-    function _DM_call(obj, fn, def) {
-        try { return (obj && typeof obj[fn] === 'function') ? obj[fn]() : def; } catch (e) { return def; }
+    function _DM_bld(grid, context) {
+        var ctx = context || _DM_context();
+        if (!ctx) return null;
+        // Let bridge errors propagate to the task boundary: an error is not an empty tile.
+        return ctx.zone.GetBuildingFromGridPosition(Number(grid));
     }
 
-    function _DM_maxLvlFor(buildingName) {
+    function _DM_deposit(grid, context) {
+        var ctx = context || _DM_context();
+        if (!ctx) return null;
+        var map = ctx.zone.mStreetDataMap;
+        return map.mDepositContainer ? map.mDepositContainer.get(Number(grid)) : null;
+    }
+
+    function _DM_depositOre(grid, context) {
+        var deposit = _DM_deposit(grid, context);
+        return deposit ? deposit.GetName_string() : null;
+    }
+
+    function _DM_call(obj, fn, def) {
+        try { return obj && typeof obj[fn] === 'function' ? obj[fn]() : def; } catch (e) { return def; }
+    }
+
+    function _DM_maxLvlFor(buildingName, limits) {
         var ore = RESOURCES.mineToOre[buildingName];
         if (!ore) return 0;
-        var key = (ore === 'Coal' || ore === 'Salpeter') ? ore + 'Ore' : ore;
-        var v = parseInt(DM_config.maxLvl[key], 10);
-        return isNaN(v) ? 1 : v;
+        var key = ore === 'Coal' || ore === 'Salpeter' ? ore + 'Ore' : ore;
+        var v = Number((limits || DM_config.maxLvl)[key]);
+        return isFinite(v) ? Math.min(DM_MaxUpgradeLvl, Math.max(1, Math.floor(v))) : 1;
     }
 
-    function _DM_isUpgradableMine(name) {
-        return RESOURCES.upgradableMines.indexOf(name) !== -1;
-    }
-
+    function _DM_isUpgradableMine(name) { return RESOURCES.upgradableMines.indexOf(name) !== -1; }
     function _DM_isUpgradeBusy(bld) {
         return _DM_call(bld, 'IsUpgradeInProgress', false) || _DM_call(bld, 'IsUpgradeInitiated', false);
     }
-
     function _DM_removeFrom(list, grid) {
-        var i = list.indexOf(grid);
+        var i = list.indexOf(String(grid));
         if (i !== -1) list.splice(i, 1);
     }
-
-    // --- Производство: как в родном клиенте (cBuilding.SetProductionActiveCommand) ---
-    function _DM_setMineProduction(grid, active) {
-        try {
-            var bld = _DM_bld(grid);
-            if (bld && typeof bld.SetProductionActiveCommand === 'function') {
-                if (_DM_call(bld, 'IsWaitForCommand', false)) return false;
-                bld.SetProductionActiveCommand(!!active);
-            } else {
-                game.gi.SendServerAction(CMD_STOP_PRODUCTION, active ? 1 : 0, Number(grid), 0, null);
-            }
-            return true;
-        } catch (e) {
-            debug(e);
-            return false;
-        }
-    }
-
-    // --- Остановка после завершения (стройки / улучшения до лимита) ---
-    function _DM_addStopWatch(grid, type) {
-        DM_stopWatch[String(grid)] = { type: type, since: Date.now() };
-        if (!DM_stopWatchTimer) DM_stopWatchTimer = setTimeout(_DM_checkStopWatch, DM_STOPWATCH_DELAY);
-    }
-
-    function _DM_checkStopWatch() {
-        DM_stopWatchTimer = null;
-        var left = 0;
-        try {
-            if (game.gi.isOnHomzone()) {
-                Object.keys(DM_stopWatch).forEach(function (grid) {
-                    var w   = DM_stopWatch[grid];
-                    var bld = _DM_bld(grid);
-                    if (!bld) {
-                        // стройка ещё не появилась / здание исчезло
-                        if (Date.now() - w.since > 120000) delete DM_stopWatch[grid];
-                        return;
-                    }
-                    var ready = w.type === 'build'
-                        ? _DM_call(bld, 'IsBuildingInProduction', false)
-                        : !_DM_isUpgradeBusy(bld);
-                    if (!ready) return;
-
-                    delete DM_stopWatch[grid];
-                    if (w.type === 'upgrade') {
-                        var name = _DM_call(bld, 'GetBuildingName_string', '');
-                        if (_DM_call(bld, 'GetUIUpgradeLevel', 0) < _DM_maxLvlFor(name)) return; // лимит ещё не достигнут
-                    }
-                    if (_DM_call(bld, 'IsProductionActive', false)) _DM_setMineProduction(grid, false);
-                });
-            }
-            left = Object.keys(DM_stopWatch).length;
-        } catch (e) {
-            debug(e);
-            left = Object.keys(DM_stopWatch).length;
-        }
-        if (left > 0) DM_stopWatchTimer = setTimeout(_DM_checkStopWatch, DM_STOPWATCH_DELAY);
-    }
-
-    // --- Управление очередями: стройка и улучшение работают независимо ---
-    function _DM_newRun(isUpgrade) {
-        return {
-            id: 0, active: false, isUpgrade: isUpgrade, oneShot: false, sentOnce: false,
-            grids: [], pending: {}, timer: null, queue: null
-        };
-    }
-
+    function _DM_runType(run) { return run.isUpgrade ? 'upgrade' : 'build'; }
     function _DM_runName(run) {
         return loca.GetText('RES', 'BuffAd_Drunken_Miner') + ' (' + (run.isUpgrade ? DM_SwitchStatuses.UPGRADE : DM_SwitchStatuses.BUILD) + ')';
     }
+    function _DM_newRun(isUpgrade) {
+        return {
+            id: 0, active: false, isUpgrade: isUpgrade, oneShot: false, sentOnce: false,
+            grids: [], pending: {}, timer: null, targets: {}, expected: {}, limits: {},
+            homeZoneId: null, stopAfterBuild: false, errorCount: 0
+        };
+    }
 
-    function _DM_stopRun(run, silent) {
-        var wasActive = run.active && !run.oneShot;
+    // Internal replacement, not a UI Stop. Never cancel independent completion watches.
+    function _DM_replaceRun(run) {
+        var type = _DM_runType(run);
         run.id++;
         run.active = false;
-        if (run.timer) { clearTimeout(run.timer); run.timer = null; }
-        if (run.queue) { run.queue.reset(); run.queue = null; }
+        if (run.timer !== null) { clearTimeout(run.timer); run.timer = null; }
+        DM_sender.items = DM_sender.items.filter(function (item) { return item.kind !== type; });
         run.pending = {};
-        if (wasActive && !silent) _DM_notify(_DM_runName(run) + ': ' + loca.GetText('LAB', 'StopProduction'));
+        run.grids = [];
     }
 
-    function _DM_stopAll(silent) {
-        _DM_stopRun(DM_runs.build, silent);
-        _DM_stopRun(DM_runs.upgrade, silent);
+    function _DM_finishGrid(run, grid, removeSelection) {
+        _DM_removeFrom(run.grids, grid);
+        delete run.pending[grid];
+        if (removeSelection) {
+            _DM_removeFrom(run.isUpgrade ? DM_config.upgrade : DM_config.build, grid);
+            _DM_saveTmpSetting();
+        }
     }
 
-    // Choosing a target is separate from deciding whether it can start now.
     function _DM_canChooseUpgrade(grid) {
-        var b = _DM_bld(grid);
-        var name = _DM_call(b, 'GetBuildingName_string', '');
-        return !!b && _DM_isUpgradableMine(name) && !_DM_isUpgradeBusy(b) &&
-            !_DM_call(b, 'IsWaitForCommand', true) &&
-            DM_runs.upgrade.pending[String(grid)] === undefined;
+        try {
+            var b = _DM_bld(grid);
+            var name = _DM_call(b, 'GetBuildingName_string', '');
+            return !!b && _DM_isUpgradableMine(name) && !_DM_isUpgradeBusy(b) &&
+                !_DM_call(b, 'IsWaitForCommand', true) &&
+                !DM_runtime.receipts.upgrade[String(grid)] &&
+                !DM_runs.upgrade.pending[String(grid)];
+        } catch (e) { return false; }
     }
 
     function _DM_selectionCheckboxes() {
@@ -280,333 +318,618 @@
         return $('#DrunkenMinerModalData input[type="checkbox"].' + cls + ':enabled');
     }
 
-    function _DM_canStartUpgrade(grid) {
-        var b = _DM_bld(grid);
-        var name = _DM_call(b, 'GetBuildingName_string', '');
-        var run = DM_runs.upgrade;
-        var allowed = false;
-        try { allowed = !!b && b.IsUpgradeAllowed(true); } catch (e) { debug(e); }
-        return !!b && _DM_isUpgradableMine(name) && !_DM_isUpgradeBusy(b) &&
-            !_DM_call(b, 'IsWaitForCommand', true) &&
-            _DM_call(b, 'GetUIUpgradeLevel', DM_MaxUpgradeLvl) < _DM_maxLvlFor(name) &&
-            _DM_call(b, 'IsProductionActive', false) &&
-            allowed && run.pending[String(grid)] === undefined;
-    }
-
-    function _DM_startRun(isUpgrade, grids, oneShot) {
+    function _DM_startRun(isUpgrade, values, oneShot) {
+        var ctx = _DM_context();
+        if (!ctx) { _DM_notify(getText('not_home')); return; }
+        var grids = _DM_grids(values);
         var run = isUpgrade ? DM_runs.upgrade : DM_runs.build;
-        if (isUpgrade) {
-            var added = [];
-            grids.map(String).forEach(function (grid) {
-                if (added.indexOf(grid) !== -1 || (run.active && run.grids.indexOf(grid) !== -1)) return;
-                if (_DM_canStartUpgrade(grid)) added.push(grid);
-            });
-            if (added.length === 0) {
-                _DM_notify(_DM_runName(run) + ': нет новых доступных шахт для улучшения. Проверьте уровень, ресурсы и состояние шахты.');
-                return;
-            }
-            if (run.active) {
-                // Preserve existing commands and chains; append only new targets.
-                run.grids = run.grids.concat(added);
-                run.oneShot = run.oneShot && !!oneShot;
-                run.sentOnce = false;
-                var remaining = run.queue ? Math.max(0, run.queue.len() - run.queue.index) : 0;
-                _DM_schedule(run, run.id, Math.max(DM_MIN_DELAY, remaining * DM_SEND_INTERVAL + 2000));
-                return;
-            }
-            grids = added;
-        }
-        _DM_stopRun(run, true); // build keeps its existing restart policy
-        run.active   = true;
-        run.oneShot  = !!oneShot;
+        if (!grids.length) { _DM_debug('DM/no_targets'); return; }
+        _DM_flushSettings();
+        _DM_replaceRun(run);
+        run.active = true;
+        run.oneShot = !!oneShot;
         run.sentOnce = false;
-        run.grids    = grids.map(String);
-        run.pending  = {};
+        run.grids = grids;
+        run.targets = {};
+        run.expected = {};
+        run.limits = $.extend({}, DM_config.maxLvl);
+        run.stopAfterBuild = !!DM_config.stopAfterBuild;
+        run.homeZoneId = ctx.homeZoneId;
+        run.errorCount = 0;
+        // An already sent command is adopted, not submitted a second time.
+        grids.forEach(function (grid) {
+            var receipt = DM_runtime.receipts[_DM_runType(run)][grid];
+            if (receipt && receipt.homeZoneId === ctx.homeZoneId) {
+                run.pending[grid] = receipt;
+                if (isUpgrade && run.oneShot) run.targets[grid] = Math.min(_DM_maxLvlFor(receipt.name, run.limits), receipt.targetLevel);
+            }
+        });
         _DM_tick(run, run.id);
     }
 
     function _DM_schedule(run, runId, delay) {
-        if (runId !== run.id || !run.active) return;
-        if (run.timer) clearTimeout(run.timer);
+        if (!DM_alive || runId !== run.id || !run.active) return;
+        if (run.timer !== null) clearTimeout(run.timer);
         run.timer = setTimeout(function () {
+            if (!DM_alive || runId !== run.id || !run.active) return;
             run.timer = null;
             _DM_tick(run, runId);
-        }, Math.max(0, delay));
+        }, Math.max(DM_MIN_DELAY, Math.min(delay, DM_MAX_DELAY)));
     }
 
     function _DM_tick(run, runId) {
-        if (runId !== run.id || !run.active) return;
+        if (!DM_alive || runId !== run.id || !run.active) return;
         try {
-            if (!game.gi.isOnHomzone()) {
-                _DM_schedule(run, runId, DM_OFFZONE_DELAY);
-                return;
-            }
-            var delay = run.isUpgrade ? _DM_upgradeStep(run, runId) : _DM_buildStep(run, runId);
+            var ctx = _DM_context(run.homeZoneId);
+            if (!ctx) { _DM_schedule(run, runId, DM_OFFZONE_DELAY); return; }
+            _DM_reconcileReceipts(ctx);
+            var delay = run.isUpgrade ? _DM_upgradeStep(run, ctx) : _DM_buildStep(run, ctx);
+            run.errorCount = 0;
             if (delay === null) {
-                var oneShot = run.oneShot;
-                _DM_stopRun(run, true);
-                if (!oneShot) _DM_notify(_DM_runName(run) + ': ' + loca.GetText('LAB', 'QuestCompleted'));
+                run.active = false;
+                run.timer = null;
+                // All queued items have been reconciled before finishing.
                 return;
             }
-            _DM_schedule(run, runId, Math.min(Math.max(delay, DM_MIN_DELAY), DM_MAX_DELAY));
+            _DM_schedule(run, runId, delay);
         } catch (e) {
-            debug(e);
-            _DM_schedule(run, runId, DM_OFFZONE_DELAY);
+            _DM_debug(e);
+            run.errorCount++;
+            if (run.errorCount === 1) _DM_debug('DM/read_error_paused');
+            _DM_schedule(run, runId, Math.min(DM_MAX_DELAY, DM_MIN_DELAY * Math.pow(2, Math.min(run.errorCount, 5))));
         }
     }
 
-    function _DM_sendQueued(run, runId, actions) {
-        if (actions.length === 0) return;
-        var q = new TimedQueue(DM_SEND_INTERVAL);
-        actions.forEach(function (fn) {
-            q.add(function () {
-                if (runId !== run.id) return;
-                try { fn(); } catch (e) { debug(e); }
-            });
+    function _DM_freeQueueSlots(context) {
+        var ctx = context || _DM_context();
+        if (!ctx) return 0;
+        var queue = ctx.home.mBuildQueue;
+        var free = queue.GetTotalAvailableSlots() - queue.GetQueue_vector().length;
+        return isFinite(free) ? Math.max(0, Math.floor(free)) : 0;
+    }
+
+    function _DM_reservedBuildSlots(ctx) {
+        var grids = {};
+        Object.keys(DM_runs.build.pending).forEach(function (grid) {
+            if (DM_runs.build.pending[grid].status === 'queued') grids[grid] = true;
         });
-        run.queue = q;
-        q.run();
-    }
-
-    function _DM_freeQueueSlots() {
-        try {
-            var queue = game.gi.mHomePlayer.mBuildQueue;
-            return queue.GetTotalAvailableSlots() - queue.GetQueue_vector().length;
-        } catch (e) { return 0; }
-    }
-
-    function _DM_nearestQueueFinish() {
-        var min = null;
-        try {
-            var vec = game.gi.mHomePlayer.mBuildQueue.GetQueue_vector();
-            for (var i = 0; i < vec.length; i++) {
-                var t = _DM_call(vec[i], 'GetRemainingConstructionDuration', 0);
-                if (t > 0 && (min === null || t < min)) min = t;
-            }
-        } catch (e) { debug(e); }
-        return min === null ? DM_MAX_DELAY : min + 1500;
-    }
-
-    // --- Стройка ---
-    function _DM_dropBuild(run, grid) {
-        _DM_removeFrom(run.grids, grid);
-        _DM_removeFrom(DM_config.build, grid);
-        delete run.pending[grid];
-    }
-
-    function _DM_buildStep(run, runId) {
-        var now     = Date.now();
-        var grids   = run.grids;
-        var pending = run.pending;
-        var failed  = 0;
-        var buildCountBefore = DM_config.build.length;
-        var i;
-
-        // 1. Проверяем отправленные команды по факту на карте
-        Object.keys(pending).forEach(function (grid) {
-            if (_DM_bld(grid)) {
-                _DM_dropBuild(run, grid);
-                if (DM_config.stopAfterBuild) _DM_addStopWatch(grid, 'build');
-            } else if (now - pending[grid] > DM_BUILD_VERIFY_MS) {
-                failed++;
-                _DM_dropBuild(run, grid);
-            }
+        Object.keys(DM_runtime.receipts.build).forEach(function (grid) {
+            var r = DM_runtime.receipts.build[grid];
+            if (r.homeZoneId === ctx.homeZoneId && r.status !== 'confirmed' && r.status !== 'mismatch' && !_DM_bld(grid, ctx)) grids[grid] = true;
         });
-        if (failed > 0) {
-            _DM_notify(_DM_runName(run) + ': не удалось начать стройку (' + failed + ') — не хватает ресурсов. Шахты убраны из списка.');
+        return Object.keys(grids).length;
+    }
+
+    function _DM_nearestQueueFinish(ctx) {
+        var min = DM_MAX_DELAY;
+        var vec = ctx.home.mBuildQueue.GetQueue_vector();
+        for (var i = 0; i < vec.length; i++) {
+            var t = _DM_call(vec[i], 'GetRemainingConstructionDuration', 0);
+            if (t > 0) min = Math.min(min, t + 1500);
         }
+        return min;
+    }
 
-        // 2. Убираем неактуальные месторождения
-        for (i = grids.length - 1; i >= 0; i--) {
-            var g = grids[i];
-            if (pending[g] !== undefined) continue;
-            var ore = _DM_depositOre(g);
-            if (!ore || !RESOURCES.buildMapping[ore] || _DM_bld(g)) _DM_dropBuild(run, g);
+    function _DM_receiptDone(run, grid, receipt) {
+        if (receipt.status === 'confirmed') {
+            delete run.pending[grid];
+            return true;
         }
-        if (DM_config.build.length !== buildCountBefore) _DM_saveTmpSetting();
+        if (receipt.status === 'mismatch' || (receipt.status === 'unknown' && Date.now() - receipt.sentAt >= DM_RECONCILE_MS)) {
+            _DM_debug('DM/command_unconfirmed [' + grid + ']');
+            _DM_finishGrid(run, grid, false);
+            return true;
+        }
+        return false;
+    }
 
-        var pendingCount = Object.keys(pending).length;
-        var candidates   = grids.filter(function (g) { return pending[g] === undefined; });
-
-        if (pendingCount === 0 && (candidates.length === 0 || (run.oneShot && run.sentOnce))) return null;
-
-        // 3. Отправляем новые стройки: сначала самые быстрые
-        var actions = [];
+    function _DM_buildStep(run, ctx) {
+        var candidates = [], skipped = 0;
+        run.grids.slice().forEach(function (grid) {
+            var pending = run.pending[grid];
+            if (pending) {
+                if (pending.status === 'queued') return;
+                if (!_DM_receiptDone(run, grid, pending)) return;
+                if (pending.status === 'confirmed') _DM_finishGrid(run, grid, true);
+                return;
+            }
+            var bld = _DM_bld(grid, ctx);
+            var ore = _DM_depositOre(grid, ctx);
+            if (bld || !RESOURCES.buildMapping[ore]) { _DM_finishGrid(run, grid, true); return; }
+            var deposit = _DM_deposit(grid, ctx);
+            if (!deposit || deposit.GetAmount() <= 0) { _DM_finishGrid(run, grid, true); return; }
+            candidates.push({ grid: grid, ore: ore });
+        });
+        if (!run.grids.length) return null;
+        candidates.sort(function (a, b) {
+            return (DM_BUILD_DURATION[a.ore] - DM_BUILD_DURATION[b.ore]) || (RESOURCES.oreOrder[a.ore] - RESOURCES.oreOrder[b.ore]) || (Number(a.grid) - Number(b.grid));
+        });
+        var free = Math.max(0, _DM_freeQueueSlots(ctx) - _DM_reservedBuildSlots(ctx));
         if (!(run.oneShot && run.sentOnce)) {
-            var oreOf = {};
-            candidates.forEach(function (g) { oreOf[g] = _DM_depositOre(g); });
-            candidates.sort(function (a, b) {
-                var oa = oreOf[a], ob = oreOf[b];
-                var d  = (DM_BUILD_DURATION[oa] || 9999) - (DM_BUILD_DURATION[ob] || 9999);
-                return d !== 0 ? d : (RESOURCES.oreOrder[oa] || 99) - (RESOURCES.oreOrder[ob] || 99);
+            candidates.forEach(function (candidate) {
+                if (free <= 0) {
+                    if (run.oneShot) { skipped++; _DM_finishGrid(run, candidate.grid, false); }
+                    return;
+                }
+                free--;
+                var item = { kind: 'build', grid: candidate.grid, ore: candidate.ore,
+                    name: DM_BUILD_NAME[candidate.ore], runId: run.id, homeZoneId: run.homeZoneId,
+                    stopAfterBuild: run.stopAfterBuild };
+                run.pending[item.grid] = { status: 'queued' };
+                DM_sender.items.push(item);
             });
-
-            var free = _DM_freeQueueSlots() - pendingCount;
-            for (i = 0; i < candidates.length && free > 0; i++, free--) {
-                (function (grid) {
-                    var mapping = RESOURCES.buildMapping[oreOf[grid]];
-                    pending[grid] = Infinity; // в очереди отправки
-                    actions.push(function () {
-                        if (_DM_bld(grid)) return; // уже занято — проверка в следующем такте
-                        game.gi.SendServerAction(CMD_BUILD, mapping.number, Number(grid), 0, null);
-                        pending[grid] = Date.now();
-                        _DM_notify(loca.GetText("BUI", "DefenseModeGhostGarrison") + ' ' + loca.GetText("RES", mapping.text));
-                    });
-                })(candidates[i]);
-            }
             run.sentOnce = true;
         }
-        _DM_sendQueued(run, runId, actions);
-
-        var delay = Object.keys(pending).length > 0 ? 5000 : _DM_nearestQueueFinish();
-        return Math.max(delay, actions.length * DM_SEND_INTERVAL + 2000);
+        if (skipped) {
+            _DM_notify(loca.GetText('LAB', 'FullBuildQueue'));
+            _DM_debug('DM/manual_build_skipped=' + skipped);
+        }
+        _DM_wakeSender();
+        if (!run.grids.length) return null;
+        return Object.keys(run.pending).length ? 5000 : _DM_nearestQueueFinish(ctx);
     }
 
-    // --- Улучшение ---
-    function _DM_dropUpgrade(run, grid) {
-        _DM_removeFrom(run.grids, grid);
-        _DM_removeFrom(DM_config.upgrade, grid);
-        delete run.pending[grid];
-    }
-
-    function _DM_upgradeRemaining(bld) {
+    function _DM_upgradeRemaining(bld, ctx) {
         var start = _DM_call(bld, 'GetUpgradeStartTime', 0);
-        var dur   = _DM_call(bld, 'GetUpgradeDuration', -1);
-        if (!start || dur <= 0) return null;
-        return Math.max(0, start + dur - game.gi.GetClientTime());
+        var duration = _DM_call(bld, 'GetUpgradeDuration', -1);
+        return start > 0 && duration > 0 ? Math.max(0, start + duration - ctx.gi.GetClientTime()) : null;
     }
 
-    function _DM_upgradeStep(run, runId) {
-        var now      = Date.now();
-        var grids    = run.grids;
-        var pending  = run.pending;
-        var canSend  = !(run.oneShot && run.sentOnce);
-        var noRes    = [];
-        var stopped  = 0;
-        var minRem   = null;
-        var actions  = [];
-        var changed  = false;
-
-        for (var i = grids.length - 1; i >= 0; i--) {
-            var grid = grids[i];
-            var bld  = _DM_bld(grid);
-            var name = _DM_call(bld, 'GetBuildingName_string', null);
-
-            // Эпические/арктические/Spooky не улучшаются (в игре только уровень 1)
-            if (!bld || !_DM_isUpgradableMine(name)) { _DM_dropUpgrade(run, grid); changed = true; continue; }
-
+    function _DM_upgradeStep(run, ctx) {
+        var minRemaining = DM_MAX_DELAY;
+        run.grids.slice().forEach(function (grid) {
+            var pending = run.pending[grid];
+            if (pending) {
+                if (pending.status === 'queued') return;
+                if (!_DM_receiptDone(run, grid, pending)) return;
+                if (run.grids.indexOf(grid) === -1) return;
+            }
+            var bld = _DM_bld(grid, ctx);
+            var name = bld ? bld.GetBuildingName_string() : '';
+            if (!bld || !_DM_isUpgradableMine(name)) { _DM_finishGrid(run, grid, true); return; }
+            var level = bld.GetUIUpgradeLevel();
+            if (run.expected[grid] && run.expected[grid] !== name) { _DM_finishGrid(run, grid, false); return; }
+            run.expected[grid] = name;
+            if (run.targets[grid] === undefined) {
+                var receipt = DM_runtime.receipts.upgrade[grid];
+                var firstTarget = receipt ? receipt.targetLevel : level + 1;
+                run.targets[grid] = run.oneShot ? Math.min(_DM_maxLvlFor(name, run.limits), firstTarget) : _DM_maxLvlFor(name, run.limits);
+            }
+            if (level >= run.targets[grid]) { _DM_finishGrid(run, grid, true); return; }
             if (_DM_isUpgradeBusy(bld)) {
-                delete pending[grid];
-                var rem = _DM_upgradeRemaining(bld);
-                if (rem !== null && (minRem === null || rem < minRem)) minRem = rem;
-                continue;
+                var remaining = _DM_upgradeRemaining(bld, ctx);
+                if (remaining !== null) minRemaining = Math.min(minRemaining, remaining + 1500);
+                return;
             }
-
-            if (pending[grid] !== undefined) {
-                if (now - pending[grid] < DM_UPGRADE_PENDING_MS) continue;
-                delete pending[grid]; // не подтвердилось — попробуем снова
+            if (bld.IsWaitForCommand()) return;
+            if (!bld.IsProductionActive()) {
+                _DM_debug('DM/upgrade_skipped_inactive [' + grid + ']');
+                _DM_finishGrid(run, grid, false); return;
             }
-
-            if (_DM_call(bld, 'GetUIUpgradeLevel', 0) >= _DM_maxLvlFor(name)) { grids.splice(i, 1); continue; }
-
-            // Остановленные шахты не улучшаем
-            if (!_DM_call(bld, 'IsProductionActive', false)) { stopped++; _DM_dropUpgrade(run, grid); changed = true; continue; }
-
-            if (!canSend) continue;
-            if (_DM_call(bld, 'IsWaitForCommand', false)) continue;
-
-            var allowed = false, allowedNoRes = false;
-            try { allowed = bld.IsUpgradeAllowed(true); allowedNoRes = bld.IsUpgradeAllowed(false); } catch (e) { debug(e); }
-
-            if (allowed) {
-                (function (grid, name) {
-                    pending[grid] = Infinity;
-                    actions.push(function () {
-                        var b = _DM_bld(grid);
-                        if (!b || !b.IsUpgradeAllowed(true)) { delete pending[grid]; return; }
-                        var ok;
-                        if (typeof game.gi.mCurrentPlayerZone.UpgradeBuildingOnGridPosition === 'function') {
-                            // как в родном клиенте (cBuildingInfoPanel.UpgradeBuildingHandler)
-                            ok = game.gi.mCurrentPlayerZone.UpgradeBuildingOnGridPosition(Number(grid));
-                            if (ok && typeof b.SetIsUpgradeInitiated === 'function') b.SetIsUpgradeInitiated(true);
-                        } else {
-                            game.gi.SendServerAction(CMD_UPGRADE, 0, Number(grid), 0, null);
-                            ok = true;
-                        }
-                        if (!ok) { delete pending[grid]; return; }
-                        pending[grid] = Date.now();
-                        _DM_notify(loca.GetText("ALT", "UpgradeBuilding") + ' ' + loca.GetText('BUI', name));
-                        if (DM_config.stopAfterBuild) _DM_addStopWatch(grid, 'upgrade');
-                    });
-                })(grid, name);
-            } else if (allowedNoRes) {
-                noRes.push(loca.GetText('BUI', name));
-                _DM_dropUpgrade(run, grid);
-                changed = true;
+            if (!bld.IsUpgradeAllowed(true)) {
+                if (bld.IsUpgradeAllowed(false)) {
+                    _DM_notify(loca.GetText('LAB', 'MissingResourcesShort') + ' ' + loca.GetText('BUI', name));
+                    _DM_finishGrid(run, grid, false);
+                } else if (run.oneShot) {
+                    _DM_debug('DM/upgrade_unavailable [' + grid + ']');
+                    _DM_finishGrid(run, grid, false);
+                }
+                return;
             }
-            // иначе улучшение временно недоступно — ждём следующего такта
+            run.pending[grid] = { status: 'queued' };
+            DM_sender.items.push({ kind: 'upgrade', grid: grid, name: name, runId: run.id,
+                homeZoneId: run.homeZoneId, initialLevel: level, targetLevel: level + 1,
+                stopLevel: run.targets[grid], stopAfterBuild: run.stopAfterBuild });
+        });
+        _DM_wakeSender();
+        if (!run.grids.length) return null;
+        return Object.keys(run.pending).length ? Math.min(minRemaining, 5000) : minRemaining;
+    }
+
+    function _DM_itemLive(item) {
+        if (item.kind === 'stop') {
+            var watch = DM_stopWatch[item.key];
+            return !!watch && watch.queued === true && watch.token === item.token;
         }
+        var run = DM_runs[item.kind];
+        return !!run && run.active && run.id === item.runId && run.grids.indexOf(item.grid) !== -1;
+    }
 
-        if (canSend) run.sentOnce = true;
-        if (changed) _DM_saveTmpSetting();
-        if (noRes.length > 0) {
-            _DM_notify(_DM_runName(run) + ': не хватает ресурсов для улучшения — ' + noRes.join(', ') + '. Убраны из списка.');
+    function _DM_wakeSender(delay) {
+        if (!DM_alive || DM_sender.timer !== null || !DM_sender.items.length) return;
+        var wait = Math.max(delay || 0, DM_SEND_INTERVAL - (Date.now() - DM_sender.lastSentAt), 0);
+        DM_sender.timer = setTimeout(_DM_sendNext, wait);
+    }
+
+    function _DM_sendNext() {
+        if (!DM_alive) return;
+        DM_sender.timer = null;
+        DM_sender.items = DM_sender.items.filter(_DM_itemLive);
+        if (!DM_sender.items.length) return;
+        var ctx = _DM_context();
+        if (!ctx) { _DM_wakeSender(DM_OFFZONE_DELAY); return; }
+        if (Date.now() - DM_sender.lastSentAt < DM_SEND_INTERVAL) { _DM_wakeSender(); return; }
+        var item = DM_sender.items.shift();
+        if (item.homeZoneId !== ctx.homeZoneId) {
+            // Do not let a different signed-in player's account inherit the command.
+            if (item.kind === 'stop') {
+                if (DM_stopWatch[item.key]) DM_stopWatch[item.key].queued = false;
+            } else {
+                delete DM_runs[item.kind].pending[item.grid];
+            }
+            _DM_debug('DM/home_player_changed');
+            _DM_wakeSender(DM_OFFZONE_DELAY);
+            return;
         }
-        if (stopped > 0) {
-            _DM_notify(_DM_runName(run) + ': остановленные шахты пропущены (' + stopped + ').');
+        try {
+            _DM_reconcileReceipts(ctx);
+            if (item.kind === 'stop') _DM_sendStop(item, ctx);
+            else _DM_sendAction(item, ctx);
+        } catch (e) {
+            _DM_debug(e);
+            if (item.kind === 'stop') {
+                var watch = DM_stopWatch[item.key];
+                if (watch) watch.queued = false;
+            } else {
+                var run = DM_runs[item.kind];
+                var receipt = DM_runtime.receipts[item.kind][item.grid];
+                if (receipt) {
+                    receipt.status = 'unknown';
+                    receipt.warned = true;
+                    _DM_debug('DM/send_unknown [' + item.grid + ']');
+                } else {
+                    // Exception before the sending boundary: no command was attempted.
+                    delete run.pending[item.grid];
+                    _DM_debug('DM/validation_error_not_sent [' + item.grid + ']');
+                    _DM_finishGrid(run, item.grid, false);
+                }
+            }
         }
+        _DM_wakeSender();
+        _DM_ensureService();
+    }
 
-        _DM_sendQueued(run, runId, actions);
+    function _DM_sendAction(item, ctx) {
+        var run = DM_runs[item.kind];
+        var old = DM_runtime.receipts[item.kind][item.grid];
+        if (old && old.homeZoneId === ctx.homeZoneId && old.status !== 'confirmed') {
+            run.pending[item.grid] = old; return;
+        }
+        var bld = _DM_bld(item.grid, ctx);
+        if (item.kind === 'build') {
+            if (bld || _DM_depositOre(item.grid, ctx) !== item.ore) { _DM_finishGrid(run, item.grid, true); return; }
+            var deposit = _DM_deposit(item.grid, ctx);
+            if (!deposit || deposit.GetAmount() <= 0) { _DM_finishGrid(run, item.grid, true); return; }
+            if (_DM_freeQueueSlots(ctx) <= 0) {
+                delete run.pending[item.grid];
+                if (run.oneShot) {
+                    _DM_notify(loca.GetText('LAB', 'FullBuildQueue'));
+                    _DM_finishGrid(run, item.grid, false);
+                }
+                return;
+            }
+        } else {
+            if (!bld || bld.GetBuildingName_string() !== item.name || !_DM_isUpgradableMine(item.name)) { _DM_finishGrid(run, item.grid, false); return; }
+            if (bld.GetUIUpgradeLevel() !== item.initialLevel || _DM_isUpgradeBusy(bld) || bld.IsWaitForCommand()) {
+                delete run.pending[item.grid]; return;
+            }
+            if (!bld.IsProductionActive() || !bld.IsUpgradeAllowed(true)) {
+                _DM_debug('DM/state_changed_not_sent [' + item.grid + ']');
+                _DM_finishGrid(run, item.grid, false); return;
+            }
+            if (typeof ctx.zone.UpgradeBuildingOnGridPosition !== 'function') {
+                _DM_debug('DM/upgrade_method_unavailable');
+                _DM_finishGrid(run, item.grid, false); return;
+            }
+        }
+        var receipt = {
+            kind: item.kind, grid: item.grid, homeZoneId: item.homeZoneId, name: item.name,
+            ore: item.ore, initialLevel: item.initialLevel, targetLevel: item.targetLevel,
+            sentAt: Date.now(), status: 'sent', warned: false
+        };
+        // Register before crossing the bridge: a throwing bridge call can still have sent.
+        DM_runtime.receipts[item.kind][item.grid] = receipt;
+        run.pending[item.grid] = receipt;
+        DM_sender.lastSentAt = receipt.sentAt;
+        var watchKey = item.kind + ':' + item.grid;
+        var previousWatch = DM_stopWatch[watchKey];
+        var addWatch = item.stopAfterBuild && (item.kind === 'build' || item.targetLevel >= item.stopLevel);
+        if (addWatch) _DM_addStopWatch(item);
+        if (item.kind === 'build') {
+            ctx.gi.SendServerAction(CMD_BUILD, RESOURCES.buildMapping[item.ore].number, Number(item.grid), 0, null);
+        } else {
+            var ok = ctx.zone.UpgradeBuildingOnGridPosition(Number(item.grid));
+            if (!ok) {
+                delete DM_runtime.receipts.upgrade[item.grid];
+                delete run.pending[item.grid];
+                // Native method returned before sending (missing building / wait-for-command).
+                if (addWatch) {
+                    if (previousWatch) DM_stopWatch[watchKey] = previousWatch;
+                    else delete DM_stopWatch[watchKey];
+                }
+                return;
+            }
+            if (typeof bld.SetIsUpgradeInitiated === 'function') bld.SetIsUpgradeInitiated(true);
+        }
+        _DM_notify((item.kind === 'build' ? loca.GetText('BUI', 'DefenseModeGhostGarrison') : loca.GetText('ALT', 'UpgradeBuilding')) +
+            ' ' + loca.GetText(item.kind === 'build' ? 'RES' : 'BUI', item.kind === 'build' ? item.ore : item.name));
+    }
 
-        var pendingCount = Object.keys(pending).length;
-        if (grids.length === 0) return null;
-        if (run.oneShot && run.sentOnce && pendingCount === 0) return null;
+    function _DM_reconcileReceipts(ctx) {
+        ['build', 'upgrade'].forEach(function (type) {
+            var receipts = DM_runtime.receipts[type];
+            Object.keys(receipts).forEach(function (grid) {
+                var r = receipts[grid];
+                if (r.homeZoneId !== ctx.homeZoneId) return;
+                var bld = _DM_bld(grid, ctx);
+                var name = bld ? bld.GetBuildingName_string() : '';
+                var confirmed = false;
+                if (bld && name !== r.name) r.status = 'mismatch';
+                else if (bld && type === 'build') confirmed = true;
+                else if (bld && bld.GetUIUpgradeLevel() >= r.targetLevel) confirmed = true;
+                else if (bld && type === 'upgrade' && bld.IsUpgradeInProgress()) r.status = 'observed';
+                if (confirmed) {
+                    r.status = 'confirmed';
+                    delete receipts[grid];
+                    return;
+                }
+                var timeout = type === 'build' ? DM_BUILD_VERIFY_MS : DM_UPGRADE_PENDING_MS;
+                if (r.status !== 'observed' && r.status !== 'mismatch' && Date.now() - r.sentAt > timeout) r.status = 'unknown';
+                if ((r.status === 'unknown' || r.status === 'mismatch') && !r.warned) {
+                    r.warned = true;
+                    _DM_debug('DM/' + type + '_unconfirmed [' + grid + ']');
+                }
+            });
+        });
+    }
 
-        var delay = minRem !== null ? minRem + 1500 : DM_MAX_DELAY;
-        if (pendingCount > 0) delay = Math.min(delay, 5000);
-        return Math.max(delay, actions.length * DM_SEND_INTERVAL + 2000);
+    function _DM_addStopWatch(item) {
+        var key = item.kind + ':' + item.grid;
+        var existing = DM_stopWatch[key];
+        DM_stopWatch[key] = {
+            grid: item.grid, type: item.kind, homeZoneId: item.homeZoneId, name: item.name,
+            targetLevel: item.kind === 'upgrade' ? item.stopLevel : 1,
+            since: existing ? existing.since : Date.now(), queued: false,
+            token: (DM_runtime.watchSequence = (DM_runtime.watchSequence || 0) + 1),
+            sentAt: null, attempts: 0, warned: false
+        };
+        _DM_ensureService();
+    }
+
+    function _DM_checkStopWatch(ctx) {
+        Object.keys(DM_stopWatch).forEach(function (key) {
+            var w = DM_stopWatch[key];
+            if (w.homeZoneId !== ctx.homeZoneId) return;
+            var bld = _DM_bld(w.grid, ctx);
+            if (!bld) {
+                if (Date.now() - w.since > DM_RECONCILE_MS) {
+                    // Keep waiting if the originating command itself is still unresolved.
+                    if (!DM_runtime.receipts[w.type][w.grid]) delete DM_stopWatch[key];
+                }
+                return;
+            }
+            if (bld.GetBuildingName_string() !== w.name) { delete DM_stopWatch[key]; return; }
+            if (!bld.IsBuildingInProduction() || _DM_isUpgradeBusy(bld)) return;
+            if (w.type === 'upgrade' && bld.GetUIUpgradeLevel() < w.targetLevel) return;
+            if (w.type === 'build' && DM_runs.upgrade.active && DM_runs.upgrade.grids.indexOf(w.grid) !== -1) return;
+            // Only the observed production flag confirms that stopping succeeded.
+            if (!bld.IsProductionActive()) { delete DM_stopWatch[key]; return; }
+            if (w.queued || bld.IsWaitForCommand()) return;
+            if (w.sentAt !== null && Date.now() - w.sentAt < DM_UPGRADE_PENDING_MS) return;
+            if (w.attempts >= 3) {
+                if (!w.warned) {
+                    w.warned = true;
+                    _DM_debug('DM/production_stop_unconfirmed [' + w.grid + ']');
+                }
+                return;
+            }
+            w.queued = true;
+            DM_sender.items.push({ kind: 'stop', grid: w.grid, key: key, token: w.token, homeZoneId: w.homeZoneId });
+        });
+        _DM_wakeSender();
+    }
+
+    function _DM_sendStop(item, ctx) {
+        var w = DM_stopWatch[item.key];
+        if (!w || w.token !== item.token) return;
+        w.queued = false;
+        var bld = _DM_bld(w.grid, ctx);
+        if (!bld || bld.GetBuildingName_string() !== w.name) return;
+        if (!bld.IsBuildingInProduction() || _DM_isUpgradeBusy(bld) || bld.IsWaitForCommand()) return;
+        if (w.type === 'upgrade' && bld.GetUIUpgradeLevel() < w.targetLevel) return;
+        if (w.type === 'build' && DM_runs.upgrade.active && DM_runs.upgrade.grids.indexOf(w.grid) !== -1) return;
+        if (!bld.IsProductionActive()) { delete DM_stopWatch[item.key]; return; }
+        if (typeof bld.SetProductionActiveCommand !== 'function') {
+            if (!w.warned) _DM_debug('DM/production_stop_method_unavailable');
+            w.warned = true;
+            w.attempts = 3;
+            return;
+        }
+        w.attempts++;
+        w.sentAt = Date.now();
+        DM_sender.lastSentAt = w.sentAt;
+        // Stopping (false) is idempotent. Retry only after checking the live state.
+        bld.SetProductionActiveCommand(false);
+    }
+
+    function _DM_serviceTick() {
+        if (!DM_alive) return;
+        DM_runtime.serviceTimer = null;
+        try {
+            var ctx = _DM_context();
+            if (ctx) { _DM_reconcileReceipts(ctx); _DM_checkStopWatch(ctx); }
+        } catch (e) { _DM_debug(e); }
+        _DM_ensureService();
+    }
+
+    function _DM_ensureService() {
+        if (!DM_alive || DM_runtime.serviceTimer !== null) return;
+        if (Object.keys(DM_stopWatch).length || Object.keys(DM_runtime.receipts.build).length || Object.keys(DM_runtime.receipts.upgrade).length) {
+            DM_runtime.serviceTimer = setTimeout(_DM_serviceTick, DM_STOPWATCH_DELAY);
+        }
+    }
+
+    function _DM_prepareReload() {
+        _DM_flushSettings();
+        DM_alive = false;
+        Object.keys(DM_runs).forEach(function (type) {
+            if (DM_runs[type].timer !== null) clearTimeout(DM_runs[type].timer);
+            DM_runs[type].timer = null;
+        });
+        if (DM_sender.timer !== null) clearTimeout(DM_sender.timer);
+        DM_sender.timer = null;
+        ['serviceTimer', 'saveTimer', 'uiWaitTimer', 'uiReopenTimer'].forEach(function (key) {
+            if (DM_runtime[key] !== null) clearTimeout(DM_runtime[key]);
+            DM_runtime[key] = null;
+        });
+        $('#DrunkenMinerModal').off('.dmMiner');
+        DM_runtime.uiWaitNodes.forEach(function (node) { $(node).off('.dmMinerWait'); });
+        DM_runtime.uiWaitNodes = [];
+        DM_runtime.ui.waiting = false;
+    }
+
+    function _DM_resumeRuntime() {
+        window.TSO_DrunkenMiner = DM_runtime;
+        DM_runtime.prepareReload = _DM_prepareReload;
+        DM_runtime.menuHandler = DM_MenuHandler;
+        window.DM_MenuHandler = DM_MenuHandler;
+        addToolsMenuItem(loca.GetText('RES', 'BuffAd_Drunken_Miner'), window.DM_MenuHandler);
+        Object.keys(DM_runs).forEach(function (type) {
+            if (DM_runs[type].active) _DM_schedule(DM_runs[type], DM_runs[type].id, DM_MIN_DELAY);
+        });
+        _DM_wakeSender();
+        _DM_ensureService();
+        if ($('#DrunkenMinerModal').length) {
+            _DM_init();
+            _DM_InitEvens();
+            if (_DM_context() && !DM_runtime.ui.closing) _DM_renderWindow();
+        }
+    }
+
+    function _DM_queueReopen() {
+        if (!DM_alive || DM_runtime.uiReopenTimer !== null) return;
+        DM_runtime.uiReopenTimer = setTimeout(function () {
+            if (!DM_alive) return;
+            DM_runtime.uiReopenTimer = null;
+            if (DM_runtime.ui.reopen) DM_MenuHandler();
+        }, 0);
+    }
+
+    function _DM_hideModal() {
+        var ui = DM_runtime.ui;
+        var modal = $('#DrunkenMinerModal').data('bs.modal');
+        if (ui.closing || !modal || !modal.isShown) return;
+        if (ui.opening) { ui.closeRequested = true; return; }
+        $('#DrunkenMinerModal').modal('hide');
+    }
+
+    function _DM_bindModalLifecycle() {
+        var root = $('#DrunkenMinerModal');
+        var ui = DM_runtime.ui;
+        root.on('show.bs.modal.dmMiner', function (e) {
+            if (e.target !== this) return;
+            ui.opening = true;
+            ui.closing = false;
+        }).on('shown.bs.modal.dmMiner', function (e) {
+            if (e.target !== this) return;
+            ui.opening = false;
+            if (ui.closeRequested) { ui.closeRequested = false; _DM_hideModal(); }
+        }).on('hide.bs.modal.dmMiner', function (e) {
+            if (e.target !== this) return;
+            ui.closing = true;
+            ui.reopen = false;
+            _DM_flushSettings();
+        }).on('hidden.bs.modal.dmMiner', function (e) {
+            if (e.target !== this) return;
+            ui.closing = false;
+            ui.opening = false;
+            ui.closeRequested = false;
+            if (ui.reopen) _DM_queueReopen();
+        });
     }
 
     function DM_MenuHandler() {
+        if (!DM_alive) return;
         try {
-            if (game.gi.isOnHomzone() === false) {
-                game.showAlert(getText('not_home'));
+            if (!_DM_context()) { _DM_notify(getText('not_home')); return; }
+            var ui = DM_runtime.ui;
+            ui.reopen = true;
+            var root = $('#DrunkenMinerModal');
+            var ownModal = root.data('bs.modal');
+            if (ui.closing || (root.is(':visible') && ownModal && !ownModal.isShown)) return;
+            if (ui.opening) { ui.reopen = false; return; }
+            var others = $("div[role='dialog']:not(#DrunkenMinerModal):visible").filter(function () {
+                return !!$(this).data('bs.modal');
+            });
+            if (others.length) {
+                if (ui.waiting) return;
+                ui.waiting = true;
+                var left = others.length;
+                DM_runtime.uiWaitNodes = others.toArray();
+                others.one('hidden.bs.modal.dmMinerWait', function (e) {
+                    if (!DM_alive || e.target !== this) return;
+                    left--;
+                    if (left === 0) {
+                        if (DM_runtime.uiWaitTimer !== null) clearTimeout(DM_runtime.uiWaitTimer);
+                        DM_runtime.uiWaitTimer = null;
+                        DM_runtime.uiWaitNodes = [];
+                        ui.waiting = false;
+                        _DM_queueReopen();
+                    }
+                });
+                DM_runtime.uiWaitTimer = setTimeout(function () {
+                    if (!DM_alive) return;
+                    DM_runtime.uiWaitTimer = null;
+                    DM_runtime.uiWaitNodes.forEach(function (node) { $(node).off('.dmMinerWait'); });
+                    DM_runtime.uiWaitNodes = [];
+                    ui.waiting = false;
+                    ui.reopen = false;
+                    _DM_debug('DM/modal_close_timeout');
+                }, 5000);
+                others.each(function () {
+                    var other = $(this).data('bs.modal');
+                    if (other && other.isShown) $(this).modal('hide');
+                });
                 return;
             }
-            _DM_init();
-            _DM_renderHeader();
-            _DM_renderBody();
-            _DM_renderFooter();
-            _DM_InitEvens();
-            _DM_SetConfigValues();
+            ui.reopen = false;
+            _DM_renderWindow();
+            ownModal = $('#DrunkenMinerModal').data('bs.modal');
+            if (!ownModal || !ownModal.isShown) $('#DrunkenMinerModal').modal({ backdrop: 'static' });
+        } catch (e) { _DM_debug(e); }
+    }
 
-            $('#DrunkenMinerModal:not(:visible)').modal({
-                backdrop: "static"
-            });
-        } catch (e) {
-            debug(e)
-        }
+    function _DM_renderWindow() {
+        _DM_init();
+        _DM_renderHeader();
+        _DM_renderBody();
+        _DM_renderFooter();
+        _DM_InitEvens();
+        _DM_SetConfigValues();
     }
 
     function _DM_init() {
-        $("div[role='dialog']:not(#DrunkenMinerModal):visible").modal("hide");
-        if (!_DM_ModalInitialized) $('#DrunkenMinerModal').remove();
-        createModalWindow('DrunkenMinerModal', loca.GetText("RES", 'BuffAd_Drunken_Miner'));
-
-        DM_UpgradeSwitchStatus  = DM_config.switchStatus;
+        if (!$('#DrunkenMinerModal').length) {
+            createModalWindow('DrunkenMinerModal', loca.GetText('RES', 'BuffAd_Drunken_Miner'), false);
+            DM_runtime.ui.closing = false;
+            DM_runtime.ui.opening = false;
+        }
+        // Bootstrap also delegates [data-dismiss=modal]; keep a single guarded hide path.
+        $('#DrunkenMinerModal .btnClose').removeAttr('data-dismiss');
+        DM_UpgradeSwitchStatus = DM_config.switchStatus;
         DM_AutoModeSwitchStatus = DM_config.AutoModeStatus;
-
-        DM_build_newTemplates = new SaveLoadTemplate('DrunkenMiner', function (data, name) {
-            $("#DrunkenMinerModal .templateFile").html("{0} ({1}: {2})".format('&nbsp;'.repeat(5), loca.GetText("LAB", "AvatarCurrentSelection"), name));
-            if (!data || data.length === 0) return;
-            _DM_stopAll(false);
-            DM_config = $.extend({ build: [], upgrade: [], safeBuffing: false, stopAfterBuild: false }, data);
-            DM_config.maxLvl = $.extend({}, RESOURCES.maxLevelDefaults, data.maxLvl || {});
-            DM_config.switchStatus   = DM_UpgradeSwitchStatus;
+        if (!DM_build_newTemplates) DM_build_newTemplates = new SaveLoadTemplate('DrunkenMiner', function (data, name) {
+            if (!DM_alive) return;
+            if (!data || typeof data !== 'object' || Array.isArray(data)) {
+                _DM_notify(getText('bad_template')); return;
+            }
+            DM_config = _DM_normalizeConfig(data);
+            DM_config.switchStatus = DM_UpgradeSwitchStatus;
             DM_config.AutoModeStatus = DM_AutoModeSwitchStatus;
-            _DM_renderBody();
-            _DM_InitEvens();
-            _DM_SetConfigValues();
+            DM_runtime.config = DM_config;
+            // A template changes the next submission, never an already running job.
+            _DM_renderWindow();
+            $('#DrunkenMinerModal .templateFile').text('\u00a0\u00a0\u00a0\u00a0\u00a0' + loca.GetText('LAB', 'AvatarCurrentSelection') + ': ' + name);
             _DM_saveTmpSetting();
         });
     }
@@ -614,13 +937,7 @@
     function _DM_renderHeader() {
 
         function icon(id, iconName, extraStyle) {
-            return getImageTag(iconName, '24px')
-                .replace(
-                    '<img',
-                    '<img' +
-                    (id ? ' id="' + id + '"' : '') +
-                    ' style="vertical-align:top;cursor:pointer;' + (extraStyle || '') + '"'
-                );
+            return _DM_iconButton(id, iconName, extraStyle);
         }
 
         function labeledSwitch(id, status, text) {
@@ -721,9 +1038,11 @@
             [1, loca.GetText('LAB', 'Visit')]
         ], true);
 
+        $('#DrunkenMinerModal .DM_generatedHeader [data-toggle="tooltip"]').tooltip('destroy');
+        $('#DrunkenMinerModal .DM_generatedHeader').remove();
         $('#DrunkenMinerModal .modal-header')
             .append(
-                '<div class="container-fluid">' +
+                '<div class="container-fluid DM_generatedHeader">' +
                 switchRow +
                 maxUpgradeRow +
                 selectAllRow +
@@ -745,17 +1064,16 @@
     }
 
     function _DM_renderFooter() {
-        $("#DrunkenMinerModal .modal-footer").prepend(
-            $('<button>').attr({"class": "btn btn-warning upgradeReset"}).text(getText('btn_reset')),
-            $('<button>').attr({"class": "btn btn-success upgradeSubmit"}).text(getText('btn_submit')),
-            $('<button>').attr({"class": "btn btn-primary pull-left build_newSaveTemplate"}).text(getText('save_template')),
-            $('<button>').attr({"class": "btn btn-primary pull-left build_newLoadTemplate"}).text(getText('load_template'))
+        $('#DrunkenMinerModal .DM_action, #DrunkenMinerModal .upgradeReset').remove();
+        $('#DrunkenMinerModal .modal-footer').prepend(
+            $('<button>').attr({ 'class': 'btn btn-success upgradeSubmit DM_action' }).text(getText('btn_submit')),
+            $('<button>').attr({ 'class': 'btn btn-primary pull-left build_newSaveTemplate DM_action' }).text(getText('save_template')),
+            $('<button>').attr({ 'class': 'btn btn-primary pull-left build_newLoadTemplate DM_action' }).text(getText('load_template'))
         );
     }
 
     function _DM_startAutoMode() {
-        if (!DM_AutoModeSwitchStatus || !game.gi.isOnHomzone()) return;
-        game.showAlert(loca.GetText('ALT', 'ErrorRetrievingMail') + ' ' + loca.GetText('LAB', 'QuestNew'));
+        if (!DM_AutoModeSwitchStatus || !_DM_context()) return;
         if (DM_UpgradeSwitchStatus) {
             _DM_startRun(true, DM_config.upgrade.slice(), false);
         } else {
@@ -765,7 +1083,9 @@
 
     function _DM_getUpgradeData() {
         var resArr = { deposit: [], depleted: [] };
-        var zone = swmmo.application.mGameInterface.mCurrentPlayerZone;
+        var ctx = _DM_context();
+        if (!ctx) return resArr;
+        var zone = ctx.zone;
         var streetMap = zone.mStreetDataMap;
 
         var ores     = RESOURCES.ores;
@@ -774,7 +1094,8 @@
         var icons    = RESOURCES.icons;
 
         var deposits  = [];
-        var container = streetMap.mDepositContainer.mContainer;
+        var container = streetMap.mDepositContainer && streetMap.mDepositContainer.mContainer;
+        if (!container || typeof container.length !== 'number') return resArr;
 
         for (var i = 0, len = container.length; i < len; i++) {
             var item = container[i];
@@ -803,7 +1124,8 @@
             var entry   = deposits[i];
             var deposit = entry.deposit;
 
-            var bldData = _DM_getBuildingDataFromDeposit(deposit);
+            var bldData;
+            try { bldData = _DM_getBuildingDataFromDeposit(deposit); } catch (e) { _DM_debug(e); continue; }
             if (!bldData) continue;
 
             var infoText = bldData.isUpgradeInProgress
@@ -832,7 +1154,9 @@
         var icons     = RESOURCES.icons;
         var depositLabel = '(' + loca.GetText('LAB', 'DetailsDeposit') + ')';
 
-        var zone      = swmmo.application.mGameInterface.mCurrentPlayerZone;
+        var ctx = _DM_context();
+        if (!ctx) return resArr;
+        var zone = ctx.zone;
         var streetMap = zone.mStreetDataMap;
         if (!streetMap || !streetMap.mBuildingContainer) {
             debug('streetMap.mBuildingContainer is undefined');
@@ -840,7 +1164,8 @@
         }
 
         var freeDeposits = [];
-        var deposits = streetMap.mDepositContainer.mContainer;
+        var deposits = streetMap.mDepositContainer && streetMap.mDepositContainer.mContainer;
+        if (!deposits || typeof deposits.length !== 'number') return resArr;
 
         for (var i = 0, len = deposits.length; i < len; i++) {
             var item = deposits[i];
@@ -851,8 +1176,8 @@
 
             if (ores.indexOf(name) === -1) continue;
 
-            const grid = item.GetGrid();
-            const bld  = zone.GetBuildingFromGridPosition(grid);
+            var grid = item.GetGrid();
+            var bld  = zone.GetBuildingFromGridPosition(grid);
 
             if (!bld || bld.GetBuildingMode() === 1 || bld.GetBuildingMode() === 4) {
                 freeDeposits.push({ deposit: item, ore: name, order: oreOrder[name] || 999 });
@@ -865,8 +1190,8 @@
             var entry   = freeDeposits[i];
             var deposit = entry.deposit;
 
-            const grid = deposit.GetGrid();
-            const bld  = zone.GetBuildingFromGridPosition(grid);
+            var grid = deposit.GetGrid();
+            var bld  = zone.GetBuildingFromGridPosition(grid);
 
             resArr.deposit.push({
                 grid:         grid,
@@ -878,7 +1203,7 @@
             });
         }
 
-        var buildings   = streetMap.mBuildingContainer.mContainer;
+        var buildings   = streetMap.mBuildingContainer.mContainer || [];
         var assertNames = RESOURCES.assertNames;
         var depleted    = [];
 
@@ -904,6 +1229,7 @@
     }
 
     function _DM_renderData(deposits) {
+        DM_rowData = {};
         var $rowHtml = '';
         deposits.deposit.forEach(function (deposit) {
             var bld           = deposit.building;
@@ -916,9 +1242,7 @@
             var buffEndTime   = '';
             var timeHtml      = '';
 
-            var buildingGoto = getImageTag('accuracy.png', '24px', '24px')
-                .replace('<img', '<img id="DM_MinePOS_' + deposit.grid + '"')
-                .replace('style="', 'style="cursor: pointer;');
+            var buildingGoto = _DM_iconButton('DM_MinePOS_' + deposit.grid, 'accuracy.png', '');
 
             if (bld) {
                 if (bld.isSelectable) {
@@ -930,11 +1254,12 @@
                 resourcesLeft = bld.resourcesLeft;
                 depositName   = bld.locName;
                 buffIcon      = bld.buffIcon;
+                DM_rowData[String(bld.grid)] = bld;
 
                 if (bld.isUpgradeAllowed) {
-                    timeHtml = _DM_ViewerSetTimeStr(bld.SecondsToDeplete, 2);
-                    if (buffEndTime.length > 0) {
-                        timeHtml = '<span style="color: ' + _DM_formatBuffTimeColor(timeHtml, buffEndTime) + '">' + timeHtml + ' / ' + buffEndTime + '</span>';
+                    timeHtml = _DM_escape(_DM_formatTime(bld.depletesAt));
+                    if (buffEndTime.length > 0 && timeHtml) {
+                        timeHtml = '<span style="color: ' + _DM_buffTimeColor(bld.depletesAt, bld.buffEndsAt) + '">' + timeHtml + ' / ' + _DM_escape(buffEndTime) + '</span>';
                     }
                 } else if (bld.isUpgradeInProgress) {
                     timeHtml = loca.GetText('QUL', 'TutUpgrade');
@@ -948,11 +1273,11 @@
             if (DM_UpgradeSwitchStatus && !bld) return;
 
             var $row = createTableRow([
-                [3, getImageTag(deposit.icon, '24px') + '<sup>' + bldLvl + '</sup>' + ' ' + depositName],
+                [3, _DM_image(deposit.icon, '24px') + '<sup>' + _DM_escape(bldLvl) + '</sup>' + ' ' + _DM_escape(depositName)],
                 [1, checkbox],
-                [1, resourcesLeft],
+                [1, _DM_escape(resourcesLeft)],
                 [3, timeHtml],
-                [3, (buffIcon ? getImageTag(buffIcon, '24px') : '') + ' <small>' + buffName + '</small>'],
+                [3, (buffIcon ? _DM_image(buffIcon, '24px') : '') + ' <small>' + _DM_escape(buffName) + '</small>'],
                 [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
             ], false);
 
@@ -964,11 +1289,9 @@
 
         deposits.depleted.forEach(function (deposit) {
             try {
-                var buildingGoto = getImageTag('accuracy.png', '24px', '24px')
-                    .replace('<img', '<img id="DM_MinePOS_' + deposit.grid + '"')
-                    .replace('style="', 'style="cursor: pointer;');
+                var buildingGoto = _DM_iconButton('DM_MinePOS_' + deposit.grid, 'accuracy.png', '');
                 $rowHtml += createTableRow([
-                    [11, getImageTag(deposit.icon, '24px') + ' ' + loca.GetText("BUI", deposit.name) + (deposit.Resource === "" ? "" : " (" + loca.GetText("RES", deposit.Resource) + ")")],
+                    [11, _DM_image(deposit.icon, '24px') + ' ' + _DM_escape(loca.GetText('BUI', deposit.name)) + (deposit.Resource === '' ? '' : ' (' + _DM_escape(loca.GetText('RES', deposit.Resource)) + ')')],
                     [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
                 ], false);
             } catch (e) {
@@ -980,20 +1303,23 @@
     }
 
     function _DM_InitEvens() {
-        $('[id^="DM_MinePOS_"]').off('click').on('click', function () {
+        var root = $('#DrunkenMinerModal');
+        root.off('.dmMiner');
+        _DM_bindModalLifecycle();
+        root.on('click.dmMiner', '[id^="DM_MinePOS_"]', function () {
             var grid = this.id.replace("DM_MinePOS_", "");
             _DM_GoTo(grid);
         });
 
-        $('select[name^="DM_maxUpgLvlFilter_"]').off('change').change(function () {
+        root.on('change.dmMiner', 'select[name^="DM_maxUpgLvlFilter_"]', function () {
             if (this.disabled || !DM_UpgradeSwitchStatus) return;
             var ore = this.name.replace("DM_maxUpgLvlFilter_", "");
-            DM_config.maxLvl[ore] = $(this).val();
+            if (Object.prototype.hasOwnProperty.call(RESOURCES.maxLevelDefaults, ore)) DM_config.maxLvl[ore] = Math.max(1, Math.min(DM_MaxUpgradeLvl, Number($(this).val()) || 1));
             _DM_saveTmpSetting();
         });
 
         var mainSwitch = $("#" + DM_lements.ON_OFF_RADIO);
-        mainSwitch.off('change').change(function () {
+        root.on('change.dmMiner', '#' + DM_lements.ON_OFF_RADIO, function () {
             if ($(this).is(':checked')) {
                 $("#" + DM_lements.ON_OFF_RADIO_TEXT).text(DM_SwitchStatuses.UPGRADE);
                 $("." + DM_lements.BUILD_CHECKBX).hide();
@@ -1005,7 +1331,6 @@
             }
             DM_config.switchStatus = DM_UpgradeSwitchStatus;
             _DM_renderBody();
-            _DM_InitEvens();
             _DM_saveTmpSetting();
             _DM_SetConfigValues();
         });
@@ -1018,21 +1343,19 @@
             $("." + DM_lements.BUILD_CHECKBX).show();
         }
 
-        var autoModeSwitch = $("#" + DM_lements.ON_OFF_AUTOMODE_RADIO);
-        autoModeSwitch.off('change').change(function () {
+        root.on('change.dmMiner', '#' + DM_lements.ON_OFF_AUTOMODE_RADIO, function () {
             if ($(this).is(':checked')) {
                 $("#" + DM_lements.ON_OFF_AUTOMODE_RADIO_TEXT).text(DM_SwitchStatuses.AUTOMODE_ON);
                 DM_AutoModeSwitchStatus = true;
             } else {
                 $("#" + DM_lements.ON_OFF_AUTOMODE_RADIO_TEXT).text(DM_SwitchStatuses.AUTOMODE_OFF);
                 DM_AutoModeSwitchStatus = false;
-                _DM_stopAll(false);
             }
             DM_config.AutoModeStatus = DM_AutoModeSwitchStatus;
             _DM_saveTmpSetting();
         });
 
-        $('[id^="DM_UpgradeMines_"]').off('click').on('click', function () {
+        root.on('click.dmMiner', '[id^="DM_UpgradeMines_"]', function () {
             var grid      = this.id.replace("DM_UpgradeMines_", "");
             if (this.disabled || (this.checked && !_DM_canChooseUpgrade(grid))) {
                 $(this).prop('checked', false);
@@ -1045,7 +1368,7 @@
             _DM_updateSelectAllOpacity();
         });
 
-        $('[id^="DM_RebuildMines_"]').off('click').on('click', function () {
+        root.on('click.dmMiner', '[id^="DM_RebuildMines_"]', function () {
             var grid      = this.id.replace("DM_RebuildMines_", "");
             var isChecked = $('#DM_RebuildMines_' + grid).prop('checked');
             _DM_pushBuildGridToConfig(grid, isChecked);
@@ -1053,8 +1376,8 @@
             _DM_updateSelectAllOpacity();
         });
 
-        $('[id^="DM_selectAll_"]').off('click').on('click', function (e) {
-            var ore = e.currentTarget.id.replace('DM_selectAll_', '');
+        root.on('click.dmMiner', '[id^="DM_selectAll_"]', function () {
+            var ore = this.id.replace('DM_selectAll_', '');
             var targets = _DM_selectionCheckboxes().filter(function () {
                 if (ore !== 'ALL' && this.name !== ore) return false;
                 if (DM_UpgradeSwitchStatus) {
@@ -1075,7 +1398,7 @@
             _DM_updateSelectAllOpacity();
         });
 
-        $('#' + DM_lements.SAFE_BUFF_BTN).off('click').on('click', function () {
+        root.on('click.dmMiner', '#' + DM_lements.SAFE_BUFF_BTN, function () {
             DM_config.safeBuffing = !DM_config.safeBuffing;
             $(this).css('opacity', DM_config.safeBuffing ? '1' : '0.5');
 
@@ -1089,15 +1412,9 @@
                     var $cb   = $(this);
                     var grid  = $cb.attr('id').replace('DM_UpgradeMines_', '');
                     if (DM_config.safeBuffing && !_DM_canChooseUpgrade(grid)) return;
-                    var $timeCell = $cb.parent().parent().find('div:eq(3)');
-                    var timeText  = $timeCell.text().trim();
-
-                    if (timeText.indexOf('/') === -1) return;
-                    var parts      = timeText.split('/');
-                    var depleteStr = parts[0].trim();
-                    var buffStr    = parts[1].trim();
-
-                    var color = _DM_formatBuffTimeColor(depleteStr, buffStr);
+                    var data = DM_rowData[grid];
+                    if (!data) return;
+                    var color = _DM_buffTimeColor(data.depletesAt, data.buffEndsAt);
                     if (color !== 'orange') return;
 
                     if (DM_config.safeBuffing) {
@@ -1114,7 +1431,7 @@
             _DM_saveTmpSetting();
         });
 
-        $('#' + DM_lements.STOP_AFTER_BUILD_BTN).off('click').on('click', function () {
+        root.on('click.dmMiner', '#' + DM_lements.STOP_AFTER_BUILD_BTN, function () {
             DM_config.stopAfterBuild = !DM_config.stopAfterBuild;
 
             var isOn = DM_config.stopAfterBuild;
@@ -1125,22 +1442,10 @@
             _DM_saveTmpSetting();
         });
 
-        $('#DrunkenMinerModal .upgradeReset').off('click').click(function () {
-            _DM_stopAll(false);
-            DM_config = {
-                build: [], upgrade: [],
-                switchStatus:   DM_UpgradeSwitchStatus,
-                AutoModeStatus: DM_AutoModeSwitchStatus,
-                maxLvl:         $.extend({}, RESOURCES.maxLevelDefaults),
-                safeBuffing:    false,
-                stopAfterBuild: false
-            };
-            _DM_SetConfigValues();
-            _DM_saveTmpSetting();
-        });
-
-        $('#DrunkenMinerModal .upgradeSubmit').off('click').click(function () {
-            $('#DrunkenMinerModal').modal('hide');
+        root.on('click.dmMiner', '.upgradeSubmit', function () {
+            if (!_DM_context()) { _DM_hideModal(); _DM_notify(getText('not_home')); return; }
+            _DM_flushSettings();
+            _DM_hideModal();
 
             if (DM_config.upgrade.length === 0 && DM_config.build.length === 0) {
                 game.showAlert(loca.GetText('LAB', 'BuffGroup14'));
@@ -1166,17 +1471,18 @@
             }
         });
 
-        $('#DrunkenMinerModal .build_newSaveTemplate').off('click').click(function () {
-            DM_build_newTemplates.save(DM_config);
+        root.on('click.dmMiner', '.build_newSaveTemplate', function () {
+            _DM_flushSettings();
+            DM_build_newTemplates.save(_DM_normalizeConfig(DM_config));
         });
-        $('#DrunkenMinerModal .build_newLoadTemplate').off('click').click(function () {
+        root.on('click.dmMiner', '.build_newLoadTemplate', function () {
             DM_build_newTemplates.load();
         });
-        $("#DrunkenMinerModal .btnClose").off('click').click(function () {
-            $('#DrunkenMinerModal').modal('hide');
+        root.on('click.dmMiner', '.btnClose', function () {
+            _DM_hideModal();
         });
 
-        $('[data-toggle="tooltip"]').tooltip();
+        root.find('[data-toggle="tooltip"]').tooltip();
     }
 
     // Keep the row visible, but only allow editing in upgrade mode.
@@ -1220,10 +1526,10 @@
         $('[id^="DM_UpgradeMines_"]').prop('checked', false);
         $('[id^="DM_RebuildMines_"]').prop('checked', false);
 
+        // Selection is for the next task. Current jobs keep their own snapshot.
         if (DM_UpgradeSwitchStatus) {
             DM_config.upgrade = DM_config.upgrade.filter(function (grid) {
-                return (DM_runs.upgrade.active && DM_runs.upgrade.grids.indexOf(String(grid)) !== -1) ||
-                    $('#DM_UpgradeMines_' + grid + ':enabled').length > 0;
+                return $('#DM_UpgradeMines_' + grid + ':enabled').length > 0;
             });
         } else {
             DM_config.build = DM_config.build.filter(function (grid) {
@@ -1244,16 +1550,37 @@
 
     function _DM_GoTo(g) {
         try {
-            $('#DrunkenMinerModal').modal('hide');
-            swmmo.application.mGameInterface.mCurrentPlayerZone.ScrollToGrid(g);
+            var ctx = _DM_context();
+            var grid = _DM_grid(g);
+            if (!ctx || !grid) return;
+            _DM_hideModal();
+            ctx.zone.ScrollToGrid(Number(grid));
         } catch (e) {
             debug(e);
         }
     }
 
+    function _DM_flushSettings() {
+        if (DM_runtime.saveTimer !== null) { clearTimeout(DM_runtime.saveTimer); DM_runtime.saveTimer = null; }
+        var snapshot = _DM_normalizeConfig(DM_config);
+        var serialized = JSON.stringify(snapshot);
+        if (serialized === DM_runtime.lastSaved) return;
+        try {
+            // Settings.store deep-merges arrays. Replace only our own namespace first.
+            settings.settings[SCRIPT_PREFIX + 'SETTINGS'] = {};
+            settings.store(snapshot, SCRIPT_PREFIX + 'SETTINGS');
+            DM_runtime.lastSaved = serialized;
+        } catch (e) { _DM_debug(e); }
+    }
+
     function _DM_saveTmpSetting() {
-        settings.settings[SCRIPT_PREFIX + 'SETTINGS'] = {};
-        settings.store(DM_config, SCRIPT_PREFIX + 'SETTINGS');
+        DM_runtime.config = DM_config;
+        if (DM_runtime.saveTimer !== null) clearTimeout(DM_runtime.saveTimer);
+        DM_runtime.saveTimer = setTimeout(function () {
+            if (!DM_alive) return;
+            DM_runtime.saveTimer = null;
+            _DM_flushSettings();
+        }, 400);
     }
 
     // Ручной режим: один проход + проверка результата (тот же движок, без повторов)
@@ -1265,87 +1592,94 @@
         _DM_startRun(true, gridArr.slice(), true);
     }
 
-    function _DM_getBuildingDataFromDeposit(deposit) {
-        var bld = _DM_bld(deposit.GetGrid());
-        if (!bld || typeof bld.GetBuildingName_string !== 'function') return null;
-
-        var name = bld.GetBuildingName_string();
-        if (
-            RESOURCES.mines.indexOf(name) === -1 ||
-            bld.isGarrison() ||
-            name.toUpperCase().indexOf('EW_') !== -1 ||
-            name.toUpperCase().indexOf('DECORATION_MOUNTAIN_PEAK') !== -1 ||
-            name.toUpperCase().indexOf('BANDITS') !== -1
-        ) {
-            return null;
-        }
-
-        var locName = loca.GetText('BUI', name);
-        if (locName.indexOf('[undefined text]') >= 0) locName = name;
-
-        var level                       = bld.GetUIUpgradeLevel();
-        var isUpgradable                = _DM_isUpgradableMine(name);
-        var grid                        = bld.GetGrid();
-        var resLeft                     = deposit.GetAmount();
-        var secsToBuffEnd               = 0;
-        var cycleSeconds                = bld.CalculateWays() / 1000;
-        var resourcesRemovedEverySecond = 0;
-        var timeStr                     = "";
-        var buffName                    = "";
-        var buff                        = bld.productionBuff;
-        var isWorking                   = bld.IsProductionActive();
-        var buffIcon                    = '';
-
-        if (buff != null) {
-            var app = buff.GetApplicanceMode();
-            if (buff.IsActive(swmmo.application.mGameInterface.GetClientTime())) {
-                secsToBuffEnd = new window.runtime.Date(Date.now() + (buff.GetStartTime() + buff.GetBuffDefinition().getDuration(app)) - swmmo.application.mGameInterface.GetClientTime());
-                buffName      = loca.GetText("RES", buff.GetBuffDefinition().GetName_string());
-                buffIcon      = buff.GetBuffDefinition().GetName_string();
-            }
-            if (secsToBuffEnd > 0) {
-                timeStr = _DM_getDateFormatter().format(new window.runtime.Date(secsToBuffEnd));
-            }
-        }
-
-        var rcd     = swmmo.getDefinitionByName("ServerState::gEconomics").GetResourcesCreationDefinitionForBuilding(name);
-        var rcd_pck = 0;
-        if (rcd != null) rcd_pck = rcd.amountRemoved;
-        var totalRemoved = bld.GetResourceInputFactor() * rcd_pck;
-
-        if (isWorking) resourcesRemovedEverySecond += (totalRemoved === 0 ? 0 : totalRemoved / cycleSeconds);
-
-        return {
-            'grid':               grid,
-            'name':               name,
-            'locName':            locName,
-            'level':              level,
-            "resourcesLeft":      resLeft,
-            'isWorking':          bld.IsProductionActive(),
-            'isUpgradeInProgress': _DM_isUpgradeBusy(bld),
-            'isUpgradeBusy':      _DM_isUpgradeBusy(bld) || _DM_call(bld, 'IsWaitForCommand', false) ||
-                DM_runs.upgrade.pending[String(grid)] !== undefined,
-            'isUpgradeAllowed':   isUpgradable && bld.IsUpgradeAllowed(true),
-            // Busy rows remain visible with a disabled checkbox.
-            // Existing automation chains are preserved in DM_runs.upgrade.
-            'isSelectable':       isUpgradable && level < DM_MaxUpgradeLvl && (bld.IsUpgradeAllowed(true) || _DM_isUpgradeBusy(bld) ||
-                DM_runs.upgrade.pending[String(grid)] !== undefined),
-            'buff':               buffName,
-            'buffIcon':           buffIcon,
-            'BufEndTime':         timeStr,
-            "AmountRemoved":      totalRemoved,
-            "SecondsToDeplete":   (resourcesRemovedEverySecond > 0 && resLeft > 0 ? (resLeft / resourcesRemovedEverySecond) : 0),
-        };
+    function _DM_escape(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
     }
 
-    var DM_dateFormatter = null;
-    function _DM_getDateFormatter() {
-        if (!DM_dateFormatter) {
-            DM_dateFormatter = new window.runtime.flash.globalization.DateTimeFormatter("en-US");
-            if (gameLang.indexOf("en-") > 0) DM_dateFormatter.setDateTimePattern("MM-dd-yyyy HH:mm");
-            else DM_dateFormatter.setDateTimePattern("dd-MM HH:mm");
-        }
-        return DM_dateFormatter;
+    function _DM_image(name, width, height) {
+        var key = name + '|' + width + '|' + (height || '');
+        if (Object.prototype.hasOwnProperty.call(DM_iconCache, key)) return DM_iconCache[key];
+        var html;
+        try { html = getImageTag(name, width, height); }
+        catch (e) { html = ''; _DM_debug(e); }
+        if (typeof html !== 'string' || !/<img\b/i.test(html)) html = '<span class="DM_iconFallback" aria-hidden="true">&#9633;</span>';
+        if (DM_iconCacheSize < 128) { DM_iconCache[key] = html; DM_iconCacheSize++; }
+        return html;
+    }
+
+    function _DM_iconButton(id, name, style) {
+        // The click target exists even if the client returns a non-image placeholder.
+        return '<span' + (id ? ' id="' + _DM_escape(id) + '"' : '') +
+            ' style="display:inline-block;vertical-align:top;cursor:pointer;' + (style || '') + '">' +
+            _DM_image(name, '24px') + '</span>';
+    }
+
+    function _DM_buffTimeColor(depletesAt, buffEndsAt) {
+        if (!isFinite(depletesAt) || !isFinite(buffEndsAt) || depletesAt <= 0 || buffEndsAt <= 0) return '';
+        return depletesAt > buffEndsAt ? 'yellow' : 'orange';
+    }
+
+    function _DM_formatTime(timestamp) {
+        if (!isFinite(timestamp) || timestamp <= 0) return '';
+        var d = new Date(timestamp);
+        function two(n) { return ('0' + n).slice(-2); }
+        var english = typeof gameLang === 'string' && gameLang.toLowerCase().indexOf('en') === 0;
+        var day = two(d.getDate()), month = two(d.getMonth() + 1);
+        return (english ? month + '-' + day : day + '-' + month) + ' ' + two(d.getHours()) + ':' + two(d.getMinutes());
+    }
+
+    function _DM_getBuildingDataFromDeposit(deposit) {
+        var ctx = _DM_context();
+        if (!ctx) return null;
+        var bld = _DM_bld(deposit.GetGrid(), ctx);
+        if (!bld) return null;
+        var name = bld.GetBuildingName_string();
+        if (RESOURCES.mines.indexOf(name) === -1) return null;
+        var level = bld.GetUIUpgradeLevel();
+        var grid = bld.GetGrid();
+        var isUpgradable = _DM_isUpgradableMine(name);
+        var busy = _DM_isUpgradeBusy(bld);
+        var waiting = bld.IsWaitForCommand();
+        var working = bld.IsProductionActive();
+        var allowed = isUpgradable && bld.IsUpgradeAllowed(true);
+        var resLeft = deposit.GetAmount();
+        var now = Date.now();
+        var buffName = '', buffIcon = '', buffEndsAt = 0;
+        var secondsToDeplete = 0, totalRemoved = 0;
+        // Buff/production estimates are optional presentation data, not a reason to lose the row.
+        try {
+            var buff = bld.productionBuff;
+            var clientNow = ctx.gi.GetClientTime();
+            if (buff && buff.IsActive(clientNow)) {
+                var definition = buff.GetBuffDefinition();
+                var remaining = buff.GetStartTime() + definition.getDuration(buff.GetApplicanceMode()) - clientNow;
+                if (isFinite(remaining) && remaining > 0) {
+                    buffEndsAt = now + remaining;
+                    buffIcon = definition.GetName_string();
+                    buffName = loca.GetText('RES', buffIcon);
+                }
+            }
+            var cycleSeconds = bld.CalculateWays() / 1000;
+            if (!DM_economics) DM_economics = swmmo.getDefinitionByName('ServerState::gEconomics');
+            var definitionRC = DM_economics.GetResourcesCreationDefinitionForBuilding(name);
+            totalRemoved = bld.GetResourceInputFactor() * (definitionRC ? definitionRC.amountRemoved : 0);
+            if (working && isFinite(cycleSeconds) && cycleSeconds > 0 && totalRemoved > 0 && resLeft > 0) secondsToDeplete = resLeft * cycleSeconds / totalRemoved;
+        } catch (e) { _DM_debug(e); }
+        var depletesAt = isFinite(secondsToDeplete) && secondsToDeplete > 0 ? now + secondsToDeplete * 1000 : 0;
+        var pending = !!DM_runs.upgrade.pending[String(grid)] || !!DM_runtime.receipts.upgrade[String(grid)];
+        var locName = loca.GetText('BUI', name);
+        if (locName.indexOf('[undefined text]') >= 0) locName = name;
+        return {
+            grid: grid, name: name, locName: locName, level: level, resourcesLeft: resLeft,
+            isWorking: working, isUpgradeInProgress: busy, isUpgradeBusy: busy || waiting || pending,
+            isUpgradeAllowed: allowed,
+            isSelectable: isUpgradable && level < DM_MaxUpgradeLvl && (allowed || busy || pending),
+            buff: buffName, buffIcon: buffIcon, BufEndTime: _DM_formatTime(buffEndsAt),
+            AmountRemoved: totalRemoved, SecondsToDeplete: secondsToDeplete,
+            depletesAt: depletesAt, buffEndsAt: buffEndsAt
+        };
     }
 
     function _DM_pushUpgradeGridToConfig(grid, isChecked) {
@@ -1377,13 +1711,9 @@
                 if ($cb.is(':checked')) {
                     hasChecked = true;
                     if (!hasAnyOrangeChecked) {
-                        var $timeCell = $cb.parent().parent().find('div:eq(3)');
-                        var timeText  = $timeCell.text().trim();
-                        if (timeText.indexOf('/') !== -1) {
-                            var parts = timeText.split('/');
-                            var color = _DM_formatBuffTimeColor(parts[0].trim(), parts[1].trim());
-                            if (color === 'orange') hasAnyOrangeChecked = true;
-                        }
+                        var grid = this.id.replace('DM_UpgradeMines_', '');
+                        var data = DM_rowData[grid];
+                        if (data && _DM_buffTimeColor(data.depletesAt, data.buffEndsAt) === 'orange') hasAnyOrangeChecked = true;
                     }
                     if (hasChecked && hasAnyOrangeChecked) return false;
                 }
@@ -1408,48 +1738,5 @@
         return result;
     }
 
-    function _DM_ViewerSetTimeStr(seconds, type) {
-        try {
-            if (seconds < 1) return "";
-            switch (type) {
-                case 1:
-                    return new Date(seconds * 1000).toISOString().slice(11, 19);
-                case 2:
-                    var d  = new Date(new Date(Date.now()).getTime() + seconds * 1000);
-                    var _m = ("00" + (d.getMonth() + 1).toString()).slice(-2);
-                    var _d = ("00" + d.getDate().toString()).slice(-2);
-                    if (gameLang.indexOf("en-") > 0) return _m + "-" + _d + " " + d.toLocaleTimeString();
-                    else return _d + "-" + _m + " " + d.toLocaleTimeString();
-            }
-        } catch (e) {
-            debug(e);
-        }
-        return "";
-    }
-
-    function _DM_parseBuffDate(dateStr) {
-        try {
-            var parts    = dateStr.split(" ");
-            var day      = parts[0];
-            var time     = parts[1];
-            var dayParts = day.split("-");
-            var dd       = parseInt(dayParts[0], 10);
-            var MM       = parseInt(dayParts[1], 10);
-            var timeParts = time.split(":");
-            var hh        = parseInt(timeParts[0], 10);
-            var mm        = parseInt(timeParts[1], 10);
-            var ss        = timeParts.length > 2 ? parseInt(timeParts[2], 10) : 0;
-            var now       = new Date();
-            return new Date(now.getFullYear(), MM - 1, dd, hh, mm, ss);
-        } catch (e) {
-            debug(e);
-            return '';
-        }
-    }
-
-    function _DM_formatBuffTimeColor(dateStr1, dateStr2) {
-        const date1 = _DM_parseBuffDate(dateStr1);
-        const date2 = _DM_parseBuffDate(dateStr2);
-        return date1 > date2 ? "yellow" : "orange";
-    }
+    _DM_resumeRuntime();
 })();
