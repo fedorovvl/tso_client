@@ -1,6 +1,6 @@
 // language=JavaScript; ECMAScript 5.1
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////Created by MadFX | Thanks for PiTi for source code. ////////////////////////////////////////
+/////////////////////////// Created by MadFX | Thanks to PiTi for the original source code. ////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 (function () {
     // The legacy version kept its runs in an inaccessible closure. Do not create
@@ -34,8 +34,8 @@
             "SalpeterMine", "EpicSalpeterMine",
             "IronMineEndless", "CoalMineEndless", "GoldMineEndless", "ArcticGoldMine"
         ],
-        // Улучшаемые шахты (gfx_settings: BuildingUpgradeBonuses уровни 0..7).
-        // Epic*, Arctic*, SpookyBronzeMine имеют только уровень 1 — не улучшаются.
+        // Upgradable mines (gfx_settings: BuildingUpgradeBonuses defines levels 0..7; UI levels 1..7).
+        // Epic*, Arctic* and SpookyBronzeMine have a single level and cannot be upgraded.
         upgradableMines: [
             "BronzeMine", "IronMine", "CoalMine", "GoldMine", "TitaniumMine", "SalpeterMine",
             "BronzeMineEndless", "IronMineEndless", "CoalMineEndless", "GoldMineEndless"
@@ -97,8 +97,9 @@
         SAFE_BUFF_BTN:            SCRIPT_PREFIX + 'toggleSafeBuffing',
         SELECT_ALL_BTN:           SCRIPT_PREFIX + 'selectAll_ALL',
         STOP_AFTER_BUILD_BTN:     SCRIPT_PREFIX + 'stopAfterBuild',
-        STOP_AFTER_BUILD_LABEL:   SCRIPT_PREFIX + 'stopAfterBuildLabel',
+        STOP_AFTER_BUILD_LABEL:   SCRIPT_PREFIX + 'stopAfterBuildLabel'
     };
+    var DM_elements = DM_lements;
 
     var DM_SwitchStatuses = {
         UPGRADE:      loca.GetText('ACL', 'Upgrades'),
@@ -202,18 +203,19 @@
     }
 
     function _DM_isHomeZone(gi) {
-        if (!gi) return false;
-        if (typeof gi.isOnHomzone === 'function' && !gi.isOnHomzone()) return false;
+        if (!gi || typeof gi.isOnHomzone !== 'function' || !gi.isOnHomzone()) return null;
         var cur = gi.mCurrentPlayer;
         var home = gi.mHomePlayer;
-        if (!cur || !home) return false;
+        if (!cur || !home) return null;
         if (typeof cur.GetPlayerId === 'function' && typeof home.GetPlayerId === 'function') {
-            if (cur.GetPlayerId() !== home.GetPlayerId()) return false;
+            if (cur.GetPlayerId() !== home.GetPlayerId()) return null;
         }
         var curHomeZone = typeof cur.GetHomeZoneId === 'function' ? cur.GetHomeZoneId() : (typeof home.GetHomeZoneId === 'function' ? home.GetHomeZoneId() : null);
-        if (curHomeZone == null || Number(curHomeZone) <= 0) return false;
-        if (String(gi.mCurrentViewedZoneID) !== String(curHomeZone)) return false;
-        return true;
+        var num = Number(curHomeZone);
+        if (!isFinite(num) || num <= 0) return null;
+        var id = String(num);
+        if (String(gi.mCurrentViewedZoneID) !== id) return null;
+        return id;
     }
 
     function _DM_context(homeZoneId) {
@@ -221,14 +223,16 @@
             var gi = typeof swmmo !== 'undefined' && swmmo.application ? swmmo.application.mGameInterface : null;
             if (!gi && typeof game !== 'undefined') gi = game.gi;
             if (!gi || !gi.mCurrentPlayerZone || !gi.mCurrentPlayerZone.mStreetDataMap) return null;
-            if (!_DM_isHomeZone(gi)) return null;
+            var id = _DM_isHomeZone(gi);
+            if (!id) return null;
+            if (homeZoneId != null && String(homeZoneId) !== id) return null;
             var cur = gi.mCurrentPlayer;
             var homePlayer = (gi.mHomePlayer && gi.mHomePlayer.mBuildQueue) ? gi.mHomePlayer : cur;
-            var curHomeZone = typeof cur.GetHomeZoneId === 'function' ? cur.GetHomeZoneId() : homePlayer.GetHomeZoneId();
-            var id = String(curHomeZone);
-            if (homeZoneId != null && String(homeZoneId) !== id) return null;
             return { gi: gi, zone: gi.mCurrentPlayerZone, home: homePlayer, homeZoneId: id };
-        } catch (e) { return null; }
+        } catch (e) {
+            _DM_debug(e);
+            return null;
+        }
     }
 
     function _DM_bld(grid, context) {
@@ -417,6 +421,7 @@
         }
         if (receipt.status === 'mismatch' || (receipt.status === 'unknown' && Date.now() - receipt.sentAt >= DM_RECONCILE_MS)) {
             _DM_debug('DM/command_unconfirmed [' + grid + ']');
+            delete DM_runtime.receipts[_DM_runType(run)][grid];
             _DM_finishGrid(run, grid, false);
             return true;
         }
@@ -428,7 +433,20 @@
         run.grids.slice().forEach(function (grid) {
             var pending = run.pending[grid];
             if (pending) {
-                if (pending.status === 'queued') return;
+                if (pending.status === 'queued') {
+                    var inSender = false;
+                    for (var s = 0; s < DM_sender.items.length; s++) {
+                        if (DM_sender.items[s].kind === 'build' && String(DM_sender.items[s].grid) === String(grid) && DM_sender.items[s].runId === run.id) {
+                            inSender = true;
+                            break;
+                        }
+                    }
+                    if (!inSender) {
+                        delete run.pending[grid];
+                    } else {
+                        return;
+                    }
+                }
                 if (!_DM_receiptDone(run, grid, pending)) return;
                 if (pending.status === 'confirmed') _DM_finishGrid(run, grid, true);
                 return;
@@ -466,7 +484,12 @@
         }
         _DM_wakeSender();
         if (!run.grids.length) return null;
-        return Object.keys(run.pending).length ? 5000 : _DM_nearestQueueFinish(ctx);
+        var hasUnobserved = false;
+        Object.keys(run.pending).forEach(function (g) {
+            var st = run.pending[g] && run.pending[g].status;
+            if (st === 'queued' || st === 'sent') hasUnobserved = true;
+        });
+        return hasUnobserved ? 5000 : _DM_nearestQueueFinish(ctx);
     }
 
     function _DM_upgradeRemaining(bld, ctx) {
@@ -480,8 +503,32 @@
         run.grids.slice().forEach(function (grid) {
             var pending = run.pending[grid];
             if (pending) {
-                if (pending.status === 'queued') return;
-                if (!_DM_receiptDone(run, grid, pending)) return;
+                if (pending.status === 'queued') {
+                    var inSender = false;
+                    for (var s = 0; s < DM_sender.items.length; s++) {
+                        if (DM_sender.items[s].kind === 'upgrade' && String(DM_sender.items[s].grid) === String(grid) && DM_sender.items[s].runId === run.id) {
+                            inSender = true;
+                            break;
+                        }
+                    }
+                    if (!inSender) {
+                        delete run.pending[grid];
+                    } else {
+                        return;
+                    }
+                }
+                if (!_DM_receiptDone(run, grid, pending)) {
+                    if (pending.status === 'observed') {
+                        var bldObserved = _DM_bld(grid, ctx);
+                        if (bldObserved && _DM_isUpgradeBusy(bldObserved)) {
+                            var remObserved = _DM_upgradeRemaining(bldObserved, ctx);
+                            if (remObserved !== null && remObserved > 0) {
+                                minRemaining = Math.min(minRemaining, remObserved + 1500);
+                            }
+                        }
+                    }
+                    return;
+                }
                 if (run.grids.indexOf(grid) === -1) return;
             }
             var bld = _DM_bld(grid, ctx);
@@ -498,7 +545,7 @@
             if (level >= run.targets[grid]) { _DM_finishGrid(run, grid, true); return; }
             if (_DM_isUpgradeBusy(bld)) {
                 var remaining = _DM_upgradeRemaining(bld, ctx);
-                if (remaining !== null) minRemaining = Math.min(minRemaining, remaining + 1500);
+                if (remaining !== null && remaining > 0) minRemaining = Math.min(minRemaining, remaining + 1500);
                 return;
             }
             if (bld.IsWaitForCommand()) return;
@@ -523,7 +570,12 @@
         });
         _DM_wakeSender();
         if (!run.grids.length) return null;
-        return Object.keys(run.pending).length ? Math.min(minRemaining, 5000) : minRemaining;
+        var hasUnobserved = false;
+        Object.keys(run.pending).forEach(function (g) {
+            var st = run.pending[g] && run.pending[g].status;
+            if (st === 'queued' || st === 'sent') hasUnobserved = true;
+        });
+        return hasUnobserved ? Math.min(minRemaining, 5000) : minRemaining;
     }
 
     function _DM_itemLive(item) {
@@ -563,6 +615,10 @@
         }
         try {
             _DM_reconcileReceipts(ctx);
+        } catch (recErr) {
+            _DM_debug(recErr);
+        }
+        try {
             if (item.kind === 'stop') _DM_sendStop(item, ctx);
             else _DM_sendAction(item, ctx);
         } catch (e) {
@@ -673,11 +729,17 @@
                     delete receipts[grid];
                     return;
                 }
+                if (r.status === 'observed' && type === 'upgrade' && (!bld || !bld.IsUpgradeInProgress())) {
+                    r.status = 'unknown';
+                }
                 var timeout = type === 'build' ? DM_BUILD_VERIFY_MS : DM_UPGRADE_PENDING_MS;
                 if (r.status !== 'observed' && r.status !== 'mismatch' && Date.now() - r.sentAt > timeout) r.status = 'unknown';
                 if ((r.status === 'unknown' || r.status === 'mismatch') && !r.warned) {
                     r.warned = true;
                     _DM_debug('DM/' + type + '_unconfirmed [' + grid + ']');
+                }
+                if ((r.status === 'mismatch' || r.status === 'unknown') && Date.now() - r.sentAt > DM_RECONCILE_MS) {
+                    delete receipts[grid];
                 }
             });
         });
@@ -721,6 +783,7 @@
                     w.warned = true;
                     _DM_debug('DM/production_stop_unconfirmed [' + w.grid + ']');
                 }
+                delete DM_stopWatch[key];
                 return;
             }
             w.queued = true;
@@ -742,7 +805,7 @@
         if (typeof bld.SetProductionActiveCommand !== 'function') {
             if (!w.warned) _DM_debug('DM/production_stop_method_unavailable');
             w.warned = true;
-            w.attempts = 3;
+            delete DM_stopWatch[item.key];
             return;
         }
         w.attempts++;
@@ -786,6 +849,10 @@
         DM_runtime.uiWaitNodes.forEach(function (node) { $(node).off('.dmMinerWait'); });
         DM_runtime.uiWaitNodes = [];
         DM_runtime.ui.waiting = false;
+        DM_runtime.ui.closing = false;
+        DM_runtime.ui.opening = false;
+        DM_runtime.ui.closeRequested = false;
+        DM_runtime.ui.reopen = false;
     }
 
     function _DM_resumeRuntime() {
@@ -936,8 +1003,8 @@
 
     function _DM_renderHeader() {
 
-        function icon(id, iconName, extraStyle) {
-            return _DM_iconButton(id, iconName, extraStyle);
+        function icon(id, iconName, extraStyle, size) {
+            return _DM_iconButton(id, iconName, extraStyle, size);
         }
 
         function labeledSwitch(id, status, text) {
@@ -965,7 +1032,8 @@
         var stopAfterBuildIcon = icon(
             DM_lements.STOP_AFTER_BUILD_BTN,
             'BuildingSleepMode',
-            'height:100%;margin-right:8px;' + (!DM_config.stopAfterBuild ? 'opacity:0.4;' : 'opacity:1;')
+            'position:relative;top:2px;width:19px;height:19px;margin-right:8px;' + (!DM_config.stopAfterBuild ? 'opacity:0.4;' : 'opacity:1;'),
+            '19px'
         );
         var stopAfterBuildlabel = $('<div>', {
             id: DM_lements.STOP_AFTER_BUILD_LABEL,
@@ -1159,7 +1227,7 @@
         var zone = ctx.zone;
         var streetMap = zone.mStreetDataMap;
         if (!streetMap || !streetMap.mBuildingContainer) {
-            debug('streetMap.mBuildingContainer is undefined');
+            _DM_debug('streetMap.mBuildingContainer is undefined');
             return resArr;
         }
 
@@ -1295,7 +1363,7 @@
                     [1, '<div style="text-align: right;">' + buildingGoto + '</div>']
                 ], false);
             } catch (e) {
-                debug(e);
+                _DM_debug(e);
             }
         });
 
@@ -1437,7 +1505,7 @@
             var isOn = DM_config.stopAfterBuild;
             $(this).css('opacity', isOn ? '1' : '0.4');
             $('#' + DM_lements.STOP_AFTER_BUILD_LABEL)
-                .text(isOn ? DM_SwitchStatuses.AUTOSTOP_ON : DM_SwitchStatuses.AUTOSTOP_OFF)
+                .text(isOn ? DM_SwitchStatuses.AUTOSTOP_ON : DM_SwitchStatuses.AUTOSTOP_OFF);
 
             _DM_saveTmpSetting();
         });
@@ -1447,7 +1515,8 @@
             _DM_flushSettings();
             _DM_hideModal();
 
-            if (DM_config.upgrade.length === 0 && DM_config.build.length === 0) {
+            var hasTasks = DM_UpgradeSwitchStatus ? DM_config.upgrade.length > 0 : DM_config.build.length > 0;
+            if (!hasTasks) {
                 game.showAlert(loca.GetText('LAB', 'BuffGroup14'));
                 return;
             }
@@ -1526,24 +1595,13 @@
         $('[id^="DM_UpgradeMines_"]').prop('checked', false);
         $('[id^="DM_RebuildMines_"]').prop('checked', false);
 
-        // Selection is for the next task. Current jobs keep their own snapshot.
-        if (DM_UpgradeSwitchStatus) {
-            DM_config.upgrade = DM_config.upgrade.filter(function (grid) {
-                return $('#DM_UpgradeMines_' + grid + ':enabled').length > 0;
-            });
-        } else {
-            DM_config.build = DM_config.build.filter(function (grid) {
-                return $('#DM_RebuildMines_' + grid).length > 0;
-            });
-        }
-
         DM_config.upgrade.forEach(function (grid) { $('#DM_UpgradeMines_' + grid + ':enabled').prop('checked', true); });
         DM_config.build.forEach(function (grid)   { $('#DM_RebuildMines_'  + grid).prop('checked', true); });
 
         var isOn = !!DM_config.stopAfterBuild;
         $('#' + DM_lements.STOP_AFTER_BUILD_BTN).css('opacity', isOn ? '1' : '0.4');
         $('#' + DM_lements.STOP_AFTER_BUILD_LABEL)
-            .text(isOn ? DM_SwitchStatuses.AUTOSTOP_ON : DM_SwitchStatuses.AUTOSTOP_OFF)
+            .text(isOn ? DM_SwitchStatuses.AUTOSTOP_ON : DM_SwitchStatuses.AUTOSTOP_OFF);
 
         _DM_updateSelectAllOpacity();
     }
@@ -1556,7 +1614,7 @@
             _DM_hideModal();
             ctx.zone.ScrollToGrid(Number(grid));
         } catch (e) {
-            debug(e);
+            _DM_debug(e);
         }
     }
 
@@ -1583,7 +1641,7 @@
         }, 400);
     }
 
-    // Ручной режим: один проход + проверка результата (тот же движок, без повторов)
+    // Manual mode: a single pass plus result verification (same engine, no retries).
     function _DM_buildMines(gridArr) {
         _DM_startRun(false, gridArr.slice(), true);
     }
@@ -1602,18 +1660,23 @@
         var key = name + '|' + width + '|' + (height || '');
         if (Object.prototype.hasOwnProperty.call(DM_iconCache, key)) return DM_iconCache[key];
         var html;
-        try { html = getImageTag(name, width, height); }
+        try { html = getImageTag(name, width, height || width); }
         catch (e) { html = ''; _DM_debug(e); }
-        if (typeof html !== 'string' || !/<img\b/i.test(html)) html = '<span class="DM_iconFallback" aria-hidden="true">&#9633;</span>';
+        if (typeof html !== 'string' || !/<img\b/i.test(html)) {
+            html = '<span class="DM_iconFallback" aria-hidden="true">&#9633;</span>';
+        } else {
+            html = html.replace('style="', 'style="vertical-align:top;');
+        }
         if (DM_iconCacheSize < 128) { DM_iconCache[key] = html; DM_iconCacheSize++; }
         return html;
     }
 
-    function _DM_iconButton(id, name, style) {
+    function _DM_iconButton(id, name, style, size) {
         // The click target exists even if the client returns a non-image placeholder.
+        var s = size || '24px';
         return '<span' + (id ? ' id="' + _DM_escape(id) + '"' : '') +
             ' style="display:inline-block;vertical-align:top;cursor:pointer;' + (style || '') + '">' +
-            _DM_image(name, '24px') + '</span>';
+            _DM_image(name, s, s) + '</span>';
     }
 
     function _DM_buffTimeColor(depletesAt, buffEndsAt) {
