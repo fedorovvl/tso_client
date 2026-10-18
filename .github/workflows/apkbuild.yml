@@ -3,7 +3,8 @@ name: APKBuild
 on:
   push:
     paths:
-    - 'client.swf'
+    - 'android/**'
+    - '.github/workflows/apkbuild.yml'
   workflow_dispatch:
 
 permissions:
@@ -19,8 +20,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Copy SWF
-      run: cp client.swf android/assets
+    - name: Download SWF
+      run: curl --fail --location --retry 3 --output android/assets/client.swf https://github.com/fedorovvl/tso_client_swf/releases/download/latest/client.swf
     - name: Build APK
       working-directory: android
       run: java -jar -Duser.language=en -Dfile.encoding=UTF8 apktool.jar b .
