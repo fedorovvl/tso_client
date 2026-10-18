@@ -1,3 +1,4 @@
+// Gunpowder fix gpfix-1: separate resource/adventure IDs; cached typed icon lookup.
 var ShortcutTrader = (function () {
 
     // Clean up any stale injected styles or modal nodes from previous reloads
@@ -178,9 +179,9 @@ var ShortcutTrader = (function () {
         var resLoc = getItemLocalizedName(resKey, 'resource') || resKey;
         var base = safeLoca("RES", "FillDeposit", "Добавить к залежи");
         base = base.replace(/\{\d+,?[A-Z]*\}/g, '')
-                   .replace(/ед\.\s*ресурса/gi, '')
-                   .replace(/[:\s]+$/, '')
-                   .trim();
+            .replace(/ед\.\s*ресурса/gi, '')
+            .replace(/[:\s]+$/, '')
+            .trim();
         if (!base) base = "Добавить к залежи";
         return base + ': ' + resLoc;
     }
@@ -188,10 +189,7 @@ var ShortcutTrader = (function () {
     function getItemLocalizedName(name, type) {
         if (!name) return '';
         try {
-            if (name.indexOf("Adventure_") === 0) {
-                var rawAdv = name.replace("Adventure_", "");
-                return getItemLocalizedName(rawAdv, 'adventure');
-            }
+            if (name === 'Adventure_Gunpowder') { name = 'Gunpowder'; type = 'adventure'; }
             if (name.indexOf("FillDeposit_") === 0) {
                 var resKey1 = name.replace("FillDeposit_", "");
                 return getFillDepositLocalizedName(resKey1);
@@ -205,9 +203,9 @@ var ShortcutTrader = (function () {
                 return baseFill.replace(/\{\d+,?[A-Z]*\}/g, '').replace(/ед\.\s*ресурса/gi, '').replace(/[:\s]+$/, '').trim();
             }
             var groups = type === 'adventure' ? ['ADN', 'RES', 'SHI', 'LAB']
-                       : type === 'building'  ? ['BUI', 'RES', 'SHI', 'LAB']
-                       : type === 'buff'      ? ['SHI', 'RES', 'BUI', 'ADN', 'LAB']
-                       : ['RES', 'SHI', 'BUI', 'ADN', 'LAB'];
+                : type === 'building'  ? ['BUI', 'RES', 'SHI', 'LAB']
+                    : type === 'buff'      ? ['SHI', 'RES', 'BUI', 'ADN', 'LAB']
+                        : ['RES', 'SHI', 'BUI', 'ADN', 'LAB'];
             for (var i = 0; i < groups.length; i++) {
                 var val = safeLoca(groups[i], name, null);
                 if (val) return val;
@@ -264,12 +262,11 @@ var ShortcutTrader = (function () {
                             var sData = sItem.GetBuffIconData();
                             if (sData) {
                                 if (sbName && !_starBuffIconMap[sbName]) _starBuffIconMap[sbName] = sData;
-                                if (srName && !_starBuffIconMap[srName] && srName !== 'Gunpowder') _starBuffIconMap[srName] = sData;
-                                if (sType === 'FillDeposit' && srName) _starBuffIconMap['FillDeposit_' + srName] = sData;
-                                if ((sType === 'Adventure' || sbName === 'Adventure') && srName) {
-                                    _starBuffIconMap['Adventure_' + srName] = sData;
-                                    _starBuffIconMap['Adventure|' + srName] = sData;
+                                if (srName && srName !== 'Gunpowder' && !_starBuffIconMap[srName]) _starBuffIconMap[srName] = sData;
+                                if (srName === 'Gunpowder' && (sType === 'Adventure' || sbName === 'Adventure')) {
+                                    _starBuffIconMap['Adventure|Gunpowder'] = sData;
                                 }
+                                if (sType === 'FillDeposit' && srName) _starBuffIconMap['FillDeposit_' + srName] = sData;
                             }
                         }
                     }
@@ -282,25 +279,25 @@ var ShortcutTrader = (function () {
     function getDepositFallbackSvg(size) {
         size = size || '32px';
         return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 32 32" style="display:block;margin:auto;">' +
-               '<defs>' +
-               '  <radialGradient id="ft_dep_bg" cx="50%" cy="40%" r="55%">' +
-               '    <stop offset="0%" stop-color="#8a6435"/>' +
-               '    <stop offset="100%" stop-color="#3b2512"/>' +
-               '  </radialGradient>' +
-               '  <linearGradient id="ft_dep_gold" x1="0%" y1="0%" x2="100%" y2="100%">' +
-               '    <stop offset="0%" stop-color="#ffe8a1"/>' +
-               '    <stop offset="50%" stop-color="#d4a34b"/>' +
-               '    <stop offset="100%" stop-color="#8c5e21"/>' +
-               '  </linearGradient>' +
-               '</defs>' +
-               '<rect x="2" y="2" width="28" height="28" rx="4" fill="url(#ft_dep_bg)" stroke="url(#ft_dep_gold)" stroke-width="1.5"/>' +
-               '<path d="M4 25 L10 13 L15 18 L21 11 L28 25 Z" fill="#6d502f" stroke="#967142" stroke-width="0.8"/>' +
-               '<path d="M9 25 L12 18 L19 18 L22 25 Z" fill="#42301c" stroke="#d4a34b" stroke-width="0.8"/>' +
-               '<circle cx="13" cy="21" r="1.5" fill="#ffe8a1"/>' +
-               '<circle cx="18" cy="21" r="1.5" fill="#ffe8a1"/>' +
-               '<circle cx="23" cy="9" r="6" fill="#1e4620" stroke="#ffd88a" stroke-width="1"/>' +
-               '<path d="M23 5.5 L23 12.5 M19.5 9 L26.5 9" stroke="#75e075" stroke-width="1.8" stroke-linecap="round"/>' +
-               '</svg>';
+            '<defs>' +
+            '  <radialGradient id="ft_dep_bg" cx="50%" cy="40%" r="55%">' +
+            '    <stop offset="0%" stop-color="#8a6435"/>' +
+            '    <stop offset="100%" stop-color="#3b2512"/>' +
+            '  </radialGradient>' +
+            '  <linearGradient id="ft_dep_gold" x1="0%" y1="0%" x2="100%" y2="100%">' +
+            '    <stop offset="0%" stop-color="#ffe8a1"/>' +
+            '    <stop offset="50%" stop-color="#d4a34b"/>' +
+            '    <stop offset="100%" stop-color="#8c5e21"/>' +
+            '  </linearGradient>' +
+            '</defs>' +
+            '<rect x="2" y="2" width="28" height="28" rx="4" fill="url(#ft_dep_bg)" stroke="url(#ft_dep_gold)" stroke-width="1.5"/>' +
+            '<path d="M4 25 L10 13 L15 18 L21 11 L28 25 Z" fill="#6d502f" stroke="#967142" stroke-width="0.8"/>' +
+            '<path d="M9 25 L12 18 L19 18 L22 25 Z" fill="#42301c" stroke="#d4a34b" stroke-width="0.8"/>' +
+            '<circle cx="13" cy="21" r="1.5" fill="#ffe8a1"/>' +
+            '<circle cx="18" cy="21" r="1.5" fill="#ffe8a1"/>' +
+            '<circle cx="23" cy="9" r="6" fill="#1e4620" stroke="#ffd88a" stroke-width="1"/>' +
+            '<path d="M23 5.5 L23 12.5 M19.5 9 L26.5 9" stroke="#75e075" stroke-width="1.8" stroke-linecap="round"/>' +
+            '</svg>';
     }
 
     // Same as the original client (Frame.DisplayContent, CONTENT_TYPE_DEPOSIT_BUFF):
@@ -323,20 +320,16 @@ var ShortcutTrader = (function () {
         }
         if (!fg) return '';
         return '<div class="ft-dep-icon" style="width:' + px + 'px;height:' + px + 'px;">' +
-                 (bg ? '<div class="ft-dep-layer ft-dep-bg">' + bg + '</div>' : '') +
-                 '<div class="ft-dep-layer ft-dep-fg">' + fg + '</div>' +
-               '</div>';
+            (bg ? '<div class="ft-dep-layer ft-dep-bg">' + bg + '</div>' : '') +
+            '<div class="ft-dep-layer ft-dep-fg">' + fg + '</div>' +
+            '</div>';
     }
 
     // Cache of single-key lookups: hits forever, misses for 60s (each miss in
     // gAssetManager.GetGfx logs a warning and scans loadedGfxVector - expensive).
     var _singleIconCache = {};
-
     function tryLoadSingleIcon(key, size, type) {
         if (!key || typeof key !== 'string') return '';
-        if (key.indexOf('Adventure_') === 0 && !type) {
-            type = 'adventure';
-        }
         var ck = key + '|' + (type || '') + '|' + size;
         var hit = _singleIconCache[ck];
         var now = Date.now();
@@ -350,116 +343,87 @@ var ShortcutTrader = (function () {
         if (!key || typeof key !== 'string') return '';
         var k = key.trim();
         if (!k) return '';
-        if (k.indexOf('Adventure_') === 0) {
-            k = k.replace('Adventure_', '').trim();
-            type = 'adventure';
-        }
         var tag = '';
 
+        // These names collide in assets: never try the other item's namespace.
+        if (k === 'Gunpowder' && (type === 'resource' || type === 'adventure')) {
+            var moduleName = type === 'resource' ? 'resources' : 'buffs';
+            if (typeof assets !== 'undefined' && assets) {
+                try {
+                    if (type === 'resource' && assets.GetResourceIcon) tag = safeGetImage(assets.GetResourceIcon(k, true), size);
+                    else if (type === 'adventure' && assets.GetBuffIcon) tag = safeGetImage(assets.GetBuffIcon(k, true), size);
+                } catch (eGp) {}
+                if (!tag && assets.GetDummyIcon) {
+                    try { tag = safeGetImage(assets.GetDummyIcon(moduleName + ':' + k), size); } catch (eGd) {}
+                }
+            }
+            if (!tag && typeof getImageByModule === 'function') {
+                try {
+                    tag = getImageByModule(moduleName, k, size, size) || '';
+                    if (tag.indexOf('<img') === -1) tag = ''; // ignore helper's neutral span
+                } catch (eGm) { tag = ''; }
+            }
+            return tag;
+        }
+
         if (typeof assets !== 'undefined' && assets) {
-            if (type === 'resource') {
-                if (!tag && assets.GetResourceIcon) {
-                    try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eR1) {}
-                }
-                if (!tag && assets.GetDummyIcon) {
-                    try { tag = safeGetImage(assets.GetDummyIcon("resources:" + k), size); } catch (eR2) {}
-                }
-                if (!tag && assets.GetBitmapData) {
-                    try {
-                        tag = safeGetImage(assets.GetBitmapData(k), size) ||
-                              safeGetImage(assets.GetBitmapData(k + '.png'), size);
-                    } catch (eR3) {}
-                }
-                if (!tag && typeof getImageByModule === 'function') {
-                    try { tag = getImageByModule('resources', k, size, size); } catch (eR4) {}
-                }
-                return tag;
-            } else if (type === 'building') {
-                if (!tag && assets.GetBuildingIcon) {
-                    try { tag = safeGetImage(assets.GetBuildingIcon(k, true), size); } catch (eB1) {}
-                }
-                if (!tag && assets.GetDummyIcon) {
-                    try { tag = safeGetImage(assets.GetDummyIcon("buildings:" + k), size); } catch (eB2) {}
-                }
-                if (!tag && assets.GetBitmapData) {
-                    try {
-                        tag = safeGetImage(assets.GetBitmapData(k), size) ||
-                              safeGetImage(assets.GetBitmapData(k + '.png'), size);
-                    } catch (eB3) {}
-                }
-                if (!tag && typeof getImageByModule === 'function') {
-                    try { tag = getImageByModule('buildings', k, size, size); } catch (eB4) {}
-                }
-                return tag;
-            } else if (type === 'buff' || type === 'adventure') {
-                if (!tag && assets.GetBuffIcon) {
-                    try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (eA1) {}
-                }
-                if (!tag && assets.GetDummyIcon) {
-                    try {
-                        tag = safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
-                              safeGetImage(assets.GetDummyIcon("shopitems:" + k), size);
-                    } catch (eA2) {}
-                }
-                if (!tag && assets.GetBitmapData) {
-                    try {
-                        tag = safeGetImage(assets.GetBitmapData(k), size) ||
-                              safeGetImage(assets.GetBitmapData(k + '.png'), size);
-                    } catch (eA3) {}
-                }
-                if (!tag && typeof getImageByModule === 'function') {
-                    try { tag = getImageByModule('buffs', k, size, size); } catch (eA4) {}
-                }
-                return tag;
-            }
-
-            // Untyped fallback: if k is Gunpowder, default to resource icon (barrels)
-            if (k === 'Gunpowder') {
-                if (!tag && assets.GetResourceIcon) {
-                    try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eG1) {}
-                }
-                if (!tag && assets.GetDummyIcon) {
-                    try { tag = safeGetImage(assets.GetDummyIcon("resources:" + k), size); } catch (eG2) {}
-                }
-                if (!tag && typeof getImageByModule === 'function') {
-                    try { tag = getImageByModule('resources', k, size, size); } catch (eG3) {}
-                }
-                if (tag) return tag;
-            }
-
-            // General fallbacks: resource icon before buff icon
-            if (!tag && assets.GetResourceIcon) {
-                try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (eF1) {}
-            }
+            // 1. Buff icon
             if (!tag && assets.GetBuffIcon) {
-                try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (eF2) {}
+                try { tag = safeGetImage(assets.GetBuffIcon(k, true), size); } catch (e1) {}
             }
+            // 2. Resource icon
+            if (!tag && assets.GetResourceIcon) {
+                try { tag = safeGetImage(assets.GetResourceIcon(k, true), size); } catch (e2) {}
+            }
+            // 3. Direct BitmapData
             if (!tag && assets.GetBitmapData) {
                 try {
                     tag = safeGetImage(assets.GetBitmapData(k), size) ||
-                          safeGetImage(assets.GetBitmapData(k + '.png'), size);
-                } catch (eF3) {}
+                        safeGetImage(assets.GetBitmapData(k + '.png'), size);
+                } catch (e3) {}
             }
+            // 4. Dummy Icon with lowercase module prefixes (matching AS3 getIconFromLookupName)
             if (!tag && assets.GetDummyIcon) {
                 try {
-                    tag = safeGetImage(assets.GetDummyIcon("resources:" + k), size) ||
-                          safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
-                          safeGetImage(assets.GetDummyIcon("shopitems:" + k), size) ||
-                          safeGetImage(assets.GetDummyIcon("buildings:" + k), size);
-                } catch (eF4) {}
+                    tag = safeGetImage(assets.GetDummyIcon("buffs:" + k), size) ||
+                        safeGetImage(assets.GetDummyIcon("resources:" + k), size) ||
+                        safeGetImage(assets.GetDummyIcon("shopitems:" + k), size) ||
+                        safeGetImage(assets.GetDummyIcon("buildings:" + k), size);
+                } catch (e4) {}
             }
+            // 5. Building icon
             if (!tag && assets.GetBuildingIcon) {
-                try { tag = safeGetImage(assets.GetBuildingIcon(k, true), size); } catch (eF5) {}
+                try { tag = safeGetImage(assets.GetBuildingIcon(k, true), size); } catch (e5) {}
             }
         }
 
+        // 6. getImageByModule helper from 0-common.js
         if (!tag && typeof getImageByModule === 'function') {
             try {
-                tag = getImageByModule('resources', k, size, size) ||
-                      getImageByModule('buffs', k, size, size);
-            } catch (eF6) {}
+                tag = getImageByModule('buffs', k, size, size) ||
+                    getImageByModule('resources', k, size, size);
+            } catch (e6) {}
         }
 
+        return tag;
+    }
+
+    // Constant-time, typed path: no catalog construction or resource classification.
+    function getGunpowderIconTag(name, type, size) {
+        var kind = (name === 'Adventure_Gunpowder' || type === 'adventure') ? 'adventure' : 'resource';
+        var cacheKey = name + '_' + kind + '_' + size;
+        if (_iconCache[cacheKey]) return _iconCache[cacheKey];
+        var tag = tryLoadSingleIcon('Gunpowder', size, kind);
+        if (!tag && kind === 'adventure') {
+            var data = getStarBuffIconMap()['Adventure|Gunpowder'];
+            if (data) {
+                if ($.isArray(data) && data.length >= 2 && typeof getImageByModule === 'function') {
+                    try { tag = getImageByModule(data[0], data[1], size, size); } catch (eGi) {}
+                } else tag = safeGetImage(data, size);
+            }
+        }
+        if (!tag) tag = '<span style="display:inline-block;width:' + size + ';height:' + size + ';background:rgba(212,163,75,0.15);border:1px dashed #7c5828;border-radius:4px;line-height:' + size + ';text-align:center;font-size:10px;color:#d4a34b;">?</span>';
+        _iconCache[cacheKey] = tag;
         return tag;
     }
 
@@ -468,35 +432,15 @@ var ShortcutTrader = (function () {
         if (!name || typeof name !== 'string') {
             return '<span style="display:inline-block;width:' + size + ';height:' + size + ';background:rgba(0,0,0,0.3);border-radius:3px;"></span>';
         }
-
-        if (!type) {
-            if (name.indexOf('Adventure_') === 0) {
-                type = 'adventure';
-            } else {
-                try {
-                    if (typeof GameDataSource !== 'undefined' && GameDataSource.getItemInfo) {
-                        var info = GameDataSource.getItemInfo(name);
-                        if (info && info.type) type = info.type;
-                    }
-                } catch (eType) {}
-            }
-        }
-
+        if (name === 'Gunpowder' || name === 'Adventure_Gunpowder') return getGunpowderIconTag(name, type, size);
         var cacheKey = name + '_' + (type || '') + '_' + size;
         if (_iconCache[cacheKey]) {
             return _iconCache[cacheKey];
         }
-        if (!type && _iconCache[name + '_resource_' + size]) {
-            return _iconCache[name + '_resource_' + size];
-        }
 
         var isDepositRefill = false;
         var rawRes = '';
-        var rawAdv = '';
-        if (name.indexOf('Adventure_') === 0) {
-            rawAdv = name.replace('Adventure_', '').trim();
-            type = 'adventure';
-        } else if (name.indexOf('FillDeposit_') === 0) {
+        if (name.indexOf('FillDeposit_') === 0) {
             isDepositRefill = true;
             rawRes = name.replace('FillDeposit_', '').trim();
         } else if (name.indexOf('FillDeposit') === 0) {
@@ -517,17 +461,12 @@ var ShortcutTrader = (function () {
         }
 
         var candidates = [];
-        if (rawAdv) {
-            candidates.push(rawAdv);
-            candidates.push('Adventure|' + rawAdv);
-            candidates.push(name);
-        } else if (isDepositRefill) {
-            if (rawRes && DEPOSIT_ICON_MAP[rawRes]) {
-                var depCandidates = DEPOSIT_ICON_MAP[rawRes];
-                for (var dc = 0; dc < depCandidates.length; dc++) {
-                    if (candidates.indexOf(depCandidates[dc]) === -1) candidates.push(depCandidates[dc]);
-                }
+        if (isDepositRefill) {            if (rawRes && DEPOSIT_ICON_MAP[rawRes]) {
+            var depCandidates = DEPOSIT_ICON_MAP[rawRes];
+            for (var dc = 0; dc < depCandidates.length; dc++) {
+                if (candidates.indexOf(depCandidates[dc]) === -1) candidates.push(depCandidates[dc]);
             }
+        }
             if (rawRes) {
                 if (candidates.indexOf('FillDeposit_' + rawRes) === -1) candidates.push('FillDeposit_' + rawRes);
                 if (candidates.indexOf(rawRes) === -1) candidates.push(rawRes);
@@ -558,12 +497,11 @@ var ShortcutTrader = (function () {
 
         var tag = '';
         for (var c = 0; c < candidates.length && !tag; c++) {
-            tag = tryLoadSingleIcon(candidates[c], size, type);
+            tag = tryLoadSingleIcon(candidates[c], size);
         }
 
         // Star Menu live icon data if present in inventory (cached lookup)
-        // Never look in star buffs for warehouse resources
-        if (!tag && type !== 'resource' && typeof game !== 'undefined' && game.gi) {
+        if (!tag && typeof game !== 'undefined' && game.gi) {
             var sMap = getStarBuffIconMap();
             for (var sc = 0; sc < candidates.length && !tag; sc++) {
                 var sData = sMap[candidates[sc]];
@@ -587,9 +525,6 @@ var ShortcutTrader = (function () {
         }
 
         _iconCache[cacheKey] = tag;
-        if (type === 'resource' || type === 'adventure') {
-            _iconCache[name + '__' + size] = tag;
-        }
         return tag;
     }
 
@@ -620,11 +555,9 @@ var ShortcutTrader = (function () {
 
     function getCachedIconTag(name, type, size) {
         if (!name || typeof name !== 'string') return '';
-        if (!type && name.indexOf('Adventure_') === 0) type = 'adventure';
-        return _iconCache[name + '_' + (type || '') + '_' + size] ||
-               _iconCache[name + '_resource_' + size] ||
-               _iconCache[name + '_adventure_' + size] ||
-               _iconCache[name + '__' + size] || '';
+        if (name === 'Adventure_Gunpowder') type = 'adventure';
+        else if (name === 'Gunpowder') type = type === 'adventure' ? 'adventure' : 'resource';
+        return _iconCache[name + '_' + (type || '') + '_' + size] || '';
     }
 
     function formatFraction(input) {
@@ -641,554 +574,554 @@ var ShortcutTrader = (function () {
             try { $('#' + STYLE_ID).remove(); } catch (e) {}
 
             var css =
-                '/* Header top spacing: pushes title and info icon down by 20px */' +
-                '#FT_FriendTraderModal .modal-header {' +
-                '  padding-top: 25px !important;' +
-                '}' +
-                '#FT_FriendTraderModal .modal-header a, ' +
-                '#FT_FriendTraderModal .modal-header .modal-title {' +
-                '  vertical-align: middle !important;' +
-                '}' +
-                '/* Settlers-styled Inputs & Selects */' +
-                '#FT_FriendTraderModal input[type="number"], ' +
-                '#FT_FriendTraderModal input[type="text"], ' +
-                '#FT_FriendTraderModal select, ' +
-                '#FT_FriendTraderModal .form-control, ' +
-                '#FT_ItemPickerModal input[type="text"], ' +
-                '#FT_ItemPickerModal .form-control {' +
-                '  color-scheme: dark !important;' +
-                '  background-color: #1a1209 !important;' +
-                '  background-image: linear-gradient(180deg, #22160c 0%, #150d06 100%) !important;' +
-                '  color: #f7e2be !important;' +
-                '  border: 1px solid #7c5828 !important;' +
-                '  border-radius: 4px !important;' +
-                '  box-shadow: inset 0 1px 3px rgba(0,0,0,0.8) !important;' +
-                '  padding: 2px 6px !important;' +
-                '  height: 26px !important;' +
-                '  font-size: 12px !important;' +
-                '  font-weight: 600 !important;' +
-                '  display: inline-block !important;' +
-                '  vertical-align: middle !important;' +
-                '}' +
-                '#FT_FriendTraderModal select option, ' +
-                '#FT_FriendTraderModal select optgroup {' +
-                '  background-color: #1a1209 !important;' +
-                '  color: #f7e2be !important;' +
-                '}' +
-                '#FT_FriendTraderModal input:focus, ' +
-                '#FT_FriendTraderModal select:focus, ' +
-                '#FT_ItemPickerModal input:focus {' +
-                '  border-color: #d4a34b !important;' +
-                '  box-shadow: 0 0 6px rgba(212,163,75,0.7), inset 0 1px 3px rgba(0,0,0,0.8) !important;' +
-                '  outline: none !important;' +
-                '}' +
-                '/* Custom Settlers Dropdown */' +
-                '.st-select-wrapper {' +
-                '  position: relative !important;' +
-                '  display: inline-block !important;' +
-                '  vertical-align: middle !important;' +
-                '  box-sizing: border-box !important;' +
-                '}' +
-                '.st-select-trigger {' +
-                '  display: block !important;' +
-                '  width: 100% !important;' +
-                '  height: 26px !important;' +
-                '  line-height: 20px !important;' +
-                '  padding: 2px 20px 2px 7px !important;' +
-                '  background-color: #1a1209 !important;' +
-                '  background-image: linear-gradient(180deg, #22160c 0%, #150d06 100%) !important;' +
-                '  color: #f7e2be !important;' +
-                '  border: 1px solid #7c5828 !important;' +
-                '  border-radius: 4px !important;' +
-                '  box-shadow: inset 0 1px 3px rgba(0,0,0,0.8) !important;' +
-                '  cursor: pointer !important;' +
-                '  user-select: none !important;' +
-                '  font-size: 12px !important;' +
-                '  font-weight: 600 !important;' +
-                '  white-space: nowrap !important;' +
-                '  overflow: hidden !important;' +
-                '  text-overflow: ellipsis !important;' +
-                '  position: relative !important;' +
-                '  box-sizing: border-box !important;' +
-                '}' +
-                '.st-select-trigger:hover, ' +
-                '.st-select-trigger:focus {' +
-                '  border-color: #d4a34b !important;' +
-                '  box-shadow: 0 0 6px rgba(212,163,75,0.7), inset 0 1px 3px rgba(0,0,0,0.8) !important;' +
-                '}' +
-                '.st-select-label {' +
-                '  display: inline-block !important;' +
-                '  vertical-align: middle !important;' +
-                '  overflow: hidden !important;' +
-                '  text-overflow: ellipsis !important;' +
-                '  white-space: nowrap !important;' +
-                '  max-width: 85% !important;' +
-                '  color: #f7e2be !important;' +
-                '}' +
-                '.st-select-arrow {' +
-                '  position: absolute !important;' +
-                '  right: 6px !important;' +
-                '  top: 50% !important;' +
-                '  margin-top: -6px !important;' +
-                '  font-size: 8px !important;' +
-                '  color: #d4a34b !important;' +
-                '  pointer-events: none !important;' +
-                '  line-height: 12px !important;' +
-                '  user-select: none !important;' +
-                '}' +
-                '.st-select-menu {' +
-                '  display: none;' +
-                '  position: absolute !important;' +
-                '  top: 100% !important;' +
-                '  left: 0 !important;' +
-                '  right: 0 !important;' +
-                '  z-index: 1070 !important;' +
-                '  margin-top: 2px !important;' +
-                '  max-height: 180px !important;' +
-                '  overflow-y: auto !important;' +
-                '  overflow-x: hidden !important;' +
-                '  background-color: #1a1209 !important;' +
-                '  background-image: none !important;' +
-                '  border: 1px solid #7c5828 !important;' +
-                '  border-radius: 4px !important;' +
-                '  box-shadow: 0 3px 6px rgba(0,0,0,0.8) !important;' +
-                '  padding: 2px 0 !important;' +
-                '  box-sizing: border-box !important;' +
-                '}' +
-                '.st-select-option {' +
-                '  padding: 4px 8px !important;' +
-                '  font-size: 12px !important;' +
-                '  font-weight: 600 !important;' +
-                '  color: #f7e2be !important;' +
-                '  cursor: pointer !important;' +
-                '  white-space: nowrap !important;' +
-                '  overflow: hidden !important;' +
-                '  text-overflow: ellipsis !important;' +
-                '  user-select: none !important;' +
-                '  transition: background 0.12s, color 0.12s !important;' +
-                '}' +
-                '.st-select-option:hover {' +
-                '  background-color: rgba(212, 163, 75, 0.35) !important;' +
-                '  color: #ffffff !important;' +
-                '}' +
-                '.st-select-option.selected {' +
-                '  background-color: #5a3d1c !important;' +
-                '  color: #ffd88a !important;' +
-                '  font-weight: bold !important;' +
-                '}' +
-                '/* Add Row Bootstrap Layout */' +
-                '#FT_FriendTraderModal .FT_AddRowContainer .row, ' +
-                '#FT_FriendTraderModal .FT_AddRowContainer .row > div {' +
-                '  overflow: visible !important;' +
-                '}' +
-                '#FT_FriendTraderModal .FT_AddRowContainer .row {' +
-                '  background: rgba(0, 0, 0, 0.15) !important;' +
-                '  border-radius: 4px !important;' +
-                '  margin: 2px 0 5px 0 !important;' +
-                '  padding: 3px 0 !important;' +
-                '  min-height: 32px !important;' +
-                '  line-height: 26px !important;' +
-                '}' +
-                '#FT_FriendTraderModal .FT_AddRowContainer .row > div {' +
-                '  vertical-align: middle !important;' +
-                '  padding: 0 4px !important;' +
-                '}' +
-                '.st-slot-box {' +
-                '  display: inline-block !important;' +
-                '  white-space: nowrap !important;' +
-                '  vertical-align: middle !important;' +
-                '  background: rgba(0,0,0,0.08) !important;' +
-                '  border-radius: 4px !important;' +
-                '  padding: 2px 4px !important;' +
-                '}' +
-                '.st-res-menu { right: auto !important; width: 270px !important; max-height: 320px !important; }' +
-                '.st-select-search-wrap { position: -webkit-sticky; position: sticky; top: 0; z-index: 2; padding: 4px 6px !important; background: #1a1209 !important; border-bottom: 1px solid #5a3d1c !important; }' +
-                '#FT_FriendTraderModal input.st-select-search { display: block !important; width: 100% !important; height: 24px !important; box-sizing: border-box !important; padding: 2px 7px !important; background: #0e0904 !important; color: #f7e2be !important; border: 1px solid #7c5828 !important; border-radius: 3px !important; font-size: 12px !important; outline: none !important; box-shadow: inset 0 1px 2px rgba(0,0,0,0.9) !important; }' +
-                '#FT_FriendTraderModal input.st-select-search:focus { border-color: #d4a34b !important; box-shadow: 0 0 5px rgba(212,163,75,0.6), inset 0 1px 2px rgba(0,0,0,0.9) !important; }' +
-                '.st-select-group { padding: 6px 8px 3px 8px !important; font-size: 11px !important; font-weight: bold !important; color: #d4a34b !important; text-transform: uppercase; letter-spacing: 0.5px; border-top: 1px solid rgba(124,88,40,0.5) !important; cursor: default !important; -webkit-user-select: none !important; user-select: none !important; }' +
-                '.st-slot-btn {' +
-                '  width: 26px !important;' +
-                '  height: 26px !important;' +
-                '  background: linear-gradient(180deg, #382515 0%, #1f140a 100%) !important;' +
-                '  border: 1px solid #7c5828 !important;' +
-                '  border-radius: 4px !important;' +
-                '  display: inline-block !important;' +
-                '  vertical-align: middle !important;' +
-                '  cursor: pointer !important;' +
-                '  box-shadow: 0 2px 4px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15) !important;' +
-                '  padding: 0 !important;' +
-                '  margin: 0 !important;' +
-                '  text-align: center !important;' +
-                '  user-select: none !important;' +
-                '}' +
-                '.st-slot-btn:hover {' +
-                '  border-color: #f0c36d !important;' +
-                '  box-shadow: 0 0 6px rgba(240,195,109,0.7) !important;' +
-                '}' +
-                '.st-slot-btn img {' +
-                '  width: 20px !important;' +
-                '  height: 20px !important;' +
-                '  display: inline-block !important;' +
-                '  vertical-align: middle !important;' +
-                '  margin-top: 2px !important;' +
-                '  object-fit: contain !important;' +
-                '  pointer-events: none !important;' +
-                '}' +
-                '.st-add-btn {' +
-                '  width: 26px !important;' +
-                '  height: 26px !important;' +
-                '  background: linear-gradient(180deg, #3d6b2c 0%, #204014 100%) !important;' +
-                '  border: 1px solid #579848 !important;' +
-                '  border-radius: 4px !important;' +
-                '  display: inline-block !important;' +
-                '  display: -webkit-inline-box !important;' +
-                '  display: inline-flex !important;' +
-                '  -webkit-box-pack: center !important;' +
-                '  -webkit-box-align: center !important;' +
-                '  align-items: center !important;' +
-                '  justify-content: center !important;' +
-                '  vertical-align: middle !important;' +
-                '  text-align: center !important;' +
-                '  line-height: 24px !important;' +
-                '  cursor: pointer !important;' +
-                '  box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2) !important;' +
-                '  padding: 0 !important;' +
-                '  margin: 0 !important;' +
-                '  box-sizing: border-box !important;' +
-                '}' +
-                '.st-add-btn:hover {' +
-                '  border-color: #8ce65a !important;' +
-                '  box-shadow: 0 0 8px rgba(140,230,90,0.6) !important;' +
-                '  transform: scale(1.05) !important;' +
-                '}' +
-                '.st-add-btn img {' +
-                '  width: 18px !important;' +
-                '  height: 18px !important;' +
-                '  display: block !important;' +
-                '  margin: 0 auto !important;' +
-                '  object-fit: contain !important;' +
-                '  pointer-events: none !important;' +
-                '}' +
-                '.st-add-btn span {' +
-                '  display: inline-block !important;' +
-                '  margin: 0 auto !important;' +
-                '  line-height: 24px !important;' +
-                '  vertical-align: middle !important;' +
-                '  text-align: center !important;' +
-                '}' +
-                '/* Beautiful & Compact Trades List */' +
-                '#FT_FriendTraderModal .tblHeader > div, ' +
-                '#FT_FriendTraderModal .row.tblHeader > div {' +
-                '  background: #B2A589 !important;' +
-                '  color: #000 !important;' +
-                '  font-weight: bold !important;' +
-                '  padding: 3px 6px !important;' +
-                '  font-size: 11px !important;' +
-                '  border: none !important;' +
-                '}' +
-                '#FT_FriendTraderModal .FT_Trades .row {' +
-                '  background: rgba(178, 165, 137, 0.12) !important;' +
-                '  border: none !important;' +
-                '  border-radius: 4px !important;' +
-                '  margin: 1px 0 !important;' +
-                '  padding: 2px 6px !important;' +
-                '  min-height: 28px !important;' +
-                '  line-height: 24px !important;' +
-                '  transition: background 0.15s !important;' +
-                '}' +
-                '#FT_FriendTraderModal .FT_Trades .row:nth-child(even) {' +
-                '  background: rgba(178, 165, 137, 0.22) !important;' +
-                '}' +
-                '#FT_FriendTraderModal .FT_Trades .row:hover {' +
-                '  background: rgba(166, 83, 41, 0.35) !important;' +
-                '}' +
-                '#FT_FriendTraderModal .FT_Trades .row > div {' +
-                '  font-size: 12px !important;' +
-                '  vertical-align: middle !important;' +
-                '  padding: 0 4px !important;' +
-                '}' +
+                    '/* Header top spacing: pushes title and info icon down by 20px */' +
+                    '#FT_FriendTraderModal .modal-header {' +
+                    '  padding-top: 25px !important;' +
+                    '}' +
+                    '#FT_FriendTraderModal .modal-header a, ' +
+                    '#FT_FriendTraderModal .modal-header .modal-title {' +
+                    '  vertical-align: middle !important;' +
+                    '}' +
+                    '/* Settlers-styled Inputs & Selects */' +
+                    '#FT_FriendTraderModal input[type="number"], ' +
+                    '#FT_FriendTraderModal input[type="text"], ' +
+                    '#FT_FriendTraderModal select, ' +
+                    '#FT_FriendTraderModal .form-control, ' +
+                    '#FT_ItemPickerModal input[type="text"], ' +
+                    '#FT_ItemPickerModal .form-control {' +
+                    '  color-scheme: dark !important;' +
+                    '  background-color: #1a1209 !important;' +
+                    '  background-image: linear-gradient(180deg, #22160c 0%, #150d06 100%) !important;' +
+                    '  color: #f7e2be !important;' +
+                    '  border: 1px solid #7c5828 !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  box-shadow: inset 0 1px 3px rgba(0,0,0,0.8) !important;' +
+                    '  padding: 2px 6px !important;' +
+                    '  height: 26px !important;' +
+                    '  font-size: 12px !important;' +
+                    '  font-weight: 600 !important;' +
+                    '  display: inline-block !important;' +
+                    '  vertical-align: middle !important;' +
+                    '}' +
+                    '#FT_FriendTraderModal select option, ' +
+                    '#FT_FriendTraderModal select optgroup {' +
+                    '  background-color: #1a1209 !important;' +
+                    '  color: #f7e2be !important;' +
+                    '}' +
+                    '#FT_FriendTraderModal input:focus, ' +
+                    '#FT_FriendTraderModal select:focus, ' +
+                    '#FT_ItemPickerModal input:focus {' +
+                    '  border-color: #d4a34b !important;' +
+                    '  box-shadow: 0 0 6px rgba(212,163,75,0.7), inset 0 1px 3px rgba(0,0,0,0.8) !important;' +
+                    '  outline: none !important;' +
+                    '}' +
+                    '/* Custom Settlers Dropdown */' +
+                    '.st-select-wrapper {' +
+                    '  position: relative !important;' +
+                    '  display: inline-block !important;' +
+                    '  vertical-align: middle !important;' +
+                    '  box-sizing: border-box !important;' +
+                    '}' +
+                    '.st-select-trigger {' +
+                    '  display: block !important;' +
+                    '  width: 100% !important;' +
+                    '  height: 26px !important;' +
+                    '  line-height: 20px !important;' +
+                    '  padding: 2px 20px 2px 7px !important;' +
+                    '  background-color: #1a1209 !important;' +
+                    '  background-image: linear-gradient(180deg, #22160c 0%, #150d06 100%) !important;' +
+                    '  color: #f7e2be !important;' +
+                    '  border: 1px solid #7c5828 !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  box-shadow: inset 0 1px 3px rgba(0,0,0,0.8) !important;' +
+                    '  cursor: pointer !important;' +
+                    '  user-select: none !important;' +
+                    '  font-size: 12px !important;' +
+                    '  font-weight: 600 !important;' +
+                    '  white-space: nowrap !important;' +
+                    '  overflow: hidden !important;' +
+                    '  text-overflow: ellipsis !important;' +
+                    '  position: relative !important;' +
+                    '  box-sizing: border-box !important;' +
+                    '}' +
+                    '.st-select-trigger:hover, ' +
+                    '.st-select-trigger:focus {' +
+                    '  border-color: #d4a34b !important;' +
+                    '  box-shadow: 0 0 6px rgba(212,163,75,0.7), inset 0 1px 3px rgba(0,0,0,0.8) !important;' +
+                    '}' +
+                    '.st-select-label {' +
+                    '  display: inline-block !important;' +
+                    '  vertical-align: middle !important;' +
+                    '  overflow: hidden !important;' +
+                    '  text-overflow: ellipsis !important;' +
+                    '  white-space: nowrap !important;' +
+                    '  max-width: 85% !important;' +
+                    '  color: #f7e2be !important;' +
+                    '}' +
+                    '.st-select-arrow {' +
+                    '  position: absolute !important;' +
+                    '  right: 6px !important;' +
+                    '  top: 50% !important;' +
+                    '  margin-top: -6px !important;' +
+                    '  font-size: 8px !important;' +
+                    '  color: #d4a34b !important;' +
+                    '  pointer-events: none !important;' +
+                    '  line-height: 12px !important;' +
+                    '  user-select: none !important;' +
+                    '}' +
+                    '.st-select-menu {' +
+                    '  display: none;' +
+                    '  position: absolute !important;' +
+                    '  top: 100% !important;' +
+                    '  left: 0 !important;' +
+                    '  right: 0 !important;' +
+                    '  z-index: 1070 !important;' +
+                    '  margin-top: 2px !important;' +
+                    '  max-height: 180px !important;' +
+                    '  overflow-y: auto !important;' +
+                    '  overflow-x: hidden !important;' +
+                    '  background-color: #1a1209 !important;' +
+                    '  background-image: none !important;' +
+                    '  border: 1px solid #7c5828 !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  box-shadow: 0 3px 6px rgba(0,0,0,0.8) !important;' +
+                    '  padding: 2px 0 !important;' +
+                    '  box-sizing: border-box !important;' +
+                    '}' +
+                    '.st-select-option {' +
+                    '  padding: 4px 8px !important;' +
+                    '  font-size: 12px !important;' +
+                    '  font-weight: 600 !important;' +
+                    '  color: #f7e2be !important;' +
+                    '  cursor: pointer !important;' +
+                    '  white-space: nowrap !important;' +
+                    '  overflow: hidden !important;' +
+                    '  text-overflow: ellipsis !important;' +
+                    '  user-select: none !important;' +
+                    '  transition: background 0.12s, color 0.12s !important;' +
+                    '}' +
+                    '.st-select-option:hover {' +
+                    '  background-color: rgba(212, 163, 75, 0.35) !important;' +
+                    '  color: #ffffff !important;' +
+                    '}' +
+                    '.st-select-option.selected {' +
+                    '  background-color: #5a3d1c !important;' +
+                    '  color: #ffd88a !important;' +
+                    '  font-weight: bold !important;' +
+                    '}' +
+                    '/* Add Row Bootstrap Layout */' +
+                    '#FT_FriendTraderModal .FT_AddRowContainer .row, ' +
+                    '#FT_FriendTraderModal .FT_AddRowContainer .row > div {' +
+                    '  overflow: visible !important;' +
+                    '}' +
+                    '#FT_FriendTraderModal .FT_AddRowContainer .row {' +
+                    '  background: rgba(0, 0, 0, 0.15) !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  margin: 2px 0 5px 0 !important;' +
+                    '  padding: 3px 0 !important;' +
+                    '  min-height: 32px !important;' +
+                    '  line-height: 26px !important;' +
+                    '}' +
+                    '#FT_FriendTraderModal .FT_AddRowContainer .row > div {' +
+                    '  vertical-align: middle !important;' +
+                    '  padding: 0 4px !important;' +
+                    '}' +
+                    '.st-slot-box {' +
+                    '  display: inline-block !important;' +
+                    '  white-space: nowrap !important;' +
+                    '  vertical-align: middle !important;' +
+                    '  background: rgba(0,0,0,0.08) !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  padding: 2px 4px !important;' +
+                    '}' +
+                    '.st-res-menu { right: auto !important; width: 270px !important; max-height: 320px !important; }' +
+                    '.st-select-search-wrap { position: -webkit-sticky; position: sticky; top: 0; z-index: 2; padding: 4px 6px !important; background: #1a1209 !important; border-bottom: 1px solid #5a3d1c !important; }' +
+                    '#FT_FriendTraderModal input.st-select-search { display: block !important; width: 100% !important; height: 24px !important; box-sizing: border-box !important; padding: 2px 7px !important; background: #0e0904 !important; color: #f7e2be !important; border: 1px solid #7c5828 !important; border-radius: 3px !important; font-size: 12px !important; outline: none !important; box-shadow: inset 0 1px 2px rgba(0,0,0,0.9) !important; }' +
+                    '#FT_FriendTraderModal input.st-select-search:focus { border-color: #d4a34b !important; box-shadow: 0 0 5px rgba(212,163,75,0.6), inset 0 1px 2px rgba(0,0,0,0.9) !important; }' +
+                    '.st-select-group { padding: 6px 8px 3px 8px !important; font-size: 11px !important; font-weight: bold !important; color: #d4a34b !important; text-transform: uppercase; letter-spacing: 0.5px; border-top: 1px solid rgba(124,88,40,0.5) !important; cursor: default !important; -webkit-user-select: none !important; user-select: none !important; }' +
+                    '.st-slot-btn {' +
+                    '  width: 26px !important;' +
+                    '  height: 26px !important;' +
+                    '  background: linear-gradient(180deg, #382515 0%, #1f140a 100%) !important;' +
+                    '  border: 1px solid #7c5828 !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  display: inline-block !important;' +
+                    '  vertical-align: middle !important;' +
+                    '  cursor: pointer !important;' +
+                    '  box-shadow: 0 2px 4px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15) !important;' +
+                    '  padding: 0 !important;' +
+                    '  margin: 0 !important;' +
+                    '  text-align: center !important;' +
+                    '  user-select: none !important;' +
+                    '}' +
+                    '.st-slot-btn:hover {' +
+                    '  border-color: #f0c36d !important;' +
+                    '  box-shadow: 0 0 6px rgba(240,195,109,0.7) !important;' +
+                    '}' +
+                    '.st-slot-btn img {' +
+                    '  width: 20px !important;' +
+                    '  height: 20px !important;' +
+                    '  display: inline-block !important;' +
+                    '  vertical-align: middle !important;' +
+                    '  margin-top: 2px !important;' +
+                    '  object-fit: contain !important;' +
+                    '  pointer-events: none !important;' +
+                    '}' +
+                    '.st-add-btn {' +
+                    '  width: 26px !important;' +
+                    '  height: 26px !important;' +
+                    '  background: linear-gradient(180deg, #3d6b2c 0%, #204014 100%) !important;' +
+                    '  border: 1px solid #579848 !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  display: inline-block !important;' +
+                    '  display: -webkit-inline-box !important;' +
+                    '  display: inline-flex !important;' +
+                    '  -webkit-box-pack: center !important;' +
+                    '  -webkit-box-align: center !important;' +
+                    '  align-items: center !important;' +
+                    '  justify-content: center !important;' +
+                    '  vertical-align: middle !important;' +
+                    '  text-align: center !important;' +
+                    '  line-height: 24px !important;' +
+                    '  cursor: pointer !important;' +
+                    '  box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2) !important;' +
+                    '  padding: 0 !important;' +
+                    '  margin: 0 !important;' +
+                    '  box-sizing: border-box !important;' +
+                    '}' +
+                    '.st-add-btn:hover {' +
+                    '  border-color: #8ce65a !important;' +
+                    '  box-shadow: 0 0 8px rgba(140,230,90,0.6) !important;' +
+                    '  transform: scale(1.05) !important;' +
+                    '}' +
+                    '.st-add-btn img {' +
+                    '  width: 18px !important;' +
+                    '  height: 18px !important;' +
+                    '  display: block !important;' +
+                    '  margin: 0 auto !important;' +
+                    '  object-fit: contain !important;' +
+                    '  pointer-events: none !important;' +
+                    '}' +
+                    '.st-add-btn span {' +
+                    '  display: inline-block !important;' +
+                    '  margin: 0 auto !important;' +
+                    '  line-height: 24px !important;' +
+                    '  vertical-align: middle !important;' +
+                    '  text-align: center !important;' +
+                    '}' +
+                    '/* Beautiful & Compact Trades List */' +
+                    '#FT_FriendTraderModal .tblHeader > div, ' +
+                    '#FT_FriendTraderModal .row.tblHeader > div {' +
+                    '  background: #B2A589 !important;' +
+                    '  color: #000 !important;' +
+                    '  font-weight: bold !important;' +
+                    '  padding: 3px 6px !important;' +
+                    '  font-size: 11px !important;' +
+                    '  border: none !important;' +
+                    '}' +
+                    '#FT_FriendTraderModal .FT_Trades .row {' +
+                    '  background: rgba(178, 165, 137, 0.12) !important;' +
+                    '  border: none !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  margin: 1px 0 !important;' +
+                    '  padding: 2px 6px !important;' +
+                    '  min-height: 28px !important;' +
+                    '  line-height: 24px !important;' +
+                    '  transition: background 0.15s !important;' +
+                    '}' +
+                    '#FT_FriendTraderModal .FT_Trades .row:nth-child(even) {' +
+                    '  background: rgba(178, 165, 137, 0.22) !important;' +
+                    '}' +
+                    '#FT_FriendTraderModal .FT_Trades .row:hover {' +
+                    '  background: rgba(166, 83, 41, 0.35) !important;' +
+                    '}' +
+                    '#FT_FriendTraderModal .FT_Trades .row > div {' +
+                    '  font-size: 12px !important;' +
+                    '  vertical-align: middle !important;' +
+                    '  padding: 0 4px !important;' +
+                    '}' +
 
-                '/* Item Picker Modal Styling */' +
-                '#FT_ItemPickerModal { z-index: 1060 !important; }' +
-                '#FT_ItemPickerModal .modal-dialog { width: 630px !important; max-width: 95vw !important; margin: 30px auto !important; }' +
-                '#FT_ItemPickerModal .modal-content {' +
-                '  border: none !important;' +
-                '  box-shadow: none !important;' +
-                '  background: transparent !important;' +
-                '}' +
-                '#FT_ItemPickerModal .modal-header {' +
-                '  padding: 16px 22px 6px 22px !important;' +
-                '  border-bottom: 0px !important;' +
-                '}' +
-                '#FT_ItemPickerModal .modal-title {' +
-                '  white-space: normal !important;' +
-                '  overflow: visible !important;' +
-                '  text-overflow: clip !important;' +
-                '  font-size: 15px !important;' +
-                '  font-weight: bold !important;' +
-                '  color: #ffd88a !important;' +
-                '  text-shadow: 1px 1px 2px rgba(0,0,0,0.9) !important;' +
-                '  margin-top: 10px !important;' +
-                '}' +
-                '#FT_ItemPickerModal .modal-body {' +
-                '  height: auto !important;' +
-                '  max-height: 80vh !important;' +
-                '  overflow: visible !important;' +
-                '  padding: 6px 22px !important;' +
-                '}' +
-                '.st-picker-search-bar { display: table !important; width: 100% !important; table-layout: auto !important; margin-bottom: 8px !important; }' +
-                '.st-psb-search { display: table-cell !important; width: 100% !important; vertical-align: middle !important; padding-right: 10px !important; }' +
-                '.st-psb-toggles { display: table-cell !important; vertical-align: middle !important; white-space: nowrap !important; }' +
-                '#FT_ItemPickerModal .st-psb-search input.form-control { display: block !important; width: 100% !important; height: 28px !important; box-sizing: border-box !important; }' +
-                '.st-picker-tabs {' +
-                '  display: block !important;' +
-                '  white-space: normal !important;' +
-                '  overflow-x: hidden !important;' +
-                '  overflow-y: visible !important;' +
-                '  margin-bottom: 6px !important;' +
-                '  padding: 2px 0 4px 0 !important;' +
-                '  border-bottom: 1px solid #7c5828 !important;' +
-                '}' +
-                '.st-picker-tab {' +
-                '  display: inline-block !important;' +
-                '  vertical-align: middle !important;' +
-                '  background: #24170d !important;' +
-                '  border: 1px solid #5a3d1c !important;' +
-                '  color: #d6bc92 !important;' +
-                '  padding: 3px 7px !important;' +
-                '  margin: 2px 2px !important;' +
-                '  font-size: 11px !important;' +
-                '  font-weight: 600 !important;' +
-                '  border-radius: 4px !important;' +
-                '  cursor: pointer !important;' +
-                '  user-select: none !important;' +
-                '  transition: all 0.12s ease !important;' +
-                '}' +
-                '.st-picker-tab:hover {' +
-                '  background: #3a2717 !important;' +
-                '  border-color: #8e6530 !important;' +
-                '  color: #fff !important;' +
-                '}' +
-                '.st-picker-tab.active {' +
-                '  background: linear-gradient(180deg, #6c4b22 0%, #483115 100%) !important;' +
-                '  border-color: #d4a34b !important;' +
-                '  color: #fff2cc !important;' +
-                '  box-shadow: 0 0 6px rgba(212,163,75,0.4) !important;' +
-                '}' +
-                '/* Items Matrix - TSO Trade Style */' +
-                '.st-picker-grid {' +
-                '  display: block !important;' +
-                '  text-align: left !important;' +
-                '  height: 360px !important;' +
-                '  max-height: 360px !important;' +
-                '  overflow-y: auto !important;' +
-                '  overflow-x: hidden !important;' +
-                '  padding: 6px !important;' +
-                '  margin: 0 !important;' +
-                '  background: rgba(0,0,0,0.3) !important;' +
-                '  border: 1px solid #7c5828 !important;' +
-                '  border-radius: 4px !important;' +
-                '  box-sizing: border-box !important;' +
-                '}' +
-                '#FT_ItemPickerModal .modal-footer {' +
-                '  padding: 8px 22px 18px 22px !important;' +
-                '  margin-top: 0px !important;' +
-                '  border-top: 0px !important;' +
-                '  text-align: right !important;' +
-                '}' +
-                '#FT_ItemPickerModal .modal-footer .btn, ' +
-                '#FT_ItemPickerModal .modal-footer .btn:hover, ' +
-                '#FT_ItemPickerModal .modal-footer .btn:focus, ' +
-                '#FT_ItemPickerModal .modal-footer .btn:active, ' +
-                '#FT_FriendTraderModal .modal-footer .btn, ' +
-                '#FT_FriendTraderModal .modal-footer .btn:hover, ' +
-                '#FT_FriendTraderModal .modal-footer .btn:focus, ' +
-                '#FT_FriendTraderModal .modal-footer .btn:active {' +
-                '  color: #000000 !important;' +
-                '}' +
-                '#FT_ItemPickerModal #FT_ItemPickerModal_ConfirmBtn:disabled, ' +
-                '#FT_ItemPickerModal #FT_ItemPickerModal_ConfirmBtn[disabled] {' +
-                '  opacity: 0.45 !important;' +
-                '  cursor: not-allowed !important;' +
-                '  pointer-events: none !important;' +
-                '  filter: grayscale(0.5) !important;' +
-                '}' +
-                '#FT_ItemPickerModal #FT_ItemPickerModal_ConfirmBtn:not([disabled]) {' +
-                '  opacity: 1 !important;' +
-                '  cursor: pointer !important;' +
-                '  pointer-events: auto !important;' +
-                '  box-shadow: 0 0 8px rgba(92, 184, 92, 0.8) !important;' +
-                '}' +
-                '/* Authentic TSO Trade Cards (86px x 42px) */' +
-                '.st-item-tile {' +
-                '  display: inline-block !important;' +
-                '  vertical-align: top !important;' +
-                '  width: 86px !important;' +
-                '  height: 42px !important;' +
-                '  margin: 2px !important;' +
-                '  background-color: #836641 !important;' +
-                '  background-image: linear-gradient(180deg, #91754f 0%, #755734 100%) !important;' +
-                '  border-top: 1px solid #a88d66 !important;' +
-                '  border-left: 1px solid #a88d66 !important;' +
-                '  border-right: 1px solid #48341e !important;' +
-                '  border-bottom: 1px solid #48341e !important;' +
-                '  border-radius: 2px !important;' +
-                '  position: relative !important;' +
-                '  cursor: pointer !important;' +
-                '  text-align: left !important;' +
-                '  box-shadow: 0 1px 2px rgba(0,0,0,0.5), inset 1px 1px 0 rgba(255,255,255,0.18), inset -1px -1px 0 rgba(0,0,0,0.3) !important;' +
-                '  box-sizing: border-box !important;' +
-                '  padding: 0 !important;' +
-                '  overflow: hidden !important;' +
-                '  user-select: none !important;' +
-                '}' +
-                '.st-item-tile.st-hidden { display: none !important; }' +
-                '.st-item-tile:hover {' +
-                '  border: 1px solid #ffd88a !important;' +
-                '  box-shadow: 0 0 6px rgba(255,216,138,0.85), inset 1px 1px 0 rgba(255,255,255,0.25) !important;' +
-                '  z-index: 5 !important;' +
-                '}' +
-                '.st-item-tile.selected {' +
-                '  border: 2px solid #ffd88a !important;' +
-                '  box-shadow: 0 0 8px rgba(255, 216, 138, 0.95), inset 0 0 4px rgba(255, 216, 138, 0.4) !important;' +
-                '  background-image: linear-gradient(180deg, #9f835b 0%, #856642 100%) !important;' +
-                '  z-index: 6 !important;' +
-                '}' +
-                '.st-tile-icon-box {' +
-                '  position: absolute !important;' +
-                '  left: 3px !important;' +
-                '  top: 0 !important;' +
-                '  bottom: 0 !important;' +
-                '  width: 38px !important;' +
-                '  height: 42px !important;' +
-                '  margin: 0 !important;' +
-                '  padding: 0 !important;' +
-                '  overflow: visible !important;' +
-                '  pointer-events: none !important;' +
-                '  text-align: center !important;' +
-                '}' +
-                '.st-tile-icon-box img, ' +
-                '.st-item-tile img, ' +
-                '.st-tile-icon-box svg, ' +
-                '.st-tile-icon-box span {' +
-                '  position: absolute !important;' +
-                '  top: 0 !important;' +
-                '  bottom: 0 !important;' +
-                '  left: 0 !important;' +
-                '  right: 0 !important;' +
-                '  margin: auto !important;' +
-                '  max-width: 32px !important;' +
-                '  max-height: 32px !important;' +
-                '  width: auto !important;' +
-                '  height: auto !important;' +
-                '  display: block !important;' +
-                '  object-fit: contain !important;' +
-                '  image-rendering: -webkit-optimize-contrast !important;' +
-                '  image-rendering: crisp-edges !important;' +
-                '  pointer-events: none !important;' +
-                '}' +
-                '.ft-dep-icon { position: relative !important; display: inline-block !important; vertical-align: middle; overflow: visible !important; }' +
-                '.st-tile-icon-box > .ft-dep-icon { position: absolute !important; top: 0 !important; bottom: 0 !important; left: 0 !important; right: 0 !important; margin: auto !important; }' +
-                '.ft-dep-icon > .ft-dep-layer { position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; }' +
-                '.ft-dep-icon > .ft-dep-layer > img { position: absolute !important; top: 0 !important; bottom: 0 !important; left: 0 !important; right: 0 !important; margin: auto !important; width: auto !important; height: auto !important; }' +
-                '.ft-dep-icon > .ft-dep-bg > img, #FT_ItemPickerModal_PreviewIcon .ft-dep-icon > .ft-dep-bg > img { max-width: 100% !important; max-height: 100% !important; }' +
-                '.ft-dep-icon > .ft-dep-fg > img, #FT_ItemPickerModal_PreviewIcon .ft-dep-icon > .ft-dep-fg > img { max-width: 68% !important; max-height: 68% !important; }' +
-                '#FT_ItemPickerModal_PreviewIcon {' +                '  position: relative !important;' +
-                '}' +
-                '#FT_ItemPickerModal_PreviewIcon img, ' +
-                '#FT_ItemPickerModal_PreviewIcon svg {' +
-                '  position: absolute !important;' +
-                '  top: 0 !important;' +
-                '  bottom: 0 !important;' +
-                '  left: 0 !important;' +
-                '  right: 0 !important;' +
-                '  margin: auto !important;' +
-                '  max-width: 32px !important;' +
-                '  max-height: 32px !important;' +
-                '}' +
-                '.st-tile-stock {' +
-                '  position: absolute !important;' +
-                '  right: 5px !important;' +
-                '  top: 0 !important;' +
-                '  bottom: 0 !important;' +
-                '  left: 45px !important;' +
-                '  line-height: 42px !important;' +
-                '  text-align: right !important;' +
-                '  color: #1a140d !important;' +
-                '  font-size: 11px !important;' +
-                '  font-weight: bold !important;' +
-                '  text-shadow: 0 1px 0 rgba(255,255,255,0.3) !important;' +
-                '  white-space: nowrap !important;' +
-                '  overflow: hidden !important;' +
-                '  text-overflow: clip !important;' +
-                '  pointer-events: none !important;' +
-                '}' +
-                '.st-tile-badge {' +
-                '  display: none !important;' +
-                '}' +
-                '/* TSO-styled checkboxes */' +
-                '.st-check { position: relative !important; display: inline-block !important; vertical-align: middle !important; margin: 0 !important; padding: 0 !important; cursor: pointer !important; -webkit-user-select: none !important; user-select: none !important; font-weight: normal !important; line-height: 16px !important; }' +
-                '.st-check input[type="checkbox"] { position: absolute !important; left: 0 !important; top: 0 !important; width: 1px !important; height: 1px !important; margin: 0 !important; padding: 0 !important; opacity: 0 !important; overflow: hidden !important; }' +
-                '.st-check .st-check-box { position: relative !important; display: inline-block !important; vertical-align: middle !important; width: 16px !important; height: 16px !important; box-sizing: border-box !important; border: 1px solid #a07a3c !important; border-radius: 3px !important; background: #4a3219 !important; box-shadow: inset 0 1px 3px rgba(0,0,0,0.7) !important; -webkit-transition: border-color 0.12s, box-shadow 0.12s, background-color 0.12s !important; transition: border-color 0.12s, box-shadow 0.12s, background-color 0.12s !important; }' +
-                '.st-check .st-check-box:after { content: ""; position: absolute !important; left: 4px !important; top: 1px !important; width: 5px !important; height: 9px !important; border: solid #f3d9a4 !important; border-width: 0 2px 2px 0 !important; -webkit-transform: rotate(45deg) !important; transform: rotate(45deg) !important; display: none !important; }' +
-                '.st-check:hover .st-check-box { border-color: #ffd88a !important; box-shadow: 0 0 5px rgba(255,216,138,0.55), inset 0 1px 3px rgba(0,0,0,0.95) !important; }' +
-                '.st-check input:checked + .st-check-box { border-color: #e0b866 !important; background: #8a5f2c !important; box-shadow: 0 0 5px rgba(255,216,138,0.55), inset 0 1px 0 rgba(255,232,180,0.35) !important; }' +
-                '.st-check input:checked + .st-check-box:after { display: block !important; }' +
-                '.st-check input:disabled + .st-check-box { opacity: 0.35 !important; box-shadow: none !important; }' +
-                '.st-check input:disabled ~ .st-check-text { opacity: 0.45 !important; }' +
-                '.st-check-row input:disabled + .st-check-box { cursor: not-allowed !important; }' +
-                '.st-check .st-check-text { display: inline-block !important; vertical-align: middle !important; margin-left: 7px !important; font-size: 12px !important; font-weight: 600 !important; color: #d6bc92 !important; white-space: nowrap !important; text-shadow: 1px 1px 1px #000 !important; }' +
-                '.st-check input:checked ~ .st-check-text { color: #ffd88a !important; }' +
-                '.st-check-pill { height: 28px !important; line-height: 26px !important; padding: 0 11px 0 9px !important; margin-left: 6px !important; box-sizing: border-box !important; background-color: #1a1209 !important; background-image: linear-gradient(180deg, #2e1e12 0%, #191008 100%) !important; border: 1px solid #7c5828 !important; border-radius: 4px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; }' +
-                '.st-check-pill:hover { border-color: #d4a34b !important; }' +
-                '.st-check-pill .st-check-box { margin-top: -2px !important; }' +
-                '.st-check-row { margin: 0 8px 0 0 !important; }' +
-                '/* Mode Switch Icon Buttons */' +
-                '.st-mode-btn-group {' +
-                '  display: inline-flex !important;' +
-                '  align-items: center !important;' +
-                '  gap: 3px !important;' +
-                '  vertical-align: middle !important;' +
-                '}' +
-                '.st-mode-icon-btn img { width: 22px !important; height: 22px !important; display: block !important; opacity: 0.6; pointer-events: none !important; }' +
-                '.st-mode-icon-btn:hover img, .st-mode-icon-btn.active img { opacity: 1; }' +
-                '.st-mode-toggle { opacity: 0.45; }' +
-                '.st-mode-toggle:hover { opacity: 0.8; }' +
-                '.st-mode-toggle.active, .st-mode-toggle.active:hover { opacity: 1; }' +
-                '.st-mode-toggle { display: inline-block !important; vertical-align: middle !important; text-align: center !important; line-height: 28px !important; }' +
-                '.st-mode-toggle img { margin: 3px auto 0 auto !important; }' +
-                '#FT_FriendTraderModal .container-fluid > .row { margin-left: 0 !important; margin-right: 0 !important; }' +
-                '#FT_FriendTraderModal .container-fluid > .row > div { padding-left: 4px !important; padding-right: 4px !important; }' +
-                '.st-mode-icon-btn {' +
-                '  width: 30px !important;' +
-                '  height: 30px !important;' +
-                '  padding: 0 !important;' +
-                '  margin: 0 !important;' +
-                '  background-color: #1a1209 !important;' +
-                '  background-image: linear-gradient(180deg, #2e1e12 0%, #191008 100%) !important;' +
-                '  border: 1px solid #7c5828 !important;' +
-                '  border-radius: 4px !important;' +
-                '  color: #d6bc92 !important;' +
-                '  cursor: pointer !important;' +
-                '  display: inline-flex !important;' +
-                '  align-items: center !important;' +
-                '  justify-content: center !important;' +
-                '  box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;' +
-                '  transition: all 0.12s ease !important;' +
-                '  outline: none !important;' +
-                '}' +
-                '.st-mode-icon-btn:hover {' +
-                '  border-color: #ffd88a !important;' +
-                '  color: #ffffff !important;' +
-                '  box-shadow: 0 0 6px rgba(255,216,138,0.5) !important;' +
-                '}' +
-                '.st-mode-icon-btn.active {' +
-                '  background-color: #5c3e1c !important;' +
-                '  background-image: linear-gradient(180deg, #5c3e1c 0%, #3a2611 100%) !important;' +
-                '  border: 1px solid #ffd88a !important;' +
-                '  color: #ffd88a !important;' +
-                '  box-shadow: 0 0 6px rgba(255,216,138,0.6), inset 0 1px 3px rgba(0,0,0,0.6) !important;' +
-                '}';
+                    '/* Item Picker Modal Styling */' +
+                    '#FT_ItemPickerModal { z-index: 1060 !important; }' +
+                    '#FT_ItemPickerModal .modal-dialog { width: 630px !important; max-width: 95vw !important; margin: 30px auto !important; }' +
+                    '#FT_ItemPickerModal .modal-content {' +
+                    '  border: none !important;' +
+                    '  box-shadow: none !important;' +
+                    '  background: transparent !important;' +
+                    '}' +
+                    '#FT_ItemPickerModal .modal-header {' +
+                    '  padding: 16px 22px 6px 22px !important;' +
+                    '  border-bottom: 0px !important;' +
+                    '}' +
+                    '#FT_ItemPickerModal .modal-title {' +
+                    '  white-space: normal !important;' +
+                    '  overflow: visible !important;' +
+                    '  text-overflow: clip !important;' +
+                    '  font-size: 15px !important;' +
+                    '  font-weight: bold !important;' +
+                    '  color: #ffd88a !important;' +
+                    '  text-shadow: 1px 1px 2px rgba(0,0,0,0.9) !important;' +
+                    '  margin-top: 10px !important;' +
+                    '}' +
+                    '#FT_ItemPickerModal .modal-body {' +
+                    '  height: auto !important;' +
+                    '  max-height: 80vh !important;' +
+                    '  overflow: visible !important;' +
+                    '  padding: 6px 22px !important;' +
+                    '}' +
+                    '.st-picker-search-bar { display: table !important; width: 100% !important; table-layout: auto !important; margin-bottom: 8px !important; }' +
+                    '.st-psb-search { display: table-cell !important; width: 100% !important; vertical-align: middle !important; padding-right: 10px !important; }' +
+                    '.st-psb-toggles { display: table-cell !important; vertical-align: middle !important; white-space: nowrap !important; }' +
+                    '#FT_ItemPickerModal .st-psb-search input.form-control { display: block !important; width: 100% !important; height: 28px !important; box-sizing: border-box !important; }' +
+                    '.st-picker-tabs {' +
+                    '  display: block !important;' +
+                    '  white-space: normal !important;' +
+                    '  overflow-x: hidden !important;' +
+                    '  overflow-y: visible !important;' +
+                    '  margin-bottom: 6px !important;' +
+                    '  padding: 2px 0 4px 0 !important;' +
+                    '  border-bottom: 1px solid #7c5828 !important;' +
+                    '}' +
+                    '.st-picker-tab {' +
+                    '  display: inline-block !important;' +
+                    '  vertical-align: middle !important;' +
+                    '  background: #24170d !important;' +
+                    '  border: 1px solid #5a3d1c !important;' +
+                    '  color: #d6bc92 !important;' +
+                    '  padding: 3px 7px !important;' +
+                    '  margin: 2px 2px !important;' +
+                    '  font-size: 11px !important;' +
+                    '  font-weight: 600 !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  cursor: pointer !important;' +
+                    '  user-select: none !important;' +
+                    '  transition: all 0.12s ease !important;' +
+                    '}' +
+                    '.st-picker-tab:hover {' +
+                    '  background: #3a2717 !important;' +
+                    '  border-color: #8e6530 !important;' +
+                    '  color: #fff !important;' +
+                    '}' +
+                    '.st-picker-tab.active {' +
+                    '  background: linear-gradient(180deg, #6c4b22 0%, #483115 100%) !important;' +
+                    '  border-color: #d4a34b !important;' +
+                    '  color: #fff2cc !important;' +
+                    '  box-shadow: 0 0 6px rgba(212,163,75,0.4) !important;' +
+                    '}' +
+                    '/* Items Matrix - TSO Trade Style */' +
+                    '.st-picker-grid {' +
+                    '  display: block !important;' +
+                    '  text-align: left !important;' +
+                    '  height: 360px !important;' +
+                    '  max-height: 360px !important;' +
+                    '  overflow-y: auto !important;' +
+                    '  overflow-x: hidden !important;' +
+                    '  padding: 6px !important;' +
+                    '  margin: 0 !important;' +
+                    '  background: rgba(0,0,0,0.3) !important;' +
+                    '  border: 1px solid #7c5828 !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  box-sizing: border-box !important;' +
+                    '}' +
+                    '#FT_ItemPickerModal .modal-footer {' +
+                    '  padding: 8px 22px 18px 22px !important;' +
+                    '  margin-top: 0px !important;' +
+                    '  border-top: 0px !important;' +
+                    '  text-align: right !important;' +
+                    '}' +
+                    '#FT_ItemPickerModal .modal-footer .btn, ' +
+                    '#FT_ItemPickerModal .modal-footer .btn:hover, ' +
+                    '#FT_ItemPickerModal .modal-footer .btn:focus, ' +
+                    '#FT_ItemPickerModal .modal-footer .btn:active, ' +
+                    '#FT_FriendTraderModal .modal-footer .btn, ' +
+                    '#FT_FriendTraderModal .modal-footer .btn:hover, ' +
+                    '#FT_FriendTraderModal .modal-footer .btn:focus, ' +
+                    '#FT_FriendTraderModal .modal-footer .btn:active {' +
+                    '  color: #000000 !important;' +
+                    '}' +
+                    '#FT_ItemPickerModal #FT_ItemPickerModal_ConfirmBtn:disabled, ' +
+                    '#FT_ItemPickerModal #FT_ItemPickerModal_ConfirmBtn[disabled] {' +
+                    '  opacity: 0.45 !important;' +
+                    '  cursor: not-allowed !important;' +
+                    '  pointer-events: none !important;' +
+                    '  filter: grayscale(0.5) !important;' +
+                    '}' +
+                    '#FT_ItemPickerModal #FT_ItemPickerModal_ConfirmBtn:not([disabled]) {' +
+                    '  opacity: 1 !important;' +
+                    '  cursor: pointer !important;' +
+                    '  pointer-events: auto !important;' +
+                    '  box-shadow: 0 0 8px rgba(92, 184, 92, 0.8) !important;' +
+                    '}' +
+                    '/* Authentic TSO Trade Cards (86px x 42px) */' +
+                    '.st-item-tile {' +
+                    '  display: inline-block !important;' +
+                    '  vertical-align: top !important;' +
+                    '  width: 86px !important;' +
+                    '  height: 42px !important;' +
+                    '  margin: 2px !important;' +
+                    '  background-color: #836641 !important;' +
+                    '  background-image: linear-gradient(180deg, #91754f 0%, #755734 100%) !important;' +
+                    '  border-top: 1px solid #a88d66 !important;' +
+                    '  border-left: 1px solid #a88d66 !important;' +
+                    '  border-right: 1px solid #48341e !important;' +
+                    '  border-bottom: 1px solid #48341e !important;' +
+                    '  border-radius: 2px !important;' +
+                    '  position: relative !important;' +
+                    '  cursor: pointer !important;' +
+                    '  text-align: left !important;' +
+                    '  box-shadow: 0 1px 2px rgba(0,0,0,0.5), inset 1px 1px 0 rgba(255,255,255,0.18), inset -1px -1px 0 rgba(0,0,0,0.3) !important;' +
+                    '  box-sizing: border-box !important;' +
+                    '  padding: 0 !important;' +
+                    '  overflow: hidden !important;' +
+                    '  user-select: none !important;' +
+                    '}' +
+                    '.st-item-tile.st-hidden { display: none !important; }' +
+                    '.st-item-tile:hover {' +
+                    '  border: 1px solid #ffd88a !important;' +
+                    '  box-shadow: 0 0 6px rgba(255,216,138,0.85), inset 1px 1px 0 rgba(255,255,255,0.25) !important;' +
+                    '  z-index: 5 !important;' +
+                    '}' +
+                    '.st-item-tile.selected {' +
+                    '  border: 2px solid #ffd88a !important;' +
+                    '  box-shadow: 0 0 8px rgba(255, 216, 138, 0.95), inset 0 0 4px rgba(255, 216, 138, 0.4) !important;' +
+                    '  background-image: linear-gradient(180deg, #9f835b 0%, #856642 100%) !important;' +
+                    '  z-index: 6 !important;' +
+                    '}' +
+                    '.st-tile-icon-box {' +
+                    '  position: absolute !important;' +
+                    '  left: 3px !important;' +
+                    '  top: 0 !important;' +
+                    '  bottom: 0 !important;' +
+                    '  width: 38px !important;' +
+                    '  height: 42px !important;' +
+                    '  margin: 0 !important;' +
+                    '  padding: 0 !important;' +
+                    '  overflow: visible !important;' +
+                    '  pointer-events: none !important;' +
+                    '  text-align: center !important;' +
+                    '}' +
+                    '.st-tile-icon-box img, ' +
+                    '.st-item-tile img, ' +
+                    '.st-tile-icon-box svg, ' +
+                    '.st-tile-icon-box span {' +
+                    '  position: absolute !important;' +
+                    '  top: 0 !important;' +
+                    '  bottom: 0 !important;' +
+                    '  left: 0 !important;' +
+                    '  right: 0 !important;' +
+                    '  margin: auto !important;' +
+                    '  max-width: 32px !important;' +
+                    '  max-height: 32px !important;' +
+                    '  width: auto !important;' +
+                    '  height: auto !important;' +
+                    '  display: block !important;' +
+                    '  object-fit: contain !important;' +
+                    '  image-rendering: -webkit-optimize-contrast !important;' +
+                    '  image-rendering: crisp-edges !important;' +
+                    '  pointer-events: none !important;' +
+                    '}' +
+                    '.ft-dep-icon { position: relative !important; display: inline-block !important; vertical-align: middle; overflow: visible !important; }' +
+                    '.st-tile-icon-box > .ft-dep-icon { position: absolute !important; top: 0 !important; bottom: 0 !important; left: 0 !important; right: 0 !important; margin: auto !important; }' +
+                    '.ft-dep-icon > .ft-dep-layer { position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; }' +
+                    '.ft-dep-icon > .ft-dep-layer > img { position: absolute !important; top: 0 !important; bottom: 0 !important; left: 0 !important; right: 0 !important; margin: auto !important; width: auto !important; height: auto !important; }' +
+                    '.ft-dep-icon > .ft-dep-bg > img, #FT_ItemPickerModal_PreviewIcon .ft-dep-icon > .ft-dep-bg > img { max-width: 100% !important; max-height: 100% !important; }' +
+                    '.ft-dep-icon > .ft-dep-fg > img, #FT_ItemPickerModal_PreviewIcon .ft-dep-icon > .ft-dep-fg > img { max-width: 68% !important; max-height: 68% !important; }' +
+                    '#FT_ItemPickerModal_PreviewIcon {' +                '  position: relative !important;' +
+                    '}' +
+                    '#FT_ItemPickerModal_PreviewIcon img, ' +
+                    '#FT_ItemPickerModal_PreviewIcon svg {' +
+                    '  position: absolute !important;' +
+                    '  top: 0 !important;' +
+                    '  bottom: 0 !important;' +
+                    '  left: 0 !important;' +
+                    '  right: 0 !important;' +
+                    '  margin: auto !important;' +
+                    '  max-width: 32px !important;' +
+                    '  max-height: 32px !important;' +
+                    '}' +
+                    '.st-tile-stock {' +
+                    '  position: absolute !important;' +
+                    '  right: 5px !important;' +
+                    '  top: 0 !important;' +
+                    '  bottom: 0 !important;' +
+                    '  left: 45px !important;' +
+                    '  line-height: 42px !important;' +
+                    '  text-align: right !important;' +
+                    '  color: #1a140d !important;' +
+                    '  font-size: 11px !important;' +
+                    '  font-weight: bold !important;' +
+                    '  text-shadow: 0 1px 0 rgba(255,255,255,0.3) !important;' +
+                    '  white-space: nowrap !important;' +
+                    '  overflow: hidden !important;' +
+                    '  text-overflow: clip !important;' +
+                    '  pointer-events: none !important;' +
+                    '}' +
+                    '.st-tile-badge {' +
+                    '  display: none !important;' +
+                    '}' +
+                    '/* TSO-styled checkboxes */' +
+                    '.st-check { position: relative !important; display: inline-block !important; vertical-align: middle !important; margin: 0 !important; padding: 0 !important; cursor: pointer !important; -webkit-user-select: none !important; user-select: none !important; font-weight: normal !important; line-height: 16px !important; }' +
+                    '.st-check input[type="checkbox"] { position: absolute !important; left: 0 !important; top: 0 !important; width: 1px !important; height: 1px !important; margin: 0 !important; padding: 0 !important; opacity: 0 !important; overflow: hidden !important; }' +
+                    '.st-check .st-check-box { position: relative !important; display: inline-block !important; vertical-align: middle !important; width: 16px !important; height: 16px !important; box-sizing: border-box !important; border: 1px solid #a07a3c !important; border-radius: 3px !important; background: #4a3219 !important; box-shadow: inset 0 1px 3px rgba(0,0,0,0.7) !important; -webkit-transition: border-color 0.12s, box-shadow 0.12s, background-color 0.12s !important; transition: border-color 0.12s, box-shadow 0.12s, background-color 0.12s !important; }' +
+                    '.st-check .st-check-box:after { content: ""; position: absolute !important; left: 4px !important; top: 1px !important; width: 5px !important; height: 9px !important; border: solid #f3d9a4 !important; border-width: 0 2px 2px 0 !important; -webkit-transform: rotate(45deg) !important; transform: rotate(45deg) !important; display: none !important; }' +
+                    '.st-check:hover .st-check-box { border-color: #ffd88a !important; box-shadow: 0 0 5px rgba(255,216,138,0.55), inset 0 1px 3px rgba(0,0,0,0.95) !important; }' +
+                    '.st-check input:checked + .st-check-box { border-color: #e0b866 !important; background: #8a5f2c !important; box-shadow: 0 0 5px rgba(255,216,138,0.55), inset 0 1px 0 rgba(255,232,180,0.35) !important; }' +
+                    '.st-check input:checked + .st-check-box:after { display: block !important; }' +
+                    '.st-check input:disabled + .st-check-box { opacity: 0.35 !important; box-shadow: none !important; }' +
+                    '.st-check input:disabled ~ .st-check-text { opacity: 0.45 !important; }' +
+                    '.st-check-row input:disabled + .st-check-box { cursor: not-allowed !important; }' +
+                    '.st-check .st-check-text { display: inline-block !important; vertical-align: middle !important; margin-left: 7px !important; font-size: 12px !important; font-weight: 600 !important; color: #d6bc92 !important; white-space: nowrap !important; text-shadow: 1px 1px 1px #000 !important; }' +
+                    '.st-check input:checked ~ .st-check-text { color: #ffd88a !important; }' +
+                    '.st-check-pill { height: 28px !important; line-height: 26px !important; padding: 0 11px 0 9px !important; margin-left: 6px !important; box-sizing: border-box !important; background-color: #1a1209 !important; background-image: linear-gradient(180deg, #2e1e12 0%, #191008 100%) !important; border: 1px solid #7c5828 !important; border-radius: 4px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; }' +
+                    '.st-check-pill:hover { border-color: #d4a34b !important; }' +
+                    '.st-check-pill .st-check-box { margin-top: -2px !important; }' +
+                    '.st-check-row { margin: 0 8px 0 0 !important; }' +
+                    '/* Mode Switch Icon Buttons */' +
+                    '.st-mode-btn-group {' +
+                    '  display: inline-flex !important;' +
+                    '  align-items: center !important;' +
+                    '  gap: 3px !important;' +
+                    '  vertical-align: middle !important;' +
+                    '}' +
+                    '.st-mode-icon-btn img { width: 22px !important; height: 22px !important; display: block !important; opacity: 0.6; pointer-events: none !important; }' +
+                    '.st-mode-icon-btn:hover img, .st-mode-icon-btn.active img { opacity: 1; }' +
+                    '.st-mode-toggle { opacity: 0.45; }' +
+                    '.st-mode-toggle:hover { opacity: 0.8; }' +
+                    '.st-mode-toggle.active, .st-mode-toggle.active:hover { opacity: 1; }' +
+                    '.st-mode-toggle { display: inline-block !important; vertical-align: middle !important; text-align: center !important; line-height: 28px !important; }' +
+                    '.st-mode-toggle img { margin: 3px auto 0 auto !important; }' +
+                    '#FT_FriendTraderModal .container-fluid > .row { margin-left: 0 !important; margin-right: 0 !important; }' +
+                    '#FT_FriendTraderModal .container-fluid > .row > div { padding-left: 4px !important; padding-right: 4px !important; }' +
+                    '.st-mode-icon-btn {' +
+                    '  width: 30px !important;' +
+                    '  height: 30px !important;' +
+                    '  padding: 0 !important;' +
+                    '  margin: 0 !important;' +
+                    '  background-color: #1a1209 !important;' +
+                    '  background-image: linear-gradient(180deg, #2e1e12 0%, #191008 100%) !important;' +
+                    '  border: 1px solid #7c5828 !important;' +
+                    '  border-radius: 4px !important;' +
+                    '  color: #d6bc92 !important;' +
+                    '  cursor: pointer !important;' +
+                    '  display: inline-flex !important;' +
+                    '  align-items: center !important;' +
+                    '  justify-content: center !important;' +
+                    '  box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;' +
+                    '  transition: all 0.12s ease !important;' +
+                    '  outline: none !important;' +
+                    '}' +
+                    '.st-mode-icon-btn:hover {' +
+                    '  border-color: #ffd88a !important;' +
+                    '  color: #ffffff !important;' +
+                    '  box-shadow: 0 0 6px rgba(255,216,138,0.5) !important;' +
+                    '}' +
+                    '.st-mode-icon-btn.active {' +
+                    '  background-color: #5c3e1c !important;' +
+                    '  background-image: linear-gradient(180deg, #5c3e1c 0%, #3a2611 100%) !important;' +
+                    '  border: 1px solid #ffd88a !important;' +
+                    '  color: #ffd88a !important;' +
+                    '  box-shadow: 0 0 6px rgba(255,216,138,0.6), inset 0 1px 3px rgba(0,0,0,0.6) !important;' +
+                    '}';
 
             $('head').append('<style id="' + STYLE_ID + '">' + css + '</style>');
         }
@@ -1226,7 +1159,7 @@ var ShortcutTrader = (function () {
 
         function getResourceList() {
             if (_resourceList) return _resourceList;
-            if (_loading) return [];
+            if (_loading) return []; // bridge callbacks may re-enter during construction
             _loading = true;
 
             var byCategory = {};
@@ -1406,9 +1339,9 @@ var ShortcutTrader = (function () {
                                     if (!cName || cName === 'AddResource' || cName === 'FillDeposit') continue;
                                     var bDef  = buffMap[cName];
                                     if (bDef && ((bDef.GetId && bDef.GetId() === defines.HIRED_MILITARY_BUFF_ID) ||
-                                                 (cName.indexOf(defines.CHANGE_COLOR_SCHEME_BUFF) === 0) ||
-                                                 (bDef.IsChangeSkinBuff && bDef.IsChangeSkinBuff()) ||
-                                                 (bDef.IsChangeDefaultSkinBuff && bDef.IsChangeDefaultSkinBuff()))) {
+                                        (cName.indexOf(defines.CHANGE_COLOR_SCHEME_BUFF) === 0) ||
+                                        (bDef.IsChangeSkinBuff && bDef.IsChangeSkinBuff()) ||
+                                        (bDef.IsChangeDefaultSkinBuff && bDef.IsChangeDefaultSkinBuff()))) {
                                         if (bDef.IsTradable(cRes)) {
                                             var kName = cRes || cName;
                                             if (!kName || kName === 'AddResource' || kName === 'FillDeposit') continue;
@@ -1442,18 +1375,15 @@ var ShortcutTrader = (function () {
                             var advName = adv.GetName ? adv.GetName() : adv.mName_string;
                             if (advName && typeof advName === 'string') advName = advName.trim();
                             if (!advName) continue;
-                            var keyName = advName;
-                            if (_itemsMap[keyName]) {
-                                keyName = 'Adventure_' + advName;
-                            }
+                            var isGunpowder = advName === 'Gunpowder';
                             addItem('Adventures', {
-                                name:          keyName,
+                                name:          isGunpowder ? 'Adventure_Gunpowder' : advName,
                                 type:          'adventure',
-                                buffName:      'Adventure',
-                                resourceName:  advName,
-                                stockKeys:     ['Adventure|' + advName, 'Adventure_' + advName, advName, String(adv.mName_string || '')],
+                                buffName:      isGunpowder ? 'Adventure' : '',
+                                resourceName:  isGunpowder ? advName : '',
+                                stockKeys:     isGunpowder ? ['Adventure|Gunpowder'] : ['Adventure|' + advName, String(adv.mName_string || '')],
                                 category:      'Adventures',
-                                localizedName: getItemLocalizedName(keyName, 'adventure')
+                                localizedName: getItemLocalizedName(advName, 'adventure')
                             });
                         }
                     }
@@ -1577,35 +1507,30 @@ var ShortcutTrader = (function () {
                             var bCount = bList.length || 0;
                             for (var b = 0; b < bCount; b++) {
                                 try {
-                                var item = bList[b];
-                                if (!item && bList.getItemAt) item = bList.getItemAt(b);
-                                if (!item) continue;
-                                var def   = item.GetBuffDefinition ? item.GetBuffDefinition() : null;
-                                var sType = String((item.GetType ? item.GetType() : '') || '');
-                                var bName = String((def && def.GetName_string ? def.GetName_string() : '') || sType);
-                                var rName = String((item.GetResourceName_string ? item.GetResourceName_string() : '') || '');
-                                var rawAmtStar = item.GetAmount ? item.GetAmount() : (item.amount || 1);
-                                var amt = typeof rawAmtStar === 'number' ? rawAmtStar : parseInt(String(rawAmtStar).replace(/[^\d]/g, ''), 10);
-                                if (isNaN(amt) || amt <= 0) amt = 1;
+                                    var item = bList[b];
+                                    if (!item && bList.getItemAt) item = bList.getItemAt(b);
+                                    if (!item) continue;
+                                    var def   = item.GetBuffDefinition ? item.GetBuffDefinition() : null;
+                                    var sType = String((item.GetType ? item.GetType() : '') || '');
+                                    var bName = String((def && def.GetName_string ? def.GetName_string() : '') || sType);
+                                    var rName = String((item.GetResourceName_string ? item.GetResourceName_string() : '') || '');
+                                    var rawAmtStar = item.GetAmount ? item.GetAmount() : (item.amount || 1);
+                                    var amt = typeof rawAmtStar === 'number' ? rawAmtStar : parseInt(String(rawAmtStar).replace(/[^\d]/g, ''), 10);
+                                    if (isNaN(amt) || amt <= 0) amt = 1;
 
-                                if (bName) stockMap[bName] = (stockMap[bName] || 0) + amt;
-                                var isDepositBuff = (String(bName || '').indexOf('FillDeposit') === 0 ||
-                                                     String(sType || '').indexOf('FillDeposit') === 0);
-                                var isAdventureBuff = (String(bName || '').indexOf('Adventure') === 0 ||
-                                                       String(sType || '').indexOf('Adventure') === 0);
-                                if (rName && rName !== bName && !isDepositBuff && (!isAdventureBuff || rName !== 'Gunpowder')) {
-                                    stockMap[rName] = (stockMap[rName] || 0) + amt;
-                                }
-                                if (rName) stockMap[bName + '|' + rName] = (stockMap[bName + '|' + rName] || 0) + amt;
+                                    if (bName) stockMap[bName] = (stockMap[bName] || 0) + amt;
+                                    var isDepositBuff = (String(bName || '').indexOf('FillDeposit') === 0 ||
+                                        String(sType || '').indexOf('FillDeposit') === 0);
+                                    var isGunpowderAdventure = rName === 'Gunpowder' && (sType === 'Adventure' || bName === 'Adventure');
+                                    if (rName && rName !== bName && !isDepositBuff && !isGunpowderAdventure) stockMap[rName] = (stockMap[rName] || 0) + amt;
+                                    if (isGunpowderAdventure) stockMap['Adventure_Gunpowder'] = (stockMap['Adventure_Gunpowder'] || 0) + amt;
+                                    if (rName) stockMap[bName + '|' + rName] = (stockMap[bName + '|' + rName] || 0) + amt;
 
-                                if (sType === 'FillDeposit' || bName === 'FillDeposit') {
-                                    if (rName) {
-                                        stockMap['FillDeposit_' + rName] = (stockMap['FillDeposit_' + rName] || 0) + amt;
+                                    if (sType === 'FillDeposit' || bName === 'FillDeposit') {
+                                        if (rName) {
+                                            stockMap['FillDeposit_' + rName] = (stockMap['FillDeposit_' + rName] || 0) + amt;
+                                        }
                                     }
-                                }
-                                if (isAdventureBuff && rName) {
-                                    stockMap['Adventure_' + rName] = (stockMap['Adventure_' + rName] || 0) + amt;
-                                }
                                 } catch (eItem) {
                                     debug('getPlayerStockMap star item error: ' + eItem);
                                 }
@@ -1705,48 +1630,48 @@ var ShortcutTrader = (function () {
             _emptyEl = null;
 
             var modalHtml =
-                '<div class="modal fade" id="' + MODAL_ID + '" role="dialog" tabindex="-1">' +
-                '  <div class="modal-dialog modal-lg">' +
-                '    <div class="modal-content">' +
-                '      <div class="modal-header">' +
-                '        <button type="button" class="close" data-dismiss="modal" style="color:#ffd88a;opacity:0.85;font-size:24px;margin-top:8px;outline:none;">&times;</button>' +
-                '        <h4 class="modal-title" id="' + MODAL_ID + '_Title">' + safeLoca("LAB", "SelectTradeResources", "Выбор товара") + '</h4>' +
-                '      </div>' +
-                '      <div class="modal-body">' +
-                '        <div class="st-picker-search-bar">' +
-                '          <div class="st-psb-search">' +
-                '            <input type="text" id="' + MODAL_ID + '_Search" class="form-control" placeholder="' + safeLoca("LAB", "Filter", "Поиск товара...") + '" style="width:100%;">' +
-                '          </div>' +
-                '          <div class="st-psb-toggles">' +
-                '            <label class="st-check st-check-pill" title="' + safeLoca("LAB", "Available", "Только в наличии") + '">' +
-                '              <input type="checkbox" id="' + MODAL_ID + '_StockOnly">' +
-                '              <span class="st-check-box"></span>' +
-                '              <span class="st-check-text">' + safeLoca("LAB", "Available", "В наличии") + '</span>' +
-                '            </label>' +
-                '            <label class="st-check st-check-pill" title="' + safeLoca("LAB", "IncludeStar", "Учитывать запасы в звездном меню") + '">' +
-                '              <input type="checkbox" id="' + MODAL_ID + '_IncludeStar" checked="checked">' +
-                '              <span class="st-check-box"></span>' +
-                '              <span class="st-check-text">+ ' + safeLoca("LAB", "StarMenu", "Звезда") + '</span>' +
-                '            </label>' +
-                '          </div>' +
-                '        </div>' +
-                '        <div class="st-picker-tabs" id="' + MODAL_ID + '_Tabs"></div>' +
-                '        <div class="st-picker-grid" id="' + MODAL_ID + '_Grid"></div>' +
-                '      </div>' +
-                '      <div class="modal-footer" style="padding:10px 22px 18px 22px !important;margin-top:0px !important;border-top:0px !important;">' +
-                '        <div id="' + MODAL_ID + '_PreviewBar" style="float:left;text-align:left;max-width:360px;height:36px;line-height:36px;overflow:hidden;white-space:nowrap;">' +
-                '          <span id="' + MODAL_ID + '_PreviewIcon" style="display:inline-block;vertical-align:middle;margin-right:8px;width:34px;height:34px;"></span>' +
-                '          <span id="' + MODAL_ID + '_PreviewName" style="display:inline-block;vertical-align:middle;color:#ffd88a;font-weight:bold;font-size:13px;text-shadow:1px 1px 2px #000;overflow:hidden;text-overflow:ellipsis;max-width:310px;"></span>' +
-                '        </div>' +
-                '        <div style="float:right;">' +
-                '          <button type="button" class="btn btn-success" id="' + MODAL_ID + '_ConfirmBtn" disabled="disabled" style="margin-right:8px;color:#000000 !important;font-weight:bold;">' + safeLoca("LAB", "Confirm", "Подтвердить") + '</button>' +
-                '          <button type="button" class="btn btn-default btnClose" data-dismiss="modal">' + safeLoca("LAB", "Close", "Закрыть") + '</button>' +
-                '        </div>' +
-                '        <div style="clear:both;"></div>' +
-                '      </div>' +
-                '    </div>' +
-                '  </div>' +
-                '</div>';
+                    '<div class="modal fade" id="' + MODAL_ID + '" role="dialog" tabindex="-1">' +
+                    '  <div class="modal-dialog modal-lg">' +
+                    '    <div class="modal-content">' +
+                    '      <div class="modal-header">' +
+                    '        <button type="button" class="close" data-dismiss="modal" style="color:#ffd88a;opacity:0.85;font-size:24px;margin-top:8px;outline:none;">&times;</button>' +
+                    '        <h4 class="modal-title" id="' + MODAL_ID + '_Title">' + safeLoca("LAB", "SelectTradeResources", "Выбор товара") + '</h4>' +
+                    '      </div>' +
+                    '      <div class="modal-body">' +
+                    '        <div class="st-picker-search-bar">' +
+                    '          <div class="st-psb-search">' +
+                    '            <input type="text" id="' + MODAL_ID + '_Search" class="form-control" placeholder="' + safeLoca("LAB", "Filter", "Поиск товара...") + '" style="width:100%;">' +
+                    '          </div>' +
+                    '          <div class="st-psb-toggles">' +
+                    '            <label class="st-check st-check-pill" title="' + safeLoca("LAB", "Available", "Только в наличии") + '">' +
+                    '              <input type="checkbox" id="' + MODAL_ID + '_StockOnly">' +
+                    '              <span class="st-check-box"></span>' +
+                    '              <span class="st-check-text">' + safeLoca("LAB", "Available", "В наличии") + '</span>' +
+                    '            </label>' +
+                    '            <label class="st-check st-check-pill" title="' + safeLoca("LAB", "IncludeStar", "Учитывать запасы в звездном меню") + '">' +
+                    '              <input type="checkbox" id="' + MODAL_ID + '_IncludeStar" checked="checked">' +
+                    '              <span class="st-check-box"></span>' +
+                    '              <span class="st-check-text">+ ' + safeLoca("LAB", "StarMenu", "Звезда") + '</span>' +
+                    '            </label>' +
+                    '          </div>' +
+                    '        </div>' +
+                    '        <div class="st-picker-tabs" id="' + MODAL_ID + '_Tabs"></div>' +
+                    '        <div class="st-picker-grid" id="' + MODAL_ID + '_Grid"></div>' +
+                    '      </div>' +
+                    '      <div class="modal-footer" style="padding:10px 22px 18px 22px !important;margin-top:0px !important;border-top:0px !important;">' +
+                    '        <div id="' + MODAL_ID + '_PreviewBar" style="float:left;text-align:left;max-width:360px;height:36px;line-height:36px;overflow:hidden;white-space:nowrap;">' +
+                    '          <span id="' + MODAL_ID + '_PreviewIcon" style="display:inline-block;vertical-align:middle;margin-right:8px;width:34px;height:34px;"></span>' +
+                    '          <span id="' + MODAL_ID + '_PreviewName" style="display:inline-block;vertical-align:middle;color:#ffd88a;font-weight:bold;font-size:13px;text-shadow:1px 1px 2px #000;overflow:hidden;text-overflow:ellipsis;max-width:310px;"></span>' +
+                    '        </div>' +
+                    '        <div style="float:right;">' +
+                    '          <button type="button" class="btn btn-success" id="' + MODAL_ID + '_ConfirmBtn" disabled="disabled" style="margin-right:8px;color:#000000 !important;font-weight:bold;">' + safeLoca("LAB", "Confirm", "Подтвердить") + '</button>' +
+                    '          <button type="button" class="btn btn-default btnClose" data-dismiss="modal">' + safeLoca("LAB", "Close", "Закрыть") + '</button>' +
+                    '        </div>' +
+                    '        <div style="clear:both;"></div>' +
+                    '      </div>' +
+                    '    </div>' +
+                    '  </div>' +
+                    '</div>';
 
             $('body').append(modalHtml);
 
@@ -1952,7 +1877,7 @@ var ShortcutTrader = (function () {
                     if (byName[item.name]) { byName[item.name].cats[cat.categoryName] = true; continue; }
                     if (item._searchKey === undefined) {
                         item._searchKey = ((item.localizedName || '') + '\n' + (item.name || '') + '\n' +
-                                           (cat.localizedCategoryName || '')).toLowerCase();
+                            (cat.localizedCategoryName || '')).toLowerCase();
                     }
                     var stk  = GameDataSource.getItemStock(item, _stockMap);
                     var cats = {}; cats[cat.categoryName] = true;
@@ -1971,7 +1896,7 @@ var ShortcutTrader = (function () {
                 }
             }
             html.push('<div class="st-picker-empty" style="display:none;text-align:center;padding:25px;color:#8a7050;">' +
-                      safeLoca("LAB", "NotFound", "Ничего не найдено") + '</div>');
+                safeLoca("LAB", "NotFound", "Ничего не найдено") + '</div>');
 
             grid.innerHTML = html.join('');
             var nodes = grid.children;
@@ -1994,8 +1919,8 @@ var ShortcutTrader = (function () {
             for (var i = 0; i < _tiles.length; i++) {
                 var t   = _tiles[i];
                 var vis = (_curCategory === 'ALL' || t.cats[_curCategory] === true) &&
-                          (!_onlyInStock || t.stock > 0) &&
-                          (!_searchQuery || t.item._searchKey.indexOf(_searchQuery) !== -1);
+                    (!_onlyInStock || t.stock > 0) &&
+                    (!_searchQuery || t.item._searchKey.indexOf(_searchQuery) !== -1);
                 if (vis !== t.visible) {
                     t.visible = vis;
                     if (vis) t.el.className = (' ' + t.el.className + ' ').replace(' st-hidden ', ' ').replace(/^\s+|\s+$/g, '');
@@ -2048,9 +1973,7 @@ var ShortcutTrader = (function () {
             if (bName === 'FillDeposit' || nName === 'FillDeposit') {
                 return rName ? ('FillDeposit_' + rName) : 'FillDeposit';
             }
-            if ((bName === 'Adventure' || nName === 'Adventure') && rName === 'Gunpowder') {
-                return 'Adventure_Gunpowder';
-            }
+            if ((bName === 'Adventure' || nName === 'Adventure') && rName === 'Gunpowder') return 'Adventure_Gunpowder';
             return nName || rName || bName || '';
         }
 
@@ -2406,32 +2329,32 @@ var ShortcutTrader = (function () {
 
             var btnBase = 'cursor:pointer;border:2px solid transparent;border-radius:5px;padding:2px;display:inline-block;vertical-align:middle;margin-right:8px;transition:opacity 0.15s;';
             var marketBtn =
-                '<span id="' + UIMap.ids.modeMarketBtn + '" class="' + UIMap.classes.modeBtn + '" ' +
-                'data-mode="' + SCRIPT_CONST.TRADE_TYPES.MARKET + '" title="' + loca.GetText("LAB", "Marketplace") + '" ' +
-                'style="' + btnBase + 'opacity:' + (isMarket ? '1' : '0.4') + '">' + marketIcon + '</span>';
+                    '<span id="' + UIMap.ids.modeMarketBtn + '" class="' + UIMap.classes.modeBtn + '" ' +
+                    'data-mode="' + SCRIPT_CONST.TRADE_TYPES.MARKET + '" title="' + loca.GetText("LAB", "Marketplace") + '" ' +
+                    'style="' + btnBase + 'opacity:' + (isMarket ? '1' : '0.4') + '">' + marketIcon + '</span>';
             var friendBtn =
-                '<span id="' + UIMap.ids.modeFriendBtn + '" class="' + UIMap.classes.modeBtn + '" ' +
-                'data-mode="' + SCRIPT_CONST.TRADE_TYPES.FRIEND + '" title="' + loca.GetText("LAB", "Friends") + '" ' +
-                'style="' + btnBase + 'opacity:' + (!isMarket ? '1' : '0.4') + '">' + friendIcon + '</span>';
+                    '<span id="' + UIMap.ids.modeFriendBtn + '" class="' + UIMap.classes.modeBtn + '" ' +
+                    'data-mode="' + SCRIPT_CONST.TRADE_TYPES.FRIEND + '" title="' + loca.GetText("LAB", "Friends") + '" ' +
+                    'style="' + btnBase + 'opacity:' + (!isMarket ? '1' : '0.4') + '">' + friendIcon + '</span>';
 
             var modeLabel =
-                '<span id="' + UIMap.ids.modeFriendLbl + '" ' +
-                'style="vertical-align:middle;font-weight:bold;font-size:14px;color:#ffd88a;margin-left:4px;">' +
-                loca.GetText("LAB", isMarket ? "Marketplace" : "Friends") + '</span>';
+                    '<span id="' + UIMap.ids.modeFriendLbl + '" ' +
+                    'style="vertical-align:middle;font-weight:bold;font-size:14px;color:#ffd88a;margin-left:4px;">' +
+                    loca.GetText("LAB", isMarket ? "Marketplace" : "Friends") + '</span>';
 
             var isClassic = SettingsService.isClassicInput();
             var quickIcon = getNativeIcon(['ButtonIconInstant', 'ButtonIconHalfTheTime'], '22px') ||
-                            '<span style="font-size:13px;font-weight:bold;line-height:22px;">&#9889;</span>';
+                '<span style="font-size:13px;font-weight:bold;line-height:22px;">&#9889;</span>';
             var richIcon  = getNativeIcon(['StarMenuTabIconAll', 'SearchBtnIcon', 'ButtonIconMagnifier'], '22px') ||
-                            '<span style="font-size:13px;font-weight:bold;line-height:22px;">&#8862;</span>';
+                '<span style="font-size:13px;font-weight:bold;line-height:22px;">&#8862;</span>';
             var modeTitleRich  = safeLoca("LAB", "Filter", "Удобный UI (каталог с поиском): ВКЛ");
             var modeTitleQuick = safeLoca("LAB", "Filter", "Удобный UI (каталог с поиском): ВЫКЛ — быстрый ввод");
             var inputModeSwitch =
-                '<div style="float:right;margin-top:18px;margin-right:4px;" class="st-mode-btn-group">' +
-                '  <button type="button" class="st-mode-icon-btn st-mode-toggle' + (!isClassic ? ' active' : '') + '" id="' + UIMap.ids.modeRichBtn + '" data-title-on="' + escAttr(modeTitleRich) + '" data-title-off="' + escAttr(modeTitleQuick) + '" title="' + escAttr(isClassic ? modeTitleQuick : modeTitleRich) + '">' +
-                '    ' + richIcon +
-                '  </button>' +
-                '</div>';
+                    '<div style="float:right;margin-top:18px;margin-right:4px;" class="st-mode-btn-group">' +
+                    '  <button type="button" class="st-mode-icon-btn st-mode-toggle' + (!isClassic ? ' active' : '') + '" id="' + UIMap.ids.modeRichBtn + '" data-title-on="' + escAttr(modeTitleRich) + '" data-title-off="' + escAttr(modeTitleQuick) + '" title="' + escAttr(isClassic ? modeTitleQuick : modeTitleRich) + '">' +
+                    '    ' + richIcon +
+                    '  </button>' +
+                    '</div>';
 
             var modeRow = '<div style="margin-bottom:8px;display:block;white-space:nowrap;">' + inputModeSwitch + marketBtn + friendBtn + modeLabel + '<div style="clear:both;"></div></div>';
 
@@ -2458,8 +2381,9 @@ var ShortcutTrader = (function () {
             addTradeRow(SettingsService.getTradeModeType());
             $modal.find('.container-fluid').append('<div class="' + UIMap.classes.tradesContainer + '"></div>');
 
-            renderSlotInfo();
-            updateSelectCounter();
+            var remaining = SettingsService.isMarketModeON() ? SlotCapacity.getRemainingMarketCapacity() : 0;
+            renderSlotInfo(remaining);
+            updateSelectCounter(remaining);
         }
 
         function renderBody() {
@@ -2473,15 +2397,18 @@ var ShortcutTrader = (function () {
                 .find('.' + UIMap.classes.tradesContainer)
                 .empty();
 
+            var rows = [];
             for (var i = 0; i < trades.length; i++) {
                 var trade = trades[i];
                 if (isMarket  && trade.userId !== 0) continue;
                 if (!isMarket && trade.userId === 0) continue;
-                $container.append(renderTradeRow(trade, i));
+                rows.push(renderTradeRow(trade, i));
             }
+            if (rows.length) $container.append(rows.join(''));
 
-            renderSlotInfo();
-            updateSelectCounter();
+            var remaining = SettingsService.isMarketModeON() ? SlotCapacity.getRemainingMarketCapacity() : 0;
+            renderSlotInfo(remaining);
+            updateSelectCounter(remaining);
         }
 
         function renderFooter() {
@@ -2506,12 +2433,12 @@ var ShortcutTrader = (function () {
             $('#' + UIMap.ids.modeFriendLbl).text(loca.GetText("LAB", isMarket ? "Marketplace" : "Friends"));
         }
 
-        function renderSlotInfo() {
+        function renderSlotInfo(remaining) {
             if (!SettingsService.isMarketModeON()) {
                 $('#' + UIMap.ids.slotInfo).hide();
                 return;
             }
-            var remaining = SlotCapacity.getRemainingMarketCapacity();
+            if (remaining === undefined) remaining = SlotCapacity.getRemainingMarketCapacity();
             var maxCoins  = SlotCapacity.getMaxCoinsSlots();
             var total     = maxCoins + 1;
             var used      = total - remaining;
@@ -2526,7 +2453,7 @@ var ShortcutTrader = (function () {
                     '<strong style="color:' + color + ';font-size:12px;">' + used + ' / ' + total + '</strong>' + warn);
         }
 
-        function updateSelectCounter() {
+        function updateSelectCounter(remaining) {
             var $counter = $('#' + UIMap.ids.selectCounter);
 
             if (!SettingsService.isMarketModeON()) {
@@ -2535,14 +2462,14 @@ var ShortcutTrader = (function () {
                 return;
             }
 
-            var remaining = SlotCapacity.getRemainingMarketCapacity();
+            if (remaining === undefined) remaining = SlotCapacity.getRemainingMarketCapacity();
             var $boxes    = $('.' + UIMap.classes.selectTrade);
             var checked   = $boxes.filter(':checked').length;
 
             var color = checked === 0 ? '#f7e2be'
                 : checked < remaining ? '#55efc4'
-                : checked === remaining ? '#ffc048'
-                : '#ff6b6b';
+                    : checked === remaining ? '#ffc048'
+                        : '#ff6b6b';
 
             $counter.html(
                 safeLoca("LAB", "OrdersWaiting", "Выбрано") + ': <strong style="color:' + color + ';font-size:12px;">' +
@@ -2581,7 +2508,7 @@ var ShortcutTrader = (function () {
                 'class': 'st-select-trigger',
                 title:   firstLabel,
                 html:    '<span class="st-select-label">' + firstLabel + '</span>' +
-                         '<span class="st-select-arrow">&#9660;</span>'
+                    '<span class="st-select-arrow">&#9660;</span>'
             });
 
             var $menu = $('<div>', {
@@ -2614,9 +2541,6 @@ var ShortcutTrader = (function () {
 
             var offerCol, costCol;
 
-            var offerItemInfo = GameDataSource.getItemInfo(_selectedOfferRes);
-            var costItemInfo  = GameDataSource.getItemInfo(_selectedCostRes);
-
             if (isClassic) {
                 var categories = GameDataSource.getResourceList();
                 var selectOffer = createResourceSelect(UIMap.ids.offerSelect(mode), categories, _selectedOfferRes);
@@ -2625,13 +2549,13 @@ var ShortcutTrader = (function () {
                 var offerIcon = $('<div>', {
                     'class': UIMap.classes.offerResourceImg,
                     style:   'display:inline-block;vertical-align:middle;margin-right:4px;',
-                    html:    getItemIconTag(_selectedOfferRes, offerItemInfo ? offerItemInfo.type : null, '20px')
+                    html:    getItemIconTag(_selectedOfferRes, null, '20px')
                 });
 
                 var costIcon = $('<div>', {
                     'class': UIMap.classes.costResourceImg,
                     style:   'display:inline-block;vertical-align:middle;margin-right:4px;',
-                    html:    getItemIconTag(_selectedCostRes, costItemInfo ? costItemInfo.type : null, '20px')
+                    html:    getItemIconTag(_selectedCostRes, null, '20px')
                 });
 
                 offerCol = $('<div>', { style: 'white-space:nowrap;line-height:26px;' })
@@ -2639,22 +2563,24 @@ var ShortcutTrader = (function () {
                 costCol  = $('<div>', { style: 'white-space:nowrap;line-height:26px;' })
                     .append(costIcon, inputCost, selectCost);
             } else {
+                var offerItemInfo = GameDataSource.getItemInfo(_selectedOfferRes);
                 var offerItemName = offerItemInfo ? offerItemInfo.localizedName : getItemLocalizedName(_selectedOfferRes);
                 var offerSlotBtn  = $('<div>', {
                     id:        UIMap.ids.offerSlotBtn,
                     'class':   'st-slot-btn',
                     title:     offerItemName + ' (' + safeLoca("LAB", "Select", "Нажмите для выбора") + ')',
                     style:     'display:inline-block;vertical-align:middle;margin-right:6px;',
-                    html:      getItemIconTag(_selectedOfferRes, offerItemInfo ? offerItemInfo.type : null, '20px')
+                    html:      getItemIconTag(_selectedOfferRes, null, '20px')
                 });
 
+                var costItemInfo = GameDataSource.getItemInfo(_selectedCostRes);
                 var costItemName = costItemInfo ? costItemInfo.localizedName : getItemLocalizedName(_selectedCostRes);
                 var costSlotBtn  = $('<div>', {
                     id:        UIMap.ids.costSlotBtn,
                     'class':   'st-slot-btn',
                     title:     costItemName + ' (' + safeLoca("LAB", "Select", "Нажмите для выбора") + ')',
                     style:     'display:inline-block;vertical-align:middle;margin-right:6px;',
-                    html:      getItemIconTag(_selectedCostRes, costItemInfo ? costItemInfo.type : null, '20px')
+                    html:      getItemIconTag(_selectedCostRes, null, '20px')
                 });
 
                 offerCol = $('<div>', { style: 'white-space:nowrap;line-height:26px;' })
@@ -2738,17 +2664,15 @@ var ShortcutTrader = (function () {
             var actions = $('<div>', { css: { 'white-space': 'nowrap', 'line-height': '24px' } })
                 .append(sendBtn, checkBox, delBtn);
 
-            var offerItemInfo = GameDataSource.getItemInfo(item.offerResName);
-            var costItemInfo  = GameDataSource.getItemInfo(item.costResName);
-            var offerIconTag = getItemIconTag(item.offerResName, offerItemInfo ? offerItemInfo.type : null, '22px');
-            var costIconTag  = getItemIconTag(item.costResName, costItemInfo ? costItemInfo.type : null, '22px');
+            var offerIconTag = getItemIconTag(item.offerResName, null, '22px');
+            var costIconTag  = getItemIconTag(item.costResName, null, '22px');
             var offerName    = getItemLocalizedName(item.offerResName);
             var costName     = getItemLocalizedName(item.costResName);
 
             var offerView = '<span title="' + offerName + '" style="display:inline-block;vertical-align:middle;white-space:nowrap;">' +
-                            offerIconTag + '<span style="vertical-align:middle;margin-left:5px;font-weight:bold;color:#ffd88a;font-size:12px;">' + item.offerResAmount + '</span></span>';
+                offerIconTag + '<span style="vertical-align:middle;margin-left:5px;font-weight:bold;color:#ffd88a;font-size:12px;">' + item.offerResAmount + '</span></span>';
             var costView  = '<span title="' + costName + '" style="display:inline-block;vertical-align:middle;white-space:nowrap;">' +
-                            costIconTag + '<span style="vertical-align:middle;margin-left:5px;font-weight:bold;color:#ffd88a;font-size:12px;">' + item.costResAmount + '</span></span>';
+                costIconTag + '<span style="vertical-align:middle;margin-left:5px;font-weight:bold;color:#ffd88a;font-size:12px;">' + item.costResAmount + '</span></span>';
 
             var targetView = '<span style="vertical-align:middle;font-size:12px;font-weight:600;">' + formatFraction(item.UserName) + '</span>';
 
@@ -2766,7 +2690,7 @@ var ShortcutTrader = (function () {
             var optHtml = [], menuHtml = [];
             var selLabel = '', firstLabel = '';
             menuHtml.push('<div class="st-select-search-wrap"><input type="text" class="st-select-search" placeholder="' +
-                          escAttr(safeLoca("LAB", "Filter", "Поиск...")) + '"></div>');
+                escAttr(safeLoca("LAB", "Filter", "Поиск...")) + '"></div>');
             for (var c = 0; c < categories.length; c++) {
                 var cat = categories[c];
                 optHtml.push('<optgroup label="' + escAttr(cat.localizedCategoryName) + '">');
@@ -2779,19 +2703,19 @@ var ShortcutTrader = (function () {
                     if (isSel) selLabel = lbl;
                     optHtml.push('<option value="' + escAttr(it.name) + '"' + (isSel ? ' selected="selected"' : '') + '>' + escAttr(lbl) + '</option>');
                     menuHtml.push('<div class="st-select-option' + (isSel ? ' selected' : '') + '" data-value="' + escAttr(it.name) +
-                                  '" title="' + escAttr(lbl) + '">' + escAttr(lbl) + '</div>');
+                        '" title="' + escAttr(lbl) + '">' + escAttr(lbl) + '</div>');
                 }
                 optHtml.push('</optgroup>');
             }
             if (!selLabel) selLabel = firstLabel;
             return $(
                 '<div class="st-select-wrapper st-res-select" style="width:150px;margin-left:4px;">' +
-                  '<select id="' + id + '" style="display:none !important;">' + optHtml.join('') + '</select>' +
-                  '<div class="st-select-trigger" title="' + escAttr(selLabel) + '">' +
-                    '<span class="st-select-label">' + escAttr(selLabel) + '</span>' +
-                    '<span class="st-select-arrow">&#9660;</span>' +
-                  '</div>' +
-                  '<div class="st-select-menu st-res-menu">' + menuHtml.join('') + '</div>' +
+                '<select id="' + id + '" style="display:none !important;">' + optHtml.join('') + '</select>' +
+                '<div class="st-select-trigger" title="' + escAttr(selLabel) + '">' +
+                '<span class="st-select-label">' + escAttr(selLabel) + '</span>' +
+                '<span class="st-select-arrow">&#9660;</span>' +
+                '</div>' +
+                '<div class="st-select-menu st-res-menu">' + menuHtml.join('') + '</div>' +
                 '</div>'
             );
         }
@@ -2848,7 +2772,7 @@ var ShortcutTrader = (function () {
                         var info = GameDataSource.getItemInfo(selectedName);
                         var locName = info ? info.localizedName : getItemLocalizedName(selectedName);
                         $('#' + UIMap.ids.offerSlotBtn)
-                            .html(getItemIconTag(selectedName, info ? info.type : null, '20px'))
+                            .html(getItemIconTag(selectedName, null, '20px'))
                             .attr('title', locName + ' (' + safeLoca("LAB", "Select", "Нажмите для выбора") + ')');
                     }, _selectedOfferRes);
                 })
@@ -2859,7 +2783,7 @@ var ShortcutTrader = (function () {
                         var info = GameDataSource.getItemInfo(selectedName);
                         var locName = info ? info.localizedName : getItemLocalizedName(selectedName);
                         $('#' + UIMap.ids.costSlotBtn)
-                            .html(getItemIconTag(selectedName, info ? info.type : null, '20px'))
+                            .html(getItemIconTag(selectedName, null, '20px'))
                             .attr('title', locName + ' (' + safeLoca("LAB", "Select", "Нажмите для выбора") + ')');
                     }, _selectedCostRes);
                 })
@@ -2878,15 +2802,13 @@ var ShortcutTrader = (function () {
                 .on('change',  '[id^="' + UIMap.ids.offerSelectStr + '"]', function () {
                     var val = $(this).val();
                     _selectedOfferRes = val;
-                    var info = GameDataSource.getItemInfo(val);
-                    $('.' + UIMap.classes.offerResourceImg).html(getItemIconTag(val, info ? info.type : null, '20px'));
+                    $('.' + UIMap.classes.offerResourceImg).html(getItemIconTag(val, null, '20px'));
                 })
                 .off('change', '[id^="' + UIMap.ids.costSelectStr + '"]')
                 .on('change',  '[id^="' + UIMap.ids.costSelectStr + '"]', function () {
                     var val = $(this).val();
                     _selectedCostRes = val;
-                    var info = GameDataSource.getItemInfo(val);
-                    $('.' + UIMap.classes.costResourceImg).html(getItemIconTag(val, info ? info.type : null, '20px'));
+                    $('.' + UIMap.classes.costResourceImg).html(getItemIconTag(val, null, '20px'));
                 })
                 .off('change', '.' + UIMap.classes.selectTrade)
                 .on('change',  '.' + UIMap.classes.selectTrade, handleCheckboxChange)
@@ -3228,8 +3150,9 @@ var ShortcutTrader = (function () {
         function refreshSlotUI() {
             try {
                 if ($('#' + UIMap.ids.slotInfo).length) {
-                    UIRenderer.renderSlotInfo();
-                    UIRenderer.updateSelectCounter();
+                    var remaining = SettingsService.isMarketModeON() ? SlotCapacity.getRemainingMarketCapacity() : 0;
+                    UIRenderer.renderSlotInfo(remaining);
+                    UIRenderer.updateSelectCounter(remaining);
                 }
             } catch (eR) {}
         }
@@ -3335,7 +3258,7 @@ var ShortcutTrader = (function () {
     var TradeResources = (function () {
 
         function getResourceDef(name) {
-            if (!name || name.indexOf('Adventure_') === 0) return null;
+            if (name === 'Adventure_Gunpowder') return null;
             try {
                 return swmmo.getDefinitionByName("ServerState::gEconomics").GetResourcesDefaultDefinition(name);
             } catch (e) {
@@ -3354,9 +3277,9 @@ var ShortcutTrader = (function () {
                 if (name.indexOf('FillDeposit_') === 0) {
                     targetBuffName = 'FillDeposit';
                     targetResName = name.replace('FillDeposit_', '');
-                } else if (name.indexOf('Adventure_') === 0) {
+                } else if (name === 'Adventure_Gunpowder') {
                     targetBuffName = 'Adventure';
-                    targetResName = name.replace('Adventure_', '');
+                    targetResName = 'Gunpowder';
                 }
 
                 var buffs = getStarBuffs();
@@ -3377,8 +3300,8 @@ var ShortcutTrader = (function () {
 
                     if (targetBuffName === 'FillDeposit' || name.indexOf('FillDeposit_') === 0) {
                         if ((buffName === 'FillDeposit' || bType === 'FillDeposit') && resName === targetResName) isMatch = true;
-                    } else if (targetBuffName === 'Adventure' || name.indexOf('Adventure_') === 0) {
-                        if ((buffName === 'Adventure' || bType === 'Adventure') && resName === targetResName) isMatch = true;
+                    } else if (name === 'Adventure_Gunpowder') {
+                        isMatch = (buffName === 'Adventure' || bType === 'Adventure') && resName === 'Gunpowder';
                     } else if (buffName === name || resName === name || (buffName === targetBuffName && (!targetResName || resName === targetResName))) {
                         isMatch = true;
                     }
@@ -3445,7 +3368,7 @@ var ShortcutTrader = (function () {
             if (itemInfo) {
                 if (itemInfo.type === 'adventure') {
                     buff.buffName_string = 'Adventure';
-                    buff.resourceName_string = itemInfo.resourceName || trade.costResName.replace('Adventure_', '');
+                    buff.resourceName_string = itemInfo.resourceName || trade.costResName;
                 } else if (itemInfo.type === 'building') {
                     buff.buffName_string = 'BuildBuilding';
                     buff.resourceName_string = itemInfo.resourceName || trade.costResName;
@@ -3461,9 +3384,9 @@ var ShortcutTrader = (function () {
             } else if (trade.costResName.indexOf('FillDeposit_') === 0) {
                 buff.buffName_string = 'FillDeposit';
                 buff.resourceName_string = trade.costResName.replace('FillDeposit_', '');
-            } else if (trade.costResName.indexOf('Adventure_') === 0) {
+            } else if (trade.costResName === 'Adventure_Gunpowder') {
                 buff.buffName_string = 'Adventure';
-                buff.resourceName_string = trade.costResName.replace('Adventure_', '');
+                buff.resourceName_string = 'Gunpowder';
             } else {
                 buff.buffName_string = getResourceTypeByName(trade.costResName);
             }
