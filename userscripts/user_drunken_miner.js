@@ -1271,7 +1271,7 @@
             });
         }
 
-        var buildings   = streetMap.mBuildingContainer.mContainer || [];
+        var buildings   = (streetMap && streetMap.mBuildingContainer && streetMap.mBuildingContainer.mContainer) ? streetMap.mBuildingContainer.mContainer : [];
         var assertNames = RESOURCES.assertNames;
         var depleted    = [];
 
