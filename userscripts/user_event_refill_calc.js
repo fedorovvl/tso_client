@@ -7,9 +7,19 @@
 'use strict';
 
 var MODAL_ID = 'EventRefillModal';
-var VERSION   = '1.6.0';
+var VERSION   = '1.7.0';
 var STORE_KEY = 'tso.refill.state.v1';
 var W = (typeof unsafeWindow !== 'undefined') ? unsafeWindow : window;
+var SEVEN_DAYS_MS = 604800000;
+var PLUS_7D_SUFFIX = '__plus7d';
+
+function isPlus7Event(name) {
+  return typeof name === 'string' && name.slice(-PLUS_7D_SUFFIX.length) === PLUS_7D_SUFFIX;
+}
+function baseEventName(name) {
+  if (typeof name !== 'string') return '';
+  return isPlus7Event(name) ? name.slice(0, -PLUS_7D_SUFFIX.length) : name;
+}
 
 var disposed = false;
 var previous = W.__TSO_REFILL__;
@@ -475,7 +485,7 @@ function readEvents() {
     var name = String(safe(function () { return ev.event_name_string; }, "") || "");
     var stop = Number(safe(function () { return ev.stopDate; }, 0));
     if (!(stop > 0) && name) stop = Number(safe(function () { return em.GetEventStopDate(name); }, 0));
-    if (name && isFinite(stop) && stop > serverNow()) out.push({name:name,stopTs:stop});
+    if (name && isFinite(stop) && (stop + SEVEN_DAYS_MS) > serverNow()) out.push({name:name,stopTs:stop});
   });
   return out;
 }
@@ -486,15 +496,23 @@ function eventRemain(events, resource) {
     return Math.max(0, num(state.manualEventMs, 0) - Math.max(0, now - num(state.manualSetAt, now)));
   }
   if (state.eventMode === "event") {
+    var base = baseEventName(state.eventKey);
+    var plus7 = isPlus7Event(state.eventKey);
     for (var i = 0; i < events.length; i++) {
-      if (events[i].name === state.eventKey) return Math.max(0, events[i].stopTs - now);
+      if (events[i].name === base) {
+        var end = events[i].stopTs + (plus7 ? SEVEN_DAYS_MS : 0);
+        return Math.max(0, end - now);
+      }
     }
     return 0;
   }
   var meta = resMeta(resource || state.resource);
   if (meta.ev) {
     for (var j = 0; j < events.length; j++) {
-      if (meta.ev.test(events[j].name) && events[j].stopTs > now) return events[j].stopTs - now;
+      if (meta.ev.test(events[j].name)) {
+        if (events[j].stopTs > now) return events[j].stopTs - now;
+        if ((events[j].stopTs + SEVEN_DAYS_MS) > now) return (events[j].stopTs + SEVEN_DAYS_MS) - now;
+      }
     }
   }
   return 0;
@@ -794,17 +812,29 @@ function openChoice($trigger, keyboard) {
   }
 }
 function localizedEvent(name) {
+  var plus7 = isPlus7Event(name);
+  var raw = baseEventName(name);
   // Event identifiers are not UI strings; never show a raw English/internal ID as a translation.
-  var title = tr('DES',name + '_Title');
-  if (title !== '\u2014') return title;
-  var groups = ['LAB', 'SHG', 'ACL', 'MEL'];
-  for (var i = 0; i < groups.length; i++) {
-    var text = tr(groups[i], name);
-    if (text !== '\u2014') return text;
+  var title = tr('DES',raw + '_Title');
+  if (title === '\u2014') {
+    var groups = ['LAB', 'SHG', 'ACL', 'MEL'];
+    for (var i = 0; i < groups.length; i++) {
+      var text = tr(groups[i], raw);
+      if (text !== '\u2014') { title = text; break; }
+    }
   }
-  if (/halloween|pumpkin/i.test(name)) return tr('SHG', 'HalloweenEvent');
-  if (/valentin|flower/i.test(name)) return tr('SHG', 'ValentineEvent');
-  return txt('BuffGroup3');
+  if (title === '\u2014') {
+    if (/halloween|pumpkin/i.test(raw)) title = tr('SHG', 'HalloweenEvent');
+    else if (/valentin|flower/i.test(raw)) title = tr('SHG', 'ValentineEvent');
+    else title = txt('BuffGroup3');
+  }
+  if (plus7) {
+    var days7 = tr('FOR', 'Days', [7]);
+    if (!days7 || days7 === '\u2014') days7 = tr('FOR', 'DaysShort', [7]);
+    if (!days7 || days7 === '\u2014') days7 = '7d';
+    title += ' + ' + days7;
+  }
+  return title;
 }
 function openModal() {
   if (disposed) return;
@@ -837,17 +867,27 @@ function renderModalData() {
   if (allowedResource(state.resource) && !seen[state.resource]) resourceOptions.push({value:state.resource,label:resMeta(state.resource).label});
   var active = null, metaEvent = resMeta(data.res).ev;
   for (var a = 0; a < data.events.length; a++) {
-    if ((state.eventMode === 'event' && data.events[a].name === state.eventKey) ||
-        (state.eventMode === 'auto' && metaEvent && metaEvent.test(data.events[a].name))) {
+    var evName = data.events[a].name;
+    if ((state.eventMode === 'event' && baseEventName(state.eventKey) === evName) ||
+        (state.eventMode === 'auto' && metaEvent && metaEvent.test(evName))) {
       active = data.events[a]; break;
     }
   }
-  var selection = state.eventMode === 'manual' ? '__manual__' : (active ? active.name : '__auto__');
+  var selection = state.eventMode === 'manual' ? '__manual__' : (state.eventMode === 'event' && state.eventKey ? state.eventKey : (active ? active.name : '__auto__'));
   // No ambiguous "resource -> event" mode in the UI: show an actual event or N/A.
   if (!active) eventOptions.push({value:'__auto__',label:eventLabel + ' · ' + txt('NotAvailable')});
   for (var e = 0; e < data.events.length; e++) {
     var ev = data.events[e];
-    eventOptions.push({value:ev.name,label:localizedEvent(ev.name) + ' · ' + fmtDur(Math.max(0,ev.stopTs - serverNow()))});
+    var remOrig = Math.max(0, ev.stopTs - serverNow());
+    var remPlus7 = Math.max(0, ev.stopTs + SEVEN_DAYS_MS - serverNow());
+    eventOptions.push({
+      value: ev.name,
+      label: localizedEvent(ev.name) + ' · ' + fmtDur(remOrig)
+    });
+    eventOptions.push({
+      value: ev.name + PLUS_7D_SUFFIX,
+      label: localizedEvent(ev.name + PLUS_7D_SUFFIX) + ' · ' + fmtDur(remPlus7)
+    });
   }
   eventOptions.push({value:'__manual__',label:durationLabel});
   var horizonLabel = state.eventMode === 'manual' ? durationLabel : eventLabel;
@@ -879,7 +919,15 @@ function renderModalData() {
     list += $(row).append('<div class="tsr-measures">' + modelDetails(m) + '</div>').attr('data-key',key).addClass(m.status === 'crit' ? 'tsr-crit' : '').prop('outerHTML');
   }
   if (!data.world.ok || !data.rows.length) list = '<div class="tsr-help">' + esc(txt('DetailsDeposit')) + ': ' + esc(txt('NotAvailableText')) + '</div>';
-  var help = '<div class="tsr-help">' + esc(horizonLabel) + (state.eventMode !== 'manual' ? ': ' + esc(active ? localizedEvent(active.name) : txt('NotAvailable')) : '') + ' · ' + esc(txt('TimeRemaining')) + ' <b>' + esc(data.evRem > 0 ? fmtDur(data.evRem) : '—') + '</b> · ' + esc(missing) + ': <b>+N</b>' + '</div>';
+  var activeLabel = '';
+  if (state.eventMode === 'event' && state.eventKey) {
+    activeLabel = localizedEvent(state.eventKey);
+  } else if (active) {
+    activeLabel = localizedEvent(active.name);
+  } else {
+    activeLabel = txt('NotAvailable');
+  }
+  var help = '<div class="tsr-help">' + esc(horizonLabel) + (state.eventMode !== 'manual' ? ': ' + esc(activeLabel) : '') + ' · ' + esc(txt('TimeRemaining')) + ' <b>' + esc(data.evRem > 0 ? fmtDur(data.evRem) : '—') + '</b> · ' + esc(missing) + ': <b>+N</b>' + '</div>';
   $('#' + MODAL_ID + 'Data').html('<div class="container-fluid">' + toolbar + help + '<div class="tsr-table-scroll"><div class="tsr-table-grid">' + head + '<div id="tsr_table_body">' + list + '</div></div></div></div>');
   $modal.find('.modal-footer .tsr-foot-table').remove();
   $modal.find('.modal-footer').prepend('<div class="tsr-foot-table">Σ ' + esc(missing) + ' · ' + esc(txt('Buff')) + ': <b>' + (!buffTotalKnown ? esc(txt('NotAvailable')) : hasBuff ? fmtInt(totalBuff) : '—') + '</b> · ' + esc(horizonLabel) + ': <b>' + (data.evRem > 0 ? (eventTotalKnown ? fmtInt(totalEvent) : esc(txt('NotAvailable'))) : '—') + '</b></div>');
