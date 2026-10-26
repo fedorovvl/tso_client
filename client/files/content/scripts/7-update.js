@@ -2,6 +2,11 @@ var clientUpdateCheckUrl = "https://api.github.com/repos/fedorovvl/tso_client_sw
 var clientUpdateCheckIntervalId = null;
 var clientUpdateCheckInterval = 30 * 60 * 1000;
 
+function clientIsPrestagingRealm()
+{
+	return String(game && game.gw || '').replace(/^\s+|\s+$/g, '').toUpperCase() === 'PRESTAGING';
+}
+
 function clientCurrentSwfCommit()
 {
 	try {
@@ -56,6 +61,7 @@ function clientNotifyUpdate()
 
 function clientCheckForUpdate()
 {
+	if(clientIsPrestagingRealm()) { return; }
 	$.ajax({
 		url: clientUpdateCheckUrl,
 		dataType: 'json',
@@ -83,5 +89,8 @@ function clientCheckForUpdate()
 	}).fail(function() {});
 }
 
-setTimeout(clientCheckForUpdate, 15000);
-clientUpdateCheckIntervalId = setInterval(clientCheckForUpdate, clientUpdateCheckInterval);
+if(!clientIsPrestagingRealm())
+{
+	setTimeout(clientCheckForUpdate, 15000);
+	clientUpdateCheckIntervalId = setInterval(clientCheckForUpdate, clientUpdateCheckInterval);
+}

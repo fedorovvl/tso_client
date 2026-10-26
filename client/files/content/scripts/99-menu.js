@@ -96,7 +96,8 @@ var Menu = function(type){
 						{ label: loca.GetText("BUI", "ChristmasBakery"), name: "ChristmasBakery", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "ChristmasMarket_Player"), name: "ChristmasMarket_Player", onSelect: buiFastAccessMenuHandler },
 						{ label: loca.GetText("BUI", "LoveGarden"), name: "LoveGarden", onSelect: buiFastAccessMenuHandler },
-						{ label: loca.GetText("BUI", "CarnivalGrounds"), name: "CarnivalGrounds", onSelect: buiFastAccessMenuHandler }
+						{ label: loca.GetText("BUI", "CarnivalGrounds"), name: "CarnivalGrounds", onSelect: buiFastAccessMenuHandler },
+						{ label: loca.GetText("BUI", "Ostereierbaum"), name: "Ostereierbaum", onSelect: buiFastAccessMenuHandler }
 					]},
 					{ label: loca.GetText("LAB", "Production"), mnemonicIndex: 0, items: [
 

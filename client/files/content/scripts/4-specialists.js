@@ -397,7 +397,7 @@ function sendSpec()
 	if(Object.keys(specToSend).length > 0){
 		var queue = new TimedQueue(1000);
 		$.each(specToSend, function(spec, val) {
-			queue.add(function(){ sendSpecPacket(spec, val); });
+			queue.addTask(getSpecPacket(spec, val));
 		});
 		queue.run();
 		$('#specModal').modal('hide');
@@ -405,7 +405,7 @@ function sendSpec()
 	}
 }
 
-function sendSpecPacket(uniqueId, task)
+function getSpecPacket(uniqueId, task)
 {
 	try{
 		var specTask = game.def("Communication.VO::dStartSpecialistTaskVO", true),
@@ -414,7 +414,7 @@ function sendSpecPacket(uniqueId, task)
 		specTask.subTaskID = taskArr[1];
 		specTask.paramString = "";
 		specTask.uniqueID = game.def("Communication.VO::dUniqueID").Create(uniqueIdArr[0], uniqueIdArr[1]);
-		game.gi.SendServerAction(95, taskArr[0], 0, 0, specTask);
+		return game.def("Communication.VO::dServerAction").createForCommand(95, taskArr[0], 0, 0, specTask);
 	} catch (ex) {
 		alert(ex);
 	}
