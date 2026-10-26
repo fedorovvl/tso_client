@@ -1,52 +1,75 @@
-/* ============================================================
- * userscripts/user_event_refill_calc.js
- * The Settlers Online · Калькулятор и менеджер пополнения залежей
- * Аутентичный дизайн TSO (createTableRow, TSO inputs/buttons, wood/gold theme)
- * ============================================================ */
+
+
+
+
+
 (function () {
 'use strict';
 
 var MODAL_ID = 'EventRefillModal';
-var VERSION   = '1.2.0';
+var VERSION   = '1.6.0';
 var STORE_KEY = 'tso.refill.state.v1';
 var W = (typeof unsafeWindow !== 'undefined') ? unsafeWindow : window;
 
-/* ---------------- §1. Утилиты ---------------- */
+var disposed = false;
+var previous = W.__TSO_REFILL__;
+if (previous && typeof previous.dispose === 'function') previous.dispose();
+
+
+function esc(value) {
+  return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 function safe(fn, def) { try { var v = fn(); return (v === undefined || v === null) ? def : v; } catch (e) { return def; } }
 function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 function num(v, d) { v = parseFloat(v); return isFinite(v) ? v : d; }
 function fmtInt(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
-function fmtDur(ms) {
-  if (!(ms > 1000)) return '—';
-  var m = Math.floor(ms / 60000),
-      d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
-  if (d > 0) return d + ' д ' + h + ' ч';
-  if (h > 0) return h + ' ч ' + mm + ' м';
-  return Math.max(1, mm) + ' мин';
+/* Source: references/xml/en_lang.xml; UI text comes only from the active game locale. */
+function tr(group, key, args) {
+  try {
+    if (typeof loca !== 'undefined' && loca.GetText &&
+        (!loca.hasText || loca.hasText(group, key))) {
+      var text = loca.GetText(group, key, args || null);
+      if (text && text !== 'undefined' && text.charAt(0) !== '[') return String(text);
+    }
+  } catch (e) {}
+  return '—';
 }
-
-function parseManual(str) {
-  if (!str) return 0;
-  var s = String(str).trim();
-  var m = s.match(/^(\d+)[dд](\d+)[hч](\d+)[mм]?$/i);
-  if (m) return (parseInt(m[1], 10) * 1440 + parseInt(m[2], 10) * 60 + parseInt(m[3], 10)) * 60000;
-  m = s.match(/^(\d+)[dд](\d+)[hч]?$/i);
-  if (m) return (parseInt(m[1], 10) * 1440 + parseInt(m[2], 10) * 60) * 60000;
-  m = s.match(/^(\d+)[hч](\d+)[mм]?$/i);
-  if (m) return (parseInt(m[1], 10) * 60 + parseInt(m[2], 10)) * 60000;
-  m = s.match(/^(\d+)[dд]?$/i);
-  if (m && s.indexOf('d') !== -1 || s.indexOf('д') !== -1) return parseInt(m[1], 10) * 86400000;
-  m = s.match(/^(\d+)\s*:\s*(\d+)(?:\s*:\s*(\d+))?$/);
-  if (m) {
-    if (m[3] !== undefined) return (parseInt(m[1], 10) * 1440 + parseInt(m[2], 10) * 60 + parseInt(m[3], 10)) * 60000;
-    return (parseInt(m[1], 10) * 60 + parseInt(m[2], 10)) * 60000;
+function txt(key) { return tr('LAB', key); }
+function titleTimeText() {
+  
+  // If this language uses different word forms, keep the complete localized Duration label.
+  var production = txt('DetailsProductionTime').split(/[\s:.,;!?–—()]+/);
+  var remaining = txt('TimeRemaining').toLowerCase().split(/[\s:.,;!?–—()]+/);
+  var word = '';
+  for (var i = 0; i < production.length; i++) {
+    for (var j = 0; j < remaining.length; j++) {
+      if (production[i].length >= 3 && production[i].toLowerCase() === remaining[j] && production[i].length > word.length) word = production[i];
+    }
   }
-  var n = parseFloat(s);
-  if (isFinite(n) && n > 0) return n * 3600000;
-  return 0;
+  return word ? word.charAt(0).toUpperCase() + word.slice(1) : txt('Duration');
+}
+function titleText() { return titleTimeText() + ' ' + txt('DetailsDeposit'); }
+function pad02(n) { return n < 10 ? '0' + n : String(n); }
+function editDuration(ms) {
+  var minutes = Math.max(0, Math.ceil(num(ms,0) / 60000));
+  return pad02(Math.floor(minutes / 1440)) + ':' + pad02(Math.floor(minutes % 1440 / 60)) + ':' + pad02(minutes % 60);
+}
+function fmtDur(ms) {
+  if (ms === Infinity) return '∞';
+  if (ms == null || !isFinite(ms) || ms < 0) return txt('NotAvailable');
+  var minutes = Math.max(0, Math.ceil(ms / 60000));
+  return tr('FOR','DaysShort',[Math.floor(minutes / 1440)]) + ' ' +
+    tr('FOR','HoursShort',[Math.floor(minutes % 1440 / 60)]) + ' ' +
+    tr('FOR','MinutesShort',[minutes % 60]);
+}
+function parseManual(value) {
+  var m = String(value || '').replace(/\s/g,'').match(/^(\d{1,4}):(\d{1,2}):(\d{1,2})$/);
+  if (!m || Number(m[2]) > 23 || Number(m[3]) > 59) return NaN;
+  return (Number(m[1]) * 1440 + Number(m[2]) * 60 + Number(m[3])) * 60000;
 }
 
-/* ---------------- §2. Доступ к клиенту ---------------- */
+
 function gi() {
   if (W.swmmo && W.swmmo.application && W.swmmo.application.mGameInterface) {
     return W.swmmo.application.mGameInterface;
@@ -121,51 +144,74 @@ function gridOf(obj) {
   return null;
 }
 
-/* ---------------- §3. Реестр ресурсов ---------------- */
-var RES = {
-  HalloweenResource: { label: 'Тыквы',    icon: 'Pumpkin',             ev: /halloween|pumpkin|тыкв|хэллоуин/i },
-  ValentinesFlower:  { label: 'Цветы',    icon: 'ValentinesFlower',    ev: /valentin|flower|цвет|валентин/i },
-  TitaniumOre:       { label: 'Титан',    icon: 'TitaniumOre',         ev: null },
-  Salpeter:          { label: 'Селитра',  icon: 'Salpeter',            ev: null },
-  GoldOre:           { label: 'Золото',   icon: 'GoldOre',             ev: null },
-  IronOre:           { label: 'Железо',   icon: 'IronOre',             ev: null },
-  Coal:              { label: 'Уголь',    icon: 'Coal',                ev: null },
-  Granite:           { label: 'Гранит',   icon: 'Granite',             ev: null },
-  ExoticWood:        { label: 'Экзотика', icon: 'ExoticWood',          ev: null },
-  Oil:               { label: 'Нефть',    icon: 'Oil',                 ev: null }
-};
 
-function resMeta(name) {
-  var def = RES[name];
-  var loc = '';
-  try {
-    if (typeof loca !== 'undefined' && loca.GetText) loc = loca.GetText('RES', name);
-  } catch (e) {}
-  if (def) {
-    return { label: loc || def.label, icon: def.icon, ev: def.ev };
-  }
-  return { label: loc || name || '—', icon: 'accuracy.png', ev: null };
+function allowedResource(name) {
+  return !!name && name !== 'Wood' && name !== 'RealWood' && name !== 'MahoganyWood';
 }
-
-function renderResIcon(iconName, size) {
-  size = size || '20px';
+var RES = {
+  HalloweenResource: { ev: /halloween|pumpkin/i },
+  ValentinesFlower: { ev: /valentin|flower/i }
+};
+/* Exact GuiIcon IDs from references/xml/icons.xml (iconspack, not RES). */
+var DEPOSIT_ICONS = {
+  Wood: 'DepositWood', RealWood: 'DepositRealWood', ExoticWood: 'DepositExoticWood',
+  Fish: 'DepositFish', Meat: 'DepositMeat', Stone: 'DepositStone', Granite: 'DepositGranite',
+  Marble: 'DepositMarble', IronOre: 'DepositIronOre', GoldOre: 'DepositGoldOre', Water: 'DepositWater',
+  Corn: 'DepositCorn', Coal: 'DepositCoal', BronzeOre: 'DepositBronzeOre', Salpeter: 'DepositSalpeter',
+  TitaniumOre: 'DepositTitaniumOre', HalloweenResource: 'DepositHalloweenResource',
+  ValentinesFlower: 'DepositValentinesFlower', HardCurrency: 'DepositHardCurrency',
+  CrystalShard: 'DepositCrystalShard', MahoganyWood: 'DepositMahoganyWood',
+  PlatinumOre: 'DepositPlatinumOre', ChristmasResource: 'DepositChristmasResource',
+  Oilseed: 'DepositOilseed', StarfallStarShards: 'DepositStarfallStarShards'
+};
+function resMeta(name) {
+  return { label: tr('RES', name), icon: DEPOSIT_ICONS[name] || '', ev: RES[name] ? RES[name].ev : null };
+}
+var iconCache = {};
+function imageFrom(module, name, size) {
+  if (!name) return '';
+  var key = module + ':' + name + ':' + size;
+  if (iconCache.hasOwnProperty(key)) return iconCache[key];
+  var html = '';
   try {
-    if (typeof getImageTag === 'function') {
-      return getImageTag(iconName, size, size);
+    // GetGfx returns a 1x1 dummy Bitmap for unknown names, which also encodes as <img>.
+    // Inspect bitmap dimensions before encoding so missing assets cannot masquerade as valid icons.
+    if (typeof assets !== 'undefined' && assets.GetDummyIcon && typeof getImage === 'function') {
+      var bitmap = assets.GetDummyIcon(module + ':' + name);
+      var data = bitmap && bitmap.bitmapData;
+      if (data && data.width > 1 && data.height > 1) html = getImage(data, size, size);
+    } else if (typeof getImageByModule === 'function') {
+      html = getImageByModule(module, name, size, size);
     }
   } catch (e) {}
-  return '';
+  if (/<img\b/i.test(html)) iconCache[key] = html;
+  // Do not cache misses; the icon pack may still be loading.
+  return /<img\b/i.test(html) ? html : '';
+}
+function depositIcon(res, size) {
+  var meta = resMeta(res);
+  var html = imageFrom('iconspack', meta.icon, size) || imageFrom('resources', res, size);
+  return html || '<span class="tsr-icon-missing" title="' + esc(meta.label) + '">◇</span>';
+}
+function gotoIcon(size) {
+  var key = 'goto:' + size;
+  if (iconCache.hasOwnProperty(key)) return iconCache[key];
+  var html = '';
+  try {
+    if (typeof assets !== 'undefined' && assets.GetBitmapData && typeof getImage === 'function') {
+      var data = assets.GetBitmapData('accuracy.png');
+      if (data && data.width > 1 && data.height > 1) html = getImage(data,size,size);
+    } else if (typeof getImageTag === 'function') html = getImageTag('accuracy.png',size,size);
+  } catch (e) {}
+  if (/<img\b/i.test(html)) iconCache[key] = html;
+  return /<img\b/i.test(html) ? html : '◎';
 }
 
-/* ---------------- §4. Состояние ---------------- */
+
 var DEFAULTS = {
   resource: '', eventKey: '',
   manualEventMs: 0, manualSetAt: 0,
-  speedFactor: 1,
-  defaultCycleMin: 10,
-  manualCycleMin: {},
-  buffStrength: {},
-  queueDelay: 350
+  eventMode: ''
 };
 var state = load();
 
@@ -176,20 +222,41 @@ function load() {
     var raw = localStorage.getItem(STORE_KEY);
     if (raw) { var o = JSON.parse(raw); for (var j in o) if (o.hasOwnProperty(j)) s[j] = o[j]; }
   } catch (e) {}
-  s.manualCycleMin = s.manualCycleMin || {};
-  s.buffStrength   = s.buffStrength   || {};
+  delete s.manualCycleMin;delete s.defaultCycleMin;delete s.speedFactor;
+  if (s.eventMode !== 'auto' && s.eventMode !== 'manual' && s.eventMode !== 'event') {
+    s.eventMode = s.eventKey ? 'event' : (s.manualEventMs > 0 ? 'manual' : 'auto');
+  }
+  delete s.buffStrength;
+  delete s.queueDelay;
   return s;
 }
 
 var saveTimer = 0;
 function save() {
+  if (disposed) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(function () {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+    if (!disposed) persist();
   }, 300);
 }
 
-/* ---------------- §5. Сканирование мира ---------------- */
+
+function readNumber(fn) {
+  var value = safe(fn, null);
+  return typeof value === "number" && isFinite(value) ? value : NaN;
+}
+
+function clientClock() {
+  var t = readNumber(function() { return gi().GetClientTime(); });
+  if (isFinite(t) && t > 1e12) return t;
+  return serverNow();
+}
+
+function timeScale() {
+  var value = readNumber(function() { return gi().mGlobalTimeScale; });
+  return isFinite(value) && value > 0 ? value : 1;
+}
+
 function scanWorld() {
   var world = { deposits: [], producers: [], ok: false };
   var z = zone();
@@ -197,33 +264,43 @@ function scanWorld() {
   var map = safe(function () { return z.mStreetDataMap; }, null);
   if (!map) return world;
 
-  // Здания добычи
-  if (map.mBuildingContainer) {
-    each(map.mBuildingContainer, function (b) {
-      if (!b) return;
-      var g = gridOf(safe(function () { return b.GetGrid(); }, null));
-      if (!g) return;
-      var rcd = safe(function () { return b.GetResourceCreation(); }, null);
-      var dg  = gridOf(safe(function () { return rcd ? rcd.GetDepositBuildingGridPos() : null; }, null));
-      world.producers.push({
-        raw: b, grid: g, depGrid: dg, rcd: rcd,
-        outRes: safe(function () { return rcd.GetOutputResourceName_string(); }, '') ||
-                safe(function () { return rcd.outputResourceName_string; }, '')
-      });
-    });
-  }
-
-  // Залежи
   if (map.mDepositContainer) {
     each(map.mDepositContainer, function (d) {
       if (!d) return;
       var g = gridOf(safe(function () { return d.GetGrid(); }, null));
       if (!g) return;
+      var resourceName = String(safe(function () { return d.GetName_string(); }, "") || "");
+      if (!allowedResource(resourceName)) return;
       world.deposits.push({
         raw: d, grid: g, key: g.key,
-        res: String(safe(function () { return d.GetName_string(); }, '') || ''),
-        amount: safe(function () { return d.GetAmount(); }, 0) | 0,
-        max:    safe(function () { return d.GetMaxAmount(); }, 0) | 0
+        res: resourceName,
+        amount: Math.max(0, safe(function () { return d.GetAmount(); }, 0) | 0),
+        max:    Math.max(0, safe(function () { return d.GetMaxAmount(); }, 0) | 0)
+      });
+    });
+  }
+
+  if (map.mBuildingContainer) {
+    each(map.mBuildingContainer, function(b) {
+      if (!b) return;
+      var rcd = safe(function() { return b.GetResourceCreation(); }, null);
+      if (!rcd) return;
+      var def = safe(function() { return rcd.GetResourceCreationDefinition(); }, null);
+      if (!def) return;
+      var depRes = String(safe(function() { return def.externalResource_string; }, "") || "");
+      var removed = readNumber(function() { return def.amountRemoved; });
+      if (!depRes || !isFinite(removed) || removed < 0) return;
+      var g = gridOf(safe(function() { return b.GetGrid(); }, null));
+      if (!g) return;
+      var dg = gridOf(safe(function() { return rcd.GetDepositBuildingGridPos(); }, null));
+      if (dg && dg.idx < 0) dg = null;
+      world.producers.push({
+        raw: b,
+        grid: g,
+        depGrid: dg,
+        rcd: rcd,
+        definition: def,
+        depRes: depRes
       });
     });
   }
@@ -232,274 +309,340 @@ function scanWorld() {
   return world;
 }
 
-function resolveProducer(world, dep) {
-  var exact = null, same = null, byRes = [];
+function resolveProducers(world, dep) {
+  var out = [];
   for (var i = 0; i < world.producers.length; i++) {
     var p = world.producers[i];
-    if (!exact && p.depGrid && p.depGrid.key === dep.key) exact = p;
-    if (!same  && p.grid.key === dep.key) same = p;
-    if (p.outRes && p.outRes === dep.res) byRes.push(p);
+    if (p.depRes === dep.res) {
+      if ((p.depGrid && p.depGrid.key === dep.key) || (p.grid && p.grid.key === dep.key)) {
+        out.push(p);
+      }
+    }
   }
-  return exact || same || (byRes.length === 1 ? byRes[0] : null);
+  return out;
 }
 
-/* ---------------- §6. Темп производства и баф ---------------- */
-function readBuff(bld) {
-  var pb = safe(function () { return bld.productionBuff; }, null);
-  if (!pb) return null;
-  var t = serverNow();
-  var active = safe(function () { return pb.IsActive(t); }, false) ||
-               safe(function () { return pb.IsActive(Date.now()); }, false);
-  if (!active) return null;
-
-  var start = safe(function () { return pb.GetStartTime(); }, 0);
-  var app   = safe(function () { return pb.GetApplicanceMode ? pb.GetApplicanceMode() : (gi().mApp || null); }, null);
-  var dur   = safe(function () { return pb.GetBuffDefinition().getDuration(app); }, 0);
-  if (!(dur > 0)) dur = safe(function () { return pb.getDuration(); }, 0);
-  if (!(start > 0) || !(dur > 0)) return { remainMs: 0, durationMs: dur || 0, buffName: '' };
-
-  var buffDef = safe(function () { return pb.GetBuffDefinition(); }, null);
-  var buffName = '';
-  try {
-    if (buffDef && loca && loca.GetText) {
-      buffName = loca.GetText('RES', buffDef.GetName_string());
+function getActiveBuff(b, scale) {
+  var now = clientClock();
+  var pb = safe(function() { return b.productionBuff; }, null);
+  if (pb && safe(function() { return pb.IsActive(now); }, false)) {
+    var def = safe(function() { return pb.GetBuffDefinition(); }, null);
+    if (def) {
+      var app = safe(function() { return pb.GetApplicanceMode(); }, 0);
+      var dur = readNumber(function() { return def.getDuration(app); });
+      var start = readNumber(function() { return pb.GetStartTime(); });
+      var rem = isFinite(dur) && isFinite(start) ? (start + dur - now) / scale : 0;
+      var name = safe(function() { return String(def.GetName_string()); }, "");
+      if (rem > 0) {
+        return { name: tr("RES", name) || name, remainMs: rem, raw: pb };
+      }
     }
-  } catch (e) {}
+  }
+  var buffs = safe(function() { return b.GetBuffs(); }, null);
+  var found = null;
+  each(buffs, function(item) {
+    if (found || !item) return;
+    if (safe(function() { return item.IsActive(now); }, false)) {
+      var def2 = safe(function() { return item.GetBuffDefinition(); }, null);
+      if (def2) {
+        var app2 = safe(function() { return item.GetApplicanceMode(); }, 0);
+        var dur2 = readNumber(function() { return def2.getDuration(app2); });
+        var start2 = readNumber(function() { return item.GetStartTime(); });
+        var rem2 = isFinite(dur2) && isFinite(start2) ? (start2 + dur2 - now) / scale : 0;
+        var name2 = safe(function() { return String(def2.GetName_string()); }, "");
+        if (rem2 > 0) {
+          found = { name: tr("RES", name2) || name2, remainMs: rem2, raw: item };
+        }
+      }
+    }
+  });
+  return found;
+}
 
-  var rem = (start + dur) - t;
-  if (rem > dur + 60000 || rem < -60000) rem = (start + dur) - Date.now();
-  return { remainMs: clamp(rem, 0, dur), durationMs: dur, startTs: start, buffName: buffName };
+function getBuildingTimes(b, rcd, scale) {
+  var uiCycle = readNumber(function() { return b.CalculateWays(); });
+
+  var warehouseMs = readNumber(function() { return b.getWarehouseToWorkyardTime(); });
+  if (!(warehouseMs >= 0)) {
+    warehouseMs = readNumber(function() { return b.calculateWarehouseTransporttime(); });
+  }
+  if (!(warehouseMs >= 0)) {
+    var p = safe(function() { return rcd.GetPath(); }, null);
+    if (p && isFinite(p.pathLenX10000)) warehouseMs = (p.pathLenX10000 / 5) / scale;
+  }
+  if (!(warehouseMs >= 0)) warehouseMs = 0;
+
+  var depositMs = readNumber(function() { return b.getWorkyardToDepositTime(); });
+  if (!(depositMs >= 0)) {
+    var dp = safe(function() { return rcd.GetDepositPath(); }, null);
+    if (dp && isFinite(dp.pathLenX10000) && dp.pathLenX10000 > 0) {
+      depositMs = (dp.pathLenX10000 / 5) / scale;
+    } else {
+      depositMs = 0;
+    }
+  }
+  if (!(depositMs >= 0)) depositMs = 0;
+
+  var rawWorkSec = readNumber(function() { return rcd.GetWorkTime(); });
+  if (!(rawWorkSec > 0)) {
+    var def = safe(function() { return rcd.GetResourceCreationDefinition(); }, null);
+    if (def) rawWorkSec = readNumber(function() { return def.workTime; });
+  }
+  var workMs = (rawWorkSec > 0 ? rawWorkSec * 1000 : 60000) / scale;
+
+  var cycleMs = uiCycle;
+  if (!(cycleMs > 0)) {
+    cycleMs = workMs + 2 * warehouseMs + 2 * depositMs;
+  }
+  if (cycleMs > 0 && !(workMs > 0)) {
+    workMs = Math.max(0, cycleMs - 2 * warehouseMs - 2 * depositMs);
+  }
+
+  return {
+    cycleMs: Math.max(1000, cycleMs),
+    warehouseMs: warehouseMs,
+    depositMs: depositMs,
+    workMs: workMs
+  };
 }
 
 function measure(dep, prod) {
-  var cycle = 0, perCycle = 1, buff = null;
-  if (prod) {
-    var b = prod.raw;
-    cycle = safe(function () { return b.CalculateWays(); }, 0);
-    if (cycle && typeof cycle === 'object') cycle = cycle.time || cycle.mTime || 0;
-    if (!(cycle > 0)) cycle = safe(function () { return b.GetProductionTime(); }, 0);
+  var m = {
+    prod: prod,
+    working: false,
+    cycleMs: 60000,
+    warehouseMs: 0,
+    depositMs: 0,
+    workMs: 60000,
+    perCycle: 1,
+    perCycleBase: 1,
+    rateBuff: 0,
+    rateBase: 0,
+    buff: null,
+    buffRemainMs: 0
+  };
+  if (!prod) return m;
 
-    var removed = safe(function () { return prod.rcd ? prod.rcd.amountRemoved : 1; }, 0) ||
-                  safe(function () { return prod.rcd ? prod.rcd.GetAmountRemoved() : 1; }, 0) || 1;
-    var factor  = safe(function () { return b.GetResourceInputFactor(); }, 1) || 1;
-    perCycle = Math.max(1, Math.round(removed * factor));
-    buff = readBuff(b);
+  var b = prod.raw;
+  var rcd = prod.rcd;
+  var def = prod.definition;
+  var scale = timeScale();
+
+  var active = safe(function() { return b.IsProductionActive(); }, false) === true;
+  var upgrading = safe(function() { return b.IsUpgradeInProgress(); }, false) === true;
+  var pState = readNumber(function() { return rcd.GetProductionState(); });
+  m.working = active && !upgrading && (pState === 0 || pState === 2 || !isFinite(pState));
+
+  var times = getBuildingTimes(b, rcd, scale);
+  m.cycleMs = times.cycleMs;
+  m.warehouseMs = times.warehouseMs;
+  m.depositMs = times.depositMs;
+  m.workMs = times.workMs;
+
+  var removed = readNumber(function() { return def.amountRemoved; });
+  if (!isFinite(removed) || removed < 0) removed = 1;
+
+  var bonuses = safe(function() { return b.GetUpgradeLevelBonuses(); }, null);
+  var baseFactor = 1;
+  if (bonuses) {
+    var bPct = readNumber(function() { return bonuses.getProductivityInputPercent(); });
+    if (isFinite(bPct) && bPct > 0) baseFactor = Math.floor(bPct / 100);
   }
-  var ov = state.manualCycleMin[dep.key];
-  if (num(ov, 0) > 0) cycle = num(ov, 0) * 60000;
-  if (!(cycle > 0)) cycle = num(state.defaultCycleMin, 10) * 60000;
 
-  return { cycleMs: cycle, perCycle: perCycle, buff: buff };
+  var factor = readNumber(function() { return b.GetResourceInputFactor(); });
+  if (!isFinite(factor) || factor < 1) factor = baseFactor;
+
+  m.perCycle = removed * factor;
+  m.perCycleBase = removed * Math.max(1, baseFactor);
+
+  m.buff = getActiveBuff(b, scale);
+  m.buffRemainMs = m.buff ? m.buff.remainMs : 0;
+
+  if (m.working && m.cycleMs > 0) {
+    m.rateBuff = m.perCycle / m.cycleMs;
+    m.rateBase = m.perCycleBase / m.cycleMs;
+  }
+
+  return m;
 }
 
-/* ---------------- §7. Ивенты ---------------- */
 function readEvents() {
   var out = [];
   var em = safe(function () { return gi().mEventManager; }, null);
   if (!em) return out;
-  var list = safe(function () { return em.GetActiveVisibleEvents(); }, null) ||
-             safe(function () { return em.GetActiveEvents(); }, null);
+  var list = safe(function () { return em.GetActiveVisibleEvents(); }, []);
   each(list, function (ev) {
-    if (!ev) return;
-    var name = String(safe(function () { return ev.mName; }, '') ||
-                      safe(function () { return ev.GetName ? ev.GetName() : ''; }, '') ||
-                      safe(function () { return ev.name; }, '') || 'Ивент');
-    var stop = safe(function () { return ev.mStopTime; }, 0) ||
-               safe(function () { return ev.GetStopTime ? ev.GetStopTime() : 0; }, 0) ||
-               safe(function () { return ev.stopTime; }, 0);
-    if (typeof stop === 'object' && stop) stop = stop.time || stop.getTime();
-    if (stop > 1e9 && stop < 1e12) stop *= 1000;
-    if (stop > 0) out.push({ name: name, stopTs: stop });
+    var name = String(safe(function () { return ev.event_name_string; }, "") || "");
+    var stop = Number(safe(function () { return ev.stopDate; }, 0));
+    if (!(stop > 0) && name) stop = Number(safe(function () { return em.GetEventStopDate(name); }, 0));
+    if (name && isFinite(stop) && stop > serverNow()) out.push({name:name,stopTs:stop});
   });
   return out;
 }
 
-function eventRemain(events) {
+function eventRemain(events, resource) {
   var now = serverNow();
-  if (state.eventKey) {
+  if (state.eventMode === "manual") {
+    return Math.max(0, num(state.manualEventMs, 0) - Math.max(0, now - num(state.manualSetAt, now)));
+  }
+  if (state.eventMode === "event") {
     for (var i = 0; i < events.length; i++) {
-      if (events[i].name === state.eventKey) {
-        var r = events[i].stopTs - now;
-        if (r > 0) return r;
-      }
+      if (events[i].name === state.eventKey) return Math.max(0, events[i].stopTs - now);
     }
+    return 0;
   }
-  if (state.manualEventMs > 0 && state.manualSetAt > 0) {
-    var passed = now - state.manualSetAt;
-    var left = state.manualEventMs - passed;
-    if (left > 0) return left;
-  }
-  var meta = resMeta(state.resource);
+  var meta = resMeta(resource || state.resource);
   if (meta.ev) {
     for (var j = 0; j < events.length; j++) {
-      if (meta.ev.test(events[j].name)) {
-        var rem = events[j].stopTs - now;
-        if (rem > 0) return rem;
-      }
+      if (meta.ev.test(events[j].name) && events[j].stopTs > now) return events[j].stopTs - now;
     }
-  }
-  for (var k = 0; k < events.length; k++) {
-    var remAny = events[k].stopTs - now;
-    if (remAny > 0) return remAny;
   }
   return 0;
 }
 
-/* ---------------- §8. Звёздное меню ---------------- */
-function starBuffs() {
-  var out = [];
-  var cp = safe(function () { return gi().mCurrentPlayer; }, null);
-  if (!cp) return out;
-  var list = safe(function () { return cp.getAvailableBuffs_vector(); }, null);
-  each(list, function (b) {
-    if (!b) return;
-    var def = safe(function () { return b.GetBuffDefinition(); }, null) ||
-              safe(function () { return b.buffDefinition; }, null) ||
-              safe(function () { return b.mBuffDefinition; }, null);
-    if (!def) return;
+function computeRow(dep, producers, evRem) {
+  if (!Array.isArray(producers)) producers = producers ? [producers] : [];
+  var models = [];
+  var hasWorking = false;
+  var totalRateBuff = 0;
+  var totalRateBase = 0;
+  var minBuffRemMs = 0;
+  var anyBuffed = false;
 
-    var res  = String(safe(function () { return def.GetResourceName_string(); }, '') ||
-                      safe(function () { return def.resourceName_string; }, '') || '');
-    var name = String(safe(function () { return def.GetName_string(); }, '') ||
-                      safe(function () { return def.name_string; }, '') || '');
-    var cnt  = safe(function () { return b.GetAmount(); }, 0) || safe(function () { return b.amount; }, 0) || 0;
-    var defAmount = safe(function () { return def.GetAmount(); }, 0) || 0;
+  for (var i = 0; i < producers.length; i++) {
+    var m = measure(dep, producers[i]);
+    models.push(m);
+    if (m.working && (m.rateBuff > 0 || m.rateBase > 0)) {
+      hasWorking = true;
+      totalRateBuff += m.rateBuff;
+      totalRateBase += m.rateBase;
+      if (m.buffRemainMs > 0) {
+        anyBuffed = true;
+        if (!minBuffRemMs || m.buffRemainMs < minBuffRemMs) {
+          minBuffRemMs = m.buffRemainMs;
+        }
+      }
+    }
+  }
 
-    var uObj = safe(function () { return b.GetUniqueId ? b.GetUniqueId() : b.GetUniqueID(); }, null);
-    var uKey = '';
-    if (uObj) {
-      if (typeof uObj.toKeyString === 'function') uKey = uObj.toKeyString();
-      else if (uObj.uniqueID1 !== undefined) uKey = uObj.uniqueID1 + '_' + uObj.uniqueID2;
-      else uKey = String(uObj);
+  var amount = dep.amount;
+  var dryMs = Infinity;
+
+  if (hasWorking && (totalRateBuff > 0 || totalRateBase > 0)) {
+    if (amount <= 0) {
+      dryMs = 0;
     } else {
-      uObj = safe(function () { return b.uniqueID; }, null);
-      uKey = String(uObj || name);
-    }
-    if (!uObj) return;
-    out.push({ uid: uObj, key: uKey, res: res, name: name, count: cnt | 0, defAmount: defAmount });
-  });
-  return out;
-}
-
-var SIZE_HINTS = [
-  { re: /halloween|pumpkin|тыкв/i, size: 50 },
-  { re: /valentin|flower|цвет/i,   size: 50 },
-  { re: /titan|титан/i,            size: 100 },
-  { re: /salpeter|селитр/i,        size: 100 }
-];
-
-function buffSize(entry) {
-  if (entry.defAmount > 0) return { size: entry.defAmount, known: true };
-  var learned = num(state.buffStrength[entry.key], 0);
-  if (learned > 0) return { size: learned, known: true };
-  for (var i = 0; i < SIZE_HINTS.length; i++) {
-    if (SIZE_HINTS[i].re.test(entry.name) || SIZE_HINTS[i].re.test(entry.res)) {
-      return { size: SIZE_HINTS[i].size, known: false };
+      var buffSpan = anyBuffed ? minBuffRemMs : 0;
+      var consumedDuringBuff = totalRateBuff * buffSpan;
+      if (consumedDuringBuff >= amount || !(totalRateBase > 0)) {
+        dryMs = amount / totalRateBuff;
+      } else {
+        var remainingAmount = amount - consumedDuringBuff;
+        dryMs = buffSpan + (remainingAmount / totalRateBase);
+      }
     }
   }
-  return { size: 50, known: false };
-}
 
-function packsFor(res) {
-  var meta = resMeta(res), out = [], all = starBuffs();
-  for (var i = 0; i < all.length; i++) {
-    var e = all[i];
-    var hit = (e.res && e.res === res) || (!e.res && meta.ev && meta.ev.test(e.name));
-    if (!hit) continue;
-    var sz = buffSize(e);
-    out.push({ uid: e.uid, key: e.key, name: e.name, count: e.count, size: sz.size, known: sz.known });
+  var needBuff = null;
+  if (anyBuffed && minBuffRemMs > 0 && totalRateBuff > 0) {
+    var consumedBuff = Math.ceil(totalRateBuff * minBuffRemMs);
+    needBuff = Math.max(0, consumedBuff - amount);
   }
-  return out;
-}
 
-function planPack(need, packs) {
-  var avail = packs.filter(function (p) { return p.count > 0 && p.size > 0; })
-    .map(function (p) { return { uid: p.uid, key: p.key, name: p.name, size: p.size, count: p.count }; })
-    .sort(function (a, b) { return b.size - a.size; });
-  var picks = [], rem = need | 0, covered = 0;
+  var needEvent = null;
+  if (evRem > 0 && (totalRateBuff > 0 || totalRateBase > 0)) {
+    var tBuff = anyBuffed ? Math.min(evRem, minBuffRemMs) : 0;
+    var tBase = Math.max(0, evRem - tBuff);
+    var consumedEv1 = totalRateBuff * tBuff;
+    var consumedEv2 = totalRateBase * tBase;
+    var totalConsumedEvent = Math.ceil(consumedEv1 + consumedEv2);
+    needEvent = Math.max(0, totalConsumedEvent - amount);
+  }
 
-  if (rem <= 0) return { picks: picks, covered: 0, short: 0 };
-  if (!avail.length) return { picks: picks, covered: 0, short: rem };
+  var cap = dep.max > 0 ? (dep.max - dep.amount) : Infinity;
+  var overCap = (needEvent != null && needEvent > cap);
 
-  for (var i = 0; i < avail.length && rem > 0; i++) {
-    var p = avail[i];
-    var n = Math.min(p.count, Math.floor(rem / p.size));
-    if (n > 0) {
-      picks.push({ uid: p.uid, key: p.key, name: p.name, size: p.size, n: n });
-      rem -= n * p.size;
-      covered += n * p.size;
-      p.count -= n;
+  var status = "ok";
+  if (dryMs !== Infinity && isFinite(dryMs)) {
+    if (anyBuffed && minBuffRemMs > 0 && dryMs < minBuffRemMs) {
+      status = "crit";
+    } else if (evRem > 0 && dryMs < evRem) {
+      status = "warn";
     }
   }
-  if (rem > 0) {
-    var tail = null;
-    for (var j = 0; j < avail.length; j++) {
-      if (avail[j].count > 0 && (!tail || avail[j].size < tail.size)) tail = avail[j];
-    }
-    if (tail) {
-      picks.push({ uid: tail.uid, key: tail.key, name: tail.name, size: tail.size, n: 1 });
-      rem -= tail.size;
-      covered += tail.size;
-    }
-  }
-  return { picks: picks, covered: covered, short: Math.max(0, rem) };
-}
 
-/* ---------------- §9. Ядро расчёта ---------------- */
-function computeRow(dep, prod, evRem) {
-  var m = measure(dep, prod);
-  var T = m.cycleMs,
-      c = m.perCycle,
-      A = dep.amount,
-      speed = clamp(num(state.speedFactor, 1), 1, 20),
-      Db = m.buff ? m.buff.remainMs : 0,
-      Tb = (speed > 1 && Db > 0) ? T / speed : T;
-
-  function consumed(span, cycle) { return Math.floor(Math.max(0, span) / cycle) * c; }
-
-  var cBuff = Db > 0 ? consumed(Db, Tb) : 0;
-  var cRest = consumed(Math.max(0, evRem - Db), T);
-
-  var dryMs;
-  if (Db > 0 && A <= cBuff)      dryMs = (A / c) * Tb;
-  else if (Db > 0)               dryMs = Db + ((A - cBuff) / c) * T;
-  else                           dryMs = (A / c) * T;
-
-  var needBuff  = Db > 0 ? Math.max(0, cBuff - A) : null;
-  var needEvent = evRem > 0 ? Math.max(0, cBuff + cRest - A) : null;
-  var cap = dep.max > 0 ? dep.max - A : Infinity;
+  var ratePerHour = hasWorking ? (totalRateBuff * 3600000) : 0;
 
   return {
-    dep: dep, prod: prod,
-    cycleMs: T, cycleBuffMs: Tb, perCycle: c,
-    buff: m.buff,
-    amount: A, max: dep.max,
-    buffRemMs: Db, eventRemMs: evRem,
+    dep: dep,
+    models: models,
+    prod: producers[0] || null,
+    known: true,
+    hasWorking: hasWorking,
+    cycleMs: models.length === 1 ? models[0].cycleMs : null,
+    perCycle: models.length === 1 ? models[0].perCycle : null,
+    amount: dep.amount,
+    max: dep.max,
+    buffRemMs: minBuffRemMs,
+    eventRemMs: evRem,
     dryMs: dryMs,
-    needBuff: needBuff, needEvent: needEvent,
+    needBuff: needBuff,
+    needEvent: needEvent,
     capRoom: cap,
-    overCap: needEvent != null && needEvent > cap,
-    ratePerHour: c * 3600000 / T,
-    status: (Db > 0 && dryMs < Db) ? 'crit'
-          : (evRem > 0 && dryMs < evRem) ? 'warn'
-          : 'ok'
+    overCap: overCap,
+    ratePerHour: ratePerHour,
+    status: status
   };
+}
+
+function fmtCycle(ms) {
+  if (ms == null || !isFinite(ms) || ms < 0) return txt("NotAvailable");
+  var seconds = Math.ceil(ms / 1000), parts = [];
+  if (seconds >= 86400) parts.push(tr("FOR","DaysShort",[Math.floor(seconds / 86400)]));
+  if (seconds >= 3600) parts.push(tr("FOR","HoursShort",[Math.floor(seconds % 86400 / 3600)]));
+  if (seconds >= 60) parts.push(tr("FOR","MinutesShort",[Math.floor(seconds % 3600 / 60)]));
+  parts.push(tr("FOR","SecondsShort",[seconds % 60]));
+  return parts.join(" ");
+}
+
+function modelDetails(row) {
+  if (!row.models.length) return esc(txt("ProductionDetailsTime") + ": " + txt("NotAvailable"));
+  var text = [];
+  for (var i = 0; i < row.models.length; i++) {
+    var m = row.models[i], b = m.prod;
+    var line = "[" + esc(b.grid.key) + "] ";
+    if (!m.working) {
+      line += esc(txt("Status") + ": " + txt("StatusStopped"));
+      text.push(line);
+      continue;
+    }
+    line += esc(txt("DetailsOverallTime") + ": " + fmtCycle(m.cycleMs)) +
+      " = 2 × " + esc(fmtCycle(m.warehouseMs)) +
+      " + 2 × " + esc(fmtCycle(m.depositMs)) +
+      " + " + esc(fmtCycle(m.workMs));
+    line += " · " + esc(txt("DetailsDeposit") + ": −" + fmtInt(m.perCycle));
+    if (m.buff) {
+      line += " · " + esc(txt("Buff") + ": " + m.buff.name + " · " + txt("TimeRemaining") + " " + fmtDur(m.buff.remainMs));
+    }
+    text.push(line);
+  }
+  return text.join("<br>");
 }
 
 function computeAll() {
   var world = scanWorld();
   var events = readEvents();
-  var evRem = eventRemain(events);
-  var res = state.resource || autoResource(world);
+  var res = allowedResource(state.resource) ? state.resource : autoResource(world);
+  var evRem = eventRemain(events, res);
   var rows = [];
 
   for (var i = 0; i < world.deposits.length; i++) {
     var d = world.deposits[i];
-    if (d.res !== res) continue;
-    rows.push(computeRow(d, resolveProducer(world, d), evRem));
+    if (!allowedResource(d.res) || d.res !== res) continue;
+    rows.push(computeRow(d, resolveProducers(world, d), evRem));
   }
   rows.sort(function (a, b) {
-    var w = { crit: 0, warn: 1, ok: 2 };
+    var w = { crit: 0, warn: 1, ok: 2, unknown: 3 };
     if (w[a.status] !== w[b.status]) return w[a.status] - w[b.status];
     return a.dryMs - b.dryMs;
   });
@@ -510,64 +653,16 @@ function autoResource(world) {
   var seen = {}, order = [];
   for (var i = 0; i < world.deposits.length; i++) {
     var r = world.deposits[i].res;
-    if (r && !seen[r]) { seen[r] = 1; order.push(r); }
+    if (allowedResource(r) && !seen[r]) { seen[r] = 1; order.push(r); }
   }
   for (var j = 0; j < order.length; j++) if (order[j] === 'HalloweenResource') return order[j];
   for (var k = 0; k < order.length; k++) if (order[k] === 'ValentinesFlower') return order[k];
-  return order[0] || 'HalloweenResource';
+  return order[0] || '';
 }
 
-/* ---------------- §10. Очередь действий ---------------- */
-var queue = [], queueBusy = false;
 
-function enqueue(fn) { queue.push(fn); pump(); }
-function pump() {
-  if (queueBusy) return;
-  var job = queue.shift();
-  if (!job) return;
-  queueBusy = true;
-  try { job(); } catch (e) { console.warn('[refill] job error', e); }
-  setTimeout(function () { queueBusy = false; pump(); }, clamp(num(state.queueDelay, 350), 150, 3000));
-}
-
-function applyBuffTo(gridIdx, uid) {
-  var g = gi();
-  if (!g || gridIdx == null || !uid) return false;
-  var targetGrid = typeof gridIdx === 'object' ? (gridIdx.idx !== undefined ? gridIdx.idx : gridIdx.raw) : gridIdx;
-  return safe(function () {
-    g.SendServerAction(61, 0, Number(targetGrid), 0, uid);
-    return true;
-  }, false);
-}
-
-function applyRow(rowModel, pack) {
-  if (!pack || !pack.picks.length) return;
-  var before = safe(function () { return rowModel.dep.raw.GetAmount(); }, 0);
-  var targetGrid = rowModel.dep.grid.idx !== undefined ? rowModel.dep.grid.idx : rowModel.dep.raw.GetGrid();
-
-  pack.picks.forEach(function (p) {
-    for (var i = 0; i < p.n; i++) {
-      enqueue(function () {
-        applyBuffTo(targetGrid, p.uid);
-      });
-    }
-  });
-
-  setTimeout(function () {
-    var after = safe(function () { return rowModel.dep.raw.GetAmount(); }, 0);
-    var delta = after - before;
-    if (delta > 0 && pack.picks[0]) {
-      var key = pack.picks[0].key;
-      var learned = num(state.buffStrength[key], 0);
-      if (!learned || delta > learned) { state.buffStrength[key] = delta; save(); }
-    }
-    renderModalData();
-  }, 2600);
-}
-
-/* ---------------- §11. Переход к полю ---------------- */
 function focusGrid(grid) {
-  if (!grid) return;
+  if (disposed || !grid) return;
   var gIdx = grid.idx !== undefined ? grid.idx : (typeof grid === 'number' ? grid : (grid.raw && grid.raw.GetGrid ? grid.raw.GetGrid() : null));
   if (gIdx != null) {
     safe(function () {
@@ -580,397 +675,317 @@ function focusGrid(grid) {
   }
 }
 
-/* ---------------- §12. Модальное окно в стиле TSO ---------------- */
+/* ---------------- §12. Custom AIR-friendly TSO controls ---------------- */
 var currentRowsData = {};
-
+var manualDirty = false;
 function injectStyles() {
-  if ($('#tsrModalStyle').length) return;
-  var css = [
-    '#EventRefillModal .modal-dialog { width: 750px; max-width: 95vw; }',
-    '#EventRefillModal .modal-content { color: #f5eedb; }',
-    '#EventRefillModal .modal-header { padding: 10px 15px 5px 15px; }',
-    '#EventRefillModal .modal-body { max-height: 65vh; overflow-y: auto; padding: 10px 15px; }',
-    '#EventRefillModal .modal-footer { padding: 8px 15px; }',
-    '#EventRefillModal input, #EventRefillModal select {',
-    '  background-color: #241708 !important;',
-    '  color: #ffe6ae !important;',
-    '  border: 1px solid #7c5c2a !important;',
-    '  border-radius: 3px !important;',
-    '  padding: 2px 6px !important;',
-    '  font-size: 11px !important;',
-    '  font-family: inherit !important;',
-    '  box-shadow: inset 0 1px 3px rgba(0,0,0,0.6) !important;',
-    '  outline: none !important;',
-    '}',
-    '#EventRefillModal input:focus, #EventRefillModal select:focus {',
-    '  border-color: #ffd97a !important;',
-    '  box-shadow: 0 0 5px rgba(255,217,122,0.5) !important;',
-    '}',
-    '#EventRefillModal input::placeholder {',
-    '  color: #8a7047 !important;',
-    '}',
-    '#EventRefillModal .tsr-toolbar {',
-    '  margin-bottom: 8px;',
-    '  padding: 6px 10px;',
-    '  background: rgba(0, 0, 0, 0.35);',
-    '  border: 1px solid rgba(139, 107, 61, 0.4);',
-    '  border-radius: 6px;',
-    '}',
-    '#EventRefillModal .tsr-toolbar select, #EventRefillModal .tsr-toolbar input {',
-    '  height: 24px;',
-    '  vertical-align: middle;',
-    '}',
-    '#EventRefillModal .tblHeader {',
-    '  background-color: #b2a589;',
-    '  height: 24px;',
-    '  line-height: 24px;',
-    '  color: #000;',
-    '  font-weight: bold;',
-    '  font-size: 11px;',
-    '  padding-left: 6px;',
-    '  padding-right: 6px;',
-    '}',
-    '#EventRefillModal .row {',
-    '  margin-left: 0;',
-    '  margin-right: 0;',
-    '  margin-bottom: 2px;',
-    '  line-height: 26px;',
-    '  font-size: 11px;',
-    '}',
-    '#EventRefillModal .row:nth-child(even) { background-color: rgba(178, 165, 137, 0.12); }',
-    '#EventRefillModal .row:nth-child(odd)  { background-color: rgba(178, 165, 137, 0.22); }',
-    '#EventRefillModal .row:hover { background-color: rgba(166, 83, 41, 0.35); }',
-    '#EventRefillModal .row.tsr-crit { background-color: rgba(224, 69, 43, 0.22); }',
-    '#EventRefillModal .row.tsr-crit:hover { background-color: rgba(224, 69, 43, 0.38); }',
-    '#EventRefillModal .tsr-field-in {',
-    '  width: 65px !important;',
-    '  height: 22px !important;',
-    '  text-align: center !important;',
-    '  display: inline-block !important;',
-    '  margin-right: 4px !important;',
-    '}',
-    '#EventRefillModal .tsr-goto {',
-    '  cursor: pointer;',
-    '  vertical-align: middle;',
-    '}',
-    '#EventRefillModal .tsr-goto:hover {',
-    '  filter: drop-shadow(0 0 3px #ffd97a);',
-    '}',
-    '#EventRefillModal .tsr-foot-table {',
-    '  width: 100%;',
-    '  display: flex;',
-    '  justify-content: space-between;',
-    '  align-items: center;',
-    '  font-size: 11px;',
-    '}',
-    '#EventRefillModal .tsr-flash { animation: tsrFlash 0.9s ease-out; }',
-    '@keyframes tsrFlash { 0% { background-color: rgba(255,217,122,0.8); } 100% { background-color: transparent; } }'
-  ].join('\n');
-  $('<style id="tsrModalStyle">').text(css).appendTo('head');
-}
-
-function openModal() {
-  injectStyles();
-
-  // Прячем другие модалки, чтобы не конфликтовать со слоем Flash Stage
-  $("div[role='dialog']:not(#" + MODAL_ID + "):visible").modal('hide');
-
-  if (!$('#' + MODAL_ID).length) {
-    var modalTitle = 'Пополнение залежей (Ивент)';
-    try {
-      if (typeof loca !== 'undefined' && loca.GetText) {
-        modalTitle = loca.GetText('RES', 'HalloweenResource') + ' / ' + loca.GetText('SHG', 'Deposits');
-      }
-    } catch (e) {}
-
-    createModalWindow(MODAL_ID, modalTitle);
+  $('#tsrModalStyle').remove();
+  var root = '#' + MODAL_ID + '.tsr-ui ';
+  var rules = [
+    ['.modal-dialog', 'width:900px;max-width:95vw'],
+    ['.modal-body', 'max-height:65vh;overflow-y:auto;padding:12px'],
+    ['.modal-content', 'color:#f7e7bd;position:relative!important;overflow:visible!important'],
+    ['.tsr-toolbar', 'padding:12px;margin-bottom:12px;border:1px solid #98713c;border-radius:5px;background:#35230f;box-shadow:inset 0 1px 0 #664c2c'],
+    ['.tsr-toolbar:after', 'content:"";display:table;clear:both'],
+    ['.tsr-control', 'float:left;width:28%;padding-right:12px;box-sizing:border-box'],
+    ['.tsr-control-duration', 'width:29%'],
+    ['.tsr-control-refresh', 'width:15%;padding-right:0'],
+    ['.tsr-label', 'display:block;line-height:18px;min-height:20px;margin-bottom:4px;color:#e6c68e;font-size:12px'],
+    ['.tsr-select', 'position:relative'],
+    ['.tsr-btn:disabled', 'opacity:.55;cursor:default!important'],
+    ['.tsr-btn', '-webkit-appearance:none!important;appearance:none!important;box-sizing:border-box!important;border:1px solid #b18a4a!important;border-radius:4px!important;background:#65451f!important;background-image:-webkit-linear-gradient(top,#87602c,#4e3316)!important;background-image:linear-gradient(to bottom,#87602c,#4e3316)!important;color:#fff0c7!important;-webkit-text-fill-color:#fff0c7!important;text-shadow:0 1px #241607!important;box-shadow:inset 0 1px 0 #c29854,inset 0 -1px 0 #26190c,0 1px 2px #140e07!important;font-family:inherit!important;font-size:12px!important;line-height:20px!important;min-height:36px!important;padding:7px 10px!important;cursor:pointer!important;outline:none!important'],
+    ['.tsr-btn:hover', 'border-color:#f1cd7d!important;background:#805c2b!important'],
+    ['.tsr-btn:focus', 'outline:2px solid #efd18d!important;outline-offset:2px'],
+    ['.tsr-select-trigger', 'display:block!important;width:100%!important;text-align:left!important;padding-right:27px!important;position:relative!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'],
+    ['.tsr-arrow', 'position:absolute;right:10px;top:14px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid #ffe0a2'],
+    ['.tsr-options', 'display:none;position:absolute!important;z-index:10000!important;left:0;top:0;width:100%;box-sizing:border-box;margin-top:4px;padding:4px;border:1px solid #c29b55;border-radius:4px;background:#2b1c0d;box-shadow:0 2px 5px #100a04;overflow-y:auto;overflow-x:hidden;max-height:180px'],
+    ['.tsr-option', '-webkit-appearance:none!important;display:block!important;box-sizing:border-box!important;width:100%!important;min-height:34px!important;border:1px solid transparent!important;border-radius:2px!important;background:#2b1c0d!important;color:#f7e7bd!important;-webkit-text-fill-color:#f7e7bd!important;font:inherit!important;font-size:12px!important;line-height:20px!important;padding:7px 9px!important;text-align:left!important;white-space:normal!important;cursor:pointer!important'],
+    ['.tsr-option:hover,.tsr-option:focus,.tsr-option[aria-selected="true"]', 'background:#65451f!important;border-color:#b18a4a!important;color:#fff6d9!important;outline:none!important'],
+    ['.tsr-editor-wrap', 'position:relative;padding-right:43px'],
+    ['.tsr-editor', '-webkit-appearance:none!important;appearance:none!important;width:100%!important;font-family:inherit!important;display:block;box-sizing:border-box;min-height:36px;max-height:36px;overflow:hidden;white-space:nowrap;border:1px solid #a5834b!important;border-radius:3px!important;background:#201609!important;background-image:none!important;color:#fff0c7!important;-webkit-text-fill-color:#fff0c7!important;box-shadow:inset 0 2px 5px #0d0804,inset 0 0 0 2px #3b2a12!important;padding:7px 9px!important;line-height:20px!important;font-size:13px!important;outline:none!important;cursor:text;-webkit-user-select:text;user-select:text'],
+    ['.tsr-editor:focus', 'border-color:#f6cf7a!important;box-shadow:inset 0 2px 5px #0d0804,0 0 3px #b18a4a!important'],
+    ['.tsr-editor[aria-invalid="true"]', 'border-color:#f78b6d!important'],
+    ['.tsr-apply', 'position:absolute!important;right:0;top:0;width:36px;padding-left:4px!important;padding-right:4px!important'],
+    ['.tsr-refresh', 'width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'],
+    ['.tsr-measures', 'clear:both;line-height:18px;padding:0 8px 8px;color:#d3ba8e;font-size:11px;overflow-wrap:break-word'],
+    ['.tsr-help', 'padding:8px 10px;margin-bottom:10px;border-left:3px solid #a48248;color:#e4cda5;font-size:12px;line-height:20px;background:#2b1e0e'],
+    ['.tsr-error', 'display:none;color:#ffb197;margin-top:4px;font-size:11px'],
+    ['.row', 'margin-left:0;margin-right:0;font-size:12px;line-height:32px'],
+    ['.tblHeader', 'box-sizing:border-box;background:#b2a589!important;color:#171006!important;min-height:58px;height:auto;line-height:18px;padding-top:10px;padding-bottom:8px;font-size:12px;font-weight:bold'],
+    ['#tsr_table_body .row', 'border-bottom:1px solid #6a5030'],
+    ['#tsr_table_body .row:nth-child(even)', 'background:rgba(178,165,137,.12)'],
+    ['#tsr_table_body .row:hover', 'background:rgba(166,83,41,.28)'],
+    ['.tsr-table-scroll', 'width:100%;overflow-x:auto;overflow-y:hidden;margin-bottom:4px'],
+    ['.tsr-table-grid', 'min-width:820px'],
+    ['.tsr-resource', 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis'],
+    ['.tsr-resource img', 'vertical-align:middle;margin-right:6px'],
+    ['.tsr-goto', 'border:0!important;background:transparent!important;color:#f1d8a4!important;padding:2px 4px!important;cursor:pointer;vertical-align:middle;min-width:30px;min-height:30px;margin-right:5px'],
+    ['.tsr-goto img', 'margin:0'],
+    ['.tsr-goto:focus', 'outline:1px solid #f1cd7d'],
+    ['.tsr-icon-missing', 'display:inline-block;min-width:22px;color:#dec390;text-align:center'],
+    ['.tsr-amount', 'font-size:13px;color:#ffe0a0'],
+    ['.tsr-subtle', 'font-size:11px;color:#d3ba8e'],
+    ['.tsr-number', 'color:#ffe0a0;font-weight:bold'],
+    ['.tsr-zero', 'color:#afd899'],
+    ['.tsr-crit', 'background:rgba(150,43,20,.22)'],
+    ['.tsr-foot-table', 'width:100%;font-size:12px;line-height:22px;text-align:left;margin-bottom:8px'],
+    ['.tsr-options::-webkit-scrollbar', 'width:10px'],
+    ['.tsr-options::-webkit-scrollbar-track', 'background:#241708'],
+    ['.tsr-options::-webkit-scrollbar-thumb', 'background:#937040;border:2px solid #241708;border-radius:4px']
+  ];
+  var css = [];
+  for (var i = 0; i < rules.length; i++) {
+    var selectors = rules[i][0].split(',');
+    for (var j = 0; j < selectors.length; j++) selectors[j] = root + selectors[j];
+    css.push(selectors.join(',') + '{' + rules[i][1] + '}');
   }
-
-  renderModalData();
-
-  $('#' + MODAL_ID + ':not(:visible)').modal({ backdrop: 'static' });
+  css.push('@media(max-width:640px){' + root + '.tsr-control{width:50%;margin-bottom:8px}' + root + '.tsr-control-refresh{padding-right:12px}}');
+  $('<style>', {id:'tsrModalStyle'}).text(css.join('\n')).appendTo('head');
 }
-
+function customSelect(id, options, value, label) {
+  var current = '\u2014', list = '';
+  for (var i = 0; i < options.length; i++) {
+    var selected = options[i].value === value;
+    if (selected) current = options[i].label;
+    list += '<button type="button" class="tsr-option" role="option" tabindex="-1" aria-selected="' + selected + '" data-value="' + esc(options[i].value) + '">' + esc(options[i].label) + '</button>';
+  }
+  return '<div class="tsr-select" id="' + id + '"><button type="button" class="tsr-btn tsr-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="' + id + '_list" aria-label="' + esc(label) + '" title="' + esc(current) + '"><span class="tsr-value">' + esc(current) + '</span><span class="tsr-arrow"></span></button><div class="tsr-options" id="' + id + '_list" role="listbox" aria-label="' + esc(label) + '">' + list + '</div></div>';
+}
+function closeChoices() {
+  var $modal = $('#' + MODAL_ID);
+  // Return the portal to its owner before rerender/dispose; never leave detached menus behind.
+  $modal.find('.tsr-options').each(function() {
+    var $list = $(this), owner = $list.attr('data-owner');
+    $list.removeAttr('style').hide();
+    if (owner) $modal.find('#' + owner).append($list);
+  });
+  $modal.find('.tsr-select-trigger').attr('aria-expanded','false');
+}
+function openChoice($trigger, keyboard) {
+  if (disposed) return;
+  var wasOpen = $trigger.attr('aria-expanded') === 'true';
+  closeChoices();
+  if (wasOpen && !keyboard) return;
+  var $choice = $trigger.closest('.tsr-select'), $list = $choice.find('.tsr-options');
+  var $content = $trigger.closest('.modal-content');
+  if (!$list.length || !$content.length) return;
+  // Portal outside .modal-body and toolbar: scroll containers cannot reflow or clip this menu.
+  // Use offsets relative to the SAME transformed modal, not fixed viewport coordinates.
+  var origin = $content.offset(), field = $trigger.offset();
+  var borderLeft = parseFloat($content.css('border-left-width')) || 0;
+  var borderTop = parseFloat($content.css('border-top-width')) || 0;
+  var top = field.top - origin.top - borderTop + $trigger.outerHeight() + 4;
+  var left = field.left - origin.left - borderLeft;
+  var below = $content.innerHeight() - top - 8;
+  var above = field.top - origin.top - borderTop - 8;
+  var up = below < 100 && above > below;
+  var height = Math.max(36,Math.min(180,up ? above : below));
+  // Critical geometry is inline !important as protection against legacy client styles.
+  $list.attr('data-owner',$choice.attr('id')).appendTo($content);
+  $list.attr('style','display:block!important;position:absolute!important;float:none!important;clear:none!important;' +
+    'z-index:10000!important;box-sizing:border-box!important;margin:0!important;right:auto!important;' +
+    'left:' + left + 'px!important;width:' + $trigger.outerWidth() + 'px!important;' +
+    'max-height:' + height + 'px!important;' +
+    (up ? 'top:auto!important;bottom:' + ($content.innerHeight() - above - 4) + 'px!important;' : 'bottom:auto!important;top:' + top + 'px!important;'));
+  $trigger.attr('aria-expanded','true');
+  if (keyboard) {
+    var $selected = $list.find('[aria-selected="true"]');
+    ($selected.length ? $selected : $list.find('.tsr-option').first()).focus();
+  }
+}
+function localizedEvent(name) {
+  // Event identifiers are not UI strings; never show a raw English/internal ID as a translation.
+  var title = tr('DES',name + '_Title');
+  if (title !== '\u2014') return title;
+  var groups = ['LAB', 'SHG', 'ACL', 'MEL'];
+  for (var i = 0; i < groups.length; i++) {
+    var text = tr(groups[i], name);
+    if (text !== '\u2014') return text;
+  }
+  if (/halloween|pumpkin/i.test(name)) return tr('SHG', 'HalloweenEvent');
+  if (/valentin|flower/i.test(name)) return tr('SHG', 'ValentineEvent');
+  return txt('BuffGroup3');
+}
+function openModal() {
+  if (disposed) return;
+  injectStyles();
+  $("div[role='dialog']:not(#" + MODAL_ID + "):visible").modal('hide');
+  if (!$('#' + MODAL_ID).length) createModalWindow(MODAL_ID, titleText());
+  var $modal = $('#' + MODAL_ID).addClass('tsr-ui');
+  $modal.find('.modal-title').text(titleText()).attr('title','v' + VERSION);
+  $modal.find('.btnClose').text(txt('Close'));
+  renderModalData();
+  $('#' + MODAL_ID + ':not(:visible)').modal({backdrop:'static'});
+}
+function numberCell(value, requested) {
+  if (value == null) return '<span class="tsr-subtle">' + esc(requested ? txt('NotAvailable') : '—') + '</span>';
+  return '<span class="' + (value > 0 ? 'tsr-number' : 'tsr-zero') + '">' + (value > 0 ? '+' : '') + fmtInt(value) + '</span>';
+}
 function renderModalData() {
   var $modal = $('#' + MODAL_ID);
-  if (!$modal.length) return;
-
-  var data = computeAll();
+  if (disposed || !$modal.length) return;
+  closeChoices();
+  var data = computeAll(), seen = {}, resourceOptions = [], eventOptions = [];
+  var resLabel = tr('SHG', 'Resources'), eventLabel = txt('BuffGroup3'), durationLabel = txt('Duration');
   currentRowsData = {};
-
-  // Формируем тулбар
-  var seen = {}, opts = [];
+  manualDirty = false;
+  if (!allowedResource(state.resource)) state.resource = data.res;
   for (var i = 0; i < data.world.deposits.length; i++) {
     var rr = data.world.deposits[i].res;
-    if (rr && !seen[rr]) { seen[rr] = 1; opts.push(rr); }
+    if (allowedResource(rr) && !seen[rr]) { seen[rr] = true; resourceOptions.push({value:rr,label:resMeta(rr).label}); }
   }
-  if (!state.resource && data.res) state.resource = data.res;
-
-  var resOptsHtml = opts.map(function (r) {
-    return '<option value="' + r + '"' + (r === state.resource ? ' selected' : '') + '>' + resMeta(r).label + '</option>';
-  }).join('');
-
-  var evOptsHtml = '<option value="__manual__"' + (!state.eventKey ? ' selected' : '') + '>— вручную —</option>' +
-    data.events.map(function (e) {
-      return '<option value="' + e.name + '"' + (e.name === state.eventKey ? ' selected' : '') + '>' + e.name + ' (' + fmtDur(e.stopTs - serverNow()) + ')</option>';
-    }).join('');
-
-  var manualVal = state.manualEventMs > 0 ? fmtDur(eventRemain(data.events)) : '';
-
-  var toolbarHtml = [
-    '<div class="tsr-toolbar">',
-      createTableRow([
-        [3, '<span style="color:#c9a86a">Ресурс:&nbsp;</span><select id="tsr_sel_res" style="width:110px">' + resOptsHtml + '</select>'],
-        [4, '<span style="color:#c9a86a">Ивент:&nbsp;</span><select id="tsr_sel_ev" style="width:150px">' + evOptsHtml + '</select>'],
-        [3, '<span style="color:#c9a86a">Конец:&nbsp;</span><input id="tsr_in_manual" type="text" placeholder="авто" value="' + manualVal + '" style="width:75px">'],
-        [2, '<div style="text-align:right"><button id="tsr_btn_refresh" class="btn btn-sm btn-primary" title="Обновить">↻ Обновить</button></div>']
-      ], false),
-    '</div>'
-  ].join('');
-
-  // Формируем заголовок таблицы
-  var tableHeadRow = createTableRow([
-    [3, 'Залежь / Кол-во'],
-    [2, 'Исчерпается'],
-    [2, 'До бафа'],
-    [2, 'До ивента'],
-    [3, '<div style="text-align:center">Пополнение</div>']
-  ], true);
-
-  // Формируем список полей
-  var listHtml = '';
-  if (!data.world.ok) {
-    listHtml = '<div style="padding:25px;text-align:center;color:#a18b64;font-size:13px">Клиент не готов — перейдите на домашний остров.</div>';
-  } else if (!data.rows.length) {
-    listHtml = '<div style="padding:25px;text-align:center;color:#a18b64;font-size:13px">Залежей «' + resMeta(state.resource).label + '» на карте не найдено.</div>';
-  } else {
-    for (var k = 0; k < data.rows.length; k++) {
-      var m = data.rows[k];
-      var key = m.dep.key;
-      currentRowsData[key] = m;
-      var meta = resMeta(m.dep.res);
-
-      var resIconHtml = renderResIcon(meta.icon, '18px');
-      var gotoIconHtml = renderResIcon('accuracy.png', '18px');
-      if (!gotoIconHtml) gotoIconHtml = '◎';
-
-      // Колонка 1: Иконка + Название + Остаток + Кнопка перехода
-      var col1 = '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
-        '<span class="tsr-goto" data-act="goto" data-key="' + key + '" title="Показать на карте" style="margin-right:4px;">' + gotoIconHtml + '</span>' +
-        (resIconHtml ? resIconHtml + '&nbsp;' : '') +
-        '<b style="color:#ffd97a">' + m.amount + '</b>' + (m.max > 0 ? '<small style="color:#c9a86a">/' + m.max + '</small>' : '') +
-        '&nbsp;<small style="color:#8a7047">[' + key + ']</small>' +
-      '</div>';
-
-      // Колонка 2: Исчерпается
-      var dryColor = m.status === 'crit' ? '#ff6b6b' : (m.status === 'warn' ? '#ffd97a' : '#72d572');
-      var col2 = '<span style="color:' + dryColor + ';font-weight:' + (m.status === 'crit' ? 'bold' : 'normal') + '">' +
-        fmtDur(m.dryMs) +
-      '</span>';
-
-      // Колонка 3: До конца бафа
-      var col3 = '';
-      if (m.needBuff == null) {
-        col3 = '<span style="color:#7a6d58">—</span>';
-      } else if (m.needBuff === 0) {
-        col3 = '<span style="color:#72d572">Хватает</span>';
-      } else {
-        col3 = '<span style="color:#ff6b6b;font-weight:bold">+' + fmtInt(m.needBuff) + '</span>';
-      }
-
-      // Колонка 4: До конца ивента
-      var col4 = '';
-      if (m.needEvent == null) {
-        col4 = '<span style="color:#7a6d58">—</span>';
-      } else if (m.needEvent === 0) {
-        col4 = '<span style="color:#72d572">Хватает</span>';
-      } else {
-        col4 = '<span style="color:' + (m.status === 'crit' ? '#ff6b6b' : '#ffd97a') + ';font-weight:bold">+' +
-          fmtInt(m.needEvent) + (m.overCap ? ' <small style="color:#ff9e80" title="Превышает макс. емкость залежи">(!)</small>' : '') +
-        '</span>';
-      }
-
-      // Колонка 5: Инпут + Кнопка пополнения
-      var recVal = (m.needBuff != null && m.needBuff > 0) ? m.needBuff : (m.needEvent || 0);
-      var col5 = '<div style="text-align:right;white-space:nowrap;">' +
-        '<input class="tsr-field-in" type="number" min="0" step="1" placeholder="' + (recVal > 0 ? recVal : '0') + '" data-key="' + key + '">' +
-        '<button class="btn btn-xs btn-success" data-act="refill-one" data-key="' + key + '" style="vertical-align:middle;padding:2px 8px;">+ Пополнить</button>' +
-      '</div>';
-
-      var rowClass = m.status === 'crit' ? 'tsr-crit' : '';
-      var rowHtml = createTableRow([
-        [3, col1],
-        [2, col2],
-        [2, col3],
-        [2, col4],
-        [3, col5]
-      ], false);
-
-      // Оборачиваем в data-key для подсветки
-      listHtml += $(rowHtml).attr('data-key', key).addClass(rowClass).prop('outerHTML');
+  if (allowedResource(state.resource) && !seen[state.resource]) resourceOptions.push({value:state.resource,label:resMeta(state.resource).label});
+  var active = null, metaEvent = resMeta(data.res).ev;
+  for (var a = 0; a < data.events.length; a++) {
+    if ((state.eventMode === 'event' && data.events[a].name === state.eventKey) ||
+        (state.eventMode === 'auto' && metaEvent && metaEvent.test(data.events[a].name))) {
+      active = data.events[a]; break;
     }
   }
-
-  // Обновляем тело
-  $('#' + MODAL_ID + 'Data').html(
-    '<div class="container-fluid">' +
-      toolbarHtml +
-      '<div style="margin-bottom:4px">' + tableHeadRow + '</div>' +
-      '<div id="tsr_table_body">' + listHtml + '</div>' +
-    '</div>'
-  );
-
-  // Формируем футер
-  var totB = 0, totE = 0, critCount = 0;
-  for (var t = 0; t < data.rows.length; t++) {
-    if (data.rows[t].needBuff > 0) { totB += data.rows[t].needBuff; critCount++; }
-    if (data.rows[t].needEvent > 0) totE += data.rows[t].needEvent;
+  var selection = state.eventMode === 'manual' ? '__manual__' : (active ? active.name : '__auto__');
+  // No ambiguous "resource -> event" mode in the UI: show an actual event or N/A.
+  if (!active) eventOptions.push({value:'__auto__',label:eventLabel + ' · ' + txt('NotAvailable')});
+  for (var e = 0; e < data.events.length; e++) {
+    var ev = data.events[e];
+    eventOptions.push({value:ev.name,label:localizedEvent(ev.name) + ' · ' + fmtDur(Math.max(0,ev.stopTs - serverNow()))});
   }
-  var packs = packsFor(state.resource);
-  var availTotal = packs.reduce(function (s, p) { return s + p.count * p.size; }, 0);
-
-  var footerHtml = [
-    '<div class="tsr-foot-table">',
-      '<div style="text-align:left;line-height:1.3">',
-        'К бафу: <b style="color:' + (totB > 0 ? '#ff7a5c' : '#ffd97a') + '">' + fmtInt(totB) + '</b> · ',
-        'К ивенту: <b style="color:#ffd97a">' + fmtInt(totE) + '</b><br>',
-        'Критичных: <b style="color:' + (critCount > 0 ? '#ff7a5c' : '#72d572') + '">' + critCount + '</b> · ',
-        'В Звезде: <b style="color:#ffd97a">' + fmtInt(availTotal) + '</b>',
-        (packs.length ? '' : ' <span style="color:#ff8b70">(нет пополнях)</span>'),
-      '</div>',
-      '<div style="display:flex;gap:6px">',
-        '<button class="btn btn-warning btn-sm" id="tsr_btn_bulk_buff" style="padding:3px 10px">Пополнить до бафа</button>',
-        '<button class="btn btn-primary btn-sm" id="tsr_btn_bulk_event" style="padding:3px 10px">Пополнить до ивента</button>',
-      '</div>',
-    '</div>'
-  ].join('');
-
-  $('#' + MODAL_ID + ' .modal-footer').find('.tsr-foot-table').remove();
-  $('#' + MODAL_ID + ' .modal-footer').prepend(footerHtml);
-
+  eventOptions.push({value:'__manual__',label:durationLabel});
+  var horizonLabel = state.eventMode === 'manual' ? durationLabel : eventLabel;
+  var manualValue = editDuration(data.evRem);
+  var manualAttrs = state.eventMode === 'manual' ? '' : ' disabled="disabled"';
+  var toolbar = '<div class="tsr-toolbar">' +
+    '<div class="tsr-control"><span class="tsr-label">' + esc(resLabel) + '</span>' + customSelect('tsr_sel_res',resourceOptions,state.resource,resLabel) + '</div>' +
+    '<div class="tsr-control"><span class="tsr-label">' + esc(eventLabel) + '</span>' + customSelect('tsr_sel_ev',eventOptions,selection,eventLabel) + '</div>' +
+    '<div class="tsr-control tsr-control-duration"><span class="tsr-label" id="tsr_duration_label">' + esc(durationLabel) + ' · ' + esc(tr('FOR','DaysShort',['DD'])) + ' : ' + esc(tr('FOR','HoursShort',['HH'])) + ' : ' + esc(tr('FOR','MinutesShort',['MM'])) + '</span>' +
+      '<div class="tsr-editor-wrap"><input type="text" id="tsr_in_manual" class="tsr-editor"' + manualAttrs + ' value="' + esc(manualValue) + '" data-initial="' + esc(manualValue) + '" placeholder="00:00:00" maxlength="10" aria-labelledby="tsr_duration_label" aria-invalid="false" autocomplete="off" spellcheck="false" style="-webkit-appearance:none!important;background:#201609!important;background-image:none!important;color:#fff0c7!important;-webkit-text-fill-color:#fff0c7!important;border:1px solid #a5834b!important;">' +
+      '<button type="button" id="tsr_btn_manual" class="tsr-btn tsr-apply"' + manualAttrs + ' title="' + esc(txt('OK')) + '" aria-label="' + esc(txt('OK')) + '">✓</button></div>' +
+      '<div id="tsr_manual_error" class="tsr-error" role="alert">' + esc(durationLabel) + ' · 02:03:30</div></div>' +
+    '<div class="tsr-control tsr-control-refresh"><span class="tsr-label">&nbsp;</span><button type="button" id="tsr_btn_refresh" class="tsr-btn tsr-refresh">' + esc(txt('Update')) + '</button></div></div>';
+  var missing = txt('Missing_Resources');
+  var head = createTableRow([[3,esc(txt('DetailsDeposit') + ' / ' + txt('amount'))],[3,esc(txt('TimeRemaining'))],[3,esc(missing) + '<br>' + esc(txt('Time') + ' · ' + txt('Buff'))],[3,esc(missing) + '<br>' + esc(txt('Time') + ' · ' + horizonLabel)]],true);
+  var list = '', totalBuff = 0, totalEvent = 0, hasBuff = false, buffTotalKnown = true, eventTotalKnown = data.rows.length > 0;
+  for (var k = 0; k < data.rows.length; k++) {
+    var m = data.rows[k], key = m.dep.key, meta = resMeta(m.dep.res);
+    currentRowsData[key] = m;
+    if (!m.known || (m.buffRemMs > 0 && m.needBuff == null)) buffTotalKnown = false;
+    if (data.evRem > 0 && m.needEvent == null) eventTotalKnown = false;
+    if (m.needBuff != null) {hasBuff = true; totalBuff += m.needBuff;}
+    if (m.needEvent != null) totalEvent += m.needEvent;
+    var cycleTip = txt('DetailsOverallTime') + ': ' + fmtCycle(m.cycleMs);
+    var col1 = '<div class="tsr-resource"><button type="button" class="tsr-goto" data-act="goto" data-key="' + esc(key) + '" title="' + esc(txt('Visit')) + '" aria-label="' + esc(txt('Visit') + ': ' + meta.label) + '">' + gotoIcon('22px') + '</button><span title="' + esc(meta.label) + '">' + depositIcon(m.dep.res,'24px') + '</span> <b class="tsr-amount">' + fmtInt(m.amount) + '</b> <span class="tsr-subtle">[' + esc(key) + ']</span></div>';
+    var col2 = '<span title="' + esc(cycleTip) + '" style="color:' + (m.status === 'crit' ? '#ffb197' : m.status === 'warn' ? '#ffe0a0' : m.status === 'unknown' ? '#d3ba8e' : '#afd899') + '">' + esc(fmtDur(m.dryMs)) + '</span>';
+    var capMark = m.overCap ? ' <span title="' + esc(txt('Max') + ': ' + fmtInt(m.max)) + '">(!)</span>' : '';
+    var row = createTableRow([[3,col1],[3,col2],[3,'<span title="' + esc(txt('Time') + ' · ' + txt('Buff') + ': ' + fmtDur(m.buffRemMs)) + '">' + numberCell(m.needBuff,!m.known || m.buffRemMs > 0) + '</span>'],[3,numberCell(m.needEvent,data.evRem > 0) + capMark]],false);
+    list += $(row).append('<div class="tsr-measures">' + modelDetails(m) + '</div>').attr('data-key',key).addClass(m.status === 'crit' ? 'tsr-crit' : '').prop('outerHTML');
+  }
+  if (!data.world.ok || !data.rows.length) list = '<div class="tsr-help">' + esc(txt('DetailsDeposit')) + ': ' + esc(txt('NotAvailableText')) + '</div>';
+  var help = '<div class="tsr-help">' + esc(horizonLabel) + (state.eventMode !== 'manual' ? ': ' + esc(active ? localizedEvent(active.name) : txt('NotAvailable')) : '') + ' · ' + esc(txt('TimeRemaining')) + ' <b>' + esc(data.evRem > 0 ? fmtDur(data.evRem) : '—') + '</b> · ' + esc(missing) + ': <b>+N</b>' + '</div>';
+  $('#' + MODAL_ID + 'Data').html('<div class="container-fluid">' + toolbar + help + '<div class="tsr-table-scroll"><div class="tsr-table-grid">' + head + '<div id="tsr_table_body">' + list + '</div></div></div></div>');
+  $modal.find('.modal-footer .tsr-foot-table').remove();
+  $modal.find('.modal-footer').prepend('<div class="tsr-foot-table">Σ ' + esc(missing) + ' · ' + esc(txt('Buff')) + ': <b>' + (!buffTotalKnown ? esc(txt('NotAvailable')) : hasBuff ? fmtInt(totalBuff) : '—') + '</b> · ' + esc(horizonLabel) + ': <b>' + (data.evRem > 0 ? (eventTotalKnown ? fmtInt(totalEvent) : esc(txt('NotAvailable'))) : '—') + '</b></div>');
   bindEvents();
 }
-
+function commitManual() {
+  var $field = $('#' + MODAL_ID + ' #tsr_in_manual');
+  var value = String($field.val() || '');
+  var ms = parseManual(value);
+  if (!isFinite(ms) || ms < 0) {
+    $field.attr('aria-invalid','true');
+    $('#' + MODAL_ID + ' #tsr_manual_error').show();
+    return false;
+  }
+  state.eventMode = 'manual';
+  state.eventKey = '';
+  state.manualEventMs = ms;
+  state.manualSetAt = serverNow();
+  save();
+  renderModalData();
+  return true;
+}
 function bindEvents() {
   var $modal = $('#' + MODAL_ID);
   $modal.off('.tsrEvents');
-
-  // Выбор ресурса
-  $modal.on('change.tsrEvents', '#tsr_sel_res', function () {
-    state.resource = $(this).val();
-    save();
-    renderModalData();
+  $modal.find('.modal-body').off('.tsrEvents').on('scroll.tsrEvents',closeChoices);
+  $(document).off('mousedown.tsrRefillChoices').on('mousedown.tsrRefillChoices',function(e) {
+    if (!$(e.target).closest('#' + MODAL_ID + ' .tsr-select,#' + MODAL_ID + ' .tsr-options').length) closeChoices();
   });
-
-  // Выбор ивента
-  $modal.on('change.tsrEvents', '#tsr_sel_ev', function () {
-    var v = $(this).val();
-    if (v === '__manual__') {
-      state.eventKey = '';
-    } else {
-      state.eventKey = v;
-      state.manualEventMs = 0;
+  $(window).off('resize.tsrRefillChoices').on('resize.tsrRefillChoices',closeChoices);
+  $modal.on('hidden.bs.modal.tsrEvents',closeChoices);
+  $modal.on('click.tsrEvents','.tsr-select-trigger',function() {openChoice($(this),false);});
+  $modal.on('click.tsrEvents','.tsr-option',function() {
+    var $list = $(this).closest('.tsr-options'), value = $(this).attr('data-value'), id = $list.attr('data-owner');
+    closeChoices();
+    if (id === 'tsr_sel_res') state.resource = value;
+    else {
+      state.eventMode = value === '__manual__' ? 'manual' : value === '__auto__' ? 'auto' : 'event';
+      state.eventKey = state.eventMode === 'event' ? value : '';
     }
-    save();
-    renderModalData();
+    save();renderModalData();
+    $('#' + MODAL_ID + ' #' + id + ' .tsr-select-trigger').focus();
   });
-
-  // Ручной ввод времени
-  $modal.on('change.tsrEvents', '#tsr_in_manual', function () {
-    var ms = parseManual($(this).val());
-    state.manualEventMs = ms;
-    state.manualSetAt = serverNow();
-    if (ms > 0) state.eventKey = '';
-    save();
-    renderModalData();
+  $modal.on('keydown.tsrEvents','.tsr-select-trigger',function(e) {
+    if (e.which === 13 || e.which === 32 || e.which === 40 || e.which === 38) {e.preventDefault();openChoice($(this),true);}
+    if (e.which === 27) closeChoices();
   });
-
-  // Кнопка обновления
-  $modal.on('click.tsrEvents', '#tsr_btn_refresh', function () {
-    renderModalData();
-  });
-
-  // Клик перехода к полю
-  $modal.on('click.tsrEvents', '[data-act="goto"]', function () {
-    var key = $(this).attr('data-key');
-    var m = currentRowsData[key];
-    if (m && m.dep && m.dep.grid) {
-      focusGrid(m.dep.grid);
-      var $row = $modal.find('.row[data-key="' + key + '"]');
-      $row.removeClass('tsr-flash');
-      setTimeout(function () { $row.addClass('tsr-flash'); }, 10);
+  $modal.on('keydown.tsrEvents','.tsr-option',function(e) {
+    var $options = $(this).parent().find('.tsr-option'), index = $options.index(this);
+    if (e.which === 38 || e.which === 40 || e.which === 36 || e.which === 35) {
+      e.preventDefault();
+      index = e.which === 36 ? 0 : e.which === 35 ? $options.length - 1 : (index + (e.which === 40 ? 1 : -1) + $options.length) % $options.length;
+      $options.eq(index).focus();
+    }
+    if (e.which === 27 || e.which === 9) {
+      if (e.which === 27) e.preventDefault();
+      var owner = $(this).closest('.tsr-options').attr('data-owner');
+      var $trigger = $modal.find('#' + owner + ' .tsr-select-trigger');
+      closeChoices();$trigger.focus();
     }
   });
-
-  // Клик одиночного пополнения
-  $modal.on('click.tsrEvents', '[data-act="refill-one"]', function () {
-    var key = $(this).attr('data-key');
-    var m = currentRowsData[key];
-    if (!m) return;
-    var $in = $modal.find('.tsr-field-in[data-key="' + key + '"]');
-    var raw = parseInt($in.val(), 10);
-    var need = (isFinite(raw) && raw > 0) ? raw : ((m.needBuff && m.needBuff > 0) ? m.needBuff : (m.needEvent || 0));
-    if (need <= 0) {
-      alert('Поле полностью обеспечено ресурсом.');
-      return;
-    }
-    var plan = planPack(need, packsFor(state.resource));
-    if (plan.short > 0) {
-      alert('В Звезде не хватает пополнях на ' + fmtInt(plan.short) + ' ресурса!');
-    }
-    applyRow(m, plan);
+  $modal.on('input.tsrEvents change.tsrEvents keyup.tsrEvents','#tsr_in_manual',function(e) {
+    if (e.type === 'keyup' && (e.which === 13 || e.which === 27 || e.which === 9)) return;
+    manualDirty = true;$(this).attr('aria-invalid','false');$modal.find('#tsr_manual_error').hide();
   });
-
-  // Массовое пополнение
-  $modal.on('click.tsrEvents', '#tsr_btn_bulk_buff', function () {
-    bulkRefill('buff');
+  // Use the real text input's native typing, selection and clipboard support in AIR.
+  $modal.on('keydown.tsrEvents','#tsr_in_manual',function(e) {
+    if (e.which === 13) {e.preventDefault();commitManual();}
+    if (e.which === 27) {e.preventDefault();renderModalData();}
   });
-  $modal.on('click.tsrEvents', '#tsr_btn_bulk_event', function () {
-    bulkRefill('event');
+  $modal.on('click.tsrEvents','#tsr_btn_manual',commitManual);
+  $modal.on('click.tsrEvents','#tsr_btn_refresh',function() {
+    var $field = $modal.find('#tsr_in_manual');
+    if (manualDirty || $field.val() !== $field.attr('data-initial')) commitManual();else renderModalData();
+  });
+  $modal.on('click.tsrEvents','[data-act="goto"]',function() {
+    var row = currentRowsData[$(this).attr('data-key')];
+    if (row && row.dep) focusGrid(row.dep.grid);
   });
 }
-
-function bulkRefill(mode) {
-  var data = computeAll();
-  var packs = packsFor(state.resource);
-  var totalShort = 0, applied = 0;
-
-  data.rows.forEach(function (m) {
-    var need = mode === 'buff' ? (m.needBuff || 0) : (m.needEvent || 0);
-    if (need <= 0) return;
-    var plan = planPack(need, packs);
-    if (plan.short > 0) totalShort += plan.short;
-    if (plan.picks.length) {
-      applyRow(m, plan);
-      applied++;
-    }
-  });
-
-  if (!applied) {
-    alert('Все залежи уже обеспечены ресурсом.');
-  } else if (totalShort > 0) {
-    alert('Запущено пополнение ' + applied + ' полей. Не хватило пополнях в Звезде на ' + fmtInt(totalShort) + ' ед. ресурса.');
-  }
+function persist() {
+  try {localStorage.setItem(STORE_KEY,JSON.stringify(state));} catch (e) {}
+}
+function dispose() {
+  if (disposed) return;
+  persist();disposed = true;clearTimeout(saveTimer);closeChoices();
+  var $modal = $('#' + MODAL_ID);
+  $modal.off('.tsrEvents');$modal.find('.modal-body').off('.tsrEvents');
+  $(document).off('.tsrRefillChoices');$(window).off('.tsrRefillChoices');
+  currentRowsData = {};iconCache = {};
+  // Preserve core modal show/hide handlers and the persistent root during transitions.
 }
 
-/* ---------------- §13. Публичный API ---------------- */
+
 W.__TSO_REFILL__ = {
   version: VERSION,
   open: openModal,
   toggle: openModal,
   refresh: renderModalData,
+  dispose: dispose,
   state: state
 };
 
-/* ---------------- §14. Регистрация в меню TSO ---------------- */
-try {
-  var menuTitle = 'Пополнение залежей (Ивент)';
-  try {
-    if (typeof loca !== 'undefined' && loca.GetText) {
-      menuTitle = loca.GetText('RES', 'HalloweenResource') + ' / ' + loca.GetText('SHG', 'Deposits');
-    }
-  } catch (e) {}
 
+try {
+  var menuTitle = titleText();
   addToolsMenuItem(menuTitle, function (event) {
     openModal();
   });

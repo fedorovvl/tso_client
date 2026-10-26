@@ -152,5 +152,12 @@
       "longDesc": "Finds depleted wells and wheat fields and automatically rebuilds them. Supports choosing building tiers (Normal, Deep) batch building, queue slot detection, and background auto-building.",
       "author": "MadFx",
       "url": ""
+   },
+   "user_event_refill_calc.js": {
+      "name": "Deposit Refill Calculator",
+      "shortDesc": "Deposit depletion and refill calculation",
+      "longDesc": "Calculates realistic deposit depletion time and required refills until active buff expiry or end of event. Fully accounts for mine work time, warehouse and deposit walking distances, building upgrade levels, and resource-depleting buffs.",
+      "author": "MadFx",
+      "url": ""
    }
 }
