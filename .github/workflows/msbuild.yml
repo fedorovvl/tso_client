@@ -54,3 +54,4 @@ jobs:
         github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
         wait-for-completion: true
         output-artifact-directory: 'client\bin\Release'
+        skip-decompress: true
