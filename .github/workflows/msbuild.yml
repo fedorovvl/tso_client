@@ -39,6 +39,21 @@ jobs:
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=x86 ${{env.SOLUTION_FILE_PATH}}
 
     - uses: actions/upload-artifact@v4
+      id: upload-unsigned-artifact
       with:
        name: client
        path: client\bin\Release\client.exe
+       archive: false
+
+    - name: submit signing request
+      uses: signpath/github-action-submit-signing-request@v3
+      with:
+        api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+        organization-id: '566891e5-0205-4eae-a687-ca2e0db3c124'
+        project-slug: 'tso_client'
+        signing-policy-slug: 'test-signing'
+        github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
+        wait-for-completion: true
+        output-artifact-directory: 'client\bin\Release'
+        parameters: |
+          version: $(git rev-parse --short "$GITHUB_SHA")
