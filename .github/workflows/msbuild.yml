@@ -55,3 +55,9 @@ jobs:
         wait-for-completion: true
         output-artifact-directory: 'client\bin\Release'
         skip-decompress: true
+        
+    - uses: actions/upload-artifact@v7
+      with:
+       name: client-signed.exe
+       path: client\bin\Release\client.exe
+       archive: false
