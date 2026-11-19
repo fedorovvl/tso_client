@@ -41,6 +41,7 @@ jobs:
     - uses: actions/upload-artifact@v7
       id: upload-unsigned-artifact
       with:
+       name: client.exe
        path: client\bin\Release\client.exe
        archive: false
 
@@ -55,9 +56,12 @@ jobs:
         wait-for-completion: true
         output-artifact-directory: 'client\bin\Release'
         skip-decompress: true
-        
+
+    - uses: geekyeggo/delete-artifact@v6
+      with:
+          name: client.exe
+
     - uses: actions/upload-artifact@v7
       with:
-       name: client-signed.exe
        path: client\bin\Release\client.exe
        archive: false
