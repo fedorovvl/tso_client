@@ -38,10 +38,9 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=x86 ${{env.SOLUTION_FILE_PATH}}
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       id: upload-unsigned-artifact
       with:
-       name: client
        path: client\bin\Release\client.exe
        archive: false
 
