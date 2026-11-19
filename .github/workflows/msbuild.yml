@@ -63,5 +63,5 @@ jobs:
 
     - uses: actions/upload-artifact@v7
       with:
+       name: client
        path: client\bin\Release\client.exe
-       archive: false
