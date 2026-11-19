@@ -55,5 +55,3 @@ jobs:
         github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
         wait-for-completion: true
         output-artifact-directory: 'client\bin\Release'
-        parameters: |
-          version: $(git rev-parse --short "$GITHUB_SHA")
